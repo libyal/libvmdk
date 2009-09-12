@@ -688,7 +688,26 @@ int libvmdk_file_open_read(
 		libnotify_verbose_printf(
 		 "Reading (primary) grain directory:\n" );
 #endif
-		/* TODO read primary grain directory offset and grain tables */
+
+		if( libvmdk_io_handle_read_grain_directory(
+		     internal_file->io_handle,
+		     NULL,
+		     grain_directory_offset,
+		     amount_of_grain_directory_entries,
+		     amount_of_grain_table_entries,
+		     grain_size,
+		     0,
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_IO,
+			 LIBERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read (primary) grain directory.",
+			 function );
+
+			return( -1 );
+		}
 	}
 	if( secondary_grain_directory_offset > 0 )
 	{
@@ -696,7 +715,26 @@ int libvmdk_file_open_read(
 		libnotify_verbose_printf(
 		 "Reading secondary grain directory:\n" );
 #endif
-		/* TODO read secondary grain directory offset and grain tables */
+
+		if( libvmdk_io_handle_read_grain_directory(
+		     internal_file->io_handle,
+		     NULL,
+		     secondary_grain_directory_offset,
+		     amount_of_grain_directory_entries,
+		     amount_of_grain_table_entries,
+		     grain_size,
+		     1,
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_IO,
+			 LIBERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read secondary grain directory.",
+			 function );
+
+			return( -1 );
+		}
 	}
 	return( 1 );
 }

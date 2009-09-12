@@ -1,0 +1,98 @@
+/*
+ * Offset table functions
+ *
+ * Copyright (c) 2006-2009, Joachim Metz <forensics@hoffmannbv.nl>,
+ * Hoffmann Investigations. All rights reserved.
+ *
+ * Refer to AUTHORS for acknowledgements.
+ *
+ * This software is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#if !defined( _LIBEWF_OFFSET_TABLE_H )
+#define _LIBEWF_OFFSET_TABLE_H
+
+#include <common.h>
+#include <types.h>
+
+#include <liberror.h>
+
+#include "libvmdk_grain_offset.h"
+#include "libvmdk_libbfio.h"
+
+#if defined( __cplusplus )
+extern "C" {
+#endif
+
+typedef struct libvmdk_offset_table libvmdk_offset_table_t;
+
+struct libvmdk_offset_table
+{
+	/* Stores the amount of grains in the table
+	 * There is an offset per grain in the table
+	 */
+	uint32_t amount_of_grain_offsets;
+
+	/* The last grain offset that was filled
+	 */
+	uint32_t last_grain_offset_filled;
+
+	/* The last grain offset that was compared
+	 */
+	uint32_t last_grain_offset_compared;
+
+	/* Dynamic array of grain offsets
+	 */
+	libvmdk_grain_offset_t *grain_offset;
+};
+
+int libvmdk_offset_table_initialize(
+     libvmdk_offset_table_t **offset_table,
+     uint32_t amount_of_grain_offsets,
+     liberror_error_t **error );
+
+int libvmdk_offset_table_free(
+     libvmdk_offset_table_t **offset_table,
+     liberror_error_t **error );
+
+int libvmdk_offset_table_resize(
+     libvmdk_offset_table_t *offset_table,
+     uint32_t amount_of_grain_offsets,
+     liberror_error_t **error );
+
+int libvmdk_offset_table_fill(
+     libvmdk_offset_table_t *offset_table,
+     uint8_t *grain_table,
+     uint32_t amount_of_grain_table_entries,
+     uint8_t tainted,
+     liberror_error_t **error );
+
+int libvmdk_offset_table_compare(
+     libvmdk_offset_table_t *offset_table,
+     uint8_t *grain_table,
+     uint32_t amount_of_grain_table_entries,
+     uint8_t tainted,
+     liberror_error_t **error );
+
+off64_t libvmdk_offset_table_seek_grain_offset(
+         libvmdk_offset_table_t *offset_table,
+         uint32_t grain,
+         liberror_error_t **error );
+
+#if defined( __cplusplus )
+}
+#endif
+
+#endif
+

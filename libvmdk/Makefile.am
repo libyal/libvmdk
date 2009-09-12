@@ -15,11 +15,13 @@ libvmdk_la_SOURCES = \
 	libvmdk_definitions.h \
 	libvmdk_error.c libvmdk_error.h \
 	libvmdk_extern.h \
+	libvmdk_grain_offset.h \
 	libvmdk_file.c libvmdk_file.h \
 	libvmdk_io_handle.c libvmdk_io_handle.h \
 	libvmdk_libbfio.h \
 	libvmdk_libuna.h \
 	libvmdk_notify.c libvmdk_notify.h \
+	libvmdk_offset_table.c libvmdk_offset_table.h \
 	libvmdk_string.h \
 	libvmdk_support.c libvmdk_support.h \
 	cowd_sparse_file_header.h \

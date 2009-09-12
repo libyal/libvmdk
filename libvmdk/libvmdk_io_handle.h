@@ -29,6 +29,7 @@
 #include <liberror.h>
 
 #include "libvmdk_libbfio.h"
+#include "libvmdk_offset_table.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -90,6 +91,25 @@ int libvmdk_io_handle_read_file_header(
      uint32_t *amount_of_grain_directory_entries,
      uint32_t *amount_of_grain_table_entries,
      size64_t *grain_size,
+     liberror_error_t **error );
+
+int libvmdk_io_handle_read_grain_directory(
+     libvmdk_io_handle_t *io_handle,
+     libvmdk_offset_table_t *offset_table,
+     off64_t grain_directory_offset,
+     uint32_t amount_of_grain_directory_entries,
+     uint32_t amount_of_grain_table_entries,
+     size64_t grain_size,
+     uint8_t is_secondary_grain_directory,
+     liberror_error_t **error );
+
+int libvmdk_io_handle_read_grain_table(
+     libvmdk_io_handle_t *io_handle,
+     libvmdk_offset_table_t *offset_table,
+     off64_t grain_table_offset,
+     uint32_t amount_of_grain_table_entries,
+     size64_t grain_size,
+     uint8_t is_secondary_grain_directory,
      liberror_error_t **error );
 
 #if defined( __cplusplus )

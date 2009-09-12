@@ -32,6 +32,7 @@
 #include "libvmdk_definitions.h"
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
+#include "libvmdk_offset_table.h"
 #include "libvmdk_string.h"
 
 #include "cowd_sparse_file_header.h"
@@ -274,8 +275,9 @@ int libvmdk_io_handle_read_file_header(
      liberror_error_t **error )
 {
 	uint8_t *file_header  = NULL;
+	void *reallocation    = NULL;
 	static char *function = "libvmdk_io_handle_read_file_header";
-	size_t read_size      = 2048;
+	size_t read_size      = 0;
 	ssize_t read_count    = 0;
 	uint32_t flags        = 0;
 
@@ -394,7 +396,7 @@ int libvmdk_io_handle_read_file_header(
 		return( -1 );
 	}
 	file_header = (uint8_t *) memory_allocate(
-	                           sizeof( uint8_t ) * read_size );
+	                           sizeof( uint8_t ) * 4 );
 
 	if( file_header == NULL )
 	{
@@ -402,7 +404,7 @@ int libvmdk_io_handle_read_file_header(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_MEMORY,
 		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to file header.",
+		 "%s: unable to create file header.",
 		 function );
 
 		return( -1 );
@@ -410,10 +412,80 @@ int libvmdk_io_handle_read_file_header(
 	read_count = libbfio_handle_read(
 	              io_handle->file_io_handle,
 	              file_header,
-	              read_size,
+	              4,
 	              error );
 
-	if( read_count != (ssize_t) read_size )
+	if( read_count != (ssize_t) 4 )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_IO,
+		 LIBERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read file signature.",
+		 function );
+
+		memory_free(
+		 file_header );
+
+		return( -1 );
+	}
+	if( memory_compare(
+	     file_header,
+	     cowd_sparse_file_signature,
+	     4 ) == 0 )
+	{
+		io_handle->file_type = LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA;
+		read_size            = sizeof( cowd_sparse_file_header_t );
+	}
+	else if( memory_compare(
+	          file_header,
+	          vmdk_sparse_file_signature,
+	          4 ) == 0 )
+	{
+		io_handle->file_type = LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA;
+		read_size            = sizeof( vmdk_sparse_file_header_t );
+	}
+	else
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported file signature.",
+		 function );
+
+		memory_free(
+		 file_header );
+
+		return( -1 );
+	}
+	reallocation = memory_reallocate(
+	                file_header,
+	                sizeof( uint8_t ) * read_size );
+
+	if( reallocation == NULL )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_MEMORY,
+		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to resize file header.",
+		 function );
+
+		memory_free(
+		 file_header );
+
+		return( -1 );
+	}
+	file_header = (uint8_t *) reallocation;
+
+	read_count = libbfio_handle_read(
+	              io_handle->file_io_handle,
+	              &( file_header[ 4 ] ),
+	              read_size - 4,
+	              error );
+
+	if( read_count != (ssize_t) ( read_size - 4 ) )
 	{
 		liberror_error_set(
 		 error,
@@ -436,34 +508,6 @@ int libvmdk_io_handle_read_file_header(
 	 read_size );
 #endif
 
-	if( memory_compare(
-	     file_header,
-	     cowd_sparse_file_signature,
-	     4 ) == 0 )
-	{
-		io_handle->file_type = LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA;
-	}
-	else if( memory_compare(
-	          file_header,
-	          vmdk_sparse_file_signature,
-	          4 ) == 0 )
-	{
-		io_handle->file_type = LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA;
-	}
-	else
-	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported file signature.",
-		 function );
-
-		memory_free(
-		 file_header );
-
-		return( -1 );
-	}
 	if( io_handle->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
 	{
 		endian_little_convert_32bit(
@@ -789,6 +833,389 @@ int libvmdk_io_handle_read_file_header(
 		*descriptor_size                  *= LIBVMDK_SECTOR_SIZE;
 		*secondary_grain_directory_offset *= LIBVMDK_SECTOR_SIZE;
 	}
+	return( 1 );
+}
+
+/* Reads a grain directory
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_io_handle_read_grain_directory(
+     libvmdk_io_handle_t *io_handle,
+     libvmdk_offset_table_t *offset_table,
+     off64_t grain_directory_offset,
+     uint32_t amount_of_grain_directory_entries,
+     uint32_t amount_of_grain_table_entries,
+     size64_t grain_size,
+     uint8_t is_secondary_grain_directory,
+     liberror_error_t **error )
+{
+	uint8_t *grain_directory_data           = NULL;
+	uint8_t *sector_blocks_data             = NULL;
+	static char *function                   = "libvmdk_io_handle_read_grain_directory";
+	size_t grain_directory_data_size        = 0;
+	size_t sector_blocks_data_size          = 0;
+	ssize_t read_count                      = 0;
+	uint32_t grain_directory_entry_iterator = 0;
+	uint32_t grain_table_offset             = 0;
+
+	if( io_handle == NULL )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid io handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( io_handle->file_io_handle == NULL )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid io handle - missing file io handle.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO
+	if( offset_table == NULL )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid offset table.",
+		 function );
+
+		return( -1 );
+	}
+*/
+
+	grain_directory_data_size = amount_of_grain_directory_entries * sizeof( uint32_t );
+
+	if( grain_directory_data_size > (size_t) SSIZE_MAX )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid grain directory size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	sector_blocks_data_size = grain_directory_data_size / 512;
+
+	if( ( grain_directory_data_size % 512 ) != 0 )
+	{
+		sector_blocks_data_size += 1;
+	}
+	sector_blocks_data_size *= 512;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	libnotify_verbose_printf(
+	 "%s: reading grain directory at offset: %" PRIu64 " (0x%08" PRIx64 ")\n",
+	 function,
+	 grain_directory_offset,
+	 grain_directory_offset );
+#endif
+
+	if( libbfio_handle_seek_offset(
+	     io_handle->file_io_handle,
+	     grain_directory_offset,
+	     SEEK_SET,
+	     error ) == -1 )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_IO,
+		 LIBERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek grain directory offset: %" PRIu64 ".",
+		 function,
+		 grain_directory_offset );
+
+		return( -1 );
+	}
+	sector_blocks_data = (uint8_t *) memory_allocate(
+	                                  sector_blocks_data_size );
+
+	if( sector_blocks_data == NULL )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_MEMORY,
+		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create sector blocks data.",
+		 function );
+
+		return( -1 );
+	}
+	read_count = libbfio_handle_read(
+	              io_handle->file_io_handle,
+	              sector_blocks_data,
+	              sector_blocks_data_size,
+	              error );
+
+	if( read_count != (ssize_t) sector_blocks_data_size )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_IO,
+		 LIBERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read grain directory data.",
+		 function );
+
+		memory_free(
+		 sector_blocks_data );
+
+		return( -1 );
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	libnotify_verbose_printf(
+	 "%s: grain directory data:\n",
+	 function );
+	libnotify_verbose_print_data(
+	 sector_blocks_data,
+	 sector_blocks_data_size );
+#endif
+
+	grain_directory_data = sector_blocks_data;
+
+	for( grain_directory_entry_iterator = 0;
+	     grain_directory_entry_iterator < amount_of_grain_directory_entries;
+	     grain_directory_entry_iterator++ )
+	{
+		endian_little_convert_32bit(
+		 grain_table_offset,
+		 grain_directory_data );
+		 
+#if defined( HAVE_DEBUG_OUTPUT )
+		libnotify_verbose_printf(
+		 "%s: grain directory entry: %03" PRIu32 " offset: %" PRIu32 " (0x%08" PRIx32 ")\n",
+		 function,
+		 grain_directory_entry_iterator,
+		 grain_table_offset,
+		 grain_table_offset );
+#endif
+
+		grain_table_offset *= LIBVMDK_SECTOR_SIZE;
+
+		if( libvmdk_io_handle_read_grain_table(
+		     io_handle,
+		     offset_table,
+		     grain_table_offset,
+		     amount_of_grain_table_entries,
+		     grain_size,
+		     is_secondary_grain_directory,
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_IO,
+			 LIBERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read grain table.",
+			 function );
+
+			return( -1 );
+		}
+		grain_directory_data += sizeof( uint32_t );
+	}
+	/* TODO check if remainder of sector block is emtpy */
+
+	memory_free(
+	 sector_blocks_data );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	libnotify_verbose_printf(
+	 "\n" );
+#endif
+
+	return( 1 );
+}
+
+/* Reads a grain table
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_io_handle_read_grain_table(
+     libvmdk_io_handle_t *io_handle,
+     libvmdk_offset_table_t *offset_table,
+     off64_t grain_table_offset,
+     uint32_t amount_of_grain_table_entries,
+     size64_t grain_size,
+     uint8_t is_secondary_grain_directory,
+     liberror_error_t **error )
+{
+	uint8_t *grain_table_data           = NULL;
+	uint8_t *sector_blocks_data         = NULL;
+	static char *function               = "libvmdk_io_handle_read_grain_table";
+	size_t grain_table_data_size        = 0;
+	size_t sector_blocks_data_size      = 0;
+	ssize_t read_count                  = 0;
+	uint32_t grain_offset               = 0;
+	uint32_t grain_table_entry_iterator = 0;
+
+	if( io_handle == NULL )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid io handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( io_handle->file_io_handle == NULL )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid io handle - missing file io handle.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO
+	if( offset_table == NULL )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid offset table.",
+		 function );
+
+		return( -1 );
+	}
+*/
+
+	grain_table_data_size = amount_of_grain_table_entries * sizeof( uint32_t );
+
+	if( grain_table_data_size > (size_t) SSIZE_MAX )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid grain table size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	sector_blocks_data_size = grain_table_data_size / 512;
+
+	if( ( grain_table_data_size % 512 ) != 0 )
+	{
+		sector_blocks_data_size += 1;
+	}
+	sector_blocks_data_size *= 512;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	libnotify_verbose_printf(
+	 "%s: reading grain table at offset: %" PRIu64 " (0x%08" PRIx64 ")\n",
+	 function,
+	 grain_table_offset,
+	 grain_table_offset );
+#endif
+
+	if( libbfio_handle_seek_offset(
+	     io_handle->file_io_handle,
+	     grain_table_offset,
+	     SEEK_SET,
+	     error ) == -1 )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_IO,
+		 LIBERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek grain table offset: %" PRIu64 ".",
+		 function,
+		 grain_table_offset );
+
+		return( -1 );
+	}
+	sector_blocks_data = (uint8_t *) memory_allocate(
+	                                  sector_blocks_data_size );
+
+	if( sector_blocks_data == NULL )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_MEMORY,
+		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create sector blocks data.",
+		 function );
+
+		return( -1 );
+	}
+	read_count = libbfio_handle_read(
+	              io_handle->file_io_handle,
+	              sector_blocks_data,
+	              sector_blocks_data_size,
+	              error );
+
+	if( read_count != (ssize_t) sector_blocks_data_size )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_IO,
+		 LIBERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read grain table data.",
+		 function );
+
+		memory_free(
+		 sector_blocks_data );
+
+		return( -1 );
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	libnotify_verbose_printf(
+	 "%s: grain table data:\n",
+	 function );
+	libnotify_verbose_print_data(
+	 sector_blocks_data,
+	 sector_blocks_data_size );
+#endif
+
+	grain_table_data = sector_blocks_data;
+
+	for( grain_table_entry_iterator = 0;
+	     grain_table_entry_iterator < amount_of_grain_table_entries;
+	     grain_table_entry_iterator++ )
+	{
+		endian_little_convert_32bit(
+		 grain_offset,
+		 grain_table_data );
+		 
+#if defined( HAVE_DEBUG_OUTPUT )
+		libnotify_verbose_printf(
+		 "%s: grain table entry: %03" PRIu32 " offset: %" PRIu32 " (0x%08" PRIx32 ")\n",
+		 function,
+		 grain_table_entry_iterator,
+		 grain_offset,
+		 grain_offset );
+#endif
+
+		grain_offset *= LIBVMDK_SECTOR_SIZE;
+
+		/* TODO fill offset table */
+
+		grain_table_data += sizeof( uint32_t );
+	}
+	/* TODO check if remainder of sector block is emtpy */
+
+	memory_free(
+	 sector_blocks_data );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	libnotify_verbose_printf(
+	 "\n" );
+#endif
+
 	return( 1 );
 }
 

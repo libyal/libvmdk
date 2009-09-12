@@ -1,10 +1,9 @@
 TODO
 
 File format
-* implement COWD support
-* read grain directory
-* read grain table
-* access to grain data
+* complete COWD support
+* fill offset table
+* create functions to access to grain data
 
 Deployment:
 * update manuals
@@ -15,4 +14,5 @@ Deployment:
 
 20090912
 * initial version based on liblnk
+* worked on implementing vmdk and cowd sparse data files
 
