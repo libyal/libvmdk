@@ -1,0 +1,18 @@
+TODO
+
+File format
+* implement COWD support
+* read grain directory
+* read grain table
+* access to grain data
+
+Deployment:
+* update manuals
+* create debian package files
+* update macosx package files
+* update codegear files
+* check msvcpp files
+
+20090912
+* initial version based on liblnk
+

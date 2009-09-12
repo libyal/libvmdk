@@ -1,0 +1,68 @@
+/*
+ * Definitions for libvmdk
+ *
+ * Copyright (c) 2009, Joachim Metz <forensics@hoffmannbv.nl>,
+ * Hoffmann Investigations. All rights reserved.
+ *
+ * Refer to AUTHORS for acknowledgements.
+ *
+ * This software is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#if !defined( _LIBVMDK_DEFINITIONS_H )
+#define _LIBVMDK_DEFINITIONS_H
+
+#include <libvmdk/types.h>
+
+#define LIBVMDK_VERSION					@VERSION@
+
+/* The libvmdk version string
+ */
+#define LIBVMDK_VERSION_STRING				"@VERSION@"
+
+/* The libvmdk file access
+ * bit 1        set to 1 for read access
+ * bit 2        set to 1 for write access
+ * bit 3-8      not used
+ */
+#define LIBVMDK_FLAG_READ				0x01
+/* Reserved: not supported yet */
+#define LIBVMDK_FLAG_WRITE				0x02
+
+/* The libvmdk file access macros
+ */
+#define LIBVMDK_OPEN_READ				( LIBVMDK_FLAG_READ )
+/* Reserved: not supported yet */
+#define LIBVMDK_OPEN_WRITE				( LIBVMDK_FLAG_WRITE )
+/* Reserved: not supported yet */
+#define LIBVMDK_OPEN_READ_WRITE				( LIBVMDK_FLAG_READ | LIBVMDK_FLAG_WRITE )
+
+/* The file types
+ */
+enum LIBVMDK_FILE_TYPES
+{
+	LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA		= (int) 'c',
+	LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA		= (int) 'v'
+};
+
+/* The compression methods
+ */
+enum LIBVMDK_COMPRESSION_METHODS
+{
+	LIBVMDK_COMPRESSION_METHOD_NONE			= 0,
+	LIBVMDK_COMPRESSION_METHOD_DEFLATE		= 1
+};
+
+#endif
+

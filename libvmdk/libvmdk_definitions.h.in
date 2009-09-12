@@ -1,0 +1,96 @@
+/*
+ * The internal definitions
+ *
+ * Copyright (c) 2008-2009, Joachim Metz <forensics@hoffmannbv.nl>,
+ * Hoffmann Investigations. All rights reserved.
+ *
+ * Refer to AUTHORS for acknowledgements.
+ *
+ * This software is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this software.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#if !defined( _LIBVMDK_INTERNAL_DEFINITIONS_H )
+#define _LIBVMDK_INTERNAL_DEFINITIONS_H
+
+#include <common.h>
+#include <endian.h>
+
+#define LIBVMDK_ENDIAN_BIG				_ENDIAN_BIG
+#define LIBVMDK_ENDIAN_LITTLE				_ENDIAN_LITTLE
+
+/* Define HAVE_LOCAL_LIBVMDK for local use of libvmdk
+ */
+#if !defined( HAVE_LOCAL_LIBVMDK )
+#include <libvmdk/definitions.h>
+
+/* The definitions in <libvmdk/definitions.h> are copied here
+ * for local use of libvmdk
+ */
+#else
+#define LIBVMDK_VERSION					@VERSION@
+
+/* The libvmdk version string
+ */
+#define LIBVMDK_VERSION_STRING				"@VERSION@"
+
+/* The libvmdk file access
+ * bit 1        set to 1 for read access
+ * bit 2        set to 1 for write access
+ * bit 3-8      not used
+ */
+#define LIBVMDK_FLAG_READ				0x01
+/* Reserved: not supported yet */
+#define LIBVMDK_FLAG_WRITE				0x02
+
+/* The libvmdk file access macros
+ */
+#define LIBVMDK_OPEN_READ				( LIBVMDK_FLAG_READ )
+/* Reserved: not supported yet */
+#define LIBVMDK_OPEN_WRITE				( LIBVMDK_FLAG_WRITE )
+/* Reserved: not supported yet */
+#define LIBVMDK_OPEN_READ_WRITE				( LIBVMDK_FLAG_READ | LIBVMDK_FLAG_WRITE )
+
+/* The file types
+ */
+enum LIBVMDK_FILE_TYPES
+{
+	LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA		= (int) 'c',
+	LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA		= (int) 'v'
+};
+
+/* The compression methods
+ */
+enum LIBVMDK_COMPRESSION_METHODS
+{
+	LIBVMDK_COMPRESSION_METHOD_NONE			= 0,
+	LIBVMDK_COMPRESSION_METHOD_DEFLATE		= 1
+};
+
+#endif
+
+#define LIBVMDK_SECTOR_SIZE				512
+
+/* The flags
+ */
+enum LIBVMDK_FLAGS
+{
+	LIBVMDK_FLAG_NEW_LINE_DETECION_VALID		= 0x00000001,
+	LIBVMDK_FLAG_USE_SECONDARY_GRAIN_DIRECTORY	= 0x00000002,
+
+	LIBVMDK_FLAG_USE_GRAIN_COMPRESSION		= 0x00010000,
+	LIBVMDK_FLAG_USE_DATA_MARKERS			= 0x00020000,
+};
+
+#endif
+
