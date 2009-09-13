@@ -33,6 +33,7 @@
 #include "libvmdk_io_handle.h"
 #include "libvmdk_file.h"
 #include "libvmdk_libbfio.h"
+#include "libvmdk_offset_table.h"
 
 /* Initialize a file
  * Make sure the value file is pointing to is set to NULL
@@ -89,6 +90,23 @@ int libvmdk_file_initialize(
 
 			return( -1 );
 		}
+		if( libvmdk_offset_table_initialize(
+		     &( internal_file->offset_table ),
+		     0,
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create offset table.",
+			 function );
+
+			memory_free(
+			 internal_file );
+
+			return( -1 );
+		}
 		if( libvmdk_io_handle_initialize(
 		     &( internal_file->io_handle ),
 		     error ) != 1 )
@@ -100,6 +118,9 @@ int libvmdk_file_initialize(
 			 "%s: unable to initialize io handle.",
 			 function );
 
+			libvmdk_offset_table_free(
+			 &( internal_file->offset_table ),
+			 NULL );
 			memory_free(
 			 internal_file );
 
@@ -136,6 +157,17 @@ int libvmdk_file_free(
 	{
 		internal_file = (libvmdk_internal_file_t *) *file;
 
+		if( libvmdk_offset_table_free(
+		     &( internal_file->offset_table ),
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free offset table.",
+			 function );
+		}
 		if( ( internal_file->io_handle != NULL )
 		 && ( libvmdk_io_handle_free(
 		       &( internal_file->io_handle ),
@@ -183,7 +215,7 @@ int libvmdk_file_signal_abort(
 	return( 1 );
 }
 
-/* Opens a Windows Shortcut file
+/* Opens a VMware Virtual Disk file
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_file_open(
@@ -236,7 +268,7 @@ int libvmdk_file_open(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: write access to Windows Shortcut files currently not supported.",
+		 "%s: write access to VMware Virtual Disk files currently not supported.",
 		 function );
 
 		return( -1 );
@@ -311,7 +343,7 @@ int libvmdk_file_open(
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
-/* Opens a Windows Shortcut file
+/* Opens a VMware Virtual Disk file
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_file_open_wide(
@@ -364,7 +396,7 @@ int libvmdk_file_open_wide(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: write access to Windows Shortcut files currently not supported.",
+		 "%s: write access to VMware Virtual Disk files currently not supported.",
 		 function );
 
 		return( -1 );
@@ -439,7 +471,7 @@ int libvmdk_file_open_wide(
 
 #endif
 
-/* Opens a Windows Shortcut file using a Basic File IO (bfio) handle
+/* Opens a VMware Virtual Disk file using a Basic File IO (bfio) handle
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_file_open_file_io_handle(
@@ -534,7 +566,7 @@ int libvmdk_file_open_file_io_handle(
 	return( 1 );
 }
 
-/* Closes a Windows Shortcut file
+/* Closes a VMware Virtual Disk file
  * Returns 0 if successful or -1 on error
  */
 int libvmdk_file_close(
@@ -585,7 +617,7 @@ int libvmdk_file_close(
 	return( result );
 }
 
-/* Opens a Windows Shortcut file for reading
+/* Opens a VMware Virtual Disk file for reading
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_file_open_read(
@@ -691,7 +723,7 @@ int libvmdk_file_open_read(
 
 		if( libvmdk_io_handle_read_grain_directory(
 		     internal_file->io_handle,
-		     NULL,
+		     internal_file->offset_table,
 		     grain_directory_offset,
 		     amount_of_grain_directory_entries,
 		     amount_of_grain_table_entries,
@@ -718,7 +750,7 @@ int libvmdk_file_open_read(
 
 		if( libvmdk_io_handle_read_grain_directory(
 		     internal_file->io_handle,
-		     NULL,
+		     internal_file->offset_table,
 		     secondary_grain_directory_offset,
 		     amount_of_grain_directory_entries,
 		     amount_of_grain_table_entries,

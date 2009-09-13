@@ -30,14 +30,7 @@
 
 #include "libvmdk_extern.h"
 #include "libvmdk_io_handle.h"
-
-#if defined( _MSC_VER ) || defined( __BORLANDC__ )
-
-/* This inclusion is needed otherwise some linkers
- * mess up exporting all functions
- */
-#include "libvmdk_link_information.h"
-#endif
+#include "libvmdk_offset_table.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -47,6 +40,10 @@ typedef struct libvmdk_internal_file libvmdk_internal_file_t;
 
 struct libvmdk_internal_file
 {
+	/* The grain offset table
+	 */
+	libvmdk_offset_table_t *offset_table;
+
 	/* The io handle
 	 */
 	libvmdk_io_handle_t *io_handle;

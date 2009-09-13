@@ -1,9 +1,17 @@
 TODO
 
+API
+* add functions to access storage media data
+
+library
+* implement grain cache
+* fill offset table
+* create handle to read a set of vmdk files
+* add support for VMDK markers
+
 File format
 * complete COWD support
-* fill offset table
-* create functions to access to grain data
+* addd support for descriptor file
 
 Deployment:
 * update manuals
@@ -11,6 +19,9 @@ Deployment:
 * update macosx package files
 * update codegear files
 * check msvcpp files
+
+20090913
+* worked on VMDK support
 
 20090912
 * initial version based on liblnk

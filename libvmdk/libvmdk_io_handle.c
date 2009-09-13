@@ -395,6 +395,30 @@ int libvmdk_io_handle_read_file_header(
 
 		return( -1 );
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	libnotify_verbose_printf(
+	 "%s: reading file header at offset: %" PRIu64 " (0x%08" PRIx64 ")\n",
+	 function,
+	 0,
+	 0 );
+#endif
+
+	if( libbfio_handle_seek_offset(
+	     io_handle->file_io_handle,
+	     0,
+	     SEEK_SET,
+	     error ) == -1 )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_IO,
+		 LIBERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek file header offset: %" PRIu64 ".",
+		 function,
+		 0 );
+
+		return( -1 );
+	}
 	file_header = (uint8_t *) memory_allocate(
 	                           sizeof( uint8_t ) * 4 );
 
@@ -880,7 +904,6 @@ int libvmdk_io_handle_read_grain_directory(
 
 		return( -1 );
 	}
-/* TODO
 	if( offset_table == NULL )
 	{
 		liberror_error_set(
@@ -892,8 +915,6 @@ int libvmdk_io_handle_read_grain_directory(
 
 		return( -1 );
 	}
-*/
-
 	grain_directory_data_size = amount_of_grain_directory_entries * sizeof( uint32_t );
 
 	if( grain_directory_data_size > (size_t) SSIZE_MAX )
@@ -994,7 +1015,7 @@ int libvmdk_io_handle_read_grain_directory(
 		 
 #if defined( HAVE_DEBUG_OUTPUT )
 		libnotify_verbose_printf(
-		 "%s: grain directory entry: %03" PRIu32 " offset: %" PRIu32 " (0x%08" PRIx32 ")\n",
+		 "%s: grain directory entry: %03" PRIu32 " offset: 0x%08" PRIx32 " (%" PRIu32 ")\n",
 		 function,
 		 grain_directory_entry_iterator,
 		 grain_table_offset,
@@ -1048,14 +1069,11 @@ int libvmdk_io_handle_read_grain_table(
      uint8_t is_secondary_grain_directory,
      liberror_error_t **error )
 {
-	uint8_t *grain_table_data           = NULL;
-	uint8_t *sector_blocks_data         = NULL;
-	static char *function               = "libvmdk_io_handle_read_grain_table";
-	size_t grain_table_data_size        = 0;
-	size_t sector_blocks_data_size      = 0;
-	ssize_t read_count                  = 0;
-	uint32_t grain_offset               = 0;
-	uint32_t grain_table_entry_iterator = 0;
+	uint8_t *sector_blocks_data    = NULL;
+	static char *function          = "libvmdk_io_handle_read_grain_table";
+	size_t grain_table_data_size   = 0;
+	size_t sector_blocks_data_size = 0;
+	ssize_t read_count             = 0;
 
 	if( io_handle == NULL )
 	{
@@ -1079,7 +1097,6 @@ int libvmdk_io_handle_read_grain_table(
 
 		return( -1 );
 	}
-/* TODO
 	if( offset_table == NULL )
 	{
 		liberror_error_set(
@@ -1091,8 +1108,6 @@ int libvmdk_io_handle_read_grain_table(
 
 		return( -1 );
 	}
-*/
-
 	grain_table_data_size = amount_of_grain_table_entries * sizeof( uint32_t );
 
 	if( grain_table_data_size > (size_t) SSIZE_MAX )
@@ -1181,31 +1196,53 @@ int libvmdk_io_handle_read_grain_table(
 	 sector_blocks_data_size );
 #endif
 
-	grain_table_data = sector_blocks_data;
+if( is_secondary_grain_directory ==  0 )
+{
 
-	for( grain_table_entry_iterator = 0;
-	     grain_table_entry_iterator < amount_of_grain_table_entries;
-	     grain_table_entry_iterator++ )
+	if( libvmdk_offset_table_fill(
+	     offset_table,
+	     sector_blocks_data,
+	     grain_table_data_size,
+	     amount_of_grain_table_entries,
+	     grain_size,
+	     error ) != 1 )
 	{
-		endian_little_convert_32bit(
-		 grain_offset,
-		 grain_table_data );
-		 
-#if defined( HAVE_DEBUG_OUTPUT )
-		libnotify_verbose_printf(
-		 "%s: grain table entry: %03" PRIu32 " offset: %" PRIu32 " (0x%08" PRIx32 ")\n",
-		 function,
-		 grain_table_entry_iterator,
-		 grain_offset,
-		 grain_offset );
-#endif
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to fill offset table.",
+		 function );
 
-		grain_offset *= LIBVMDK_SECTOR_SIZE;
+		memory_free(
+		 sector_blocks_data );
 
-		/* TODO fill offset table */
-
-		grain_table_data += sizeof( uint32_t );
+		return( -1 );
 	}
+}
+else
+{
+	if( libvmdk_offset_table_compare(
+	     offset_table,
+	     sector_blocks_data,
+	     grain_table_data_size,
+	     amount_of_grain_table_entries,
+	     grain_size,
+	     error ) != 1 )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to compare offset table.",
+		 function );
+
+		memory_free(
+		 sector_blocks_data );
+
+		return( -1 );
+	}
+}
 	/* TODO check if remainder of sector block is emtpy */
 
 	memory_free(

@@ -268,21 +268,16 @@ int libvmdk_offset_table_resize(
 int libvmdk_offset_table_fill(
      libvmdk_offset_table_t *offset_table,
      uint8_t *grain_table,
+     size_t grain_table_size,
      uint32_t amount_of_grain_table_entries,
-     uint8_t tainted,
+     size_t grain_size,
      liberror_error_t **error )
 {
-#if defined( HAVE_VERBOSE_OUTPUT )
-	char *remarks                        = NULL;
-#endif
-
 	libvmdk_grain_offset_t *grain_offset = NULL;
 	static char *function                = "libvmdk_offset_table_fill";
-	uint32_t grain_size                  = 0;
-	uint32_t current_offset              = 0;
-	uint32_t iterator                    = 0;
-	uint8_t corrupted                    = 0;
-	uint8_t overflow                     = 0;
+	off64_t current_offset               = 0;
+	size_t current_size                  = 0;
+	uint32_t grain_table_entry_iterator  = 0;
 
 	if( offset_table == NULL )
 	{
@@ -306,8 +301,61 @@ int libvmdk_offset_table_fill(
 
 		return( -1 );
 	}
-	/* TODO check size of grain table */
+	if( grain_table_size > (size_t) SSIZE_MAX )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid grain table size value exceeds maximum.",
+		 function );
 
+		return( -1 );
+	}
+	if( ( grain_table_size % 4 ) != 0 )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid grain table size not a multitude of 4.",
+		 function );
+
+		return( -1 );
+	}
+	if( amount_of_grain_table_entries != ( grain_table_size / 4 ) )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_VALUE_OUT_OF_RANGE,
+		 "%s: invalid amount of grain table entries size mismatch with calculated amount.",
+		 function );
+
+		return( -1 );
+	}
+	if( grain_size == 0 )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
+		 "%s: invalid grain size value zero or less.",
+		 function );
+
+		return( -1 );
+	}
+	if( grain_size > (size_t) SSIZE_MAX )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid grain size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
 	/* Allocate additional entries in the offset table if needed
 	 * - a single reallocation saves processing time
 	 */
@@ -328,83 +376,42 @@ int libvmdk_offset_table_fill(
 			return( -1 );
 		}
 	}
-	for( iterator = 0;
-	     iterator < amount_of_grain_table_entries;
-	     iterator++ )
+	for( grain_table_entry_iterator = 0;
+	     grain_table_entry_iterator < amount_of_grain_table_entries;
+	     grain_table_entry_iterator++ )
 	{
 		endian_little_convert_32bit(
 		 current_offset,
 		 grain_table );
 
-		if( grain_size == 0 )
-		{
-			libnotify_verbose_printf(
-			 "%s: invalid grain size value is zero.\n",
-			 function );
+		grain_table += sizeof( uint32_t );
 
-			corrupted = 1;
-		}
-		if( grain_size > (uint32_t) INT32_MAX )
-		{
-			libnotify_verbose_printf(
-			 "%s: invalid grain size value exceeds maximum.\n",
-			 function );
+		current_offset *= LIBVMDK_SECTOR_SIZE;
 
-			corrupted = 1;
-		}
-#if defined( HAVE_VERBOSE_OUTPUT )
-		if( corrupted != 0 )
+		if( current_offset == 0 )
 		{
-			remarks = " corrupted";
-		}
-		else if( tainted != 0 )
-		{
-			remarks = " tainted";
+			current_size = 0;
 		}
 		else
 		{
-			remarks = "";
+			current_size = grain_size;
 		}
+#if defined( HAVE_VERBOSE_OUTPUT )
 		libnotify_verbose_printf(
-		 "%s: grain %" PRIu32 " read with: base %" PRIu64 ", offset %" PRIu32 " and size %" PRIu32 "%s.\n",
+		 "%s: grain %" PRIu32 " read with offset 0x%08" PRIx64 " (%" PRIu64 ") and size %" PRIu32 ".\n",
 		 function,
-		 offset_table->last_grain_offset_filled + 1,
+		 offset_table->last_grain_offset_filled,
 		 current_offset,
-		 grain_size,
-		 remarks );
+		 current_offset,
+		 current_size );
 #endif
 
 		grain_offset = &( offset_table->grain_offset[ offset_table->last_grain_offset_filled ] );
 
-		grain_offset->file_offset = (off64_t) current_offset;
-		grain_offset->size        = (size_t) grain_size;
+		grain_offset->file_offset = current_offset;
+		grain_offset->size        = current_size;
 
-		if( corrupted != 0 )
-		{
-			grain_offset->flags |= LIBVMDK_GRAIN_OFFSET_FLAGS_CORRUPTED;
-		}
-		else if( tainted != 0 )
-		{
-			grain_offset->flags |= LIBVMDK_GRAIN_OFFSET_FLAGS_TAINTED;
-		}
 		offset_table->last_grain_offset_filled++;
-
-		/* This is to compensate for the crappy >2Gb segment file
-		 * solution in EnCase 6.7
-		 */
-		if( ( overflow == 0 )
-		 && ( ( current_offset + grain_size ) > (uint32_t) INT32_MAX ) )
-		{
-#if defined( HAVE_VERBOSE_OUTPUT )
-			libnotify_verbose_printf(
-			 "%s: grain offset overflow at: %" PRIu32 ".\n",
-			 function,
-			 current_offset );
-#endif
-
-			overflow   = 1;
-		}
-		iterator++;
 	}
 	return( 1 );
 }
@@ -415,8 +422,9 @@ int libvmdk_offset_table_fill(
 int libvmdk_offset_table_compare(
      libvmdk_offset_table_t *offset_table,
      uint8_t *grain_table,
+     size_t grain_table_size,
      uint32_t amount_of_grain_table_entries,
-     uint8_t tainted,
+     size_t grain_size,
      liberror_error_t **error )
 {
 #if defined( HAVE_VERBOSE_OUTPUT )
@@ -425,12 +433,10 @@ int libvmdk_offset_table_compare(
 
 	libvmdk_grain_offset_t *grain_offset = NULL;
 	static char *function                = "libvmdk_offset_table_compare";
-	uint32_t grain_size                  = 0;
-	uint32_t current_offset              = 0;
-	uint32_t iterator                    = 0;
-	uint8_t corrupted                    = 0;
+	off64_t current_offset               = 0;
+	size_t current_size                  = 0;
+	uint32_t grain_table_entry_iterator  = 0;
 	uint8_t mismatch                     = 0;
-	uint8_t overflow                     = 0;
 
 	if( offset_table == NULL )
 	{
@@ -454,70 +460,108 @@ int libvmdk_offset_table_compare(
 
 		return( -1 );
 	}
-	/* Allocate additional entries in the offset table if needed
-	 * - a single reallocation saves processing time
-	 */
-	if( ( offset_table->amount_of_grain_offsets < ( offset_table->last_grain_offset_compared + amount_of_grain_table_entries ) )
-	 && ( libvmdk_offset_table_resize(
-	       offset_table,
-	       offset_table->last_grain_offset_compared + amount_of_grain_table_entries,
-	       error ) != 1 ) )
+	if( grain_table_size > (size_t) SSIZE_MAX )
 	{
 		liberror_error_set(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_RESIZE_FAILED,
-		 "%s: unable to resize offset table.",
+		 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid grain table size value exceeds maximum.",
 		 function );
 
 		return( -1 );
 	}
-	for( iterator = 0;
-	     iterator < amount_of_grain_table_entries;
-	     iterator++ )
+	if( ( grain_table_size % 4 ) != 0 )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: invalid grain table size not a multitude of 4.",
+		 function );
+
+		return( -1 );
+	}
+	if( amount_of_grain_table_entries != ( grain_table_size / 4 ) )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_VALUE_OUT_OF_RANGE,
+		 "%s: invalid amount of grain table entries size mismatch with calculated amount.",
+		 function );
+
+		return( -1 );
+	}
+	if( grain_size == 0 )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
+		 "%s: invalid grain size value zero or less.",
+		 function );
+
+		return( -1 );
+	}
+	if( grain_size > (size_t) SSIZE_MAX )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid grain size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	/* Allocate additional entries in the offset table if needed
+	 * - a single reallocation saves processing time
+	 */
+	if( offset_table->amount_of_grain_offsets < ( offset_table->last_grain_offset_compared + amount_of_grain_table_entries ) )
+	{
+		if( libvmdk_offset_table_resize(
+		     offset_table,
+		     offset_table->last_grain_offset_compared + amount_of_grain_table_entries,
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBERROR_RUNTIME_ERROR_RESIZE_FAILED,
+			 "%s: unable to resize offset table.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	for( grain_table_entry_iterator = 0;
+	     grain_table_entry_iterator < amount_of_grain_table_entries;
+	     grain_table_entry_iterator++ )
 	{
 		endian_little_convert_32bit(
 		 current_offset,
 		 grain_table );
 
-		if( grain_size == 0 )
-		{
-#if defined( HAVE_VERBOSE_OUTPUT )
-			libnotify_verbose_printf(
-			 "%s: invalid grain size - size is zero.\n",
-			 function );
-#endif
+		grain_table += sizeof( uint32_t );
 
-			corrupted = 1;
+		current_offset *= LIBVMDK_SECTOR_SIZE;
+
+		if( current_offset == 0 )
+		{
+			current_size = 0;
 		}
-		if( grain_size > (uint32_t) INT32_MAX )
+		else
 		{
-#if defined( HAVE_VERBOSE_OUTPUT )
-			libnotify_verbose_printf(
-			 "%s: invalid grain size value exceeds maximum.\n",
-			 function );
-#endif
-
-			corrupted = 1;
+			current_size = grain_size;
 		}
 		grain_offset = &( offset_table->grain_offset[ offset_table->last_grain_offset_compared ] );
 
-		if( grain_offset->file_offset != (off64_t) current_offset )
+		if( grain_offset->file_offset != current_offset )
 		{
 #if defined( HAVE_VERBOSE_OUTPUT )
 			libnotify_verbose_printf(
 			 "%s: file offset mismatch for grain offset: %" PRIu32 ".\n",
-			 function,
-			 offset_table->last_grain_offset_compared );
-#endif
-
-			mismatch = 1;
-		}
-		else if( grain_offset->size != (size_t) grain_size )
-		{
-#if defined( HAVE_VERBOSE_OUTPUT )
-			libnotify_verbose_printf(
-			 "%s: grain size mismatch for grain offset: %" PRIu32 ".\n",
 			 function,
 			 offset_table->last_grain_offset_compared );
 #endif
@@ -529,57 +573,29 @@ int libvmdk_offset_table_compare(
 			mismatch = 0;
 		}
 #if defined( HAVE_VERBOSE_OUTPUT )
-		if( corrupted != 0 )
+		if( mismatch == 1 )
 		{
 			remarks = " corrupted";
-		}
-		else if( tainted != 0 )
-		{
-			remarks = " tainted";
-		}
-		else if( mismatch == 1 )
-		{
-			remarks = " corrected";
 		}
 		else
 		{
 			remarks = "";
 		}
 		libnotify_verbose_printf(
-		 "%s: grain %" PRIu32 " read with offset %" PRIu32 " and size %" PRIu32 "%s.\n",
+		 "%s: grain %" PRIu32 " read with offset 0x%08" PRIu64 " (%" PRIu64 ") and size %" PRIu32 "%s.\n",
 		 function,
-		 offset_table->last_grain_offset_compared + 1,
+		 offset_table->last_grain_offset_compared,
+		 current_offset,
 		 current_offset,
 		 grain_size,
 		 remarks );
 #endif
 
-		if( ( corrupted == 0 )
-		 && ( tainted == 0 )
-		 && ( mismatch == 1 ) )
+		if( mismatch == 1 )
 		{
-			grain_offset->file_offset = (off64_t) current_offset;
-			grain_offset->size        = (size_t) grain_size;
-			grain_offset->flags       &= ~ ( LIBVMDK_GRAIN_OFFSET_FLAGS_TAINTED | LIBVMDK_GRAIN_OFFSET_FLAGS_CORRUPTED ) ;
+			grain_offset->flags &= ~ ( LIBVMDK_GRAIN_OFFSET_FLAGS_CORRUPTED );
 		}
 		offset_table->last_grain_offset_compared++;
-
-		/* This is to compensate for the crappy >2Gb segment file
-		 * solution in EnCase 6.7
-		 */
-		if( ( overflow == 0 )
-		 && ( ( current_offset + grain_size ) > (uint32_t) INT32_MAX ) )
-		{
-#if defined( HAVE_VERBOSE_OUTPUT )
-			libnotify_verbose_printf(
-			 "%s: grain offset overflow at: %" PRIu32 ".\n",
-			 function,
-			 current_offset );
-#endif
-
-			overflow   = 1;
-		}
-		iterator++;
 	}
 	return( 1 );
 }

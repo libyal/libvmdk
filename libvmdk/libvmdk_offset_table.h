@@ -74,15 +74,17 @@ int libvmdk_offset_table_resize(
 int libvmdk_offset_table_fill(
      libvmdk_offset_table_t *offset_table,
      uint8_t *grain_table,
+     size_t grain_table_size,
      uint32_t amount_of_grain_table_entries,
-     uint8_t tainted,
+     size64_t grain_size,
      liberror_error_t **error );
 
 int libvmdk_offset_table_compare(
      libvmdk_offset_table_t *offset_table,
      uint8_t *grain_table,
+     size_t grain_table_size,
      uint32_t amount_of_grain_table_entries,
-     uint8_t tainted,
+     size64_t grain_size,
      liberror_error_t **error );
 
 off64_t libvmdk_offset_table_seek_grain_offset(

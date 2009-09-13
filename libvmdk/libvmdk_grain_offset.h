@@ -31,9 +31,8 @@ extern "C" {
 #endif
 
 #define LIBVMDK_GRAIN_OFFSET_FLAGS_COMPRESSED	0x01
-#define LIBVMDK_GRAIN_OFFSET_FLAGS_TAINTED 	0x02
-#define LIBVMDK_GRAIN_OFFSET_FLAGS_CORRUPTED 	0x04
-#define LIBVMDK_GRAIN_OFFSET_FLAGS_MISSING 	0x08
+#define LIBVMDK_GRAIN_OFFSET_FLAGS_CORRUPTED	0x04
+#define LIBVMDK_GRAIN_OFFSET_FLAGS_DELTA_GRAIN	0x08
 
 typedef struct libvmdk_grain_offset libvmdk_grain_offset_t;
 
@@ -49,9 +48,8 @@ struct libvmdk_grain_offset
 
 	/* Flags
 	 * 0x01 indicates if the grain is compressed
-	 * 0x02 indicates if the grain is tainted and possibly corrupted
 	 * 0x04 indicates if the grain is corrupted
-	 * 0x08 indicates if the grain is missing
+	 * 0x80 indicates if the grain is a delta grain
 	 */
 	uint8_t flags;
 };
