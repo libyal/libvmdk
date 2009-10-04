@@ -20,6 +20,10 @@ Deployment:
 * update codegear files
 * check msvcpp files
 
+20091004
+* updated acinclude
+* updated libuna, libbfio, common, libsystem, liberror, libnotify
+
 20090913
 * worked on VMDK support
 

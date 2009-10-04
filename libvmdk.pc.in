@@ -7,6 +7,6 @@ Name: libvmdk
 Description: Library to support the VMware Virtual Disk (VMDK) format
 Version: @VERSION@
 Libs: -L${libdir} -lvmdk
-Libs.private: @libvmdk_pc_libs_private_libbfio@ @libvmdk_pc_libs_private_libfdatetime@ @libvmdk_pc_libs_private_libuna@
+Libs.private: @libvmdk_pc_libs_private_libbfio@ @libvmdk_pc_libs_private_libuna@
 Cflags: -I${includedir}
 

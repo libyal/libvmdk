@@ -7,8 +7,8 @@ License: LGPL
 Source: %{name}-%{version}.tar.gz
 URL: http://libvmdk.sourceforge.net
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-@libvmdk_spec_requires@ @libppf_spec_requires_libbfio@ @libppf_spec_requires_libfdatetime@ @libppf_spec_requires_libuna@
-@libvmdk_spec_build_requires@ @libppf_spec_build_requires_libbfio@ @libppf_spec_build_requires_libfdatetime@ @libppf_spec_build_requires_libuna@
+@libvmdk_spec_requires@ @libppf_spec_requires_libbfio@ @libppf_spec_requires_libuna@
+@libvmdk_spec_build_requires@ @libppf_spec_build_requires_libbfio@ @libppf_spec_build_requires_libuna@
 
 %description
 libvmdk is a library to support the VMware Virtual Disk (VMDK) format 

@@ -13,8 +13,6 @@ AM_LDFLAGS = @STATIC_LDFLAGS@
 bin_PROGRAMS = vmdkinfo
 
 vmdkinfo_SOURCES = \
-	filetime.c filetime.h \
-	guid.c guid.h \
 	vmdkinfo.c \
 	vmdkoutput.c vmdkoutput.h
 

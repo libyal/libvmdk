@@ -47,7 +47,6 @@
 
 #include <libsystem.h>
 
-#include "filetime.h"
 #include "vmdkoutput.h"
 
 /* Prints the executable usage information
@@ -121,8 +120,8 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libvmdk_error_t *error         = NULL;
-	libvmdk_file_t *vmdk_file       = NULL;
+	libvmdk_error_t *error        = NULL;
+	libvmdk_file_t *vmdk_file     = NULL;
 	libsystem_character_t *source = NULL;
 	char *program                 = "vmdkinfo";
 	libsystem_integer_t option    = 0;
