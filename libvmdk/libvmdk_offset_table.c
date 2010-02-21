@@ -1,8 +1,7 @@
 /*
  * Offset table functions
  *
- * Copyright (c) 2006-2009, Joachim Metz <forensics@hoffmannbv.nl>,
- * Hoffmann Investigations. All rights reserved.
+ * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -21,7 +20,7 @@
  */
 
 #include <common.h>
-#include <endian.h>
+#include <byte_stream.h>
 #include <memory.h>
 #include <types.h>
 
@@ -380,9 +379,9 @@ int libvmdk_offset_table_fill(
 	     grain_table_entry_iterator < amount_of_grain_table_entries;
 	     grain_table_entry_iterator++ )
 	{
-		endian_little_convert_32bit(
-		 current_offset,
-		 grain_table );
+		byte_stream_copy_to_uint32_little_endian(
+		 grain_table,
+		 current_offset );
 
 		grain_table += sizeof( uint32_t );
 
@@ -397,13 +396,16 @@ int libvmdk_offset_table_fill(
 			current_size = grain_size;
 		}
 #if defined( HAVE_VERBOSE_OUTPUT )
-		libnotify_verbose_printf(
-		 "%s: grain %" PRIu32 " read with offset 0x%08" PRIx64 " (%" PRIu64 ") and size %" PRIu32 ".\n",
-		 function,
-		 offset_table->last_grain_offset_filled,
-		 current_offset,
-		 current_offset,
-		 current_size );
+		if( libnotify_verbose != 0 )
+		{
+			libnotify_printf(
+			 "%s: grain %" PRIu32 " read with offset 0x%08" PRIx64 " (%" PRIu64 ") and size %" PRIu32 ".\n",
+			 function,
+			 offset_table->last_grain_offset_filled,
+			 current_offset,
+			 current_offset,
+			 current_size );
+		}
 #endif
 
 		grain_offset = &( offset_table->grain_offset[ offset_table->last_grain_offset_filled ] );
@@ -539,9 +541,9 @@ int libvmdk_offset_table_compare(
 	     grain_table_entry_iterator < amount_of_grain_table_entries;
 	     grain_table_entry_iterator++ )
 	{
-		endian_little_convert_32bit(
-		 current_offset,
-		 grain_table );
+		byte_stream_copy_to_uint32_little_endian(
+		 grain_table,
+		 current_offset );
 
 		grain_table += sizeof( uint32_t );
 
@@ -560,10 +562,13 @@ int libvmdk_offset_table_compare(
 		if( grain_offset->file_offset != current_offset )
 		{
 #if defined( HAVE_VERBOSE_OUTPUT )
-			libnotify_verbose_printf(
-			 "%s: file offset mismatch for grain offset: %" PRIu32 ".\n",
-			 function,
-			 offset_table->last_grain_offset_compared );
+			if( libnotify_verbose != 0 )
+			{
+				libnotify_printf(
+				 "%s: file offset mismatch for grain offset: %" PRIu32 ".\n",
+				 function,
+				 offset_table->last_grain_offset_compared );
+			}
 #endif
 
 			mismatch = 1;
@@ -573,22 +578,25 @@ int libvmdk_offset_table_compare(
 			mismatch = 0;
 		}
 #if defined( HAVE_VERBOSE_OUTPUT )
-		if( mismatch == 1 )
+		if( libnotify_verbose != 0 )
 		{
-			remarks = " corrupted";
+			if( mismatch == 1 )
+			{
+				remarks = " corrupted";
+			}
+			else
+			{
+				remarks = "";
+			}
+			libnotify_printf(
+			 "%s: grain %" PRIu32 " read with offset 0x%08" PRIu64 " (%" PRIu64 ") and size %" PRIu32 "%s.\n",
+			 function,
+			 offset_table->last_grain_offset_compared,
+			 current_offset,
+			 current_offset,
+			 grain_size,
+			 remarks );
 		}
-		else
-		{
-			remarks = "";
-		}
-		libnotify_verbose_printf(
-		 "%s: grain %" PRIu32 " read with offset 0x%08" PRIu64 " (%" PRIu64 ") and size %" PRIu32 "%s.\n",
-		 function,
-		 offset_table->last_grain_offset_compared,
-		 current_offset,
-		 current_offset,
-		 grain_size,
-		 remarks );
 #endif
 
 		if( mismatch == 1 )

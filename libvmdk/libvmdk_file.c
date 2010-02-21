@@ -1,8 +1,7 @@
 /*
- * libvmdk file
+ * File functions
  *
- * Copyright (c) 2008-2009, Joachim Metz <forensics@hoffmannbv.nl>,
- * Hoffmann Investigations. All rights reserved.
+ * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -115,7 +114,7 @@ int libvmdk_file_initialize(
 			 error,
 			 LIBERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to initialize io handle.",
+			 "%s: unable to create io handle.",
 			 function );
 
 			libvmdk_offset_table_free(
@@ -156,6 +155,7 @@ int libvmdk_file_free(
 	if( *file != NULL )
 	{
 		internal_file = (libvmdk_internal_file_t *) *file;
+		*file         = NULL;
 
 		if( libvmdk_offset_table_free(
 		     &( internal_file->offset_table ),
@@ -167,25 +167,27 @@ int libvmdk_file_free(
 			 LIBERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 			 "%s: unable to free offset table.",
 			 function );
-		}
-		if( ( internal_file->io_handle != NULL )
-		 && ( libvmdk_io_handle_free(
-		       &( internal_file->io_handle ),
-		       error ) != 1 ) )
-		{
-			liberror_error_set(
-			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free io handle.",
-			 function );
 
 			result = -1;
 		}
+		if( internal_file->io_handle != NULL )
+		{
+			if( libvmdk_io_handle_free(
+			     &( internal_file->io_handle ),
+			     error ) != 1 )
+			{
+				liberror_error_set(
+				 error,
+				 LIBERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free io handle.",
+				 function );
+
+				result = -1;
+			}
+		}
 		memory_free(
 		 internal_file );
-
-		*file = NULL;
 	}
 	return( result );
 }
@@ -283,7 +285,7 @@ int libvmdk_file_open(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to initialize file io handle.",
+		 "%s: unable to create file io handle.",
 		 function );
 
 		return( -1 );
@@ -300,6 +302,10 @@ int libvmdk_file_open(
                  LIBERROR_RUNTIME_ERROR_SET_FAILED,
                  "%s: unable to set track offsets read in file io handle.",
                  function );
+
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
 
                 return( -1 );
 	}
@@ -318,6 +324,10 @@ int libvmdk_file_open(
                  "%s: unable to set filename in file io handle.",
                  function );
 
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
+
                 return( -1 );
 	}
 	if( libvmdk_file_open_file_io_handle(
@@ -333,6 +343,10 @@ int libvmdk_file_open(
 		 "%s: unable to open file: %s.",
 		 function,
 		 filename );
+
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
 
 		return( -1 );
 	}
@@ -411,7 +425,7 @@ int libvmdk_file_open_wide(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to initialize file io handle.",
+		 "%s: unable to create file io handle.",
 		 function );
 
 		return( -1 );
@@ -428,6 +442,10 @@ int libvmdk_file_open_wide(
                  LIBERROR_RUNTIME_ERROR_SET_FAILED,
                  "%s: unable to set track offsets read in file io handle.",
                  function );
+
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
 
                 return( -1 );
 	}
@@ -446,6 +464,10 @@ int libvmdk_file_open_wide(
                  "%s: unable to set filename in file io handle.",
                  function );
 
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
+
                 return( -1 );
 	}
 	if( libvmdk_file_open_file_io_handle(
@@ -461,6 +483,10 @@ int libvmdk_file_open_wide(
 		 "%s: unable to open file: %ls.",
 		 function,
 		 filename );
+
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
 
 		return( -1 );
 	}
@@ -657,8 +683,11 @@ int libvmdk_file_open_read(
 		return( -1 );
 	}
 #if defined( HAVE_VERBOSE_OUTPUT )
-	libnotify_verbose_printf(
-	 "Reading file header:\n" );
+	if( libnotify_verbose != 0 )
+	{
+		libnotify_printf(
+		 "Reading file header:\n" );
+	}
 #endif
 
 	if( libvmdk_io_handle_read_file_header(
@@ -696,8 +725,11 @@ int libvmdk_file_open_read(
 			return( -1 );
 		}
 #if defined( HAVE_VERBOSE_OUTPUT )
-		libnotify_verbose_printf(
-		 "Reading descriptor:\n" );
+		if( libnotify_verbose != 0 )
+		{
+			libnotify_printf(
+			 "Reading descriptor:\n" );
+		}
 #endif
 
 		/* TODO read descriptor */
@@ -717,8 +749,11 @@ int libvmdk_file_open_read(
 	if( grain_directory_offset > 0 )
 	{
 #if defined( HAVE_VERBOSE_OUTPUT )
-		libnotify_verbose_printf(
-		 "Reading (primary) grain directory:\n" );
+		if( libnotify_verbose != 0 )
+		{
+			libnotify_printf(
+			 "Reading (primary) grain directory:\n" );
+		}
 #endif
 
 		if( libvmdk_io_handle_read_grain_directory(
@@ -744,8 +779,11 @@ int libvmdk_file_open_read(
 	if( secondary_grain_directory_offset > 0 )
 	{
 #if defined( HAVE_VERBOSE_OUTPUT )
-		libnotify_verbose_printf(
-		 "Reading secondary grain directory:\n" );
+		if( libnotify_verbose != 0 )
+		{
+			libnotify_printf(
+			 "Reading secondary grain directory:\n" );
+		}
 #endif
 
 		if( libvmdk_io_handle_read_grain_directory(

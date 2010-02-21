@@ -69,6 +69,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_mandir}/man1/*
 
 %changelog
-* Sat Sep 12 2009 Joachim Metz <forensics@hoffmannbv.nl> 20090912-1
+* Sat Sep 12 2009 Joachim Metz <jbmetz@users.sourceforge.net> 20090912-1
 - Initial version based on liblnk spec file
 

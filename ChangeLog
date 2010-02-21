@@ -1,4 +1,5 @@
 TODO
+* move file io handle into libvmdk_file
 
 API
 * add functions to access storage media data
@@ -19,6 +20,12 @@ Deployment:
 * update macosx package files
 * update codegear files
 * check msvcpp files
+
+20100221
+* updated common, liberror, libuna, libbfio
+* libvmdk 2010 update
+* worked on byte stream update
+* worked on libnotify update
 
 20091004
 * updated acinclude

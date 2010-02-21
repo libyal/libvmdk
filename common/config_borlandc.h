@@ -1,8 +1,9 @@
 /*
  * Configuration file for Borland/CodeGear C++ Builder compiler
  *
- * Copyright (c) 2006-2009, Joachim Metz <forensics@hoffmannbv.nl>,
- * Hoffmann Investigations. All rights reserved.
+ * Copyright (c) 2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2006-2010, Joachim Metz <forensics@hoffmannbv.nl>,
+ * Hoffmann Investigations.
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -68,8 +69,6 @@
 /* Enable debug output
 #define HAVE_DEBUG_OUTPUT       1
  */
-
-#define HAVE_V1_API		1
 
 #endif
 

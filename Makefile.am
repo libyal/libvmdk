@@ -11,7 +11,6 @@ SUBDIRS = \
 	libsystem \
 	vmdktools \
 	manuals \
-	macosx \
 	msvscpp
 
 REDHAT_FILES = \

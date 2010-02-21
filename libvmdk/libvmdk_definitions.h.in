@@ -1,8 +1,7 @@
 /*
  * The internal definitions
  *
- * Copyright (c) 2008-2009, Joachim Metz <forensics@hoffmannbv.nl>,
- * Hoffmann Investigations. All rights reserved.
+ * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -24,10 +23,10 @@
 #define _LIBVMDK_INTERNAL_DEFINITIONS_H
 
 #include <common.h>
-#include <endian.h>
+#include <byte_stream.h>
 
-#define LIBVMDK_ENDIAN_BIG				_ENDIAN_BIG
-#define LIBVMDK_ENDIAN_LITTLE				_ENDIAN_LITTLE
+#define LIBVMDK_ENDIAN_BIG				_BYTE_STREAM_ENDIAN_BIG
+#define LIBVMDK_ENDIAN_LITTLE				_BYTE_STREAM_ENDIAN_LITTLE
 
 /* Define HAVE_LOCAL_LIBVMDK for local use of libvmdk
  */

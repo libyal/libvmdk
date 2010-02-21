@@ -1,8 +1,7 @@
 /*
  * Support functions
  *
- * Copyright (c) 2008-2009, Joachim Metz <forensics@hoffmannbv.nl>,
- * Hoffmann Investigations. All rights reserved.
+ * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -51,7 +50,7 @@ LIBVMDK_EXTERN int libvmdk_check_file_signature_wide(
 #endif
 
 LIBVMDK_EXTERN int libvmdk_check_file_signature_file_io_handle(
-                    libbfio_handle_t *bfio_handle,
+                    libbfio_handle_t *file_io_handle,
                     liberror_error_t **error );
 
 #if defined( __cplusplus )

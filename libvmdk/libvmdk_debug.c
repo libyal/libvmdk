@@ -1,8 +1,7 @@
 /*
  * Debug functions
  *
- * Copyright (c) 2008-2009, Joachim Metz <forensics@hoffmannbv.nl>,
- * Hoffmann Investigations. All rights reserved.
+ * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -43,34 +42,34 @@ int libvmdk_debug_print_flags(
 {
 	static char *function = "libvmdk_debug_print_flags";
 
-	libnotify_verbose_printf(
+	libnotify_printf(
 	 "%s: flags: 0x%08" PRIx32 "\n",
 	 function,
 	 flags );
 
-	if( ( flags & LIBVMDK_FLAG_NEW_LINE_DETECION_VALID ) == LIBVMDK_FLAG_NEW_LINE_DETECION_VALID )
+	if( ( flags & LIBVMDK_FLAG_NEW_LINE_DETECION_VALID ) != 0 )
 	{
-		libnotify_verbose_printf(
+		libnotify_printf(
 		 "\tNew line detection valid\n" );
 	}
-	if( ( flags & LIBVMDK_FLAG_USE_SECONDARY_GRAIN_DIRECTORY ) == LIBVMDK_FLAG_USE_SECONDARY_GRAIN_DIRECTORY )
+	if( ( flags & LIBVMDK_FLAG_USE_SECONDARY_GRAIN_DIRECTORY ) != 0 )
 	{
-		libnotify_verbose_printf(
+		libnotify_printf(
 		 "\tUse secondary grain directory\n" );
 	}
 
-	if( ( flags & LIBVMDK_FLAG_USE_GRAIN_COMPRESSION ) == LIBVMDK_FLAG_USE_GRAIN_COMPRESSION )
+	if( ( flags & LIBVMDK_FLAG_USE_GRAIN_COMPRESSION ) != 0 )
 	{
-		libnotify_verbose_printf(
+		libnotify_printf(
 		 "\tUse grain compression\n" );
 	}
-	if( ( flags & LIBVMDK_FLAG_USE_DATA_MARKERS ) == LIBVMDK_FLAG_USE_DATA_MARKERS )
+	if( ( flags & LIBVMDK_FLAG_USE_DATA_MARKERS ) != 0 )
 	{
-		libnotify_verbose_printf(
+		libnotify_printf(
 		 "\tUse data markers\n" );
 	}
 
-	libnotify_verbose_printf(
+	libnotify_printf(
 	 "\n" );
 
 	return( 1 );
@@ -114,7 +113,7 @@ int libvmdk_debug_print_read_offsets(
 
 		return( -1 );
 	}
-	libnotify_verbose_printf(
+	libnotify_printf(
 	 "Offsets read:\n" );
 
 	for( offset_iterator = 0; offset_iterator < amount_of_offsets; offset_iterator++ )
@@ -136,7 +135,7 @@ int libvmdk_debug_print_read_offsets(
 
 			return( -1 );
 		}
-		libnotify_verbose_printf(
+		libnotify_printf(
 		 "%08" PRIu64 " ( 0x%08" PRIx64 " ) - %08" PRIu64 " ( 0x%08" PRIx64 " ) size: %" PRIu64 "\n",
 		 offset,
 		 offset,
@@ -144,7 +143,7 @@ int libvmdk_debug_print_read_offsets(
 		 ( offset + size ),
 		 size );
 	}
-	libnotify_verbose_printf(
+	libnotify_printf(
 	 "\n" );
 
 	return( 1 );

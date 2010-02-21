@@ -1,8 +1,7 @@
 /*
  * libvmdk Input/Output (IO) handle
  *
- * Copyright (c) 2008-2009, Joachim Metz <forensics@hoffmannbv.nl>,
- * Hoffmann Investigations. All rights reserved.
+ * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -21,7 +20,7 @@
  */
 
 #include <common.h>
-#include <endian.h>
+#include <byte_stream.h>
 #include <memory.h>
 #include <types.h>
 
@@ -282,7 +281,7 @@ int libvmdk_io_handle_read_file_header(
 	uint32_t flags        = 0;
 
 #if defined( HAVE_VERBOSE_OUTPUT )
-	uint64_t test         = 0;
+	uint64_t value_64bit  = 0;
 #endif
 
 	if( io_handle == NULL )
@@ -396,11 +395,12 @@ int libvmdk_io_handle_read_file_header(
 		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
-	libnotify_verbose_printf(
-	 "%s: reading file header at offset: %" PRIu64 " (0x%08" PRIx64 ")\n",
-	 function,
-	 0,
-	 0 );
+	if( libnotify_verbose != 0 )
+	{
+		libnotify_printf(
+		 "%s: reading file header at offset: 0 (0x00000000)\n",
+		 function );
+	}
 #endif
 
 	if( libbfio_handle_seek_offset(
@@ -413,9 +413,8 @@ int libvmdk_io_handle_read_file_header(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_IO,
 		 LIBERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek file header offset: %" PRIu64 ".",
-		 function,
-		 0 );
+		 "%s: unable to seek file header offset: 0.",
+		 function );
 
 		return( -1 );
 	}
@@ -445,7 +444,7 @@ int libvmdk_io_handle_read_file_header(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_IO,
 		 LIBERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read file signature.",
+		 "%s: unable to read file header.",
 		 function );
 
 		memory_free(
@@ -524,175 +523,181 @@ int libvmdk_io_handle_read_file_header(
 		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
-	libnotify_verbose_printf(
-	 "%s: file header:\n",
-	 function );
-	libnotify_verbose_print_data(
-	 file_header,
-	 read_size );
+	if( libnotify_verbose != 0 )
+	{
+		libnotify_printf(
+		 "%s: file header:\n",
+		 function );
+		libnotify_print_data(
+		 file_header,
+		 read_size );
+	}
 #endif
 
 	if( io_handle->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
 	{
-		endian_little_convert_32bit(
-		 *version,
-		 ( (cowd_sparse_file_header_t *) file_header )->version );
-		endian_little_convert_32bit(
-		 flags,
-		 ( (cowd_sparse_file_header_t *) file_header )->flags );
+		byte_stream_copy_to_uint32_little_endian(
+		 ( (cowd_sparse_file_header_t *) file_header )->version,
+		 *version );
+		byte_stream_copy_to_uint32_little_endian(
+		 ( (cowd_sparse_file_header_t *) file_header )->flags,
+		 flags );
 
-		endian_little_convert_32bit(
-		 io_handle->maximum_data_size,
-		 ( (cowd_sparse_file_header_t *) file_header )->maximum_data_size );
-		endian_little_convert_32bit(
-		 *grain_size,
-		 ( (cowd_sparse_file_header_t *) file_header )->grain_size );
+		byte_stream_copy_to_uint32_little_endian(
+		 ( (cowd_sparse_file_header_t *) file_header )->maximum_data_size,
+		 io_handle->maximum_data_size );
+		byte_stream_copy_to_uint32_little_endian(
+		 ( (cowd_sparse_file_header_t *) file_header )->grain_size,
+		 *grain_size );
 
-		endian_little_convert_32bit(
-		 *grain_directory_offset,
-		 ( (cowd_sparse_file_header_t *) file_header )->grain_directory_offset );
-		endian_little_convert_32bit(
-		 *amount_of_grain_directory_entries,
-		 ( (cowd_sparse_file_header_t *) file_header )->amount_of_grain_directory_entries );
+		byte_stream_copy_to_uint32_little_endian(
+		 ( (cowd_sparse_file_header_t *) file_header )->grain_directory_offset,
+		 *grain_directory_offset );
+		byte_stream_copy_to_uint32_little_endian(
+		 ( (cowd_sparse_file_header_t *) file_header )->amount_of_grain_directory_entries,
+		 *amount_of_grain_directory_entries );
 
 		/* TODO */
 	}
 	else if( io_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
-		endian_little_convert_32bit(
-		 *version,
-		 ( (vmdk_sparse_file_header_t *) file_header )->version );
-		endian_little_convert_32bit(
-		 flags,
-		 ( (vmdk_sparse_file_header_t *) file_header )->flags );
+		byte_stream_copy_to_uint32_little_endian(
+		 ( (vmdk_sparse_file_header_t *) file_header )->version,
+		 *version );
+		byte_stream_copy_to_uint32_little_endian(
+		 ( (vmdk_sparse_file_header_t *) file_header )->flags,
+		 flags );
 
-		endian_little_convert_64bit(
-		 io_handle->maximum_data_size,
-		 ( (vmdk_sparse_file_header_t *) file_header )->maximum_data_size );
-		endian_little_convert_64bit(
-		 *grain_size,
-		 ( (vmdk_sparse_file_header_t *) file_header )->grain_size );
+		byte_stream_copy_to_uint64_little_endian(
+		 ( (vmdk_sparse_file_header_t *) file_header )->maximum_data_size,
+		 io_handle->maximum_data_size );
+		byte_stream_copy_to_uint64_little_endian(
+		 ( (vmdk_sparse_file_header_t *) file_header )->grain_size,
+		 *grain_size );
 
-		endian_little_convert_64bit(
-		 *descriptor_offset,
-		 ( (vmdk_sparse_file_header_t *) file_header )->descriptor_offset );
-		endian_little_convert_64bit(
-		 *descriptor_size,
-		 ( (vmdk_sparse_file_header_t *) file_header )->descriptor_size );
+		byte_stream_copy_to_uint64_little_endian(
+		 ( (vmdk_sparse_file_header_t *) file_header )->descriptor_offset,
+		 *descriptor_offset );
+		byte_stream_copy_to_uint64_little_endian(
+		 ( (vmdk_sparse_file_header_t *) file_header )->descriptor_size,
+		 *descriptor_size );
 
-		endian_little_convert_32bit(
-		 *amount_of_grain_table_entries,
-		 ( (vmdk_sparse_file_header_t *) file_header )->amount_of_grain_table_entries );
+		byte_stream_copy_to_uint32_little_endian(
+		 ( (vmdk_sparse_file_header_t *) file_header )->amount_of_grain_table_entries,
+		 *amount_of_grain_table_entries );
 
-		endian_little_convert_64bit(
-		 *secondary_grain_directory_offset,
-		 ( (vmdk_sparse_file_header_t *) file_header )->secondary_grain_directory_offset );
-		endian_little_convert_64bit(
-		 *grain_directory_offset,
-		 ( (vmdk_sparse_file_header_t *) file_header )->grain_directory_offset );
+		byte_stream_copy_to_uint64_little_endian(
+		 ( (vmdk_sparse_file_header_t *) file_header )->secondary_grain_directory_offset,
+		 *secondary_grain_directory_offset );
+		byte_stream_copy_to_uint64_little_endian(
+		 ( (vmdk_sparse_file_header_t *) file_header )->grain_directory_offset,
+		 *grain_directory_offset );
 
-		endian_little_convert_16bit(
-		 io_handle->compression_method,
-		 ( (vmdk_sparse_file_header_t *) file_header )->compression_method );
+		byte_stream_copy_to_uint16_little_endian(
+		 ( (vmdk_sparse_file_header_t *) file_header )->compression_method,
+		 io_handle->compression_method );
 	}
 
 #if defined( HAVE_VERBOSE_OUTPUT )
-	libnotify_verbose_printf(
-	 "%s: signature\t\t\t\t: %c%c%c%c\n",
-	 function,
- 	 (char) file_header[ 0 ],
- 	 (char) file_header[ 1 ],
- 	 (char) file_header[ 2 ],
- 	 (char) file_header[ 3 ] );
-
-	libnotify_verbose_printf(
-	 "%s: version\t\t\t\t: %" PRIu64 "\n",
-	 function,
-	 *version );
-	libnotify_verbose_printf(
-	 "%s: flags\t\t\t\t: 0x%08" PRIx64 "\n",
-	 function,
-	 flags );
-
-	libnotify_verbose_printf(
-	 "%s: maximum data size\t\t\t: %" PRIu64 " sectors\n",
-	 function,
-	 io_handle->maximum_data_size );
-	libnotify_verbose_printf(
-	 "%s: grain size\t\t\t\t: %" PRIu64 " sectors\n",
-	 function,
-	 *grain_size );
-
-	if( io_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+	if( libnotify_verbose != 0 )
 	{
-		libnotify_verbose_printf(
-		 "%s: descriptor offset\t\t\t: %" PRIu64 "\n",
+		libnotify_printf(
+		 "%s: signature\t\t\t\t: %c%c%c%c\n",
 		 function,
-		 *descriptor_offset );
-		libnotify_verbose_printf(
-		 "%s: descriptor size\t\t\t: %" PRIu64 " sectors\n",
-		 function,
-		 *descriptor_size );
-		libnotify_verbose_printf(
-		 "%s: amount of grain table entries\t: %" PRIu32 "\n",
-		 function,
-		 *amount_of_grain_table_entries );
-		libnotify_verbose_printf(
-		 "%s: secondary grain directory offset\t: %" PRIu64 "\n",
-		 function,
-		 *secondary_grain_directory_offset );
-	}
-	libnotify_verbose_printf(
-	 "%s: grain directory offset\t\t: %" PRIu64 "\n",
-	 function,
-	 *grain_directory_offset );
+		 (char) file_header[ 0 ],
+		 (char) file_header[ 1 ],
+		 (char) file_header[ 2 ],
+		 (char) file_header[ 3 ] );
 
-	if( io_handle->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
-	{
-		libnotify_verbose_printf(
-		 "%s: padding:\n",
-		 function );
-		libnotify_verbose_print_data(
-		 (uint8_t *) ( (vmdk_sparse_file_header_t *) file_header )->padding,
-		 433 );
-	}
-	else if( io_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
-	{
-		endian_little_convert_64bit(
-		 test,
-		 ( (vmdk_sparse_file_header_t *) file_header )->metadata_size );
-		libnotify_verbose_printf(
-		 "%s: metadata size\t\t\t: %" PRIu64 " sectors\n",
+		libnotify_printf(
+		 "%s: version\t\t\t\t: %" PRIu64 "\n",
 		 function,
-		 test );
+		 *version );
+		libnotify_printf(
+		 "%s: flags\t\t\t\t: 0x%08" PRIx64 "\n",
+		 function,
+		 flags );
 
-		libnotify_verbose_printf(
-		 "%s: single end of line character\t: 0x%02" PRIx8 "\n",
+		libnotify_printf(
+		 "%s: maximum data size\t\t\t: %" PRIu64 " sectors\n",
 		 function,
-		 ( (vmdk_sparse_file_header_t *) file_header )->single_end_of_line_character );
-		libnotify_verbose_printf(
-		 "%s: non end of line character\t\t: 0x%02" PRIx8 "\n",
+		 io_handle->maximum_data_size );
+		libnotify_printf(
+		 "%s: grain size\t\t\t\t: %" PRIu64 " sectors\n",
 		 function,
-		 ( (vmdk_sparse_file_header_t *) file_header )->non_end_of_line_character );
-		libnotify_verbose_printf(
-		 "%s: first double end of line character\t: 0x%02" PRIx8 "\n",
-		 function,
-		 ( (vmdk_sparse_file_header_t *) file_header )->first_double_end_of_line_character );
-		libnotify_verbose_printf(
-		 "%s: second double end of line character\t: 0x%02" PRIx8 "\n",
-		 function,
-		 ( (vmdk_sparse_file_header_t *) file_header )->second_double_end_of_line_character );
-		libnotify_verbose_printf(
-		 "%s: compression method\t\t\t: %" PRIu16 "\n",
-		 function,
-		 io_handle->compression_method );
+		 *grain_size );
 
-		libnotify_verbose_printf(
-		 "%s: padding:\n",
-		 function );
-		libnotify_verbose_print_data(
-		 (uint8_t *) ( (vmdk_sparse_file_header_t *) file_header )->padding,
-		 433 );
+		if( io_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+		{
+			libnotify_printf(
+			 "%s: descriptor offset\t\t\t: %" PRIu64 "\n",
+			 function,
+			 *descriptor_offset );
+			libnotify_printf(
+			 "%s: descriptor size\t\t\t: %" PRIu64 " sectors\n",
+			 function,
+			 *descriptor_size );
+			libnotify_printf(
+			 "%s: amount of grain table entries\t: %" PRIu32 "\n",
+			 function,
+			 *amount_of_grain_table_entries );
+			libnotify_printf(
+			 "%s: secondary grain directory offset\t: %" PRIu64 "\n",
+			 function,
+			 *secondary_grain_directory_offset );
+		}
+		libnotify_printf(
+		 "%s: grain directory offset\t\t: %" PRIu64 "\n",
+		 function,
+		 *grain_directory_offset );
+
+		if( io_handle->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
+		{
+			libnotify_printf(
+			 "%s: padding:\n",
+			 function );
+			libnotify_print_data(
+			 (uint8_t *) ( (vmdk_sparse_file_header_t *) file_header )->padding,
+			 433 );
+		}
+		else if( io_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+		{
+			byte_stream_copy_to_uint64_little_endian(
+			 ( (vmdk_sparse_file_header_t *) file_header )->metadata_size,
+			 value_64bit );
+			libnotify_printf(
+			 "%s: metadata size\t\t\t: %" PRIu64 " sectors\n",
+			 function,
+			 value_64bit );
+
+			libnotify_printf(
+			 "%s: single end of line character\t: 0x%02" PRIx8 "\n",
+			 function,
+			 ( (vmdk_sparse_file_header_t *) file_header )->single_end_of_line_character );
+			libnotify_printf(
+			 "%s: non end of line character\t\t: 0x%02" PRIx8 "\n",
+			 function,
+			 ( (vmdk_sparse_file_header_t *) file_header )->non_end_of_line_character );
+			libnotify_printf(
+			 "%s: first double end of line character\t: 0x%02" PRIx8 "\n",
+			 function,
+			 ( (vmdk_sparse_file_header_t *) file_header )->first_double_end_of_line_character );
+			libnotify_printf(
+			 "%s: second double end of line character\t: 0x%02" PRIx8 "\n",
+			 function,
+			 ( (vmdk_sparse_file_header_t *) file_header )->second_double_end_of_line_character );
+			libnotify_printf(
+			 "%s: compression method\t\t\t: %" PRIu16 "\n",
+			 function,
+			 io_handle->compression_method );
+
+			libnotify_printf(
+			 "%s: padding:\n",
+			 function );
+			libnotify_print_data(
+			 (uint8_t *) ( (vmdk_sparse_file_header_t *) file_header )->padding,
+			 433 );
+		}
 	}
 #endif
 
@@ -937,11 +942,14 @@ int libvmdk_io_handle_read_grain_directory(
 	sector_blocks_data_size *= 512;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	libnotify_verbose_printf(
-	 "%s: reading grain directory at offset: %" PRIu64 " (0x%08" PRIx64 ")\n",
-	 function,
-	 grain_directory_offset,
-	 grain_directory_offset );
+	if( libnotify_verbose != 0 )
+	{
+		libnotify_printf(
+		 "%s: reading grain directory at offset: %" PRIu64 " (0x%08" PRIx64 ")\n",
+		 function,
+		 grain_directory_offset,
+		 grain_directory_offset );
+	}
 #endif
 
 	if( libbfio_handle_seek_offset(
@@ -995,12 +1003,15 @@ int libvmdk_io_handle_read_grain_directory(
 		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
-	libnotify_verbose_printf(
-	 "%s: grain directory data:\n",
-	 function );
-	libnotify_verbose_print_data(
-	 sector_blocks_data,
-	 sector_blocks_data_size );
+	if( libnotify_verbose != 0 )
+	{
+		libnotify_printf(
+		 "%s: grain directory data:\n",
+		 function );
+		libnotify_print_data(
+		 sector_blocks_data,
+		 sector_blocks_data_size );
+	}
 #endif
 
 	grain_directory_data = sector_blocks_data;
@@ -1009,17 +1020,20 @@ int libvmdk_io_handle_read_grain_directory(
 	     grain_directory_entry_iterator < amount_of_grain_directory_entries;
 	     grain_directory_entry_iterator++ )
 	{
-		endian_little_convert_32bit(
-		 grain_table_offset,
-		 grain_directory_data );
+		byte_stream_copy_to_uint32_little_endian(
+		 grain_directory_data,
+		 grain_table_offset );
 		 
 #if defined( HAVE_DEBUG_OUTPUT )
-		libnotify_verbose_printf(
-		 "%s: grain directory entry: %03" PRIu32 " offset: 0x%08" PRIx32 " (%" PRIu32 ")\n",
-		 function,
-		 grain_directory_entry_iterator,
-		 grain_table_offset,
-		 grain_table_offset );
+		if( libnotify_verbose != 0 )
+		{
+			libnotify_printf(
+			 "%s: grain directory entry: %03" PRIu32 " offset: 0x%08" PRIx32 " (%" PRIu32 ")\n",
+			 function,
+			 grain_directory_entry_iterator,
+			 grain_table_offset,
+			 grain_table_offset );
+		}
 #endif
 
 		grain_table_offset *= LIBVMDK_SECTOR_SIZE;
@@ -1050,8 +1064,11 @@ int libvmdk_io_handle_read_grain_directory(
 	 sector_blocks_data );
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	libnotify_verbose_printf(
-	 "\n" );
+	if( libnotify_verbose != 0 )
+	{
+		libnotify_printf(
+		 "\n" );
+	}
 #endif
 
 	return( 1 );
@@ -1130,11 +1147,14 @@ int libvmdk_io_handle_read_grain_table(
 	sector_blocks_data_size *= 512;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	libnotify_verbose_printf(
-	 "%s: reading grain table at offset: %" PRIu64 " (0x%08" PRIx64 ")\n",
-	 function,
-	 grain_table_offset,
-	 grain_table_offset );
+	if( libnotify_verbose != 0 )
+	{
+		libnotify_printf(
+		 "%s: reading grain table at offset: %" PRIu64 " (0x%08" PRIx64 ")\n",
+		 function,
+		 grain_table_offset,
+		 grain_table_offset );
+	}
 #endif
 
 	if( libbfio_handle_seek_offset(
@@ -1188,69 +1208,74 @@ int libvmdk_io_handle_read_grain_table(
 		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
-	libnotify_verbose_printf(
-	 "%s: grain table data:\n",
-	 function );
-	libnotify_verbose_print_data(
-	 sector_blocks_data,
-	 sector_blocks_data_size );
+	if( libnotify_verbose != 0 )
+	{
+		libnotify_printf(
+		 "%s: grain table data:\n",
+		 function );
+		libnotify_print_data(
+		 sector_blocks_data,
+		 sector_blocks_data_size );
+	}
 #endif
 
-if( is_secondary_grain_directory ==  0 )
-{
-
-	if( libvmdk_offset_table_fill(
-	     offset_table,
-	     sector_blocks_data,
-	     grain_table_data_size,
-	     amount_of_grain_table_entries,
-	     grain_size,
-	     error ) != 1 )
+	if( is_secondary_grain_directory ==  0 )
 	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to fill offset table.",
-		 function );
+		if( libvmdk_offset_table_fill(
+		     offset_table,
+		     sector_blocks_data,
+		     grain_table_data_size,
+		     amount_of_grain_table_entries,
+		     grain_size,
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to fill offset table.",
+			 function );
 
-		memory_free(
-		 sector_blocks_data );
+			memory_free(
+			 sector_blocks_data );
 
-		return( -1 );
+			return( -1 );
+		}
 	}
-}
-else
-{
-	if( libvmdk_offset_table_compare(
-	     offset_table,
-	     sector_blocks_data,
-	     grain_table_data_size,
-	     amount_of_grain_table_entries,
-	     grain_size,
-	     error ) != 1 )
+	else
 	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to compare offset table.",
-		 function );
+		if( libvmdk_offset_table_compare(
+		     offset_table,
+		     sector_blocks_data,
+		     grain_table_data_size,
+		     amount_of_grain_table_entries,
+		     grain_size,
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to compare offset table.",
+			 function );
 
-		memory_free(
-		 sector_blocks_data );
+			memory_free(
+			 sector_blocks_data );
 
-		return( -1 );
+			return( -1 );
+		}
 	}
-}
 	/* TODO check if remainder of sector block is emtpy */
 
 	memory_free(
 	 sector_blocks_data );
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	libnotify_verbose_printf(
-	 "\n" );
+	if( libnotify_verbose != 0 )
+	{
+		libnotify_printf(
+		 "\n" );
+	}
 #endif
 
 	return( 1 );

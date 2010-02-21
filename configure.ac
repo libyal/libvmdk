@@ -3,7 +3,7 @@ AC_PREREQ( 2.59 )
 AC_INIT(
  [libvmdk],
   [20090913],
-  [forensics@hoffmannbv.nl])
+  [jbmetz@users.sourceforge.net])
 
 AC_CONFIG_SRCDIR(
  [include/libvmdk.h.in])
@@ -291,12 +291,9 @@ dnl Narrow character string functions used in common/narrow_string.h
 AC_CHECK_FUNCS(
  [snprintf],
  [],
- [AC_CHECK_FUNCS(
-  [sprintf],
-  [],
-  [AC_MSG_FAILURE(
-   [Missing functions: snprintf and sprintf],
-   [1]) ]) ])
+ [AC_MSG_FAILURE(
+  [Missing function: snprintf],
+  [1]) ])
 
 AC_CHECK_FUNCS(
  [sscanf],
@@ -918,21 +915,6 @@ AS_IF(
 	AC_CHECK_SIZEOF([wchar_t])
 
 	dnl Check for wide character string functions
-	dnl Wide character string functions used in common/string_conversion.h
-	AC_CHECK_FUNCS(
-	 [btowc],
-	 [],
-	 [AC_MSG_FAILURE(
-	  [Missing functions: btowc],
-	  [1]) ])
-
-	AC_CHECK_FUNCS(
-	 [wctob],
-	 [],
-	 [AC_MSG_FAILURE(
-	  [Missing functions: wctob],
-	  [1]) ])
-
 	dnl Wide character string functions used in common/wide_string.h
 	AC_CHECK_FUNCS(
 	 [fgetws],
@@ -946,6 +928,13 @@ AS_IF(
 	 [],
 	 [AC_MSG_FAILURE(
 	  [Missing functions: swprintf],
+	  [1]) ])
+
+	AC_CHECK_FUNCS(
+	 [vswprintf],
+	 [],
+	 [AC_MSG_FAILURE(
+	  [Missing functions: vswprintf],
 	  [1]) ])
 
 	AC_CHECK_FUNCS(
@@ -1029,7 +1018,7 @@ AS_IF(
 	AC_DEFINE(
 	 [HAVE_WIDE_CHARACTER_TYPE],
 	 [1],
-	 [Defines if wide character type should be used])
+	 [Define to 1 if wide character type should be used])
 	AC_SUBST(
 	 [HAVE_WIDE_CHARACTER_TYPE],
 	 [1])
@@ -1060,7 +1049,7 @@ AS_IF(
 	[AC_DEFINE(
 	 [HAVE_VERBOSE_OUTPUT],
 	 [1],
-	 [Defines if verbose output should be used] )
+	 [Define to 1 if verbose output should be used] )
 	ac_cv_libvmdk_enable_verbose_output=yes])
 
 dnl Check if libvmdk should be build with debug output
@@ -1069,7 +1058,7 @@ AS_IF(
 	[AC_DEFINE(
 	 [HAVE_DEBUG_OUTPUT],
 	 [1],
-	 [Defines if debug output should be used] )
+	 [Define to 1 if debug output should be used] )
 	ac_cv_libvmdk_enable_debug_output=yes])
 
 dnl Check if requires and build requires should be set in spec file
@@ -1132,7 +1121,6 @@ AC_CONFIG_FILES([libvmdk/Makefile])
 AC_CONFIG_FILES([libsystem/Makefile])
 AC_CONFIG_FILES([vmdktools/Makefile])
 AC_CONFIG_FILES([manuals/Makefile])
-AC_CONFIG_FILES([macosx/Makefile])
 AC_CONFIG_FILES([msvscpp/Makefile])
 dnl Have configure make the include files
 AC_CONFIG_FILES([include/libvmdk.h])
@@ -1142,7 +1130,6 @@ AC_CONFIG_FILES([include/libvmdk/types.h])
 AC_CONFIG_FILES([libvmdk/libvmdk_definitions.h])
 dnl Have configure make distribution specific files
 AC_CONFIG_FILES([common/types.h])
-AC_CONFIG_FILES([macosx/Introduction.rtf])
 AC_CONFIG_FILES([libvmdk.pc])
 AC_CONFIG_FILES([libvmdk.spec])
 dnl Have configure write its configuration

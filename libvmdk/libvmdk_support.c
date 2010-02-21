@@ -1,8 +1,7 @@
 /*
  * Support functions
  *
- * Copyright (c) 2008-2009, Joachim Metz <forensics@hoffmannbv.nl>,
- * Hoffmann Investigations. All rights reserved.
+ * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -41,7 +40,7 @@ const char *libvmdk_get_version(
 	return( (const char *) LIBVMDK_VERSION_STRING );
 }
 
-/* Determines if a file is a PPF file (check for the VMDK file signature)
+/* Determines if a file is a VMDK file
  * Returns 1 if true, 0 if not or -1 on error
  */
 int libvmdk_check_file_signature(
@@ -147,7 +146,7 @@ int libvmdk_check_file_signature(
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
-/* Determines if a file is a VMDK file (check for the VMDK file signature)
+/* Determines if a file is a VMDK file
  * Returns 1 if true, 0 if not or -1 on error
  */
 int libvmdk_check_file_signature_wide(
@@ -253,33 +252,35 @@ int libvmdk_check_file_signature_wide(
 
 #endif
 
-/* Determines if a file is a VMDK file (check for the VMDK file signature) using a Basic File IO (bfio) handle
+/* Determines if a file is a VMDK file using a Basic File IO (bfio) handle
  * Returns 1 if true, 0 if not or -1 on error
  */
 int libvmdk_check_file_signature_file_io_handle(
-     libbfio_handle_t *bfio_handle,
+     libbfio_handle_t *file_io_handle,
      liberror_error_t **error )
 {
 	uint8_t signature[ 4 ];
 
-	static char *function = "libvmdk_check_file_signature_file_io_handle";
-	ssize_t read_count    = 0;
+	static char *function      = "libvmdk_check_file_signature_file_io_handle";
+	ssize_t read_count         = 0;
+	int file_io_handle_is_open = 0;
 
-	if( bfio_handle == NULL )
+	if( file_io_handle == NULL )
 	{
 		liberror_error_set(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid bfio handle.",
+		 "%s: invalid file io handle.",
 		 function );
 
 		return( -1 );
 	}
-	if( libbfio_handle_open(
-	     bfio_handle,
-	     LIBBFIO_OPEN_READ,
-	     error ) != 1 )
+	file_io_handle_is_open = libbfio_handle_is_open(
+	                          file_io_handle,
+	                          error );
+
+	if( file_io_handle_is_open == -1 )
 	{
 		liberror_error_set(
 		 error,
@@ -290,8 +291,46 @@ int libvmdk_check_file_signature_file_io_handle(
 
 		return( -1 );
 	}
+	else if( file_io_handle_is_open == 0 )
+	{
+		if( libbfio_handle_open(
+		     file_io_handle,
+		     LIBBFIO_OPEN_READ,
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_IO,
+			 LIBERROR_IO_ERROR_OPEN_FAILED,
+			 "%s: unable to open file.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	if( libbfio_handle_seek_offset(
+	     file_io_handle,
+	     0,
+	     SEEK_SET,
+	     error ) == -1 )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_IO,
+		 LIBERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek file header offset: 0.",
+		 function );
+
+		if( file_io_handle_is_open == 0 )
+		{
+			libbfio_handle_close(
+			 file_io_handle,
+			 error );
+		}
+		return( -1 );
+	}
 	read_count = libbfio_handle_read(
-	              bfio_handle,
+	              file_io_handle,
 	              signature,
 	              4,
 	              error );
@@ -305,24 +344,29 @@ int libvmdk_check_file_signature_file_io_handle(
 		 "%s: unable to read signature.",
 		 function );
 
-		libbfio_handle_close(
-		 bfio_handle,
-		 NULL );
-
+		if( file_io_handle_is_open == 0 )
+		{
+			libbfio_handle_close(
+			 file_io_handle,
+			 error );
+		}
 		return( -1 );
 	}
-	if( libbfio_handle_close(
-	     bfio_handle,
-	     error ) != 0 )
+	if( file_io_handle_is_open == 0 )
 	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_CLOSE_FAILED,
-		 "%s: unable to close file.",
-		 function );
+		if( libbfio_handle_close(
+		     file_io_handle,
+		     error ) != 0 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_IO,
+			 LIBERROR_IO_ERROR_CLOSE_FAILED,
+			 "%s: unable to close file.",
+			 function );
 
-		return( -1 );
+			return( -1 );
+		}
 	}
 	if( memory_compare(
 	     cowd_sparse_file_signature,
