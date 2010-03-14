@@ -21,6 +21,9 @@ Deployment:
 * update codegear files
 * check msvcpp files
 
+20100314
+* string fix in vmdkinfo
+
 20100221
 * updated common, liberror, libuna, libbfio
 * libvmdk 2010 update

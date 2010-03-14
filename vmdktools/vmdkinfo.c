@@ -161,7 +161,7 @@ int main( int argc, char * const argv[] )
 			default:
 				fprintf(
 				 stderr,
-				 "Invalid argument: %s\n",
+				 "Invalid argument: %" PRIs_LIBSYSTEM "\n",
 				 argv[ optind ] );
 
 				usage_fprint(
