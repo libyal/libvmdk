@@ -28,9 +28,10 @@
 #include <liberror.h>
 #include <libnotify.h>
 
+#include "libvmdk_debug.h"
 #include "libvmdk_definitions.h"
-#include "libvmdk_io_handle.h"
 #include "libvmdk_file.h"
+#include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_offset_table.h"
 
@@ -181,6 +182,23 @@ int libvmdk_file_free(
 				 LIBERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 				 "%s: unable to free io handle.",
+				 function );
+
+				result = -1;
+			}
+		}
+		if( ( internal_file->file_io_handle_created_in_library != 0 )
+		 && ( internal_file->file_io_handle != NULL ) )
+		{
+			if( libbfio_handle_free(
+			     &( internal_file->file_io_handle ),
+			     error ) != 1 )
+			{
+				liberror_error_set(
+				 error,
+				 LIBERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free file io handle.",
 				 function );
 
 				result = -1;
@@ -350,7 +368,7 @@ int libvmdk_file_open(
 
 		return( -1 );
 	}
-	internal_file->io_handle->handle_created_in_library = 1;
+	internal_file->file_io_handle_created_in_library = 1;
 
 	return( 1 );
 }
@@ -490,7 +508,7 @@ int libvmdk_file_open_wide(
 
 		return( -1 );
 	}
-	internal_file->io_handle->handle_created_in_library = 1;
+	internal_file->file_io_handle_created_in_library = 1;
 
 	return( 1 );
 }
@@ -509,6 +527,7 @@ int libvmdk_file_open_file_io_handle(
 	libvmdk_internal_file_t *internal_file = NULL;
 	static char *function                  = "libvmdk_file_open_file_io_handle";
 	int file_io_flags                      = 0;
+	int file_io_handle_is_open             = 0;
 
 	if( file == NULL )
 	{
@@ -561,20 +580,39 @@ int libvmdk_file_open_file_io_handle(
 	{
 		file_io_flags = LIBBFIO_FLAG_READ;
 	}
-	if( libvmdk_io_handle_open(
-	     internal_file->io_handle,
-	     file_io_handle,
-	     file_io_flags,
-	     error ) != 1 )
+	internal_file->file_io_handle = file_io_handle;
+
+	file_io_handle_is_open = libbfio_handle_is_open(
+	                          internal_file->file_io_handle,
+	                          error );
+
+	if( file_io_handle_is_open == -1 )
 	{
 		liberror_error_set(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_IO,
 		 LIBERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open file handle.",
+		 "%s: unable to open file.",
 		 function );
 
 		return( -1 );
+	}
+	else if( file_io_handle_is_open == 0 )
+	{
+		if( libbfio_handle_open(
+		     internal_file->file_io_handle,
+		     flags,
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_IO,
+			 LIBERROR_IO_ERROR_OPEN_FAILED,
+			 "%s: unable to open file io handle.",
+			 function );
+
+			return( -1 );
+		}
 	}
 	if( libvmdk_file_open_read(
 	     internal_file,
@@ -616,29 +654,50 @@ int libvmdk_file_close(
 	}
 	internal_file = (libvmdk_internal_file_t *) file;
 
-	if( internal_file->io_handle == NULL )
+	if( internal_file->file_io_handle == NULL )
 	{
 		liberror_error_set(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid file - missing io handle.",
+		 "%s: invalid file - missing file IO handle.",
 		 function );
 
 		return( -1 );
 	}
-	result = libvmdk_io_handle_close(
-	          internal_file->io_handle,
-	          error );
-
-	if( result != 0 )
+	if( internal_file->file_io_handle_created_in_library != 0 )
 	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_CLOSE_FAILED,
-		 "%s: unable to close io handle.",
-		 function );
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libnotify_verbose != 0 )
+		{
+			if( libvmdk_debug_print_read_offsets(
+			     internal_file->file_io_handle,
+			     error ) != 1 )
+			{
+				liberror_error_set(
+				 error,
+				 LIBERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBERROR_RUNTIME_ERROR_PRINT_FAILED,
+				 "%s: unable to print the read offsets.",
+				 function );
+
+				result = -1;
+			}
+		}
+#endif
+		if( libbfio_handle_close(
+		     internal_file->file_io_handle,
+		     error ) != 0 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_IO,
+			 LIBERROR_IO_ERROR_CLOSE_FAILED,
+			 "%s: unable to close file io handle.",
+			 function );
+
+			return( -1 );
+		}
 	}
 	return( result );
 }
@@ -658,7 +717,6 @@ int libvmdk_file_open_read(
 	size64_t grain_size                        = 0;
 	uint32_t amount_of_grain_directory_entries = 0;
 	uint32_t amount_of_grain_table_entries     = 0;
-	uint32_t version                           = 0;
 
 	if( internal_file == NULL )
 	{
@@ -692,7 +750,7 @@ int libvmdk_file_open_read(
 
 	if( libvmdk_io_handle_read_file_header(
 	     internal_file->io_handle,
-	     &version,
+	     internal_file->file_io_handle,
 	     &descriptor_offset,
 	     &descriptor_size,
 	     &grain_directory_offset,
@@ -758,6 +816,7 @@ int libvmdk_file_open_read(
 
 		if( libvmdk_io_handle_read_grain_directory(
 		     internal_file->io_handle,
+		     internal_file->file_io_handle,
 		     internal_file->offset_table,
 		     grain_directory_offset,
 		     amount_of_grain_directory_entries,
@@ -788,6 +847,7 @@ int libvmdk_file_open_read(
 
 		if( libvmdk_io_handle_read_grain_directory(
 		     internal_file->io_handle,
+		     internal_file->file_io_handle,
 		     internal_file->offset_table,
 		     secondary_grain_directory_offset,
 		     amount_of_grain_directory_entries,

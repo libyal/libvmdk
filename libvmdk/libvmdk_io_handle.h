@@ -45,21 +45,17 @@ struct libvmdk_io_handle
 	 */
 	uint8_t file_type;
 
+	/* The format version
+	 */
+	uint32_t format_version;
+
 	/* The maximum data size
 	 */
 	size64_t maximum_data_size;
 
-	/* The file io handle
-	 */
-	libbfio_handle_t *file_io_handle;
-
 	/* The compression method
 	 */
 	uint16_t compression_method;
-
-	/* Value to indicate if the file io handle was created inside the library
-	 */
-	uint8_t handle_created_in_library;
 };
 
 int libvmdk_io_handle_initialize(
@@ -70,19 +66,9 @@ int libvmdk_io_handle_free(
      libvmdk_io_handle_t **io_handle,
      liberror_error_t **error );
 
-int libvmdk_io_handle_open(
-     libvmdk_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
-     int flags,
-     liberror_error_t **error );
-
-int libvmdk_io_handle_close(
-     libvmdk_io_handle_t *io_handle,
-     liberror_error_t **error );
-
 int libvmdk_io_handle_read_file_header(
      libvmdk_io_handle_t *io_handle,
-     uint32_t *version,
+     libbfio_handle_t *file_io_handle,
      off64_t *descriptor_offset,
      size64_t *descriptor_size,
      off64_t *grain_directory_offset,
@@ -94,6 +80,7 @@ int libvmdk_io_handle_read_file_header(
 
 int libvmdk_io_handle_read_grain_directory(
      libvmdk_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
      libvmdk_offset_table_t *offset_table,
      off64_t grain_directory_offset,
      uint32_t amount_of_grain_directory_entries,
@@ -104,6 +91,7 @@ int libvmdk_io_handle_read_grain_directory(
 
 int libvmdk_io_handle_read_grain_table(
      libvmdk_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
      libvmdk_offset_table_t *offset_table,
      off64_t grain_table_offset,
      uint32_t amount_of_grain_table_entries,

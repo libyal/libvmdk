@@ -23,6 +23,7 @@ Deployment:
 
 20100314
 * string fix in vmdkinfo
+* moved file io handle into libvmdk_file
 
 20100221
 * updated common, liberror, libuna, libbfio

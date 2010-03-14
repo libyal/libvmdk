@@ -47,6 +47,14 @@ struct libvmdk_internal_file
 	 */
 	libvmdk_io_handle_t *io_handle;
 
+	/* The file io handle
+	 */
+	libbfio_handle_t *file_io_handle;
+
+	/* Value to indicate if the file io handle was created inside the library
+	 */
+	uint8_t file_io_handle_created_in_library;
+
 	/* Value to indicate if abort was signalled
 	 */
 	int abort;

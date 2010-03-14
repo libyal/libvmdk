@@ -64,7 +64,7 @@ int libvmdk_io_handle_initialize(
 	if( *io_handle == NULL )
 	{
 		*io_handle = (libvmdk_io_handle_t *) memory_allocate(
-		                                     sizeof( libvmdk_io_handle_t ) );
+		                                      sizeof( libvmdk_io_handle_t ) );
 
 		if( *io_handle == NULL )
 		{
@@ -108,7 +108,6 @@ int libvmdk_io_handle_free(
      liberror_error_t **error )
 {
 	static char *function = "libvmdk_io_handle_free";
-	int result            = 1;
 
 	if( io_handle == NULL )
 	{
@@ -123,139 +122,12 @@ int libvmdk_io_handle_free(
 	}
 	if( *io_handle != NULL )
 	{
-		if( ( ( *io_handle )->handle_created_in_library != 0 )
-		 && ( ( *io_handle )->file_io_handle != NULL )
-		 && ( libbfio_handle_free(
-		       &( ( *io_handle )->file_io_handle ),
-		       error ) != 1 ) )
-		{
-			liberror_error_set(
-			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free file io handle.",
-			 function );
-
-			result = -1;
-		}
 		memory_free(
 		 *io_handle );
 
 		*io_handle = NULL;
 	}
-	return( result );
-}
-
-/* Opens an io handle
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_io_handle_open(
-     libvmdk_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
-     int flags,
-     liberror_error_t **error )
-{
-        static char *function = "libvmdk_io_handle_open";
-
-        if( io_handle == NULL )
-        {
-                liberror_error_set(
-                 error,
-                 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-                 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
-                 "%s: invalid io handle.",
-                 function );
-
-                return( -1 );
-        }
-	if( io_handle->file_io_handle != NULL )
-	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid io handle - file io handle already set.",
-		 function );
-
-		return( -1 );
-	}
-        if( file_io_handle == NULL )
-        {
-                liberror_error_set(
-                 error,
-                 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-                 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
-                 "%s: invalid file io handle.",
-                 function );
-
-                return( -1 );
-        }
-	io_handle->file_io_handle = file_io_handle;
-
-	if( libbfio_handle_open(
-	     io_handle->file_io_handle,
-	     flags,
-	     error ) != 1 )
-	{
-                liberror_error_set(
-                 error,
-                 LIBERROR_ERROR_DOMAIN_IO,
-                 LIBERROR_IO_ERROR_OPEN_FAILED,
-                 "%s: unable to open file io handle.",
-                 function );
-
-                return( -1 );
-	}
 	return( 1 );
-}
-
-/* Closes an io handle
- * Returns 0 if successful or -1 on error
- */
-int libvmdk_io_handle_close(
-     libvmdk_io_handle_t *io_handle,
-     liberror_error_t **error )
-{
-        static char *function = "libvmdk_io_handle_close";
-
-        if( io_handle == NULL )
-        {
-                liberror_error_set(
-                 error,
-                 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-                 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
-                 "%s: invalid io handle.",
-                 function );
-
-                return( -1 );
-        }
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libvmdk_debug_print_read_offsets(
-	     io_handle->file_io_handle,
-	     error ) != 1 )
-	{
-		liberror_error_set(
-		 error,
-                 LIBERROR_ERROR_DOMAIN_RUNTIME,
-                 LIBERROR_RUNTIME_ERROR_PRINT_FAILED,
-		 "%s: unable to print the read offsets.",
-		 function );
-	}
-#endif
-	if( libbfio_handle_close(
-	     io_handle->file_io_handle,
-	     error ) != 0 )
-	{
-                liberror_error_set(
-                 error,
-                 LIBERROR_ERROR_DOMAIN_IO,
-                 LIBERROR_IO_ERROR_CLOSE_FAILED,
-                 "%s: unable to close file io handle.",
-                 function );
-
-                return( -1 );
-	}
-	return( 0 );
 }
 
 /* Reads the file header
@@ -263,7 +135,7 @@ int libvmdk_io_handle_close(
  */
 int libvmdk_io_handle_read_file_header(
      libvmdk_io_handle_t *io_handle,
-     uint32_t *version,
+     libbfio_handle_t *file_io_handle,
      off64_t *descriptor_offset,
      size64_t *descriptor_size,
      off64_t *grain_directory_offset,
@@ -291,28 +163,6 @@ int libvmdk_io_handle_read_file_header(
 		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid io handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( io_handle->file_io_handle == NULL )
-	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid io handle - missing file io handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( version == NULL )
-	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid version.",
 		 function );
 
 		return( -1 );
@@ -404,7 +254,7 @@ int libvmdk_io_handle_read_file_header(
 #endif
 
 	if( libbfio_handle_seek_offset(
-	     io_handle->file_io_handle,
+	     file_io_handle,
 	     0,
 	     SEEK_SET,
 	     error ) == -1 )
@@ -433,7 +283,7 @@ int libvmdk_io_handle_read_file_header(
 		return( -1 );
 	}
 	read_count = libbfio_handle_read(
-	              io_handle->file_io_handle,
+	              file_io_handle,
 	              file_header,
 	              4,
 	              error );
@@ -503,7 +353,7 @@ int libvmdk_io_handle_read_file_header(
 	file_header = (uint8_t *) reallocation;
 
 	read_count = libbfio_handle_read(
-	              io_handle->file_io_handle,
+	              file_io_handle,
 	              &( file_header[ 4 ] ),
 	              read_size - 4,
 	              error );
@@ -538,7 +388,7 @@ int libvmdk_io_handle_read_file_header(
 	{
 		byte_stream_copy_to_uint32_little_endian(
 		 ( (cowd_sparse_file_header_t *) file_header )->version,
-		 *version );
+		 io_handle->format_version );
 		byte_stream_copy_to_uint32_little_endian(
 		 ( (cowd_sparse_file_header_t *) file_header )->flags,
 		 flags );
@@ -563,7 +413,7 @@ int libvmdk_io_handle_read_file_header(
 	{
 		byte_stream_copy_to_uint32_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header )->version,
-		 *version );
+		 io_handle->format_version );
 		byte_stream_copy_to_uint32_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header )->flags,
 		 flags );
@@ -610,11 +460,11 @@ int libvmdk_io_handle_read_file_header(
 		 (char) file_header[ 3 ] );
 
 		libnotify_printf(
-		 "%s: version\t\t\t\t: %" PRIu64 "\n",
+		 "%s: version\t\t\t\t: %" PRIu32 "\n",
 		 function,
-		 *version );
+		 io_handle->format_version );
 		libnotify_printf(
-		 "%s: flags\t\t\t\t: 0x%08" PRIx64 "\n",
+		 "%s: flags\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 flags );
 
@@ -870,6 +720,7 @@ int libvmdk_io_handle_read_file_header(
  */
 int libvmdk_io_handle_read_grain_directory(
      libvmdk_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
      libvmdk_offset_table_t *offset_table,
      off64_t grain_directory_offset,
      uint32_t amount_of_grain_directory_entries,
@@ -894,17 +745,6 @@ int libvmdk_io_handle_read_grain_directory(
 		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid io handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( io_handle->file_io_handle == NULL )
-	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid io handle - missing file io handle.",
 		 function );
 
 		return( -1 );
@@ -953,7 +793,7 @@ int libvmdk_io_handle_read_grain_directory(
 #endif
 
 	if( libbfio_handle_seek_offset(
-	     io_handle->file_io_handle,
+	     file_io_handle,
 	     grain_directory_offset,
 	     SEEK_SET,
 	     error ) == -1 )
@@ -983,7 +823,7 @@ int libvmdk_io_handle_read_grain_directory(
 		return( -1 );
 	}
 	read_count = libbfio_handle_read(
-	              io_handle->file_io_handle,
+	              file_io_handle,
 	              sector_blocks_data,
 	              sector_blocks_data_size,
 	              error );
@@ -1040,6 +880,7 @@ int libvmdk_io_handle_read_grain_directory(
 
 		if( libvmdk_io_handle_read_grain_table(
 		     io_handle,
+		     file_io_handle,
 		     offset_table,
 		     grain_table_offset,
 		     amount_of_grain_table_entries,
@@ -1079,6 +920,7 @@ int libvmdk_io_handle_read_grain_directory(
  */
 int libvmdk_io_handle_read_grain_table(
      libvmdk_io_handle_t *io_handle,
+     libbfio_handle_t *file_io_handle,
      libvmdk_offset_table_t *offset_table,
      off64_t grain_table_offset,
      uint32_t amount_of_grain_table_entries,
@@ -1099,17 +941,6 @@ int libvmdk_io_handle_read_grain_table(
 		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid io handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( io_handle->file_io_handle == NULL )
-	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid io handle - missing file io handle.",
 		 function );
 
 		return( -1 );
@@ -1158,7 +989,7 @@ int libvmdk_io_handle_read_grain_table(
 #endif
 
 	if( libbfio_handle_seek_offset(
-	     io_handle->file_io_handle,
+	     file_io_handle,
 	     grain_table_offset,
 	     SEEK_SET,
 	     error ) == -1 )
@@ -1188,7 +1019,7 @@ int libvmdk_io_handle_read_grain_table(
 		return( -1 );
 	}
 	read_count = libbfio_handle_read(
-	              io_handle->file_io_handle,
+	              file_io_handle,
 	              sector_blocks_data,
 	              sector_blocks_data_size,
 	              error );
