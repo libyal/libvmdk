@@ -113,18 +113,26 @@ int vmdkinfo_handle_info_fprint(
 
 /* The main program
  */
-#if defined( LIBSYSTEM_HAVE_WIDE_CHARACTER )
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 int wmain( int argc, wchar_t * const argv[] )
 #else
 int main( int argc, char * const argv[] )
 #endif
 {
-	libvmdk_error_t *error                = NULL;
-	libvmdk_handle_t *vmdk_handle         = NULL;
-	libcstring_system_character_t *source = NULL;
-	char *program                         = "vmdkinfo";
-	libcstring_system_integer_t option    = 0;
-	int verbose                           = 0;
+	libcstring_system_character_t * const *argv_filenames = NULL;
+
+#if !defined( LIBSYSTEM_HAVE_GLOB )
+	libsystem_glob_t *glob                                = NULL;
+#endif
+
+	libvmdk_error_t *error                                = NULL;
+	libvmdk_handle_t *vmdk_handle                         = NULL;
+	libcstring_system_character_t *source                 = NULL;
+	char *program                                         = "vmdkinfo";
+	libcstring_system_integer_t option                    = 0;
+	int amount_of_filenames                               = 0;
+	int result                                            = 0;
+	int verbose                                           = 0;
 
 	libsystem_notify_set_stream(
 	 stderr,
@@ -208,6 +216,51 @@ int main( int argc, char * const argv[] )
 	libvmdk_notify_set_verbose(
 	 verbose );
 
+#if !defined( LIBSYSTEM_HAVE_GLOB )
+	if( libsystem_glob_initialize(
+	     &glob,
+	     &error ) != 1 )
+	{
+		fprintf(
+		 stderr,
+		 "Unable to initialize glob.\n" );
+
+		libsystem_notify_print_error_backtrace(
+		 error );
+		liberror_error_free(
+		 &error );
+
+		return( EXIT_FAILURE );
+	}
+	if( libsystem_glob_resolve(
+	     glob,
+	     &( argv[ optind ] ),
+	     argc - optind,
+	     &error ) != 1 )
+	{
+		fprintf(
+		 stderr,
+		 "Unable to resolve glob.\n" );
+
+		libsystem_notify_print_error_backtrace(
+		 error );
+		liberror_error_free(
+		 &error );
+
+		libsystem_glob_free(
+		 &glob,
+		 NULL );
+
+		return( EXIT_FAILURE );
+	}
+	argv_filenames      = glob->result;
+	amount_of_filenames = glob->amount_of_results;
+#else
+	argv_filenames      = &( argv[ optind ] );
+	amount_of_filenames = argc - optind;
+
+#endif
+
 	if( libvmdk_handle_initialize(
 	     &vmdk_handle,
 	     &error ) != 1 )
@@ -221,28 +274,53 @@ int main( int argc, char * const argv[] )
 		libvmdk_error_free(
 		 &error );
 
+#if !defined( LIBSYSTEM_HAVE_GLOB )
+		libsystem_glob_free(
+		 &glob,
+		 NULL );
+#endif
+
 		return( EXIT_FAILURE );
 	}
-	/* TODO allow for multiple files */
-
 #if defined( LIBSYSTEM_HAVE_WIDE_CHARACTER )
-	if( libvmdk_handle_open_wide(
-	     vmdk_handle,
-	     source,
-	     LIBVMDK_OPEN_READ,
-	     &error ) != 1 )
+	result = libvmdk_handle_open_wide(
+	          vmdk_handle,
+	          argv_filenames,
+	          amount_of_filenames,
+	          LIBVMDK_OPEN_READ,
+	          &error );
 #else
-	if( libvmdk_handle_open(
-	     vmdk_handle,
-	     source,
-	     LIBVMDK_OPEN_READ,
-	     &error ) != 1 )
+	result = libvmdk_handle_open(
+	          vmdk_handle,
+	          argv_filenames,
+	          amount_of_filenames,
+	          LIBVMDK_OPEN_READ,
+	          &error );
 #endif
+
+#if !defined( LIBSYSTEM_HAVE_GLOB )
+	if( libsystem_glob_free(
+	     &glob,
+	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Error opening file(s).\n",
-		 argv[ optind ] );
+		 "Unable to free glob.\n" );
+
+		libsystem_notify_print_error_backtrace(
+		 error );
+		liberror_error_free(
+		 &error );
+
+		return( EXIT_FAILURE );
+	}
+#endif
+
+	if( result != 1 )
+	{
+		fprintf(
+		 stderr,
+		 "Error opening file(s).\n" );
 
 		libsystem_notify_print_error_backtrace(
 		 error );
@@ -281,8 +359,7 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stderr,
-		 "Error closing file(s).\n",
-		 argv[ optind ] );
+		 "Error closing file(s).\n" );
 
 		libsystem_notify_print_error_backtrace(
 		 error );

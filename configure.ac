@@ -1141,7 +1141,6 @@ AC_CONFIG_FILES([libvmdk/Makefile])
 AC_CONFIG_FILES([libsystem/Makefile])
 AC_CONFIG_FILES([vmdktools/Makefile])
 AC_CONFIG_FILES([manuals/Makefile])
-AC_CONFIG_FILES([msvscpp/Makefile])
 dnl Have configure make the include files
 AC_CONFIG_FILES([include/libvmdk.h])
 AC_CONFIG_FILES([include/libvmdk/definitions.h])

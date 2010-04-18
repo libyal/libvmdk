@@ -12,6 +12,7 @@ lib_LTLIBRARIES = libvmdk.la
 
 libvmdk_la_SOURCES = \
 	libvmdk.c \
+	libvmdk_array_type.c libvmdk_array_type.h \
 	libvmdk_debug.c libvmdk_debug.h \
 	libvmdk_definitions.h \
 	libvmdk_descriptor_file.c libvmdk_descriptor_file.h \
@@ -24,6 +25,9 @@ libvmdk_la_SOURCES = \
 	libvmdk_libuna.h \
 	libvmdk_notify.c libvmdk_notify.h \
 	libvmdk_offset_table.c libvmdk_offset_table.h \
+	libvmdk_segment_file.c libvmdk_segment_file.h \
+	libvmdk_segment_file_handle.c libvmdk_segment_file_handle.h \
+	libvmdk_segment_table.c libvmdk_segment_table.h \
 	libvmdk_support.c libvmdk_support.h \
 	libvmdk_values_table.c libvmdk_values_table.h \
 	cowd_sparse_file_header.h \

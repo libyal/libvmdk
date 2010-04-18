@@ -27,8 +27,8 @@
 #include <liberror.h>
 
 #include "libvmdk_definitions.h"
-#include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
+#include "libvmdk_segment_file.h"
 #include "libvmdk_support.h"
 
 /* Returns the library version

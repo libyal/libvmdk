@@ -34,9 +34,6 @@
 extern "C" {
 #endif
 
-extern const char cowd_sparse_file_signature[ 4 ];
-extern const char vmdk_sparse_file_signature[ 4 ];
-
 typedef struct libvmdk_io_handle libvmdk_io_handle_t;
 
 struct libvmdk_io_handle

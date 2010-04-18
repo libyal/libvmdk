@@ -64,8 +64,9 @@
  */
 enum LIBVMDK_FILE_TYPES
 {
-	LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA		= (int) 'c',
-	LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA		= (int) 'v'
+	LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA		= (uint8_t) 'c',
+	rIBVMDK_FILE_TYPE_RAW_DATA			= (uint8_t) 'r',
+	rIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA		= (uint8_t) 'v'
 };
 
 /* The compression methods
@@ -77,6 +78,10 @@ enum LIBVMDK_COMPRESSION_METHODS
 };
 
 #endif
+
+/* The default segment file size
+ */
+#define LIBVMDK_DEFAULT_SEGMENT_FILE_SIZE		( 1500 * 1024 * 1024 )
 
 #define LIBVMDK_SECTOR_SIZE				512
 

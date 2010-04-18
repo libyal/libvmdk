@@ -33,6 +33,8 @@
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_offset_table.h"
+#include "libvmdk_segment_file.h"
+#include "libvmdk_segment_table.h"
 
 /* Initialize a handle
  * Make sure the value handle is pointing to is set to NULL
@@ -89,6 +91,26 @@ int libvmdk_handle_initialize(
 
 			return( -1 );
 		}
+		/* The segment table is initially filled with a single entry
+		 */
+		if( libvmdk_segment_table_initialize(
+		     &( internal_handle->segment_table ),
+		     1,
+		     LIBVMDK_DEFAULT_SEGMENT_FILE_SIZE,
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create segment table.",
+			 function );
+
+			memory_free(
+			 internal_handle );
+
+			return( -1 );
+		}
 		if( libvmdk_offset_table_initialize(
 		     &( internal_handle->offset_table ),
 		     0,
@@ -101,6 +123,9 @@ int libvmdk_handle_initialize(
 			 "%s: unable to create offset table.",
 			 function );
 
+			libvmdk_segment_table_free(
+			 &( internal_handle->segment_table ),
+			 NULL );
 			memory_free(
 			 internal_handle );
 
@@ -120,11 +145,16 @@ int libvmdk_handle_initialize(
 			libvmdk_offset_table_free(
 			 &( internal_handle->offset_table ),
 			 NULL );
+			libvmdk_segment_table_free(
+			 &( internal_handle->segment_table ),
+			 NULL );
 			memory_free(
 			 internal_handle );
 
 			return( -1 );
 		}
+		internal_handle->maximum_amount_of_open_handles = LIBBFIO_POOL_UNLIMITED_AMOUNT_OF_OPEN_HANDLES;
+
 		*handle = (libvmdk_handle_t *) internal_handle;
 	}
 	return( 1 );
@@ -157,19 +187,6 @@ int libvmdk_handle_free(
 		internal_handle = (libvmdk_internal_handle_t *) *handle;
 		*handle         = NULL;
 
-		if( libvmdk_offset_table_free(
-		     &( internal_handle->offset_table ),
-		     error ) != 1 )
-		{
-			liberror_error_set(
-			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free offset table.",
-			 function );
-
-			result = -1;
-		}
 		if( internal_handle->io_handle != NULL )
 		{
 			if( libvmdk_io_handle_free(
@@ -204,6 +221,32 @@ int libvmdk_handle_free(
 					result = -1;
 				}
 			}
+		}
+		if( libvmdk_segment_table_free(
+		     &( internal_handle->segment_table ),
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free segment table.",
+			 function );
+
+			result = -1;
+		}
+		if( libvmdk_offset_table_free(
+		     &( internal_handle->offset_table ),
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free offset table.",
+			 function );
+
+			result = -1;
 		}
 		memory_free(
 		 internal_handle );
@@ -315,7 +358,7 @@ int libvmdk_handle_open(
 
 		return( -1 );
 	}
-	if( ( flags & LIBEWF_FLAG_READ ) == LIBEWF_FLAG_READ )
+	if( ( flags & LIBVMDK_FLAG_READ ) == LIBVMDK_FLAG_READ )
 	{
 		for( filename_iterator = 0;
 		     filename_iterator < amount_of_filenames;
@@ -439,6 +482,7 @@ int libvmdk_handle_open(
 				 filenames[ filename_iterator ] );
 			}
 #endif
+		}
 	}
 	if( libvmdk_handle_open_file_io_pool(
 	     handle,
@@ -544,7 +588,7 @@ int libvmdk_handle_open_wide(
 
 		return( -1 );
 	}
-	if( ( flags & LIBEWF_FLAG_READ ) == LIBEWF_FLAG_READ )
+	if( ( flags & LIBVMDK_FLAG_READ ) == LIBVMDK_FLAG_READ )
 	{
 		for( filename_iterator = 0;
 		     filename_iterator < amount_of_filenames;
@@ -668,6 +712,7 @@ int libvmdk_handle_open_wide(
 				 filenames[ filename_iterator ] );
 			}
 #endif
+		}
 	}
 	if( libvmdk_handle_open_file_io_pool(
 	     handle,
@@ -699,19 +744,18 @@ int libvmdk_handle_open_wide(
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_open_file_io_pool(
-     libvmdk_handle_t *file,
+     libvmdk_handle_t *handle,
      libbfio_handle_t *file_io_pool,
      int flags,
      liberror_error_t **error )
 {
-	libbfio_handle_t *file_io_handle           = NULL;
-	libvmdk_internal_handle_t *internal_handle = NULL;
-	static char *function                      = "libvmdk_handle_open_file_io_pool";
-	uint16_t segment_number                    = 0;
-	int amount_of_handles                      = 0;
-	int file_io_handle_iterator                = 0;
-	int result                                 = 0;
-	uint8_t segment_file_type                  = 0;
+	libbfio_handle_t *file_io_handle                   = NULL;
+	libvmdk_internal_handle_t *internal_handle         = NULL;
+	libvmdk_segment_file_handle_t *segment_file_handle = NULL;
+	static char *function                              = "libvmdk_handle_open_file_io_pool";
+	int amount_of_handles                              = 0;
+	int file_io_handle_iterator                        = 0;
+	int result                                         = 0;
 
 	if( handle == NULL )
 	{
@@ -762,8 +806,8 @@ int libvmdk_handle_open_file_io_pool(
 
 		return( -1 );
 	}
-	if( ( ( flags & LIBEWF_FLAG_READ ) != LIBEWF_FLAG_READ )
-	 && ( ( flags & LIBEWF_FLAG_WRITE ) != LIBEWF_FLAG_WRITE ) )
+	if( ( ( flags & LIBVMDK_FLAG_READ ) != LIBVMDK_FLAG_READ )
+	 && ( ( flags & LIBVMDK_FLAG_WRITE ) != LIBVMDK_FLAG_WRITE ) )
 	{
 		liberror_error_set(
 		 error,
@@ -774,47 +818,13 @@ int libvmdk_handle_open_file_io_pool(
 
 		return( -1 );
 	}
-#ifdef TODO
-	if( ( flags & LIBEWF_FLAG_READ ) == LIBEWF_FLAG_READ )
-	{
-		/* TODO */
-		if( libvmdk_read_io_handle_initialize(
-		     &( internal_handle->read_io_handle ),
-		     error ) != 1 )
-		{
-			liberror_error_set(
-			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create read io handle.",
-			 function );
-
-			return( -1 );
-		}
-	}
-	if( ( flags & LIBEWF_FLAG_WRITE ) == LIBEWF_FLAG_WRITE )
-	{
-		/* TODO */
-		if( libvmdk_write_io_handle_initialize(
-		     &( internal_handle->write_io_handle ),
-		     error ) != 1 )
-		{
-			liberror_error_set(
-			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create write io handle.",
-			 function );
-
-			return( -1 );
-		}
-	}
-#endif
 	internal_handle->io_handle->flags = flags;
 	internal_handle->file_io_pool     = file_io_pool;
 
-	if( ( flags & LIBEWF_FLAG_READ ) == LIBEWF_FLAG_READ )
+	if( ( flags & LIBVMDK_FLAG_READ ) == LIBVMDK_FLAG_READ )
 	{
+		/* TODO look for descriptor file*/
+
 		for( file_io_handle_iterator = 0;
 		     file_io_handle_iterator < amount_of_handles;
 		     file_io_handle_iterator++ )
@@ -848,76 +858,100 @@ int libvmdk_handle_open_file_io_pool(
 				 file_io_handle_iterator );
 			}
 #endif
-
-			result = libvmdk_internal_handle_add_segment_file(
-			          internal_handle,
-			          file_io_handle_iterator,
-			          flags,
-			          &segment_number,
-			          &segment_file_type,
-			          error );
-
-			if( result == -1 )
+			if( libvmdk_segment_file_handle_initialize(
+			     &segment_file_handle,
+			     file_io_handle_iterator,
+			     error ) != 1 )
 			{
 				liberror_error_set(
 				 error,
 				 LIBERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBERROR_RUNTIME_ERROR_APPEND_FAILED,
-				 "%s: unable to add segment file.",
+				 LIBERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create segment file handle.",
 				 function );
 
 				internal_handle->file_io_pool = NULL;
 
 				return( -1 );
 			}
-			else if( result == 0 )
+			if( libvmdk_segment_file_read_file_header(
+			     segment_file_handle,
+			     file_io_pool,
+			     error ) <= -1 )
 			{
 				liberror_error_set(
 				 error,
-				 LIBERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: segment file: %" PRIu16 " already exists.",
-				 function,
-				 segment_number );
+				 LIBERROR_ERROR_DOMAIN_IO,
+				 LIBERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read segment file header.",
+				 function );
+
+				libvmdk_segment_file_handle_free(
+				 (intptr_t *) segment_file_handle,
+				 NULL );
+
+				internal_handle->file_io_pool = NULL;
 
 				return( -1 );
 			}
-			if( (int) segment_number > amount_of_handles )
+			/* TODO handle descriptor file, and raw files
+			 */
+			if( ( segment_file_handle->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
+			 || ( segment_file_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA ) )
+			{
+				if( libvmdk_segment_table_set_handle(
+				     internal_handle->segment_table,
+				     /* TODO */ 0,
+				     segment_file_handle,
+				     error ) != 1 )
+				{
+					liberror_error_set(
+					 error,
+					 LIBERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBERROR_RUNTIME_ERROR_SET_FAILED,
+					 "%s: unable to set handle in segment table.",
+					 function );
+
+					libvmdk_segment_file_handle_free(
+					 (intptr_t *) segment_file_handle,
+					 NULL );
+
+					internal_handle->file_io_pool = NULL;
+
+					return( -1 );
+				}
+				segment_file_handle = NULL;
+			}
+			else
 			{
 				liberror_error_set(
 				 error,
-				 LIBERROR_ERROR_DOMAIN_INPUT,
-				 LIBERROR_INPUT_ERROR_INVALID_DATA,
-				 "%s: invalid segment number: %" PRIu16 " - value out of range or missing segment files.",
-				 function,
-				 segment_number );
+				 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
+				 LIBERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+				 "%s: unsupported segment file type.",
+				 function );
+
+				libvmdk_segment_file_handle_free(
+				 (intptr_t *) segment_file_handle,
+				 NULL );
 
 				internal_handle->file_io_pool = NULL;
 
 				return( -1 );
 			}
 		}
-		result = libvmdk_segment_table_build(
+		result = libvmdk_handle_open_read(
+		          internal_handle,
 		          internal_handle->segment_table,
-		          internal_handle->io_handle,
-		          internal_handle->file_io_pool,
-		          internal_handle->header_sections,
-		          internal_handle->hash_sections,
-		          internal_handle->media_values,
-		          internal_handle->offset_table,
-		          internal_handle->sessions,
-		          internal_handle->acquiry_errors,
-		          internal_handle->single_files,
-		          &( internal_handle->abort ),
 		          error );
 
 		if( result != 1 )
 		{
 			liberror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to build segment table.",
+			 LIBERROR_ERROR_DOMAIN_IO,
+			 LIBERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read segment table.",
 			 function );
 
 			internal_handle->file_io_pool = NULL;
@@ -932,73 +966,127 @@ int libvmdk_handle_open_file_io_pool(
  * Returns 0 if successful or -1 on error
  */
 int libvmdk_handle_close(
-     libvmdk_handle_t *file,
+     libvmdk_handle_t *handle,
      liberror_error_t **error )
 {
 	libvmdk_internal_handle_t *internal_handle = NULL;
-	static char *function                    = "libvmdk_handle_close";
-	int result                               = 0;
+	static char *function                      = "libvmdk_handle_close";
 
-	if( file == NULL )
+	if( handle == NULL )
 	{
 		liberror_error_set(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file.",
+		 "%s: invalid handle.",
 		 function );
 
 		return( -1 );
 	}
-	internal_handle = (libvmdk_internal_handle_t *) file;
+	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-	if( internal_handle->file_io_handle == NULL )
+	if( internal_handle->file_io_pool_created_in_library != 0 )
 	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid file - missing file IO handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_handle->file_io_handle_created_in_library != 0 )
-	{
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libnotify_verbose != 0 )
-		{
-			if( libvmdk_debug_print_read_offsets(
-			     internal_handle->file_io_handle,
-			     error ) != 1 )
-			{
-				liberror_error_set(
-				 error,
-				 LIBERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBERROR_RUNTIME_ERROR_PRINT_FAILED,
-				 "%s: unable to print the read offsets.",
-				 function );
-
-				result = -1;
-			}
-		}
-#endif
-		if( libbfio_handle_close(
-		     internal_handle->file_io_handle,
+		if( libbfio_pool_close_all(
+		     internal_handle->file_io_pool,
 		     error ) != 0 )
 		{
 			liberror_error_set(
 			 error,
 			 LIBERROR_ERROR_DOMAIN_IO,
 			 LIBERROR_IO_ERROR_CLOSE_FAILED,
-			 "%s: unable to close file io handle.",
+			 "%s: unable to close all segment files.",
 			 function );
 
 			return( -1 );
 		}
 	}
-	return( result );
+	return( 0 );
 }
+
+/* Opens VMware Virtual Disk file(s) for reading
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_open_read(
+     libvmdk_internal_handle_t *internal_handle,
+     libvmdk_segment_table_t *segment_table,
+     liberror_error_t **error )
+{
+	libvmdk_segment_file_handle_t *segment_file_handle = NULL;
+	static char *function                              = "libvmdk_handle_open_read";
+	int amount_of_segment_file_handles                 = 0;
+	int segment_number                                 = 0;
+
+	if( internal_handle == NULL )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid internal handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( libvmdk_segment_table_get_amount_of_handles(
+	     segment_table,
+	     &amount_of_segment_file_handles,
+	     error ) != 1 )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve amount of handles in segment table.",
+		 function );
+
+		return( -1 );
+	}
+	/* Read the segment and offset table from the segment file(s)
+	 */
+	for( segment_number = 1;
+	     segment_number < amount_of_segment_file_handles;
+	     segment_number++ )
+	{
+#if defined( HAVE_VERBOSE_OUTPUT )
+		if( libnotify_verbose != 0 )
+		{
+			libnotify_printf(
+			 "%s: reading section list for segment number: %d.\n",
+			 function,
+			 segment_number );
+		}
+#endif
+
+		segment_file_handle = NULL;
+
+		if( libvmdk_segment_table_get_handle(
+		     segment_table,
+		     segment_number,
+		     &segment_file_handle,
+		     error ) != 1 )
+		{
+			liberror_error_set(
+			 error,
+			 LIBERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve handle: %d from segment table.",
+			 function,
+			 segment_number );
+
+			return( -1 );
+		}
+		/* TODO */
+
+		if( internal_handle->abort == 1 )
+		{
+			return( -1 );
+		}
+	}
+	return( 1 );
+}
+
+#ifdef TODO
 
 /* Opens a VMware Virtual Disk file(s) for reading
  * Returns 1 if successful or -1 on error
@@ -1166,4 +1254,6 @@ int libvmdk_handle_open_read(
 	}
 	return( 1 );
 }
+
+#endif
 

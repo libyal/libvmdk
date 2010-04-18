@@ -1,4 +1,6 @@
 TODO
+* check the segment files for a descriptor file
+  otherwise look for the descriptor in one of the segment files
 * add glob functions
 
 API
@@ -17,9 +19,9 @@ File format
 Deployment:
 * update manuals
 * create debian package files
-* update macosx package files
-* update codegear files
-* check msvcpp files
+* create macosx package files
+* create codegear files
+* create msvcpp files
 
 20100418
 * added libcstring

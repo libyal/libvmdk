@@ -11,8 +11,7 @@ SUBDIRS = \
 	libvmdk \
 	libsystem \
 	vmdktools \
-	manuals \
-	msvscpp
+	manuals
 
 REDHAT_FILES = \
 	libvmdk.spec \

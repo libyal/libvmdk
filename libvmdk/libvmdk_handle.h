@@ -29,7 +29,9 @@
 
 #include "libvmdk_extern.h"
 #include "libvmdk_io_handle.h"
+#include "libvmdk_libbfio.h"
 #include "libvmdk_offset_table.h"
+#include "libvmdk_segment_table.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -39,10 +41,6 @@ typedef struct libvmdk_internal_handle libvmdk_internal_handle_t;
 
 struct libvmdk_internal_handle
 {
-	/* The grain offset table
-	 */
-	libvmdk_offset_table_t *offset_table;
-
 	/* The io handle
 	 */
 	libvmdk_io_handle_t *io_handle;
@@ -54,6 +52,18 @@ struct libvmdk_internal_handle
 	/* Value to indicate if the pool was created inside the library
 	 */
 	uint8_t file_io_pool_created_in_library;
+
+	/* The maximum amount of open handles in the pool
+	 */
+	int maximum_amount_of_open_handles;
+
+	/* The list of segment files
+	 */
+	libvmdk_segment_table_t *segment_table;
+
+	/* The grain offset table
+	 */
+	libvmdk_offset_table_t *offset_table;
 
 	/* Value to indicate if abort was signalled
 	 */
@@ -88,7 +98,7 @@ LIBVMDK_EXTERN int libvmdk_handle_open_wide(
                     liberror_error_t **error );
 #endif
 
-LIBVMDK_EXTERN int libvmdk_handle_open_file_io_handle(
+LIBVMDK_EXTERN int libvmdk_handle_open_file_io_pool(
                     libvmdk_handle_t *handle,
                     libbfio_pool_t *file_io_pool,
                     int flags,
@@ -100,7 +110,13 @@ LIBVMDK_EXTERN int libvmdk_handle_close(
 
 int libvmdk_handle_open_read(
      libvmdk_internal_handle_t *internal_handle,
+     libvmdk_segment_table_t *segment_table,
      liberror_error_t **error );
+
+LIBVMDK_EXTERN int libvmdk_handle_set_maximum_amount_of_open_handles(
+                    libvmdk_handle_t *handle,
+                    int maximum_amount_of_open_handles,
+                    liberror_error_t **error );
 
 #if defined( __cplusplus )
 }
