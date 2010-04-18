@@ -1,5 +1,5 @@
 /*
- * libvmdk Input/Output (IO) handle
+ * Input/Output (IO) handle
  *
  * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
  *
@@ -32,7 +32,6 @@
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_offset_table.h"
-#include "libvmdk_string.h"
 
 #include "cowd_sparse_file_header.h"
 #include "vmdk_sparse_file_header.h"

@@ -1,4 +1,4 @@
-.Dd September 12, 2009
+.Dd April 18, 2010
 .Dt libvmdk 3
 .Os libvmdk
 .Sh NAME
@@ -47,21 +47,21 @@ Error functions
 .Pp
 File functions
 .Ft int
-.Fn libvmdk_file_initialize "libvmdk_file_t **file, libvmdk_error_t **error"
+.Fn libvmdk_handle_initialize "libvmdk_handle_t **file, libvmdk_error_t **error"
 .Ft int
-.Fn libvmdk_file_free "libvmdk_file_t **file, libvmdk_error_t **error"
+.Fn libvmdk_handle_free "libvmdk_handle_t **file, libvmdk_error_t **error"
 .Ft int
-.Fn libvmdk_file_open "libvmdk_file_t *file, const char *filename, int flags, libvmdk_error_t **error"
+.Fn libvmdk_handle_open "libvmdk_handle_t *file, const char *filename, int flags, libvmdk_error_t **error"
 .Ft int
-.Fn libvmdk_file_close "libvmdk_file_t *file, libvmdk_error_t **error"
+.Fn libvmdk_handle_close "libvmdk_handle_t *file, libvmdk_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
-.Fn libvmdk_file_open_wide "libvmdk_file_t *file, const wchar_t *filename, int flags, libvmdk_error_t **error"
+.Fn libvmdk_handle_open_wide "libvmdk_handle_t *file, const wchar_t *filename, int flags, libvmdk_error_t **error"
 .Pp
 Available when compiled with libbfio support:
 .Ft int
-.Fn libvmdk_file_open_file_io_handle "libvmdk_file_t *file, libbfio_handle_t *file_io_handle, int flags, libvmdk_error_t **error"
+.Fn libvmdk_handle_open_file_io_handle "libvmdk_handle_t *file, libbfio_handle_t *file_io_handle, int flags, libvmdk_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libvmdk_get_version

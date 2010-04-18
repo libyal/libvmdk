@@ -1,5 +1,5 @@
 TODO
-* move file io handle into libvmdk_file
+* add glob functions
 
 API
 * add functions to access storage media data
@@ -12,7 +12,7 @@ library
 
 File format
 * complete COWD support
-* addd support for descriptor file
+* add support for descriptor file
 
 Deployment:
 * update manuals
@@ -20,6 +20,13 @@ Deployment:
 * update macosx package files
 * update codegear files
 * check msvcpp files
+
+20100418
+* added libcstring
+* updated common, liberror, libnotify, libuna, libbfio, libsystem
+* changed libvmdk_file to libvmdk_handle
+* added support for multiple source files
+* worked on descriptor file
 
 20100314
 * string fix in vmdkinfo

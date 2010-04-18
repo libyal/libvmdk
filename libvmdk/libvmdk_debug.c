@@ -29,7 +29,6 @@
 #include "libvmdk_debug.h"
 #include "libvmdk_definitions.h"
 #include "libvmdk_libbfio.h"
-#include "libvmdk_string.h"
 
 #if defined( HAVE_DEBUG_OUTPUT )
 

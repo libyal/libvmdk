@@ -59,7 +59,7 @@ void vmdkoutput_copyright_fprint(
 	}
 	fprintf(
 	 stream,
-	 "Copyright (c) 2009, Joachim Metz, Hoffmann Investigations <%s> and contributors.\n"
+	 "Copyright (c) 2009-2010, Joachim Metz <%s> and contributors.\n"
 	 "This is free software; see the source for copying conditions. There is NO\n"
 	 "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n",
 	 PACKAGE_BUGREPORT );

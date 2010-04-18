@@ -1,6 +1,7 @@
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
+	-I$(top_srcdir)/libcstring \
 	-I$(top_srcdir)/liberror \
 	-I$(top_srcdir)/libsystem \
 	@LIBUNA_CPPFLAGS@ \
@@ -17,6 +18,7 @@ vmdkinfo_SOURCES = \
 	vmdkoutput.c vmdkoutput.h
 
 vmdkinfo_LDADD  = \
+	../libcstring/libcstring.la \
 	../liberror/liberror.la \
 	../libvmdk/libvmdk.la \
 	../libsystem/libsystem.la \

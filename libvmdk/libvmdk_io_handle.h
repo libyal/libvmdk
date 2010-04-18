@@ -1,5 +1,5 @@
 /*
- * libvmdk Input/Output (IO) handle
+ * Input/Output (IO) handle
  *
  * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
  *
@@ -41,6 +41,10 @@ typedef struct libvmdk_io_handle libvmdk_io_handle_t;
 
 struct libvmdk_io_handle
 {
+	/* The flags
+	 */
+	uint8_t flags;
+
 	/* The file type
 	 */
 	uint8_t file_type;

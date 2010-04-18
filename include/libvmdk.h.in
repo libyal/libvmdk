@@ -145,64 +145,66 @@ LIBVMDK_EXTERN int libvmdk_error_backtrace_sprint(
  * File functions
  * ------------------------------------------------------------------------- */
 
-/* Initializes the VMware Virtual Disk file
+/* Initializes the VMware Virtual Disk file(s)
  * Make sure the value file is pointing to is set to NULL
  * Returns 1 if successful or -1 on error
  */
-LIBVMDK_EXTERN int libvmdk_file_initialize(
-                    libvmdk_file_t **file,
+LIBVMDK_EXTERN int libvmdk_handle_initialize(
+                    libvmdk_handle_t **file,
                     libvmdk_error_t **error );
 
-/* Frees an exisisting VMware Virtual Disk file
+/* Frees an exisisting VMware Virtual Disk file(s)
  * Returns 1 if successful or -1 on error
  */
-LIBVMDK_EXTERN int libvmdk_file_free(
-                    libvmdk_file_t **file,
+LIBVMDK_EXTERN int libvmdk_handle_free(
+                    libvmdk_handle_t **file,
                     libvmdk_error_t **error );
 
-/* Signals the libvmdk file to abort its current activity
+/* Signals the libvmdk handle to abort its current activity
  * Returns 1 if successful or -1 on error
  */
-LIBVMDK_EXTERN int libvmdk_file_signal_abort(
-                    libvmdk_file_t *file,
+LIBVMDK_EXTERN int libvmdk_handle_signal_abort(
+                    libvmdk_handle_t *file,
                     libvmdk_error_t **error );
 
-/* Opens a VMware Virtual Disk file
+/* Opens a VMware Virtual Disk file(s)
  * Returns 1 if successful or -1 on error
  */
-LIBVMDK_EXTERN int libvmdk_file_open(
-                    libvmdk_file_t *file,
-                    const char *filename,
+LIBVMDK_EXTERN int libvmdk_handle_open(
+                    libvmdk_handle_t *file,
+                    char * const filenames[],
+                    int amount_of_filenames,
                     int flags,
                     libvmdk_error_t **error );
 
 #if defined( LIBVMDK_HAVE_WIDE_CHARACTER_TYPE )
-/* Opens a VMware Virtual Disk file
+/* Opens a VMware Virtual Disk file(s)
  * Returns 1 if successful or -1 on error
  */
-LIBVMDK_EXTERN int libvmdk_file_open_wide(
-                    libvmdk_file_t *file,
-                    const wchar_t *filename,
+LIBVMDK_EXTERN int libvmdk_handle_open_wide(
+                    libvmdk_handle_t *file,
+                    wchar_t * const filenames[],
+                    int amount_of_filenames,
                     int flags,
                     libvmdk_error_t **error );
 #endif
 
 #if defined( LIBVMDK_HAVE_BFIO )
-/* Opens a VMware Virtual Disk file using a Basic File IO (bfio) handle
+/* Opens a VMware Virtual Disk file(s) using a Basic File IO (bfio) pool
  * Returns 1 if successful or -1 on error
  */
-LIBVMDK_EXTERN int libvmdk_file_open_file_io_handle(
-                    libvmdk_file_t *file,
-                    libbfio_handle_t *file_io_handle,
+LIBVMDK_EXTERN int libvmdk_handle_open_file_io_pool(
+                    libvmdk_handle_t *file,
+                    libbfio_pool_t *file_io_pool,
                     int flags,
                     libvmdk_error_t **error );
 #endif
 
-/* Closes a VMware Virtual Disk file
+/* Closes a VMware Virtual Disk file(s)
  * Returns 0 if successful or -1 on error
  */
-LIBVMDK_EXTERN int libvmdk_file_close(
-                    libvmdk_file_t *file,
+LIBVMDK_EXTERN int libvmdk_handle_close(
+                    libvmdk_handle_t *file,
                     libvmdk_error_t **error );
 
 #if defined( __cplusplus )

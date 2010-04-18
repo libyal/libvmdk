@@ -1,5 +1,5 @@
 /*
- * Shows information obtained from a VMware Virtual Disk (VMDK) file
+ * Shows information obtained from a VMware Virtual Disk (VMDK) file(s)
  *
  * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
  *
@@ -57,26 +57,26 @@ void usage_fprint(
 	{
 		return;
 	}
-	fprintf( stream, "Use vmdkinfo to determine information about a VMware Virtual Disk (VMDK) file.\n\n" );
+	fprintf( stream, "Use vmdkinfo to determine information about a VMware Virtual Disk (VMDK) file(s).\n\n" );
 
-	fprintf( stream, "Usage: vmdkinfo [ -hvV ] source\n\n" );
+	fprintf( stream, "Usage: vmdkinfo [ -hvV ] vmdk_files\n\n" );
 
-	fprintf( stream, "\tsource: the source file\n\n" );
+	fprintf( stream, "\tvmdk_files: the entire set of VMDK segment files or the one containing the descriptor\n\n" );
 
-	fprintf( stream, "\t-h:     shows this help\n" );
-	fprintf( stream, "\t-v:     verbose output to stderr\n" );
-	fprintf( stream, "\t-V:     print version\n" );
+	fprintf( stream, "\t-h:         shows this help\n" );
+	fprintf( stream, "\t-v:         verbose output to stderr\n" );
+	fprintf( stream, "\t-V:         print version\n" );
 }
 
 /* Prints file information
  * Returns 1 if successful or -1 on error
  */
-int vmdkinfo_file_info_fprint(
+int vmdkinfo_handle_info_fprint(
      FILE *stream,
-     libvmdk_file_t *file,
+     libvmdk_handle_t *handle,
      libvmdk_error_t **error )
 {
-	static char *function = "vmdkinfo_file_info_fprint";
+	static char *function = "vmdkinfo_handle_info_fprint";
 
 	if( stream == NULL )
 	{
@@ -89,13 +89,13 @@ int vmdkinfo_file_info_fprint(
 
 		return( -1 );
 	}
-	if( file == NULL )
+	if( handle == NULL )
 	{
 		liberror_error_set(
 		 error,
 		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file.",
+		 "%s: invalid handle.",
 		 function );
 
 		return( -1 );
@@ -119,12 +119,12 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libvmdk_error_t *error        = NULL;
-	libvmdk_file_t *vmdk_file     = NULL;
-	libsystem_character_t *source = NULL;
-	char *program                 = "vmdkinfo";
-	libsystem_integer_t option    = 0;
-	int verbose                   = 0;
+	libvmdk_error_t *error                = NULL;
+	libvmdk_handle_t *vmdk_handle         = NULL;
+	libcstring_system_character_t *source = NULL;
+	char *program                         = "vmdkinfo";
+	libcstring_system_integer_t option    = 0;
+	int verbose                           = 0;
 
 	libsystem_notify_set_stream(
 	 stderr,
@@ -153,15 +153,15 @@ int main( int argc, char * const argv[] )
 	while( ( option = libsystem_getopt(
 	                   argc,
 	                   argv,
-	                   _LIBSYSTEM_CHARACTER_T_STRING( "hvV" ) ) ) != (libsystem_integer_t) -1 )
+	                   _LIBCSTRING_SYSTEM_STRING( "hvV" ) ) ) != (libcstring_system_integer_t) -1 )
 	{
 		switch( option )
 		{
-			case (libsystem_integer_t) '?':
+			case (libcstring_system_integer_t) '?':
 			default:
 				fprintf(
 				 stderr,
-				 "Invalid argument: %" PRIs_LIBSYSTEM "\n",
+				 "Invalid argument: %" PRIs_LIBCSTRING_SYSTEM "\n",
 				 argv[ optind ] );
 
 				usage_fprint(
@@ -169,18 +169,18 @@ int main( int argc, char * const argv[] )
 
 				return( EXIT_FAILURE );
 
-			case (libsystem_integer_t) 'h':
+			case (libcstring_system_integer_t) 'h':
 				usage_fprint(
 				 stdout );
 
 				return( EXIT_SUCCESS );
 
-			case (libsystem_integer_t) 'v':
+			case (libcstring_system_integer_t) 'v':
 				verbose = 1;
 
 				break;
 
-			case (libsystem_integer_t) 'V':
+			case (libcstring_system_integer_t) 'V':
 				vmdkoutput_copyright_fprint(
 				 stdout );
 
@@ -191,7 +191,7 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stderr,
-		 "Missing source file.\n" );
+		 "Missing source file(s).\n" );
 
 		usage_fprint(
 		 stdout );
@@ -208,13 +208,13 @@ int main( int argc, char * const argv[] )
 	libvmdk_notify_set_verbose(
 	 verbose );
 
-	if( libvmdk_file_initialize(
-	     &vmdk_file,
+	if( libvmdk_handle_initialize(
+	     &vmdk_handle,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to initialize libvmdk file.\n" );
+		 "Unable to initialize libvmdk handle.\n" );
 
 		libsystem_notify_print_error_backtrace(
 		 error );
@@ -223,15 +223,17 @@ int main( int argc, char * const argv[] )
 
 		return( EXIT_FAILURE );
 	}
+	/* TODO allow for multiple files */
+
 #if defined( LIBSYSTEM_HAVE_WIDE_CHARACTER )
-	if( libvmdk_file_open_wide(
-	     vmdk_file,
+	if( libvmdk_handle_open_wide(
+	     vmdk_handle,
 	     source,
 	     LIBVMDK_OPEN_READ,
 	     &error ) != 1 )
 #else
-	if( libvmdk_file_open(
-	     vmdk_file,
+	if( libvmdk_handle_open(
+	     vmdk_handle,
 	     source,
 	     LIBVMDK_OPEN_READ,
 	     &error ) != 1 )
@@ -239,7 +241,7 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stderr,
-		 "Error opening file: %" PRIs_LIBSYSTEM ".\n",
+		 "Error opening file(s).\n",
 		 argv[ optind ] );
 
 		libsystem_notify_print_error_backtrace(
@@ -247,39 +249,39 @@ int main( int argc, char * const argv[] )
 		libvmdk_error_free(
 		 &error );
 
-		libvmdk_file_free(
-		 &vmdk_file,
+		libvmdk_handle_free(
+		 &vmdk_handle,
 		 NULL );
 
 		return( EXIT_FAILURE );
 	}
-	if( vmdkinfo_file_info_fprint(
+	if( vmdkinfo_handle_info_fprint(
 	     stdout,
-	     vmdk_file,
+	     vmdk_handle,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to print file information.\n" );
+		 "Unable to print handle information.\n" );
 
 		libsystem_notify_print_error_backtrace(
 		 error );
 		libvmdk_error_free(
 		 &error );
 
-		libvmdk_file_free(
-		 &vmdk_file,
+		libvmdk_handle_free(
+		 &vmdk_handle,
 		 NULL );
 
 		return( EXIT_FAILURE );
 	}
-	if( libvmdk_file_close(
-	     vmdk_file,
+	if( libvmdk_handle_close(
+	     vmdk_handle,
 	     &error ) != 0 )
 	{
 		fprintf(
 		 stderr,
-		 "Error closing file: %" PRIs_LIBSYSTEM ".\n",
+		 "Error closing file(s).\n",
 		 argv[ optind ] );
 
 		libsystem_notify_print_error_backtrace(
@@ -287,19 +289,19 @@ int main( int argc, char * const argv[] )
 		libvmdk_error_free(
 		 &error );
 
-		libvmdk_file_free(
-		 &vmdk_file,
+		libvmdk_handle_free(
+		 &vmdk_handle,
 		 NULL );
 
 		return( EXIT_FAILURE );
 	}
-	if( libvmdk_file_free(
-	     &vmdk_file,
+	if( libvmdk_handle_free(
+	     &vmdk_handle,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to free libvmdk file.\n" );
+		 "Unable to free libvmdk handle.\n" );
 
 		libsystem_notify_print_error_backtrace(
 		 error );
