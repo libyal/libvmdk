@@ -75,18 +75,16 @@ int libvmdk_descriptor_file_close(
      libvmdk_descriptor_file_t *descriptor_file,
      liberror_error_t **error );
 
-int libvmdk_descriptor_file_read_section(
+int libvmdk_descriptor_file_read_header(
      libvmdk_descriptor_file_t *descriptor_file,
-     const uint8_t *section_identifier,
-     size_t section_identifier_length,
-     libvmdk_values_table_t *values_table,
      liberror_error_t **error );
 
-int libvmdk_descriptor_file_write_section(
+int libvmdk_descriptor_file_read_extents(
      libvmdk_descriptor_file_t *descriptor_file,
-     const uint8_t *section_identifier,
-     size_t section_identifier_length,
-     libvmdk_values_table_t *values_table,
+     liberror_error_t **error );
+
+int libvmdk_descriptor_file_read_disk_database(
+     libvmdk_descriptor_file_t *descriptor_file,
      liberror_error_t **error );
 
 #if defined( __cplusplus )
