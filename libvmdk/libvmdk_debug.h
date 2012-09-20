@@ -1,7 +1,7 @@
 /*
  * Debug functions
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -25,9 +25,8 @@
 #include <common.h>
 #include <types.h>
 
-#include <liberror.h>
-
 #include "libvmdk_libbfio.h"
+#include "libvmdk_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -37,11 +36,11 @@ extern "C" {
 
 int libvmdk_debug_print_flags(
      uint32_t flags,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_debug_print_read_offsets(
      libbfio_handle_t *file_io_handle,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 #endif
 

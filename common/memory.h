@@ -1,9 +1,7 @@
 /*
  * Memory functions
  *
- * Copyright (c) 2010, Joachim Metz <jbmetz@users.sourceforge.net>
- * Copyright (c) 2006-2010, Joachim Metz <forensics@hoffmannbv.nl>,
- * Hoffmann Investigations.
+ * Copyright (c) 2006-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -25,10 +23,6 @@
 #define _MEMORY_H
 
 #include "common.h"
-
-#if defined( MEMWATCH )
-#include "memwatch.h"
-#endif
 
 #if defined( HAVE_GLIB_H )
 #include <glib.h>
@@ -52,10 +46,20 @@ extern "C" {
 #define memory_allocate( size ) \
 	g_malloc( (gsize) size )
 
-#elif defined( HAVE_MALLOC ) || defined( WINAPI )
+#elif defined( HAVE_MALLOC ) || ( defined( WINAPI ) && defined( USE_CRT_FUNCTIONS ) )
 #define memory_allocate( size ) \
 	malloc( size )
+
+#elif defined( WINAPI )
+#define memory_allocate( size ) \
+	HeapAlloc( GetProcessHeap(), 0, (SIZE_T) size )
 #endif
+
+#define memory_allocate_structure( type ) \
+	(type *) memory_allocate( sizeof( type ) )
+
+#define memory_allocate_structure_as_value( type ) \
+	(intptr_t *) memory_allocate( sizeof( type ) )
 
 /* Memory reallocation
  */
@@ -63,9 +67,17 @@ extern "C" {
 #define memory_reallocate( buffer, size ) \
 	g_realloc( (gpointer) buffer, (gsize) size )
 
-#elif defined( HAVE_REALLOC ) || defined( WINAPI )
+#elif defined( HAVE_REALLOC ) || ( defined( WINAPI ) && defined( USE_CRT_FUNCTIONS ) )
 #define memory_reallocate( buffer, size ) \
 	realloc( (void *) buffer, size )
+
+#elif defined( WINAPI )
+/* HeapReAlloc does not allocate empty (NULL) buffers as realloc does
+ */
+#define memory_reallocate( buffer, size ) \
+	( buffer == NULL ) ? \
+	HeapAlloc( GetProcessHeap(), 0, (SIZE_T) size ) : \
+	HeapReAlloc( GetProcessHeap(), 0, (LPVOID) buffer, (SIZE_T) size )
 #endif
 
 /* Memory free
@@ -74,9 +86,13 @@ extern "C" {
 #define memory_free( buffer ) \
 	g_free( (gpointer) buffer )
 
-#elif defined( HAVE_FREE ) || defined( WINAPI )
+#elif defined( HAVE_FREE ) || ( defined( WINAPI ) && defined( USE_CRT_FUNCTIONS ) )
 #define memory_free( buffer ) \
 	free( (void *) buffer )
+
+#elif defined( WINAPI )
+#define memory_free( buffer ) \
+	HeapFree( GetProcessHeap(), 0, (LPVOID) buffer )
 #endif
 
 /* Memory compare

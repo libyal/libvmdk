@@ -11,12 +11,8 @@ EXTRA_DIST = \
 	types.h \
 	types.h.in
 
-if HAVE_MEMWATCH
-noinst_LTLIBRARIES = libmemwatch.la
-
-libmemwatch_la_SOURCES = \
-        memwatch.c memwatch.h
-endif
+MAINTAINERCLEANFILES = \
+	Makefile.in
 
 distclean: clean
 	/bin/rm -f config.h

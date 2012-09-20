@@ -1,9 +1,7 @@
 /*
  * Configuration file for Microsoft Visual Studio C++ compiler
  *
- * Copyright (c) 2010, Joachim Metz <jbmetz@users.sourceforge.net>
- * Copyright (c) 2006-2010, Joachim Metz <forensics@hoffmannbv.nl>,
- * Hoffmann Investigations.
+ * Copyright (c) 2006-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -26,40 +24,16 @@
 
 /* Define to the address where bug reports for this package should be sent.
  */
-#define PACKAGE_BUGREPORT "forensics@hoffmannbv.nl"
+#define PACKAGE_BUGREPORT "joachim.metz@gmail.com"
 
-/* Use the safe size and offset types
+/* Define the size of the wide character for WINAPI
  */
-#define HAVE_SIZE32_T   0
-#define HAVE_SSIZE32_T  0
-#define HAVE_SIZE64_T   0
-#define HAVE_SSIZE64_T  0
-#define HAVE_OFF64_T    0
-
-/* Define the wide character type
- */
-#if !defined( HAVE_WCHAR_H )
-#define HAVE_WCHAR_H		1
+#if !defined( SIZEOF_WCHAR_T )
+#define SIZEOF_WCHAR_T          2
 #endif
-
-#if defined( SIZEOF_WCHAR_T )
-#undef SIZEOF_WCHAR_T
-#endif
-
-#define SIZEOF_WCHAR_T		2
 
 /* Use the C Runtime (CRT) functions instead of the WINAPI functions
 #define USE_CRT_FUNCTIONS	1
- */
-
-/* Disables a Windows 98 safe version of GetFileSizeEx
- * uses a hardcoded version
-#define HAVE_GETFILESIZEEX	1
- */
-
-/* Disables a Windows 98 safe version of SetFilePointerEx
- * uses a hardcoded version
-#define HAVE_SETFILEPOINTEREX	1
  */
 
 /* Enable verbose output
@@ -69,6 +43,14 @@
 /* Enable debug output
 #define HAVE_DEBUG_OUTPUT	1
  */
+
+/* Disable warning C4127: conditional expression is constant
+ */
+#pragma warning( disable : 4127 )
+
+/* Disable warning C4201: nonstandard extension used : nameless struct/union
+ */
+#pragma warning( disable : 4201 )
 
 #endif
 

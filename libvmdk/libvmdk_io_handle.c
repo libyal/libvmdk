@@ -1,7 +1,7 @@
 /*
  * Input/Output (IO) handle
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -24,13 +24,12 @@
 #include <memory.h>
 #include <types.h>
 
-#include <liberror.h>
-#include <libnotify.h>
-
 #include "libvmdk_debug.h"
 #include "libvmdk_definitions.h"
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
+#include "libvmdk_libcerror.h"
+#include "libvmdk_libcnotify.h"
 #include "libvmdk_offset_table.h"
 
 #include "cowd_sparse_file_header.h"
@@ -42,58 +41,71 @@
  */
 int libvmdk_io_handle_initialize(
      libvmdk_io_handle_t **io_handle,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_io_handle_initialize";
 
 	if( io_handle == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid io handle.",
 		 function );
 
 		return( -1 );
 	}
+	if( *io_handle != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid IO handle value already set.",
+		 function );
+
+		return( -1 );
+	}
+	*io_handle = memory_allocate_structure(
+	              libvmdk_io_handle_t );
+
 	if( *io_handle == NULL )
 	{
-		*io_handle = (libvmdk_io_handle_t *) memory_allocate(
-		                                      sizeof( libvmdk_io_handle_t ) );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create io handle.",
+		 function );
 
-		if( *io_handle == NULL )
-		{
-			liberror_error_set(
-			 error,
-			 LIBERROR_ERROR_DOMAIN_MEMORY,
-			 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create io handle.",
-			 function );
+		goto on_error;
+	}
+	if( memory_set(
+	     *io_handle,
+	     0,
+	     sizeof( libvmdk_io_handle_t ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear file.",
+		 function );
 
-			return( -1 );
-		}
-		if( memory_set(
-		     *io_handle,
-		     0,
-		     sizeof( libvmdk_io_handle_t ) ) == NULL )
-		{
-			liberror_error_set(
-			 error,
-			 LIBERROR_ERROR_DOMAIN_MEMORY,
-			 LIBERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear file.",
-			 function );
-
-			memory_free(
-			 *io_handle );
-
-			*io_handle = NULL;
-
-			return( -1 );
-		}
+		goto on_error;
 	}
 	return( 1 );
+
+on_error:
+	if( *io_handle != NULL )
+	{
+		memory_free(
+		 *io_handle );
+
+		*io_handle = NULL;
+	}
+	return( -1 );
 }
 
 /* Frees an exisisting io handle
@@ -101,16 +113,16 @@ int libvmdk_io_handle_initialize(
  */
 int libvmdk_io_handle_free(
      libvmdk_io_handle_t **io_handle,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_io_handle_free";
 
 	if( io_handle == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid io handle.",
 		 function );
 
@@ -138,7 +150,7 @@ int libvmdk_io_handle_read_grain_directory(
      uint32_t amount_of_grain_table_entries,
      size64_t grain_size,
      uint8_t is_secondary_grain_directory,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	uint8_t *grain_directory_data           = NULL;
 	uint8_t *sector_blocks_data             = NULL;
@@ -151,10 +163,10 @@ int libvmdk_io_handle_read_grain_directory(
 
 	if( io_handle == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid io handle.",
 		 function );
 
@@ -162,10 +174,10 @@ int libvmdk_io_handle_read_grain_directory(
 	}
 	if( offset_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid offset table.",
 		 function );
 
@@ -175,14 +187,14 @@ int libvmdk_io_handle_read_grain_directory(
 
 	if( grain_directory_data_size > (size_t) SSIZE_MAX )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
 		 "%s: invalid grain directory size value exceeds maximum.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	sector_blocks_data_size = grain_directory_data_size / 512;
 
@@ -193,45 +205,44 @@ int libvmdk_io_handle_read_grain_directory(
 	sector_blocks_data_size *= 512;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libnotify_verbose != 0 )
+	if( libcnotify_verbose != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 		 "%s: reading grain directory at offset: %" PRIu64 " (0x%08" PRIx64 ")\n",
 		 function,
 		 grain_directory_offset,
 		 grain_directory_offset );
 	}
 #endif
-
 	if( libbfio_handle_seek_offset(
 	     file_io_handle,
 	     grain_directory_offset,
 	     SEEK_SET,
 	     error ) == -1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_SEEK_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
 		 "%s: unable to seek grain directory offset: %" PRIu64 ".",
 		 function,
 		 grain_directory_offset );
 
-		return( -1 );
+		goto on_error;
 	}
 	sector_blocks_data = (uint8_t *) memory_allocate(
-	                                  sector_blocks_data_size );
+	                                  sizeof( uint8_t ) * sector_blocks_data_size );
 
 	if( sector_blocks_data == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
 		 "%s: unable to create sector blocks data.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	read_count = libbfio_handle_read(
 	              file_io_handle,
@@ -241,25 +252,22 @@ int libvmdk_io_handle_read_grain_directory(
 
 	if( read_count != (ssize_t) sector_blocks_data_size )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_READ_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
 		 "%s: unable to read grain directory data.",
 		 function );
 
-		memory_free(
-		 sector_blocks_data );
-
-		return( -1 );
+		goto on_error;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libnotify_verbose != 0 )
+	if( libcnotify_verbose != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 		 "%s: grain directory data:\n",
 		 function );
-		libnotify_print_data(
+		libcnotify_print_data(
 		 sector_blocks_data,
 		 sector_blocks_data_size );
 	}
@@ -276,9 +284,9 @@ int libvmdk_io_handle_read_grain_directory(
 		 grain_table_offset );
 		 
 #if defined( HAVE_DEBUG_OUTPUT )
-		if( libnotify_verbose != 0 )
+		if( libcnotify_verbose != 0 )
 		{
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: grain directory entry: %03" PRIu32 " offset: 0x%08" PRIx32 " (%" PRIu32 ")\n",
 			 function,
 			 grain_directory_entry_iterator,
@@ -286,7 +294,6 @@ int libvmdk_io_handle_read_grain_directory(
 			 grain_table_offset );
 		}
 #endif
-
 		grain_table_offset *= LIBVMDK_SECTOR_SIZE;
 
 		if( libvmdk_io_handle_read_grain_table(
@@ -299,31 +306,40 @@ int libvmdk_io_handle_read_grain_directory(
 		     is_secondary_grain_directory,
 		     error ) != 1 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_IO,
-			 LIBERROR_IO_ERROR_READ_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
 			 "%s: unable to read grain table.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		grain_directory_data += sizeof( uint32_t );
 	}
-	/* TODO check if remainder of sector block is emtpy */
+/* TODO check if remainder of sector block is emtpy */
 
 	memory_free(
 	 sector_blocks_data );
 
+	sector_blocks_data = NULL;
+
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libnotify_verbose != 0 )
+	if( libcnotify_verbose != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 		 "\n" );
 	}
 #endif
-
 	return( 1 );
+
+on_error:
+	if( sector_blocks_data != NULL )
+	{
+		memory_free(
+		 sector_blocks_data );
+	}
+	return( -1 );
 }
 
 /* Reads a grain table
@@ -337,7 +353,7 @@ int libvmdk_io_handle_read_grain_table(
      uint32_t amount_of_grain_table_entries,
      size64_t grain_size,
      uint8_t is_secondary_grain_directory,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	uint8_t *sector_blocks_data    = NULL;
 	static char *function          = "libvmdk_io_handle_read_grain_table";
@@ -347,10 +363,10 @@ int libvmdk_io_handle_read_grain_table(
 
 	if( io_handle == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid io handle.",
 		 function );
 
@@ -358,10 +374,10 @@ int libvmdk_io_handle_read_grain_table(
 	}
 	if( offset_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid offset table.",
 		 function );
 
@@ -371,14 +387,14 @@ int libvmdk_io_handle_read_grain_table(
 
 	if( grain_table_data_size > (size_t) SSIZE_MAX )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
 		 "%s: invalid grain table size value exceeds maximum.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	sector_blocks_data_size = grain_table_data_size / 512;
 
@@ -389,45 +405,44 @@ int libvmdk_io_handle_read_grain_table(
 	sector_blocks_data_size *= 512;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libnotify_verbose != 0 )
+	if( libcnotify_verbose != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 		 "%s: reading grain table at offset: %" PRIu64 " (0x%08" PRIx64 ")\n",
 		 function,
 		 grain_table_offset,
 		 grain_table_offset );
 	}
 #endif
-
 	if( libbfio_handle_seek_offset(
 	     file_io_handle,
 	     grain_table_offset,
 	     SEEK_SET,
 	     error ) == -1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_SEEK_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
 		 "%s: unable to seek grain table offset: %" PRIu64 ".",
 		 function,
 		 grain_table_offset );
 
-		return( -1 );
+		goto on_error;
 	}
 	sector_blocks_data = (uint8_t *) memory_allocate(
-	                                  sector_blocks_data_size );
+	                                  sizeof( uint8_t ) * sector_blocks_data_size );
 
 	if( sector_blocks_data == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
 		 "%s: unable to create sector blocks data.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	read_count = libbfio_handle_read(
 	              file_io_handle,
@@ -437,30 +452,26 @@ int libvmdk_io_handle_read_grain_table(
 
 	if( read_count != (ssize_t) sector_blocks_data_size )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_READ_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
 		 "%s: unable to read grain table data.",
 		 function );
 
-		memory_free(
-		 sector_blocks_data );
-
-		return( -1 );
+		goto on_error;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libnotify_verbose != 0 )
+	if( libcnotify_verbose != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 		 "%s: grain table data:\n",
 		 function );
-		libnotify_print_data(
+		libcnotify_print_data(
 		 sector_blocks_data,
 		 sector_blocks_data_size );
 	}
 #endif
-
 	if( is_secondary_grain_directory ==  0 )
 	{
 		if( libvmdk_offset_table_fill(
@@ -471,17 +482,14 @@ int libvmdk_io_handle_read_grain_table(
 		     grain_size,
 		     error ) != 1 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_SET_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
 			 "%s: unable to fill offset table.",
 			 function );
 
-			memory_free(
-			 sector_blocks_data );
-
-			return( -1 );
+			goto on_error;
 		}
 	}
 	else
@@ -494,32 +502,38 @@ int libvmdk_io_handle_read_grain_table(
 		     grain_size,
 		     error ) != 1 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_SET_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
 			 "%s: unable to compare offset table.",
 			 function );
 
-			memory_free(
-			 sector_blocks_data );
-
-			return( -1 );
+			goto on_error;
 		}
 	}
-	/* TODO check if remainder of sector block is emtpy */
+/* TODO check if remainder of sector block is emtpy */
 
 	memory_free(
 	 sector_blocks_data );
 
+	sector_blocks_data = NULL;
+
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libnotify_verbose != 0 )
+	if( libcnotify_verbose != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 		 "\n" );
 	}
 #endif
-
 	return( 1 );
+
+on_error:
+	if( sector_blocks_data != NULL )
+	{
+		memory_free(
+		 sector_blocks_data );
+	}
+	return( -1 );
 }
 

@@ -1,7 +1,7 @@
 /*
  * Descriptor file functions
  *
- * Copyright (c) 2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2010, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -26,10 +26,8 @@
 #include <file_stream.h>
 #include <types.h>
 
-#include <libcstring.h>
-#include <liberror.h>
-
-#include "libvmdk_values_table.h"
+#include "libvmdk_libcerror.h"
+#include "libvmdk_libcstring.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -54,38 +52,38 @@ struct libvmdk_descriptor_file
 
 int libvmdk_descriptor_file_initialize(
      libvmdk_descriptor_file_t **descriptor_file,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_descriptor_file_free(
      libvmdk_descriptor_file_t **descriptor_file,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_descriptor_file_set_name(
      libvmdk_descriptor_file_t *descriptor_file,
      const libcstring_system_character_t *name,
      size_t name_length,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_descriptor_file_open(
      libvmdk_descriptor_file_t *descriptor_file,
      const libcstring_system_character_t *mode,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_descriptor_file_close(
      libvmdk_descriptor_file_t *descriptor_file,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_descriptor_file_read_header(
      libvmdk_descriptor_file_t *descriptor_file,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_descriptor_file_read_extents(
      libvmdk_descriptor_file_t *descriptor_file,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_descriptor_file_read_disk_database(
      libvmdk_descriptor_file_t *descriptor_file,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

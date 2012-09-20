@@ -1,17 +1,35 @@
-Mac OS X
-* missing libtoolize
-* building multiple architure binaries
+Dependencies
+libvmdk requires:
+* libcrypto (OpenSSL) or Windows Crypto API from the Windows Platform SDK
+  (optional but recommended)
+
+vmdkmount requires:
+* libfuse
+  (optional but recommended)
 
 
-Missing libtoolize
-Use glibtoolize instead
+Building .deb files
+To build .deb files make sure you've have installed debhelper, dpkg-buildpackage and fakeroot
+* copy the dpkg directory to debian
+* run "dpkg-buildpackage -rfakeroot"
+  this will create the .deb files in the parent directory
 
 
-Building multiple architecture binaries
-I.e. on Mac OS X 10.4 run the following commands:
-CFLAGS="-isysroot /Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386" LDFLAGS="-Wl,-syslibroot,/Developer/SDKs/MacOSX10.4u.sdk -arch ppc -arch i386" ./configure --disable-dependency-tracking --prefix=$PWD/macosx/tmp/
-make
-make install
+Building .rpm files
+To build .rpm files make sure you've have installed rpmbuild
+* rename the distrubted tar.gz file if necessary; applies to experimental, alpha and beta versions
+  "mv libvmdk-alpha-<version>.tar.gz libvmdk-<version>.tar.gz"
+* run "rpmbuild -ta libvmdk-<version>.tar.gz"
+  this will create the .rpm files in the rpmbuild tree, commonly ~/rpmbuild/RPMS/...
 
-The binaries are installed in $PWD/macosx/tmp/
+
+Solaris
+To build libvmdk on Solaris make sure that /usr/ccs/bin and /usr/sfw/bin are defined in the PATH environment variable
+
+
+Also see:
+* README.dll
+* README.macosx
+* README.mingw
+* README.static
 

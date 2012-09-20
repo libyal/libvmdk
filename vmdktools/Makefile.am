@@ -1,13 +1,22 @@
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
-	-I$(top_srcdir)/libcstring \
-	-I$(top_srcdir)/liberror \
-	-I$(top_srcdir)/libsystem \
+	@LIBCSTRING_CPPFLAGS@ \
+	@LIBCERROR_CPPFLAGS@ \
+	@LIBCDATA_CPPFLAGS@ \
+	@LIBCLOCALE_CPPFLAGS@ \
+	@LIBCNOTIFY_CPPFLAGS@ \
+	@LIBCSPLIT_CPPFLAGS@ \
 	@LIBUNA_CPPFLAGS@ \
+	@LIBCFILE_CPPFLAGS@ \
+	@LIBCPATH_CPPFLAGS@ \
 	@LIBBFIO_CPPFLAGS@ \
-	@MEMWATCH_CPPFLAGS@ \
-	@LIBVMDK_DLL_IMPORT@
+	@LIBFCACHE_CPPFLAGS@ \
+	@LIBFDATA_CPPFLAGS@ \
+	@LIBFVALUE_CPPFLAGS@ \
+	@LIBCSYSTEM_CPPFLAGS@ \
+	@LIBFUSE_CPPFLAGS@ \
+	@LIBVHDI_DLL_IMPORT@
 
 AM_LDFLAGS = @STATIC_LDFLAGS@
 
@@ -18,11 +27,13 @@ vmdkinfo_SOURCES = \
 	vmdkoutput.c vmdkoutput.h
 
 vmdkinfo_LDADD  = \
-	../libcstring/libcstring.la \
-	../liberror/liberror.la \
-	../libvmdk/libvmdk.la \
-	../libsystem/libsystem.la \
-	@MEMWATCH_LIBADD@
+	@LIBCSYSTEM_LIBADD@ \
+	../libvhdi/libvhdi.la \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@ \
+	@LIBINTL@
 
 distclean: clean
 	/bin/rm -f Makefile

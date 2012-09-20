@@ -1,7 +1,7 @@
 /*
  * Support functions
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -25,31 +25,34 @@
 #include <common.h>
 #include <types.h>
 
-#include <liberror.h>
-
 #include "libvmdk_extern.h"
 #include "libvmdk_libbfio.h"
+#include "libvmdk_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-LIBVMDK_EXTERN const char *libvmdk_get_version(
-                            void );
+LIBVMDK_EXTERN \
+const char *libvmdk_get_version(
+             void );
 
-LIBVMDK_EXTERN int libvmdk_check_file_signature(
-                    const char *filename,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_check_file_signature(
+     const char *filename,
+     libcerror_error_t **error );
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
-LIBVMDK_EXTERN int libvmdk_check_file_signature_wide(
-                    const wchar_t *filename,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_check_file_signature_wide(
+     const wchar_t *filename,
+     libcerror_error_t **error );
 #endif
 
-LIBVMDK_EXTERN int libvmdk_check_file_signature_file_io_handle(
-                    libbfio_handle_t *file_io_handle,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_check_file_signature_file_io_handle(
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

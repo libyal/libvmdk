@@ -1,7 +1,7 @@
 /*
  * Descriptor file functions
  *
- * Copyright (c) 2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -24,74 +24,81 @@
 #include <memory.h>
 #include <types.h>
 
-#include <libcstring.h>
-#include <liberror.h>
-
-#if defined( HAVE_ERRNO_H ) || defined( WINAPI )
-#include <errno.h>
-#endif
-
-#include <stdio.h>
-
 #include "libvmdk_descriptor_file.h"
+#include "libvmdk_libcerror.h"
+#include "libvmdk_libcstring.h"
+#include "libvmdk_libfvalue.h"
 
 /* Creates the descriptor file
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_descriptor_file_initialize(
      libvmdk_descriptor_file_t **descriptor_file,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_descriptor_file_initialize";
 
 	if( descriptor_file == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid descriptor file.",
 		 function );
 
 		return( -1 );
 	}
+	if( *descriptor_file != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid descriptor file value already set.",
+		 function );
+
+		return( -1 );
+	}
+	*descriptor_file = memory_allocate_structure(
+	                    libvmdk_descriptor_file_t );
+
 	if( *descriptor_file == NULL )
 	{
-		*descriptor_file = (libvmdk_descriptor_file_t *) memory_allocate(
-		                                                  sizeof( libvmdk_descriptor_file_t ) );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create descriptor file.",
+		 function );
 
-		if( *descriptor_file == NULL )
-		{
-			liberror_error_set(
-			 error,
-			 LIBERROR_ERROR_DOMAIN_MEMORY,
-			 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create descriptor file.",
-			 function );
+		goto on_error;
+	}
+	if( memory_set(
+	     *descriptor_file,
+	     0,
+	     sizeof( libvmdk_descriptor_file_t ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear descriptor file.",
+		 function );
 
-			return( -1 );
-		}
-		if( memory_set(
-		     *descriptor_file,
-		     0,
-		     sizeof( libvmdk_descriptor_file_t ) ) == NULL )
-		{
-			liberror_error_set(
-			 error,
-			 LIBERROR_ERROR_DOMAIN_MEMORY,
-			 LIBERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear descriptor file.",
-			 function );
-
-			memory_free(
-			 *descriptor_file );
-
-			*descriptor_file = NULL;
-
-			return( -1 );
-		}
+		goto on_error;
 	}
 	return( 1 );
+
+on_error:
+	if( *descriptor_file != NULL )
+	{
+		memory_free(
+		 *descriptor_file );
+
+		*descriptor_file = NULL;
+	}
+	return( -1 );
 }
 
 /* Frees the descriptor file
@@ -99,17 +106,16 @@ int libvmdk_descriptor_file_initialize(
  */
 int libvmdk_descriptor_file_free(
      libvmdk_descriptor_file_t **descriptor_file,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_descriptor_file_free";
-	int result            = 1;
 
 	if( descriptor_file == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid descriptor file.",
 		 function );
 
@@ -127,7 +133,7 @@ int libvmdk_descriptor_file_free(
 
 		*descriptor_file = NULL;
 	}
-	return( result );
+	return( 1 );
 }
 
 /* Sets the filename
@@ -137,16 +143,16 @@ int libvmdk_descriptor_file_set_name(
      libvmdk_descriptor_file_t *descriptor_file,
      const libcstring_system_character_t *name,
      size_t name_length,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_descriptor_file_set_name";
 
 	if( descriptor_file == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid descriptor file.",
 		 function );
 
@@ -154,10 +160,10 @@ int libvmdk_descriptor_file_set_name(
 	}
 	if( name == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid name.",
 		 function );
 
@@ -165,48 +171,60 @@ int libvmdk_descriptor_file_set_name(
 	}
 	if( name_length > (size_t) SSIZE_MAX )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
 		 "%s: invalid name length value exceeds maximum.",
 		 function );
 
 		return( -1 );
 	}
-	descriptor_file->name = (libcstring_system_character_t *) memory_allocate(
-	                                                           sizeof( libcstring_system_character_t ) * ( name_length + 1 ) );
+	descriptor_file->name = libcstring_system_allocate(
+	                         name_length + 1 );
 
 	if( descriptor_file->name == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
 		 "%s: unable to allocate name.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	if( libcstring_system_string_copy(
 	     descriptor_file->name,
 	     name,
 	     name_length ) == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_COPY_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
 		 "%s: unable to set name.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	descriptor_file->name[ name_length ] = 0;
 
 	descriptor_file->name_size = name_length + 1;
 
 	return( 1 );
+
+on_error:
+	if( descriptor_file->name != NULL )
+	{
+		memory_free(
+		 descriptor_file->name );
+
+		descriptor_file->name = NULL;
+	}
+	descriptor_file->name_size = 0;
+
+	return( -1 );
 }
 
 /* Opens a descriptor file
@@ -215,16 +233,16 @@ int libvmdk_descriptor_file_set_name(
 int libvmdk_descriptor_file_open(
      libvmdk_descriptor_file_t *descriptor_file,
      const libcstring_system_character_t *mode,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_descriptor_file_open";
 
 	if( descriptor_file == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid descriptor file.",
 		 function );
 
@@ -232,10 +250,10 @@ int libvmdk_descriptor_file_open(
 	}
 	if( descriptor_file->name == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid descriptor file - missing name.",
 		 function );
 
@@ -243,10 +261,10 @@ int libvmdk_descriptor_file_open(
 	}
 	if( descriptor_file->file_stream != NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
 		 "%s: invalid descriptor file - file stream already set.",
 		 function );
 
@@ -254,10 +272,10 @@ int libvmdk_descriptor_file_open(
 	}
 	if( mode == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid mode.",
 		 function );
 
@@ -275,10 +293,10 @@ int libvmdk_descriptor_file_open(
 
 	if( descriptor_file->file_stream == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_OPEN_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
 		 "%s: unable to open: %" PRIs_LIBCSTRING_SYSTEM ".",
 		 function,
 		 descriptor_file->name );
@@ -293,16 +311,16 @@ int libvmdk_descriptor_file_open(
  */
 int libvmdk_descriptor_file_close(
      libvmdk_descriptor_file_t *descriptor_file,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_descriptor_file_close";
 
 	if( descriptor_file == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid descriptor file.",
 		 function );
 
@@ -320,10 +338,10 @@ int libvmdk_descriptor_file_close(
 		if( file_stream_close(
 		     descriptor_file->file_stream ) != 0 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_IO,
-			 LIBERROR_IO_ERROR_CLOSE_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
 			 "%s: unable to close file stream.",
 			 function );
 
@@ -339,7 +357,7 @@ int libvmdk_descriptor_file_close(
  */
 int libvmdk_descriptor_file_read_header(
      libvmdk_descriptor_file_t *descriptor_file,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	uint8_t input_string[ 128 ];
 
@@ -354,10 +372,10 @@ int libvmdk_descriptor_file_read_header(
 
 	if( descriptor_file == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid descriptor file.",
 		 function );
 
@@ -365,10 +383,10 @@ int libvmdk_descriptor_file_read_header(
 	}
 	if( descriptor_file->file_stream == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid descriptor file - missing file stream.",
 		 function );
 
@@ -381,10 +399,10 @@ int libvmdk_descriptor_file_read_header(
 	     0,
 	     SEEK_SET ) != 0 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_SEEK_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
 		 "%s: unable to seek start of stream.",
 		 function );
 
@@ -402,10 +420,10 @@ int libvmdk_descriptor_file_read_header(
 		{
 			break;
 		}
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_READ_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
 		 "%s: error reading string from file stream.",
 		 function );
 
@@ -418,10 +436,10 @@ int libvmdk_descriptor_file_read_header(
 	     "# Disk DescriptorFile",
 	     21 ) != 0 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 		 "%s: unsupported file signature.",
 		 function );
 
@@ -442,10 +460,10 @@ int libvmdk_descriptor_file_read_header(
 			{
 				break;
 			}
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_IO,
-			 LIBERROR_IO_ERROR_READ_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
 			 "%s: error reading string from file stream.",
 			 function );
 
@@ -576,8 +594,7 @@ int libvmdk_descriptor_file_read_header(
 			{
 			}
 		}
-
-		if( libvmdk_values_table_set_value(
+		if( libfvalue_table_set_value(
 		     values_table,
 		     value_identifier,
 		     value_identifier_length,
@@ -585,10 +602,10 @@ int libvmdk_descriptor_file_read_header(
 		     value_length,
 		     error ) != 1 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_SET_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
 			 "%s: unable to set value with identifier: %s.",
 			 function,
 			 value_identifier );
@@ -604,8 +621,9 @@ int libvmdk_descriptor_file_read_header(
  */
 int libvmdk_descriptor_file_read_extents(
      libvmdk_descriptor_file_t *descriptor_file,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
+/* TODO */
 	return( 1 );
 }
 
@@ -614,8 +632,9 @@ int libvmdk_descriptor_file_read_extents(
  */
 int libvmdk_descriptor_file_read_disk_database(
      libvmdk_descriptor_file_t *descriptor_file,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
+/* TODO */
 	return( 1 );
 }
 

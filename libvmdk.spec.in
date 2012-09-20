@@ -5,10 +5,11 @@ Summary: Library to support the VMware Virtual Disk (VMDK) format
 Group: System Environment/Libraries
 License: LGPL
 Source: %{name}-%{version}.tar.gz
-URL: http://libvmdk.sourceforge.net
+URL: http://code.google.com/p/libvmdk/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-@libvmdk_spec_requires@ @libppf_spec_requires_libbfio@ @libppf_spec_requires_libuna@
-@libvmdk_spec_build_requires@ @libppf_spec_build_requires_libbfio@ @libppf_spec_build_requires_libuna@
+@libvmdk_spec_requires@ @ax_libbfio_spec_requires@ @ax_libcdata_spec_requires@ @ax_libcerror_spec_requires@ @ax_libcfile_spec_requires@ @ax_libclocale_spec_requires@ @ax_libcnotify_spec_requires@ @ax_libcpath_spec_requires@ @ax_libcsplit_spec_requires@ @ax_libcstring_spec_requires@ @ax_libfcache_spec_requires@ @ax_libfdata_spec_requires@ @ax_libfvalue_spec_requires@ @ax_libuna_spec_requires@
+@libvmdk_spec_build_requires@ @ax_libbfio_spec_build_requires@ @ax_libcdata_spec_build_requires@ @ax_libcerror_spec_build_requires@ @ax_libcfile_spec_build_requires@ @ax_libclocale_spec_build_requires@ @ax_libcnotify_spec_build_requires@ @ax_libcpath_spec_build_requires@ @ax_libcsplit_spec_build_requires@ @ax_libcstring_spec_build_requires@ @ax_libfcache_spec_build_requires@ @ax_libfdata_spec_build_requires@ @ax_libfvalue_spec_build_requires@ @ax_libuna_spec_build_requires@
+
 
 %description
 libvmdk is a library to support the VMware Virtual Disk (VMDK) format 
@@ -54,7 +55,7 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files devel
 %defattr(644,root,root,755)
-%doc AUTHORS COPYING NEWS README ChangeLog
+%doc AUTHORS COPYING NEWS README README.dll README.macosx README.mingw README.static ChangeLog
 %{_libdir}/*.a
 %{_libdir}/*.la
 %{_libdir}/*.so
@@ -69,6 +70,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_mandir}/man1/*
 
 %changelog
-* Sat Sep 12 2009 Joachim Metz <jbmetz@users.sourceforge.net> 20090912-1
+* Thu Sep 20 2012 Joachim Metz <joachim.metz@gmail.com> 20120920-1
+- Applied updates
+
+* Sat Sep 12 2009 Joachim Metz <joachim.metz@gmail.com> 20090912-1
 - Initial version based on liblnk spec file
 

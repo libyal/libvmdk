@@ -1,9 +1,7 @@
 /*
  * FILE stream functions
  *
- * Copyright (c) 2010, Joachim Metz <jbmetz@users.sourceforge.net>
- * Copyright (c) 2006-2010, Joachim Metz <forensics@hoffmannbv.nl>,
- * Hoffmann Investigations.
+ * Copyright (c) 2006-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -101,6 +99,10 @@ extern "C" {
 #elif defined( HAVE_FSEEKO )
 #define file_stream_seek_offset( stream, offset, whence ) \
 	fseeko( stream, offset, whence )
+
+#elif defined( HAVE_FSEEKO64 )
+#define file_stream_seek_offset( stream, offset, whence ) \
+	fseeko64( stream, offset, whence )
 #endif
 
 /* End of FILE stream

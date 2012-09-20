@@ -1,7 +1,7 @@
 /*
  * Handle functions
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -25,11 +25,10 @@
 #include <common.h>
 #include <types.h>
 
-#include <liberror.h>
-
 #include "libvmdk_extern.h"
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
+#include "libvmdk_libcerror.h"
 #include "libvmdk_offset_table.h"
 #include "libvmdk_segment_table.h"
 
@@ -53,9 +52,9 @@ struct libvmdk_internal_handle
 	 */
 	uint8_t file_io_pool_created_in_library;
 
-	/* The maximum amount of open handles in the pool
+	/* The maximum number of open handles in the pool
 	 */
-	int maximum_amount_of_open_handles;
+	int maximum_number_of_open_handles;
 
 	/* The list of segment files
 	 */
@@ -70,53 +69,61 @@ struct libvmdk_internal_handle
 	int abort;
 };
 
-LIBVMDK_EXTERN int libvmdk_handle_initialize(
-                    libvmdk_handle_t **handle,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_handle_initialize(
+     libvmdk_handle_t **handle,
+     libcerror_error_t **error );
 
-LIBVMDK_EXTERN int libvmdk_handle_free(
-                    libvmdk_handle_t **handle,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_handle_free(
+     libvmdk_handle_t **handle,
+     libcerror_error_t **error );
 
-LIBVMDK_EXTERN int libvmdk_handle_signal_abort(
-                    libvmdk_handle_t *handle,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_handle_signal_abort(
+     libvmdk_handle_t *handle,
+     libcerror_error_t **error );
 
-LIBVMDK_EXTERN int libvmdk_handle_open(
-                    libvmdk_handle_t *handle,
-                    char * const filenames[],
-                    int amount_of_filenames,
-                    int flags,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_handle_open(
+     libvmdk_handle_t *handle,
+     char * const filenames[],
+     int number_of_filenames,
+     int access_flags,
+     libcerror_error_t **error );
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
-LIBVMDK_EXTERN int libvmdk_handle_open_wide(
-                    libvmdk_handle_t *handle,
-                    wchar_t * const filenames[],
-                    int amount_of_filenames,
-                    int flags,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_handle_open_wide(
+     libvmdk_handle_t *handle,
+     wchar_t * const filenames[],
+     int number_of_filenames,
+     int access_flags,
+     libcerror_error_t **error );
 #endif
 
-LIBVMDK_EXTERN int libvmdk_handle_open_file_io_pool(
-                    libvmdk_handle_t *handle,
-                    libbfio_pool_t *file_io_pool,
-                    int flags,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_handle_open_file_io_pool(
+     libvmdk_handle_t *handle,
+     libbfio_pool_t *file_io_pool,
+     int access_flags,
+     libcerror_error_t **error );
 
-LIBVMDK_EXTERN int libvmdk_handle_close(
-                    libvmdk_handle_t *handle,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_handle_close(
+     libvmdk_handle_t *handle,
+     libcerror_error_t **error );
 
 int libvmdk_handle_open_read(
      libvmdk_internal_handle_t *internal_handle,
      libvmdk_segment_table_t *segment_table,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
-LIBVMDK_EXTERN int libvmdk_handle_set_maximum_amount_of_open_handles(
-                    libvmdk_handle_t *handle,
-                    int maximum_amount_of_open_handles,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_handle_set_maximum_number_of_open_handles(
+     libvmdk_handle_t *handle,
+     int maximum_number_of_open_handles,
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

@@ -1,7 +1,7 @@
 /*
  * Segment file reading/writing functions
  *
- * Copyright (c) 2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2010, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -25,9 +25,8 @@
 #include <common.h>
 #include <types.h>
 
-#include <liberror.h>
-
 #include "libvmdk_libbfio.h"
+#include "libvmdk_libcerror.h"
 #include "libvmdk_segment_file_handle.h"
 
 #if defined( __cplusplus )
@@ -40,7 +39,7 @@ extern const char vmdk_sparse_file_signature[ 4 ];
 ssize_t libvmdk_segment_file_read_file_header(
          libvmdk_segment_file_handle_t *segment_file_handle,
          libbfio_pool_t *file_io_pool,
-         liberror_error_t **error );
+         libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

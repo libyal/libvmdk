@@ -1,7 +1,7 @@
 /*
  * Features of libvmdk
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -25,12 +25,22 @@
 /* The libvmdk type support features
  */
 #if @HAVE_WIDE_CHARACTER_TYPE@ || defined( HAVE_WIDE_CHARACTER_TYPE )
-#define LIBVMDK_HAVE_WIDE_CHARACTER_TYPE	1
+#define LIBVMDK_HAVE_WIDE_CHARACTER_TYPE		1
 
 #endif
 
 #if defined( HAVE_LIBBFIO ) || ( !defined( WINAPI ) && @HAVE_LIBBFIO@ )
 #define LIBVMDK_HAVE_BFIO			1
+#endif
+
+#if !defined( LIBVMDK_DEPRECATED )
+#if defined( __GNUC__ ) && __GNUC__ >= 3
+#define LIBVMDK_DEPRECATED	__attribute__ ((__deprecated__))
+#elif defined( _MSC_VER )
+#define LIBVMDK_DEPRECATED	__declspec(deprecated)
+#else
+#define LIBVMDK_DEPRECATED
+#endif
 #endif
 
 #endif

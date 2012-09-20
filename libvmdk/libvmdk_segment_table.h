@@ -1,7 +1,7 @@
 /*
  * Segment table functions
  *
- * Copyright (c) 2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2010, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -25,10 +25,9 @@
 #include <common.h>
 #include <types.h>
 
-#include <libcstring.h>
-#include <liberror.h>
-
-#include "libvmdk_array_type.h"
+#include "libvmdk_libcdata.h"
+#include "libvmdk_libcerror.h"
+#include "libvmdk_libcstring.h"
 #include "libvmdk_segment_file_handle.h"
 
 #if defined( __cplusplus )
@@ -49,7 +48,7 @@ struct libvmdk_segment_table
 
 	/* The segment file handle array
 	 */
-	libvmdk_array_t *segment_file_handle_array;
+	libcdata_array_t *segment_file_handle_array;
 
 	/* The maximum segment size
 	 */
@@ -60,74 +59,74 @@ int libvmdk_segment_table_initialize(
      libvmdk_segment_table_t **segment_table,
      int amount,
      size64_t maximum_segment_size,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_segment_table_free(
      libvmdk_segment_table_t **segment_table,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_segment_table_resize(
      libvmdk_segment_table_t *segment_table,
      int amount,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_segment_table_get_basename_size(
      libvmdk_segment_table_t *segment_table,
      size_t *basename_size,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_segment_table_get_basename(
      libvmdk_segment_table_t *segment_table,
      char *basename,
      size_t basename_size,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_segment_table_set_basename(
      libvmdk_segment_table_t *segment_table,
      const char *basename,
      size_t basename_length,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 int libvmdk_segment_table_get_basename_size_wide(
      libvmdk_segment_table_t *segment_table,
      size_t *basename_size,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_segment_table_get_basename_wide(
      libvmdk_segment_table_t *segment_table,
      wchar_t *basename,
      size_t basename_size,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_segment_table_set_basename_wide(
      libvmdk_segment_table_t *segment_table,
      const wchar_t *basename,
      size_t basename_length,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 #endif
 
 int libvmdk_segment_table_get_amount_of_handles(
      libvmdk_segment_table_t *segment_table,
      int *amount_of_handles,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_segment_table_get_handle(
      libvmdk_segment_table_t *segment_table,
      int handle_index,
      libvmdk_segment_file_handle_t **handle,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_segment_table_set_handle(
      libvmdk_segment_table_t *segment_table,
      int handle_index,
      libvmdk_segment_file_handle_t *handle,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_segment_table_set_maximum_segment_size(
      libvmdk_segment_table_t *segment_table,
      size64_t maximum_segment_size,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

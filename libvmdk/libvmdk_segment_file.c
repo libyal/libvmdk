@@ -1,7 +1,7 @@
 /*
  * Segment file reading/writing functions
  *
- * Copyright (c) 2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2010, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -24,11 +24,10 @@
 #include <memory.h>
 #include <types.h>
 
-#include <liberror.h>
-#include <libnotify.h>
-
 #include "libvmdk_definitions.h"
 #include "libvmdk_libbfio.h"
+#include "libvmdk_libcerror.h"
+#include "libvmdk_libcstring.h"
 #include "libvmdk_segment_file.h"
 #include "libvmdk_segment_file_handle.h"
 
@@ -44,7 +43,7 @@ const char vmdk_sparse_file_signature[ 4 ] = "KDMV";
 ssize_t libvmdk_segment_file_read_file_header(
          libvmdk_segment_file_handle_t *segment_file_handle,
          libbfio_pool_t *file_io_pool,
-         liberror_error_t **error )
+         libcerror_error_t **error )
 {
 	uint8_t *file_header  = NULL;
 	void *reallocation    = NULL;
@@ -58,19 +57,19 @@ ssize_t libvmdk_segment_file_read_file_header(
 
 	if( segment_file_handle == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment file handle.",
 		 function );
 
 		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libnotify_verbose != 0 )
+	if( libcnotify_verbose != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 	 	"%s: reading file header at offset: 0 (0x00000000)\n",
 		 function );
 	}
@@ -83,10 +82,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 	     SEEK_SET,
 	     error ) == -1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_SEEK_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
 		 "%s: unable to seek file header offset: %" PRIu64 ".",
 		 function,
 		 0 );
@@ -98,10 +97,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 
 	if( file_header == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
 		 "%s: unable to create file header.",
 		 function );
 
@@ -116,10 +115,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 
 	if( read_count != (ssize_t) 4 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_READ_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
 		 "%s: unable to read file header.",
 		 function );
 
@@ -146,10 +145,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 	}
 	else
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 		 "%s: unsupported file signature.",
 		 function );
 
@@ -164,10 +163,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 
 	if( reallocation == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
 		 "%s: unable to resize file header.",
 		 function );
 
@@ -187,10 +186,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 
 	if( read_count != (ssize_t) ( read_size - 4 ) )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_READ_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
 		 "%s: unable to read file header.",
 		 function );
 
@@ -200,12 +199,12 @@ ssize_t libvmdk_segment_file_read_file_header(
 		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libnotify_verbose != 0 )
+	if( libcnotify_verbose != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 		 "%s: file header:\n",
 		 function );
-		libnotify_print_data(
+		libcnotify_print_data(
 		 file_header,
 		 read_size );
 	}
@@ -276,9 +275,9 @@ ssize_t libvmdk_segment_file_read_file_header(
 	}
 
 #if defined( HAVE_VERBOSE_OUTPUT )
-	if( libnotify_verbose != 0 )
+	if( libcnotify_verbose != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 		 "%s: signature\t\t\t\t: %c%c%c%c\n",
 		 function,
 		 (char) file_header[ 0 ],
@@ -286,54 +285,54 @@ ssize_t libvmdk_segment_file_read_file_header(
 		 (char) file_header[ 2 ],
 		 (char) file_header[ 3 ] );
 
-		libnotify_printf(
+		libcnotify_printf(
 		 "%s: format version\t\t\t\t: %" PRIu32 "\n",
 		 function,
 		 segment_file_handle->format_version );
-		libnotify_printf(
+		libcnotify_printf(
 		 "%s: flags\t\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
 		 segment_file_handle->flags );
 
-		libnotify_printf(
+		libcnotify_printf(
 		 "%s: maximum data size\t\t\t: %" PRIu64 " sectors\n",
 		 function,
 		 segment_file_handle->maximum_data_size );
-		libnotify_printf(
+		libcnotify_printf(
 		 "%s: grain size\t\t\t\t: %" PRIu64 " sectors\n",
 		 function,
 		 segment_file_handle->grain_size );
 
 		if( segment_file_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 		{
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: descriptor offset\t\t\t: %" PRIu64 "\n",
 			 function,
 			 segment_file_handle->descriptor_offset );
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: descriptor size\t\t\t\t: %" PRIu64 " sectors\n",
 			 function,
 			 segment_file_handle->descriptor_size );
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: amount of grain table entries\t\t: %" PRIu32 "\n",
 			 function,
 			 segment_file_handle->amount_of_grain_table_entries );
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: secondary grain directory offset\t\t: %" PRIu64 "\n",
 			 function,
 			 segment_file_handle->secondary_grain_directory_offset );
 		}
-		libnotify_printf(
+		libcnotify_printf(
 		 "%s: grain directory offset\t\t\t: %" PRIu64 "\n",
 		 function,
 		 segment_file_handle->grain_directory_offset );
 
 		if( segment_file_handle->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
 		{
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: padding:\n",
 			 function );
-			libnotify_print_data(
+			libcnotify_print_data(
 			 (uint8_t *) ( (vmdk_sparse_file_header_t *) file_header )->padding,
 			 433 );
 		}
@@ -342,36 +341,36 @@ ssize_t libvmdk_segment_file_read_file_header(
 			byte_stream_copy_to_uint64_little_endian(
 			 ( (vmdk_sparse_file_header_t *) file_header )->metadata_size,
 			 value_64bit );
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: metadata size\t\t\t\t: %" PRIu64 " sectors\n",
 			 function,
 			 value_64bit );
 
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: single end of line character\t\t: 0x%02" PRIx8 "\n",
 			 function,
 			 ( (vmdk_sparse_file_header_t *) file_header )->single_end_of_line_character );
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: non end of line character\t\t: 0x%02" PRIx8 "\n",
 			 function,
 			 ( (vmdk_sparse_file_header_t *) file_header )->non_end_of_line_character );
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: first double end of line character\t: 0x%02" PRIx8 "\n",
 			 function,
 			 ( (vmdk_sparse_file_header_t *) file_header )->first_double_end_of_line_character );
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: second double end of line character\t: 0x%02" PRIx8 "\n",
 			 function,
 			 ( (vmdk_sparse_file_header_t *) file_header )->second_double_end_of_line_character );
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: compression method\t\t\t: %" PRIu16 "\n",
 			 function,
 			 segment_file_handle->compression_method );
 
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: padding:\n",
 			 function );
-			libnotify_print_data(
+			libcnotify_print_data(
 			 (uint8_t *) ( (vmdk_sparse_file_header_t *) file_header )->padding,
 			 433 );
 		}
@@ -380,10 +379,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 
 	if( segment_file_handle->grain_size == 0 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 		 "%s: unsupported grain size value is 0.",
 		 function );
 
@@ -393,10 +392,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 	{
 		if( segment_file_handle->grain_size <= 8 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 			 "%s: unsupported grain size value is less than or equal to 8.",
 			 function );
 
@@ -404,10 +403,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 		}
 		if( ( segment_file_handle->grain_size % 2 ) != 0 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 			 "%s: unsupported grain size value is not a power of 2.",
 			 function );
 
@@ -418,10 +417,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 		}
 		if( segment_file_handle->amount_of_grain_table_entries == 0 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 			 "%s: unsupported amount of grain table entries value is 0.",
 			 function );
 
@@ -430,10 +429,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 	}
 	if( ( segment_file_handle->maximum_data_size % segment_file_handle->grain_size ) != 0 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 		 "%s: unsupported maximum data size not a multide of the grain size.",
 		 function );
 
@@ -446,10 +445,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 	{
 		if( ( (vmdk_sparse_file_header_t *) file_header )->single_end_of_line_character != (uint8_t) '\n' )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 			 "%s: unsupported single end of line character.",
 			 function );
 
@@ -460,10 +459,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 		}
 		if( ( (vmdk_sparse_file_header_t *) file_header )->non_end_of_line_character != (uint8_t) ' ' )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 			 "%s: unsupported non end of line character.",
 			 function );
 
@@ -474,10 +473,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 		}
 		if( ( (vmdk_sparse_file_header_t *) file_header )->first_double_end_of_line_character != (uint8_t) '\r' )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 			 "%s: unsupported first double end of line character.",
 			 function );
 
@@ -488,10 +487,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 		}
 		if( ( (vmdk_sparse_file_header_t *) file_header )->second_double_end_of_line_character != (uint8_t) '\n' )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 			 "%s: unsupported second double end of line character.",
 			 function );
 
@@ -507,10 +506,10 @@ ssize_t libvmdk_segment_file_read_file_header(
 	if( ( segment_file_handle->compression_method != LIBVMDK_COMPRESSION_METHOD_NONE )
 	 && ( segment_file_handle->compression_method != LIBVMDK_COMPRESSION_METHOD_DEFLATE ) )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 		 "%s: unsupported compression method: %" PRIu16 ".",
 		 function,
 		 segment_file_handle->compression_method );

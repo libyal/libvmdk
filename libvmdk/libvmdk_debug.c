@@ -1,7 +1,7 @@
 /*
  * Debug functions
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -23,12 +23,11 @@
 #include <memory.h>
 #include <types.h>
 
-#include <liberror.h>
-#include <libnotify.h>
-
 #include "libvmdk_debug.h"
 #include "libvmdk_definitions.h"
 #include "libvmdk_libbfio.h"
+#include "libvmdk_libcerror.h"
+#include "libvmdk_libcstring.h"
 
 #if defined( HAVE_DEBUG_OUTPUT )
 
@@ -37,38 +36,38 @@
  */
 int libvmdk_debug_print_flags(
      uint32_t flags,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_debug_print_flags";
 
-	libnotify_printf(
+	libcnotify_printf(
 	 "%s: flags: 0x%08" PRIx32 "\n",
 	 function,
 	 flags );
 
 	if( ( flags & LIBVMDK_FLAG_NEW_LINE_DETECION_VALID ) != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 		 "\tNew line detection valid\n" );
 	}
 	if( ( flags & LIBVMDK_FLAG_USE_SECONDARY_GRAIN_DIRECTORY ) != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 		 "\tUse secondary grain directory\n" );
 	}
 
 	if( ( flags & LIBVMDK_FLAG_USE_GRAIN_COMPRESSION ) != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 		 "\tUse grain compression\n" );
 	}
 	if( ( flags & LIBVMDK_FLAG_USE_DATA_MARKERS ) != 0 )
 	{
-		libnotify_printf(
+		libcnotify_printf(
 		 "\tUse data markers\n" );
 	}
 
-	libnotify_printf(
+	libcnotify_printf(
 	 "\n" );
 
 	return( 1 );
@@ -79,70 +78,72 @@ int libvmdk_debug_print_flags(
  */
 int libvmdk_debug_print_read_offsets(
      libbfio_handle_t *file_io_handle,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_debug_print_read_offsets";
 	off64_t offset        = 0;
 	size64_t size         = 0;
-	int amount_of_offsets = 0;
-	int offset_iterator   = 0;
+	int number_of_offsets = 0;
+	int offset_index      = 0;
 
 	if( file_io_handle == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid file io handle.",
 		 function );
 
 		return( -1 );
 	}
-	if( libbfio_handle_get_amount_of_offsets_read(
+	if( libbfio_handle_get_number_of_offsets_read(
 	     file_io_handle,
-	     &amount_of_offsets,
+	     &number_of_offsets,
 	     error ) != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve amount of offsets read.",
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of offsets read.",
 		 function );
 
 		return( -1 );
 	}
-	libnotify_printf(
+	libcnotify_printf(
 	 "Offsets read:\n" );
 
-	for( offset_iterator = 0; offset_iterator < amount_of_offsets; offset_iterator++ )
+	for( offset_index = 0;
+	     offset_index < number_of_offsets;
+	     offset_index++ )
 	{
 		if( libbfio_handle_get_offset_read(
 		     file_io_handle,
-		     offset_iterator,
+		     offset_index,
 		     &offset,
 		     &size,
 		     error ) != 1 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_GET_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 			 "%s: unable to retrieve offset: %d.",
 			 function,
-			 ( offset_iterator + 1 ) );
+			 offset_index );
 
 			return( -1 );
 		}
-		libnotify_printf(
+		libcnotify_printf(
 		 "%08" PRIu64 " ( 0x%08" PRIx64 " ) - %08" PRIu64 " ( 0x%08" PRIx64 " ) size: %" PRIu64 "\n",
 		 offset,
 		 offset,
-		 ( offset + size ),
-		 ( offset + size ),
+		 offset + size,
+		 offset + size,
 		 size );
 	}
-	libnotify_printf(
+	libcnotify_printf(
 	 "\n" );
 
 	return( 1 );

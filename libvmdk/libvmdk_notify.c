@@ -1,7 +1,7 @@
 /*
  * Notification functions
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -20,17 +20,11 @@
  */
 
 #include <common.h>
+#include <file_stream.h>
 #include <types.h>
 
-#include <liberror.h>
-#include <libnotify.h>
-
-#if defined( HAVE_STDLIB_H ) || defined( WINAPI )
-#include <stdlib.h>
-#endif
-
-#include <stdio.h>
-
+#include "libvmdk_libcerror.h"
+#include "libvmdk_libcnotify.h"
 #include "libvmdk_notify.h"
 
 #if !defined( HAVE_LOCAL_LIBVMDK )
@@ -40,7 +34,7 @@
 void libvmdk_notify_set_verbose(
       int verbose )
 {
-	libnotify_set_verbose(
+	libcnotify_set_verbose(
 	 verbose );
 }
 
@@ -49,18 +43,18 @@ void libvmdk_notify_set_verbose(
  */
 int libvmdk_notify_set_stream(
      FILE *stream,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_notify_set_stream";
 
-	if( libnotify_set_stream(
+	if( libcnotify_set_stream(
 	     stream,
 	     error ) != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_SET_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
 		 "%s: unable to set stream.",
 		 function );
 
@@ -75,18 +69,18 @@ int libvmdk_notify_set_stream(
  */
 int libvmdk_notify_stream_open(
      const char *filename,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_notify_stream_open";
 
-	if( libnotify_stream_open(
+	if( libcnotify_stream_open(
 	     filename,
 	     error ) != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_OPEN_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
 		 "%s: unable to open stream.",
 		 function );
 
@@ -99,17 +93,17 @@ int libvmdk_notify_stream_open(
  * Returns 0 if successful or -1 on error
  */
 int libvmdk_notify_stream_close(
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_notify_stream_close";
 
-	if( libnotify_stream_close(
+	if( libcnotify_stream_close(
 	     error ) != 0 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_IO,
-		 LIBERROR_IO_ERROR_OPEN_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
 		 "%s: unable to open stream.",
 		 function );
 

@@ -1,7 +1,7 @@
 /*
  * Error functions
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -23,9 +23,8 @@
 #define _LIBVMDK_INTERNAL_ERROR_H
 
 #include <common.h>
+#include <file_stream.h>
 #include <types.h>
-
-#include <stdio.h>
 
 #if !defined( HAVE_LOCAL_LIBVMDK )
 #include <libvmdk/error.h>
@@ -39,26 +38,31 @@ extern "C" {
 
 #if !defined( HAVE_LOCAL_LIBVMDK )
 
-LIBVMDK_EXTERN void libvmdk_error_free(
-                     libvmdk_error_t **error );
+LIBVMDK_EXTERN \
+void libvmdk_error_free(
+      libvmdk_error_t **error );
 
-LIBVMDK_EXTERN int libvmdk_error_fprint(
-                    libvmdk_error_t *error,
-                    FILE *stream );
+LIBVMDK_EXTERN \
+int libvmdk_error_fprint(
+     libvmdk_error_t *error,
+     FILE *stream );
 
-LIBVMDK_EXTERN int libvmdk_error_sprint(
-                    libvmdk_error_t *error,
-                    char *string,
-                    size_t size );
+LIBVMDK_EXTERN \
+int libvmdk_error_sprint(
+     libvmdk_error_t *error,
+     char *string,
+     size_t size );
 
-LIBVMDK_EXTERN int libvmdk_error_backtrace_fprint(
-                    libvmdk_error_t *error,
-                    FILE *stream );
+LIBVMDK_EXTERN \
+int libvmdk_error_backtrace_fprint(
+     libvmdk_error_t *error,
+     FILE *stream );
 
-LIBVMDK_EXTERN int libvmdk_error_backtrace_sprint(
-                    libvmdk_error_t *error,
-                    char *string,
-                    size_t size );
+LIBVMDK_EXTERN \
+int libvmdk_error_backtrace_sprint(
+     libvmdk_error_t *error,
+     char *string,
+     size_t size );
 
 #endif
 

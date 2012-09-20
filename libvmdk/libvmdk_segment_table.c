@@ -1,7 +1,7 @@
 /*
  * Segment table functions
  *
- * Copyright (c) 2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2010, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -23,12 +23,11 @@
 #include <memory.h>
 #include <types.h>
 
-#include <libcstring.h>
-#include <liberror.h>
-#include <libnotify.h>
-
-#include "libvmdk_array_type.h"
 #include "libvmdk_definitions.h"
+#include "libvmdk_libcdata.h"
+#include "libvmdk_libcerror.h"
+#include "libvmdk_libcnotify.h"
+#include "libvmdk_libcstring.h"
 #include "libvmdk_libuna.h"
 #include "libvmdk_segment_file_handle.h"
 #include "libvmdk_segment_table.h"
@@ -40,16 +39,16 @@ int libvmdk_segment_table_initialize(
      libvmdk_segment_table_t **segment_table,
      int amount,
      size64_t maximum_segment_size,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_segment_table_initialize";
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 
@@ -57,10 +56,10 @@ int libvmdk_segment_table_initialize(
 	}
 	if( amount <= 0 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
 		 "%s: invalid amount value cannot be zero or less.",
 		 function );
 
@@ -73,10 +72,10 @@ int libvmdk_segment_table_initialize(
 
 		if( *segment_table == NULL )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_MEMORY,
-			 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
 			 "%s: unable to create segment table.",
 			 function );
 
@@ -87,10 +86,10 @@ int libvmdk_segment_table_initialize(
 		     0,
 		     sizeof( libvmdk_segment_table_t ) ) == NULL )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_MEMORY,
-			 LIBERROR_MEMORY_ERROR_SET_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
 			 "%s: unable to clear segment table.",
 			 function );
 
@@ -101,15 +100,15 @@ int libvmdk_segment_table_initialize(
 
 			return( -1 );
 		}
-		if( libvmdk_array_initialize(
+		if( libcdata_array_initialize(
 		     &( ( *segment_table )->segment_file_handle_array ),
 		     (int) amount,
 		     error ) != 1 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
 			 "%s: unable to create segment file handle array.",
 			 function );
 
@@ -130,17 +129,17 @@ int libvmdk_segment_table_initialize(
  */
 int libvmdk_segment_table_free(
      libvmdk_segment_table_t **segment_table,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_segment_table_free";
 	int result            = 1;
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 
@@ -153,15 +152,15 @@ int libvmdk_segment_table_free(
 			memory_free(
 			 ( *segment_table )->basename );
 		}
-		if( libvmdk_array_free(
+		if( libcdata_array_free(
 		     &( ( *segment_table )->segment_file_handle_array ),
 		     &libvmdk_segment_file_handle_free,
 		     error ) != 1 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
 			 "%s: unable to free the table index array.",
 			 function );
 
@@ -181,16 +180,16 @@ int libvmdk_segment_table_free(
 int libvmdk_segment_table_resize(
      libvmdk_segment_table_t *segment_table,
      int amount,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_segment_table_resize";
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 
@@ -198,24 +197,24 @@ int libvmdk_segment_table_resize(
 	}
 	if( amount <= 0 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
 		 "%s: invalid amount value cannot be zero or less.",
 		 function );
 
 		return( -1 );
 	}
-	if( libvmdk_array_resize(
+	if( libcdata_array_resize(
 	     segment_table->segment_file_handle_array,
 	     (int) amount,
 	     error ) != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_RESIZE_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_RESIZE_FAILED,
 		 "%s: unable to resize segment file handle array.",
 		 function );
 
@@ -230,7 +229,7 @@ int libvmdk_segment_table_resize(
 int libvmdk_segment_table_get_basename_size(
      libvmdk_segment_table_t *segment_table,
      size_t *basename_size,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_segment_table_get_basename_size";
 
@@ -240,10 +239,10 @@ int libvmdk_segment_table_get_basename_size(
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 
@@ -251,10 +250,10 @@ int libvmdk_segment_table_get_basename_size(
 	}
 	if( basename_size == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid basename size.",
 		 function );
 
@@ -305,10 +304,10 @@ int libvmdk_segment_table_get_basename_size(
 	}
 	if( result != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBERROR_CONVERSION_ERROR_GENERIC,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
 		 "%s: unable to determine basename size.",
 		 function );
 
@@ -328,7 +327,7 @@ int libvmdk_segment_table_get_basename(
      libvmdk_segment_table_t *segment_table,
      char *basename,
      size_t basename_size,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function       = "libvmdk_segment_table_get_basename";
 	size_t narrow_basename_size = 0;
@@ -339,10 +338,10 @@ int libvmdk_segment_table_get_basename(
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 
@@ -350,10 +349,10 @@ int libvmdk_segment_table_get_basename(
 	}
 	if( basename == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid basename.",
 		 function );
 
@@ -404,10 +403,10 @@ int libvmdk_segment_table_get_basename(
 	}
 	if( result != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBERROR_CONVERSION_ERROR_GENERIC,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
 		 "%s: unable to determine narrow basename size.",
 		 function );
 
@@ -419,10 +418,10 @@ int libvmdk_segment_table_get_basename(
 
 	if( basename_size < narrow_basename_size )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
 		 "%s: basename too small.",
 		 function );
 
@@ -473,10 +472,10 @@ int libvmdk_segment_table_get_basename(
 	}
 	if( result != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBERROR_CONVERSION_ERROR_GENERIC,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
 		 "%s: unable to set basename.",
 		 function );
 
@@ -488,10 +487,10 @@ int libvmdk_segment_table_get_basename(
 	     segment_table->basename,
 	     segment_table->basename_size ) == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_COPY_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
 		 "%s: unable to set basename.",
 		 function );
 
@@ -510,7 +509,7 @@ int libvmdk_segment_table_set_basename(
      libvmdk_segment_table_t *segment_table,
      const char *basename,
      size_t basename_length,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_segment_table_set_basename";
 
@@ -520,10 +519,10 @@ int libvmdk_segment_table_set_basename(
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 
@@ -531,10 +530,10 @@ int libvmdk_segment_table_set_basename(
 	}
 	if( basename == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid basename.",
 		 function );
 
@@ -589,10 +588,10 @@ int libvmdk_segment_table_set_basename(
 	}
 	if( result != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBERROR_CONVERSION_ERROR_GENERIC,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
 		 "%s: unable to determine basename size.",
 		 function );
 
@@ -606,10 +605,10 @@ int libvmdk_segment_table_set_basename(
 
 	if( segment_table->basename == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
 		 "%s: unable to create basename.",
 		 function );
 
@@ -662,10 +661,10 @@ int libvmdk_segment_table_set_basename(
 	}
 	if( result != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBERROR_CONVERSION_ERROR_GENERIC,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
 		 "%s: unable to set basename.",
 		 function );
 
@@ -683,10 +682,10 @@ int libvmdk_segment_table_set_basename(
 	     basename,
 	     basename_length ) == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_COPY_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
 		 "%s: unable to set basename.",
 		 function );
 
@@ -711,7 +710,7 @@ int libvmdk_segment_table_set_basename(
 int libvmdk_segment_table_get_basename_size_wide(
      libvmdk_segment_table_t *segment_table,
      size_t *basename_size,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_segment_table_get_basename_size_wide";
 
@@ -721,10 +720,10 @@ int libvmdk_segment_table_get_basename_size_wide(
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 
@@ -732,10 +731,10 @@ int libvmdk_segment_table_get_basename_size_wide(
 	}
 	if( basename_size == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid basename size.",
 		 function );
 
@@ -788,10 +787,10 @@ int libvmdk_segment_table_get_basename_size_wide(
 	}
 	if( result != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBERROR_CONVERSION_ERROR_GENERIC,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
 		 "%s: unable to determine basename size.",
 		 function );
 
@@ -808,7 +807,7 @@ int libvmdk_segment_table_get_basename_wide(
      libvmdk_segment_table_t *segment_table,
      wchar_t *basename,
      size_t basename_size,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function     = "libvmdk_segment_table_get_basename_wide";
 	size_t wide_basename_size = 0;
@@ -819,10 +818,10 @@ int libvmdk_segment_table_get_basename_wide(
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 
@@ -830,10 +829,10 @@ int libvmdk_segment_table_get_basename_wide(
 	}
 	if( basename == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid basename.",
 		 function );
 
@@ -886,10 +885,10 @@ int libvmdk_segment_table_get_basename_wide(
 	}
 	if( result != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBERROR_CONVERSION_ERROR_GENERIC,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
 		 "%s: unable to determine basename size.",
 		 function );
 
@@ -898,10 +897,10 @@ int libvmdk_segment_table_get_basename_wide(
 #endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
 	if( basename_size < wide_basename_size )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
 		 "%s: basename too small.",
 		 function );
 
@@ -913,10 +912,10 @@ int libvmdk_segment_table_get_basename_wide(
 	     segment_table->basename,
 	     segment_table->basename_size ) == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_COPY_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
 		 "%s: unable to set basename.",
 		 function );
 
@@ -968,10 +967,10 @@ int libvmdk_segment_table_get_basename_wide(
 	}
 	if( result != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBERROR_CONVERSION_ERROR_GENERIC,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
 		 "%s: unable to set basename.",
 		 function );
 
@@ -988,7 +987,7 @@ int libvmdk_segment_table_set_basename_wide(
      libvmdk_segment_table_t *segment_table,
      const wchar_t *basename,
      size_t basename_length,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_segment_table_set_basename_wide";
 
@@ -998,10 +997,10 @@ int libvmdk_segment_table_set_basename_wide(
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 
@@ -1009,10 +1008,10 @@ int libvmdk_segment_table_set_basename_wide(
 	}
 	if( basename == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid basename.",
 		 function );
 
@@ -1069,10 +1068,10 @@ int libvmdk_segment_table_set_basename_wide(
 	}
 	if( result != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBERROR_CONVERSION_ERROR_GENERIC,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
 		 "%s: unable to determine basename size.",
 		 function );
 
@@ -1084,10 +1083,10 @@ int libvmdk_segment_table_set_basename_wide(
 
 	if( segment_table->basename == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
 		 "%s: unable to create basename.",
 		 function );
 
@@ -1099,10 +1098,10 @@ int libvmdk_segment_table_set_basename_wide(
 	     basename,
 	     basename_length ) == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_COPY_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
 		 "%s: unable to set basename.",
 		 function );
 
@@ -1160,10 +1159,10 @@ int libvmdk_segment_table_set_basename_wide(
 	}
 	if( result != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBERROR_CONVERSION_ERROR_GENERIC,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
 		 "%s: unable to set basename.",
 		 function );
 
@@ -1186,30 +1185,30 @@ int libvmdk_segment_table_set_basename_wide(
 int libvmdk_segment_table_get_amount_of_handles(
      libvmdk_segment_table_t *segment_table,
      int *amount_of_handles,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_segment_table_get_amount_of_handles";
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 
 		return( -1 );
 	}
-	if( libvmdk_array_get_amount_of_entries(
+	if( libcdata_array_get_amount_of_entries(
 	     segment_table->segment_file_handle_array,
 	     amount_of_handles,
 	     error ) != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_GET_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 		 "%s: unable to retrieve amount of entries in segment file handle array.",
 		 function );
 
@@ -1225,31 +1224,31 @@ int libvmdk_segment_table_get_handle(
      libvmdk_segment_table_t *segment_table,
      int handle_index,
      libvmdk_segment_file_handle_t **handle,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_segment_table_get_handle";
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 
 		return( -1 );
 	}
-	if( libvmdk_array_get_entry(
+	if( libcdata_array_get_entry(
 	     segment_table->segment_file_handle_array,
 	     handle_index,
 	     (intptr_t **) handle,
 	     error ) != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_GET_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 		 "%s: unable to retrieve entry: %d from segment file handle array.",
 		 function,
 		 handle_index );
@@ -1266,7 +1265,7 @@ int libvmdk_segment_table_set_handle(
      libvmdk_segment_table_t *segment_table,
      int handle_index,
      libvmdk_segment_file_handle_t *handle,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	libvmdk_segment_file_handle_t *segment_file_handle = NULL;
 	static char *function                             = "libvmdk_segment_table_set_handle";
@@ -1274,24 +1273,24 @@ int libvmdk_segment_table_set_handle(
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 
 		return( -1 );
 	}
-	if( libvmdk_array_get_amount_of_entries(
+	if( libcdata_array_get_amount_of_entries(
 	     segment_table->segment_file_handle_array,
 	     &amount_of_handles,
 	     error ) != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_GET_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 		 "%s: unable to retrieve amount of entries in segment file handle array.",
 		 function );
 
@@ -1304,10 +1303,10 @@ int libvmdk_segment_table_set_handle(
 		     handle_index + 1,
 		     error ) != 1 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_RESIZE_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_RESIZE_FAILED,
 			 "%s: unable to resize the segment table.",
 			 function );
 
@@ -1316,16 +1315,16 @@ int libvmdk_segment_table_set_handle(
 	}
 	else
 	{
-		if( libvmdk_array_get_entry(
+		if( libcdata_array_get_entry(
 		     segment_table->segment_file_handle_array,
 		     handle_index,
 		     (intptr_t **) &segment_file_handle,
 		     error ) != 1 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_GET_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 			 "%s: unable to retrieve entry: %d from segment file handle array.",
 			 function,
 			 handle_index );
@@ -1334,10 +1333,10 @@ int libvmdk_segment_table_set_handle(
 		}
 		if( segment_file_handle != NULL )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
 			 "%s: segment file handle entry: %d value already set.",
 			 function,
 			 handle_index );
@@ -1345,16 +1344,16 @@ int libvmdk_segment_table_set_handle(
 			return( -1 );
 		}
 	}
-	if( libvmdk_array_set_entry(
+	if( libcdata_array_set_entry(
 	     segment_table->segment_file_handle_array,
 	     handle_index,
 	     (intptr_t *) handle,
 	     error ) != 1 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_SET_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
 		 "%s: unable to set entry: %d in segment file handle array.",
 		 function,
 		 handle_index );
@@ -1370,16 +1369,16 @@ int libvmdk_segment_table_set_handle(
 int libvmdk_segment_table_set_maximum_segment_size(
      libvmdk_segment_table_t *segment_table,
      size64_t maximum_segment_size,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_segment_table_set_maximum_segment_size";
 
 	if( segment_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid segment table.",
 		 function );
 

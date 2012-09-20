@@ -1,7 +1,7 @@
 /*
  * Offset table functions
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -25,10 +25,9 @@
 #include <common.h>
 #include <types.h>
 
-#include <liberror.h>
-
 #include "libvmdk_grain_offset.h"
 #include "libvmdk_libbfio.h"
+#include "libvmdk_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -59,16 +58,16 @@ struct libvmdk_offset_table
 int libvmdk_offset_table_initialize(
      libvmdk_offset_table_t **offset_table,
      uint32_t amount_of_grain_offsets,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_offset_table_free(
      libvmdk_offset_table_t **offset_table,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_offset_table_resize(
      libvmdk_offset_table_t *offset_table,
      uint32_t amount_of_grain_offsets,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_offset_table_fill(
      libvmdk_offset_table_t *offset_table,
@@ -76,7 +75,7 @@ int libvmdk_offset_table_fill(
      size_t grain_table_size,
      uint32_t amount_of_grain_table_entries,
      size64_t grain_size,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_offset_table_compare(
      libvmdk_offset_table_t *offset_table,
@@ -84,12 +83,12 @@ int libvmdk_offset_table_compare(
      size_t grain_table_size,
      uint32_t amount_of_grain_table_entries,
      size64_t grain_size,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 off64_t libvmdk_offset_table_seek_grain_offset(
          libvmdk_offset_table_t *offset_table,
          uint32_t grain,
-         liberror_error_t **error );
+         libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

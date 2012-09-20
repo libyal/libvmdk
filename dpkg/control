@@ -1,0 +1,29 @@
+Source: libvmdk
+Section: unknown
+Priority: extra
+Maintainer: Joachim Metz <joachim.metz@gmail.com>
+Build-Depends: debhelper (>= 7), autotools-dev
+Standards-Version: 3.8.3
+Homepage: http://code.google.com/p/libvmdk/
+
+Package: libvmdk
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Library to support the VMware Virtual Disk (VMDK) format
+ libvmdk is a library to support the VMware Virtual Disk (VMDK) format.
+
+Package: libvmdk-dev
+Section: libdevel
+Architecture: any
+Depends: libvmdk (= ${Source-Version})
+Description: Header files and libraries for developing applications for libvmdk
+ Header files and libraries for developing applications for libvmdk.
+
+Package: libvmdk-tools
+Section: utils
+Architecture: any
+Depends: libvmdk (= ${Source-Version}), ${shlibs:Depends}
+Description: Several tools for reading VMware Virtual Disk (VMDK) files
+ Several tools for reading VMware Virtual Disk (VMDK) files.
+

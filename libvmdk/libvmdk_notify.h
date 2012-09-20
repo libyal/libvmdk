@@ -1,7 +1,7 @@
 /*
  * Notification function
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -23,14 +23,11 @@
 #define _LIBVMDK_NOTIFY_H
 
 #include <common.h>
+#include <file_stream.h>
 #include <types.h>
 
-#include <liberror.h>
-#include <libnotify.h>
-
-#include <stdio.h>
-
 #include "libvmdk_extern.h"
+#include "libvmdk_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -38,19 +35,23 @@ extern "C" {
 
 #if !defined( HAVE_LOCAL_LIBVMDK )
 
-LIBVMDK_EXTERN void libvmdk_notify_set_verbose(
-                     int verbose );
+LIBVMDK_EXTERN \
+void libvmdk_notify_set_verbose(
+      int verbose );
 
-LIBVMDK_EXTERN int libvmdk_notify_set_stream(
-                    FILE *stream,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_notify_set_stream(
+     FILE *stream,
+     liberror_error_t **error );
 
-LIBVMDK_EXTERN int libvmdk_notify_stream_open(
-                    const char *filename,
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_notify_stream_open(
+     const char *filename,
+     liberror_error_t **error );
 
-LIBVMDK_EXTERN int libvmdk_notify_stream_close(
-                    liberror_error_t **error );
+LIBVMDK_EXTERN \
+int libvmdk_notify_stream_close(
+     liberror_error_t **error );
 
 #endif
 

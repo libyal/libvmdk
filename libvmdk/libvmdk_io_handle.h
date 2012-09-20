@@ -1,7 +1,7 @@
 /*
  * Input/Output (IO) handle
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -25,9 +25,8 @@
 #include <common.h>
 #include <types.h>
 
-#include <liberror.h>
-
 #include "libvmdk_libbfio.h"
+#include "libvmdk_libcerror.h"
 #include "libvmdk_offset_table.h"
 
 #if defined( __cplusplus )
@@ -61,11 +60,11 @@ struct libvmdk_io_handle
 
 int libvmdk_io_handle_initialize(
      libvmdk_io_handle_t **io_handle,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_io_handle_free(
      libvmdk_io_handle_t **io_handle,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_io_handle_read_file_header(
      libvmdk_io_handle_t *io_handle,
@@ -77,7 +76,7 @@ int libvmdk_io_handle_read_file_header(
      uint32_t *amount_of_grain_directory_entries,
      uint32_t *amount_of_grain_table_entries,
      size64_t *grain_size,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_io_handle_read_grain_directory(
      libvmdk_io_handle_t *io_handle,
@@ -88,7 +87,7 @@ int libvmdk_io_handle_read_grain_directory(
      uint32_t amount_of_grain_table_entries,
      size64_t grain_size,
      uint8_t is_secondary_grain_directory,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_io_handle_read_grain_table(
      libvmdk_io_handle_t *io_handle,
@@ -98,7 +97,7 @@ int libvmdk_io_handle_read_grain_table(
      uint32_t amount_of_grain_table_entries,
      size64_t grain_size,
      uint8_t is_secondary_grain_directory,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

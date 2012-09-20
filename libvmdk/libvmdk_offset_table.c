@@ -1,7 +1,7 @@
 /*
  * Offset table functions
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -24,12 +24,11 @@
 #include <memory.h>
 #include <types.h>
 
-#include <liberror.h>
-#include <libnotify.h>
-
 #include "libvmdk_definitions.h"
 #include "libvmdk_grain_offset.h"
 #include "libvmdk_libbfio.h"
+#include "libvmdk_libcerror.h"
+#include "libvmdk_libcnotify.h"
 #include "libvmdk_offset_table.h"
 
 /* Initialize the offset table
@@ -38,17 +37,17 @@
 int libvmdk_offset_table_initialize(
      libvmdk_offset_table_t **offset_table,
      uint32_t amount_of_grain_offsets,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function    = "libvmdk_offset_table_initialize";
 	size_t grain_offset_size = 0;
 
 	if( offset_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid offset table.",
 		 function );
 
@@ -60,10 +59,10 @@ int libvmdk_offset_table_initialize(
 
 		if( grain_offset_size > (size_t) SSIZE_MAX )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
 			 "%s: invalid grain offset size value exceeds maximum.",
 			 function );
 
@@ -74,10 +73,10 @@ int libvmdk_offset_table_initialize(
 
 		if( *offset_table == NULL )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_MEMORY,
-			 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
 			 "%s: unable to create offset table.",
 			 function );
 
@@ -88,10 +87,10 @@ int libvmdk_offset_table_initialize(
 		     0,
 		     sizeof( libvmdk_offset_table_t ) ) == NULL )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_MEMORY,
-			 LIBERROR_MEMORY_ERROR_SET_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
 			 "%s: unable to clear offset table.",
 			 function );
 
@@ -109,10 +108,10 @@ int libvmdk_offset_table_initialize(
 
 			if( ( *offset_table )->grain_offset == NULL )
 			{
-				liberror_error_set(
+				libcerror_error_set(
 				 error,
-				 LIBERROR_ERROR_DOMAIN_MEMORY,
-				 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
 				 "%s: unable to create grain offsets.",
 				 function );
 
@@ -128,10 +127,10 @@ int libvmdk_offset_table_initialize(
 			     0,
 			     grain_offset_size ) == NULL )
 			{
-				liberror_error_set(
+				libcerror_error_set(
 				 error,
-				 LIBERROR_ERROR_DOMAIN_MEMORY,
-				 LIBERROR_MEMORY_ERROR_SET_FAILED,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_SET_FAILED,
 				 "%s: unable to clear grain offsets.",
 				 function );
 
@@ -155,16 +154,16 @@ int libvmdk_offset_table_initialize(
  */
 int libvmdk_offset_table_free(
      libvmdk_offset_table_t **offset_table,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_offset_table_free";
 
 	if( offset_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid offset table.",
 		 function );
 
@@ -193,7 +192,7 @@ int libvmdk_offset_table_free(
 int libvmdk_offset_table_resize(
      libvmdk_offset_table_t *offset_table,
      uint32_t amount_of_grain_offsets,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	void *reallocation       = NULL;
 	static char *function    = "libvmdk_offset_table_resize";
@@ -201,10 +200,10 @@ int libvmdk_offset_table_resize(
 
 	if( offset_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid offset_table.",
 		 function );
 
@@ -216,10 +215,10 @@ int libvmdk_offset_table_resize(
 
 		if( grain_offset_size > (size_t) SSIZE_MAX )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
 			 "%s: invalid grain offset size value exceeds maximum.",
 			 function );
 
@@ -231,10 +230,10 @@ int libvmdk_offset_table_resize(
 
 		if( reallocation == NULL )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_MEMORY,
-			 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
 			 "%s: unable to resize grain offsets.",
 			 function );
 
@@ -247,10 +246,10 @@ int libvmdk_offset_table_resize(
 		     0,
 		     ( sizeof( libvmdk_grain_offset_t ) * ( amount_of_grain_offsets - offset_table->amount_of_grain_offsets ) ) ) == NULL )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_MEMORY,
-			 LIBERROR_MEMORY_ERROR_SET_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
 			 "%s: unable to clear grain offsets.",
 			 function );
 
@@ -270,7 +269,7 @@ int libvmdk_offset_table_fill(
      size_t grain_table_size,
      uint32_t amount_of_grain_table_entries,
      size_t grain_size,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	libvmdk_grain_offset_t *grain_offset = NULL;
 	static char *function                = "libvmdk_offset_table_fill";
@@ -280,10 +279,10 @@ int libvmdk_offset_table_fill(
 
 	if( offset_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid offset table.",
 		 function );
 
@@ -291,10 +290,10 @@ int libvmdk_offset_table_fill(
 	}
 	if( grain_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid grain table.",
 		 function );
 
@@ -302,10 +301,10 @@ int libvmdk_offset_table_fill(
 	}
 	if( grain_table_size > (size_t) SSIZE_MAX )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
 		 "%s: invalid grain table size value exceeds maximum.",
 		 function );
 
@@ -313,10 +312,10 @@ int libvmdk_offset_table_fill(
 	}
 	if( ( grain_table_size % 4 ) != 0 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 		 "%s: invalid grain table size not a multitude of 4.",
 		 function );
 
@@ -324,10 +323,10 @@ int libvmdk_offset_table_fill(
 	}
 	if( amount_of_grain_table_entries != ( grain_table_size / 4 ) )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_OUT_OF_RANGE,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_RANGE,
 		 "%s: invalid amount of grain table entries size mismatch with calculated amount.",
 		 function );
 
@@ -335,10 +334,10 @@ int libvmdk_offset_table_fill(
 	}
 	if( grain_size == 0 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
 		 "%s: invalid grain size value zero or less.",
 		 function );
 
@@ -346,10 +345,10 @@ int libvmdk_offset_table_fill(
 	}
 	if( grain_size > (size_t) SSIZE_MAX )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
 		 "%s: invalid grain size value exceeds maximum.",
 		 function );
 
@@ -365,10 +364,10 @@ int libvmdk_offset_table_fill(
 		     offset_table->last_grain_offset_filled + amount_of_grain_table_entries,
 		     error ) != 1 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_RESIZE_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_RESIZE_FAILED,
 			 "%s: unable to resize offset table.",
 			 function );
 
@@ -396,9 +395,9 @@ int libvmdk_offset_table_fill(
 			current_size = grain_size;
 		}
 #if defined( HAVE_VERBOSE_OUTPUT )
-		if( libnotify_verbose != 0 )
+		if( libcnotify_verbose != 0 )
 		{
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: grain %" PRIu32 " read with offset 0x%08" PRIx64 " (%" PRIu64 ") and size %" PRIu32 ".\n",
 			 function,
 			 offset_table->last_grain_offset_filled,
@@ -427,7 +426,7 @@ int libvmdk_offset_table_compare(
      size_t grain_table_size,
      uint32_t amount_of_grain_table_entries,
      size_t grain_size,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 #if defined( HAVE_VERBOSE_OUTPUT )
 	char *remarks                        = NULL;
@@ -442,10 +441,10 @@ int libvmdk_offset_table_compare(
 
 	if( offset_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid offset table.",
 		 function );
 
@@ -453,10 +452,10 @@ int libvmdk_offset_table_compare(
 	}
 	if( grain_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid grain table.",
 		 function );
 
@@ -464,10 +463,10 @@ int libvmdk_offset_table_compare(
 	}
 	if( grain_table_size > (size_t) SSIZE_MAX )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
 		 "%s: invalid grain table size value exceeds maximum.",
 		 function );
 
@@ -475,10 +474,10 @@ int libvmdk_offset_table_compare(
 	}
 	if( ( grain_table_size % 4 ) != 0 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 		 "%s: invalid grain table size not a multitude of 4.",
 		 function );
 
@@ -486,10 +485,10 @@ int libvmdk_offset_table_compare(
 	}
 	if( amount_of_grain_table_entries != ( grain_table_size / 4 ) )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_OUT_OF_RANGE,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_RANGE,
 		 "%s: invalid amount of grain table entries size mismatch with calculated amount.",
 		 function );
 
@@ -497,10 +496,10 @@ int libvmdk_offset_table_compare(
 	}
 	if( grain_size == 0 )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
 		 "%s: invalid grain size value zero or less.",
 		 function );
 
@@ -508,10 +507,10 @@ int libvmdk_offset_table_compare(
 	}
 	if( grain_size > (size_t) SSIZE_MAX )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
 		 "%s: invalid grain size value exceeds maximum.",
 		 function );
 
@@ -527,10 +526,10 @@ int libvmdk_offset_table_compare(
 		     offset_table->last_grain_offset_compared + amount_of_grain_table_entries,
 		     error ) != 1 )
 		{
-			liberror_error_set(
+			libcerror_error_set(
 			 error,
-			 LIBERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBERROR_RUNTIME_ERROR_RESIZE_FAILED,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_RESIZE_FAILED,
 			 "%s: unable to resize offset table.",
 			 function );
 
@@ -562,9 +561,9 @@ int libvmdk_offset_table_compare(
 		if( grain_offset->file_offset != current_offset )
 		{
 #if defined( HAVE_VERBOSE_OUTPUT )
-			if( libnotify_verbose != 0 )
+			if( libcnotify_verbose != 0 )
 			{
-				libnotify_printf(
+				libcnotify_printf(
 				 "%s: file offset mismatch for grain offset: %" PRIu32 ".\n",
 				 function,
 				 offset_table->last_grain_offset_compared );
@@ -578,7 +577,7 @@ int libvmdk_offset_table_compare(
 			mismatch = 0;
 		}
 #if defined( HAVE_VERBOSE_OUTPUT )
-		if( libnotify_verbose != 0 )
+		if( libcnotify_verbose != 0 )
 		{
 			if( mismatch == 1 )
 			{
@@ -588,7 +587,7 @@ int libvmdk_offset_table_compare(
 			{
 				remarks = "";
 			}
-			libnotify_printf(
+			libcnotify_printf(
 			 "%s: grain %" PRIu32 " read with offset 0x%08" PRIu64 " (%" PRIu64 ") and size %" PRIu32 "%s.\n",
 			 function,
 			 offset_table->last_grain_offset_compared,
@@ -614,16 +613,16 @@ int libvmdk_offset_table_compare(
 off64_t libvmdk_offset_table_seek_grain_offset(
          libvmdk_offset_table_t *offset_table,
          uint32_t grain,
-         liberror_error_t **error )
+         libcerror_error_t **error )
 {
 	static char *function = "libvmdk_segment_table_seek_grain_offset";
 
 	if( offset_table == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid offset table.",
 		 function );
 
@@ -631,10 +630,10 @@ off64_t libvmdk_offset_table_seek_grain_offset(
 	}
 	if( offset_table->grain_offset == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid offset table - missing grain offsets.",
 		 function );
 
@@ -642,10 +641,10 @@ off64_t libvmdk_offset_table_seek_grain_offset(
 	}
 	if( grain >= offset_table->amount_of_grain_offsets )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_VALUE_OUT_OF_RANGE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_RANGE,
 		 "%s: grain: %" PRIu32 " out of range [0,%" PRIu32 "].",
 		 function,
 		 grain,

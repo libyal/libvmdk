@@ -1,7 +1,7 @@
 /*
  * Shows information obtained from a VMware Virtual Disk (VMDK) file(s)
  *
- * Copyright (c) 2009-2010, Joachim Metz <jbmetz@users.sourceforge.net>
+ * Copyright (c) 2009-2010, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
