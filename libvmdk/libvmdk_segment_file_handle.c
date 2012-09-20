@@ -48,44 +48,58 @@ int libvmdk_segment_file_handle_initialize(
 
 		return( -1 );
 	}
+	if( *segment_file_handle != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid segment file handle value already set.",
+		 function );
+
+		return( -1 );
+	}
+	*segment_file_handle = memory_allocate_structure(
+	                        libvmdk_segment_file_handle_t );
+
 	if( *segment_file_handle == NULL )
 	{
-		*segment_file_handle = (libvmdk_segment_file_handle_t *) memory_allocate(
-		                                                          sizeof( libvmdk_segment_file_handle_t ) );
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_MEMORY,
+		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create segment file handle.",
+		 function );
 
-		if( *segment_file_handle == NULL )
-		{
-			liberror_error_set(
-			 error,
-			 LIBERROR_ERROR_DOMAIN_MEMORY,
-			 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create segment file handle.",
-			 function );
-
-			return( -1 );
-		}
-		if( memory_set(
-		     *segment_file_handle,
-		     0,
-		     sizeof( libvmdk_segment_file_handle_t ) ) == NULL )
-		{
-			liberror_error_set(
-			 error,
-			 LIBERROR_ERROR_DOMAIN_MEMORY,
-			 LIBERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear segment file handle.",
-			 function );
-
-			memory_free(
-			 *segment_file_handle );
-
-			*segment_file_handle = NULL;
-
-			return( -1 );
-		}
-		( *segment_file_handle )->file_io_pool_entry = file_io_pool_entry;
+		goto on_error;
 	}
+	if( memory_set(
+	     *segment_file_handle,
+	     0,
+	     sizeof( libvmdk_segment_file_handle_t ) ) == NULL )
+	{
+		liberror_error_set(
+		 error,
+		 LIBERROR_ERROR_DOMAIN_MEMORY,
+		 LIBERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear segment file handle.",
+		 function );
+
+		goto on_error;
+	}
+	( *segment_file_handle )->file_io_pool_entry = file_io_pool_entry;
+
 	return( 1 );
+
+on_error:
+	if( *segment_file_handle != NULL )
+	{
+		memory_free(
+		 *segment_file_handle );
+
+		*segment_file_handle = NULL;
+	}
+	return( -1 );
 }
 
 /* Frees the segment file handle including elements

@@ -180,7 +180,7 @@ int libvmdk_descriptor_file_set_name(
 
 		return( -1 );
 	}
-	descriptor_file->name = libcstring_system_allocate(
+	descriptor_file->name = libcstring_system_string_allocate(
 	                         name_length + 1 );
 
 	if( descriptor_file->name == NULL )
@@ -416,18 +416,17 @@ int libvmdk_descriptor_file_read_header(
 	if( result_string == NULL )
 	{
 		if( file_stream_at_end(
-		     descriptor_file->file_stream ) != 0 )
+		     descriptor_file->file_stream ) == 0 )
 		{
-			break;
-		}
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: error reading string from file stream.",
-		 function );
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: error reading string from file stream.",
+			 function );
 
-		return( -1 );
+			return( -1 );
+		}
 	}
 	/* Check for the start of the header
 	 */

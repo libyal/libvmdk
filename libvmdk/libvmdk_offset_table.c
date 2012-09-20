@@ -36,7 +36,7 @@
  */
 int libvmdk_offset_table_initialize(
      libvmdk_offset_table_t **offset_table,
-     uint32_t amount_of_grain_offsets,
+     uint32_t number_of_grain_offsets,
      libcerror_error_t **error )
 {
 	static char *function    = "libvmdk_offset_table_initialize";
@@ -53,9 +53,53 @@ int libvmdk_offset_table_initialize(
 
 		return( -1 );
 	}
+	if( *offset_table != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid offset table value already set.",
+		 function );
+
+		return( -1 );
+	}
+	*offset_table = memory_allocate_structure(
+	                 libvmdk_offset_table_t );
+
 	if( *offset_table == NULL )
 	{
-		grain_offset_size = sizeof( libvmdk_grain_offset_t ) * amount_of_grain_offsets;
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create offset table.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_set(
+	     *offset_table,
+	     0,
+	     sizeof( libvmdk_offset_table_t ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear offset table.",
+		 function );
+
+		memory_free(
+		 *offset_table );
+
+		*offset_table = NULL;
+
+		return( -1 );
+	}
+	if( number_of_grain_offsets > 0 )
+	{
+		grain_offset_size = sizeof( libvmdk_grain_offset_t ) * number_of_grain_offsets;
 
 		if( grain_offset_size > (size_t) SSIZE_MAX )
 		{
@@ -66,87 +110,55 @@ int libvmdk_offset_table_initialize(
 			 "%s: invalid grain offset size value exceeds maximum.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
-		*offset_table = (libvmdk_offset_table_t *) memory_allocate(
-		                                           sizeof( libvmdk_offset_table_t ) );
+		( *offset_table )->grain_offset = (libvmdk_grain_offset_t *) memory_allocate(
+									      grain_offset_size );
 
-		if( *offset_table == NULL )
+		if( ( *offset_table )->grain_offset == NULL )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_MEMORY,
 			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create offset table.",
+			 "%s: unable to create grain offsets.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( memory_set(
-		     *offset_table,
+		     ( *offset_table )->grain_offset,
 		     0,
-		     sizeof( libvmdk_offset_table_t ) ) == NULL )
+		     grain_offset_size ) == NULL )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_MEMORY,
 			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear offset table.",
+			 "%s: unable to clear grain offsets.",
 			 function );
 
-			memory_free(
-			 *offset_table );
-
-			*offset_table = NULL;
-
-			return( -1 );
+			goto on_error;
 		}
-		if( amount_of_grain_offsets > 0 )
-		{
-			( *offset_table )->grain_offset = (libvmdk_grain_offset_t *) memory_allocate(
-			                                                              grain_offset_size );
-
-			if( ( *offset_table )->grain_offset == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-				 "%s: unable to create grain offsets.",
-				 function );
-
-				memory_free(
-				 *offset_table );
-
-				*offset_table = NULL;
-
-				return( -1 );
-			}
-			if( memory_set(
-			     ( *offset_table )->grain_offset,
-			     0,
-			     grain_offset_size ) == NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-				 "%s: unable to clear grain offsets.",
-				 function );
-
-				memory_free(
-				 ( *offset_table )->grain_offset );
-				memory_free(
-				 *offset_table );
-
-				*offset_table = NULL;
-
-				return( -1 );
-			}
-		}
-		( *offset_table )->amount_of_grain_offsets = amount_of_grain_offsets;
 	}
+	( *offset_table )->number_of_grain_offsets = number_of_grain_offsets;
+
 	return( 1 );
+
+on_error:
+	if( *offset_table != NULL )
+	{
+		if( ( *offset_table )->grain_offset != NULL )
+		{
+			memory_free(
+			 ( *offset_table )->grain_offset );
+		}
+		memory_free(
+		 *offset_table );
+
+		*offset_table = NULL;
+	}
+	return( -1 );
 }
 
 /* Frees the offset table including elements
@@ -191,7 +203,7 @@ int libvmdk_offset_table_free(
  */
 int libvmdk_offset_table_resize(
      libvmdk_offset_table_t *offset_table,
-     uint32_t amount_of_grain_offsets,
+     uint32_t number_of_grain_offsets,
      libcerror_error_t **error )
 {
 	void *reallocation       = NULL;
@@ -209,9 +221,9 @@ int libvmdk_offset_table_resize(
 
 		return( -1 );
 	}
-	if( offset_table->amount_of_grain_offsets < amount_of_grain_offsets )
+	if( offset_table->number_of_grain_offsets < number_of_grain_offsets )
 	{
-		grain_offset_size = sizeof( libvmdk_grain_offset_t ) * amount_of_grain_offsets;
+		grain_offset_size = sizeof( libvmdk_grain_offset_t ) * number_of_grain_offsets;
 
 		if( grain_offset_size > (size_t) SSIZE_MAX )
 		{
@@ -242,9 +254,9 @@ int libvmdk_offset_table_resize(
 		offset_table->grain_offset = (libvmdk_grain_offset_t *) reallocation;
 
 		if( memory_set(
-		     &( offset_table->grain_offset[ offset_table->amount_of_grain_offsets ] ),
+		     &( offset_table->grain_offset[ offset_table->number_of_grain_offsets ] ),
 		     0,
-		     ( sizeof( libvmdk_grain_offset_t ) * ( amount_of_grain_offsets - offset_table->amount_of_grain_offsets ) ) ) == NULL )
+		     sizeof( libvmdk_grain_offset_t ) * ( number_of_grain_offsets - offset_table->number_of_grain_offsets ) ) == NULL )
 		{
 			libcerror_error_set(
 			 error,
@@ -255,7 +267,7 @@ int libvmdk_offset_table_resize(
 
 			return( -1 );
 		}
-		offset_table->amount_of_grain_offsets = amount_of_grain_offsets;
+		offset_table->number_of_grain_offsets = number_of_grain_offsets;
 	}
 	return( 1 );
 }
@@ -267,7 +279,7 @@ int libvmdk_offset_table_fill(
      libvmdk_offset_table_t *offset_table,
      uint8_t *grain_table,
      size_t grain_table_size,
-     uint32_t amount_of_grain_table_entries,
+     uint32_t number_of_grain_table_entries,
      size_t grain_size,
      libcerror_error_t **error )
 {
@@ -321,13 +333,13 @@ int libvmdk_offset_table_fill(
 
 		return( -1 );
 	}
-	if( amount_of_grain_table_entries != ( grain_table_size / 4 ) )
+	if( number_of_grain_table_entries != ( grain_table_size / 4 ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_RANGE,
-		 "%s: invalid amount of grain table entries size mismatch with calculated amount.",
+		 "%s: invalid number of grain table entries size mismatch with calculated number.",
 		 function );
 
 		return( -1 );
@@ -357,11 +369,11 @@ int libvmdk_offset_table_fill(
 	/* Allocate additional entries in the offset table if needed
 	 * - a single reallocation saves processing time
 	 */
-	if( offset_table->amount_of_grain_offsets < ( offset_table->last_grain_offset_filled + amount_of_grain_table_entries ) )
+	if( offset_table->number_of_grain_offsets < ( offset_table->last_grain_offset_filled + number_of_grain_table_entries ) )
 	{
 		if( libvmdk_offset_table_resize(
 		     offset_table,
-		     offset_table->last_grain_offset_filled + amount_of_grain_table_entries,
+		     offset_table->last_grain_offset_filled + number_of_grain_table_entries,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -375,7 +387,7 @@ int libvmdk_offset_table_fill(
 		}
 	}
 	for( grain_table_entry_iterator = 0;
-	     grain_table_entry_iterator < amount_of_grain_table_entries;
+	     grain_table_entry_iterator < number_of_grain_table_entries;
 	     grain_table_entry_iterator++ )
 	{
 		byte_stream_copy_to_uint32_little_endian(
@@ -406,7 +418,6 @@ int libvmdk_offset_table_fill(
 			 current_size );
 		}
 #endif
-
 		grain_offset = &( offset_table->grain_offset[ offset_table->last_grain_offset_filled ] );
 
 		grain_offset->file_offset = current_offset;
@@ -424,7 +435,7 @@ int libvmdk_offset_table_compare(
      libvmdk_offset_table_t *offset_table,
      uint8_t *grain_table,
      size_t grain_table_size,
-     uint32_t amount_of_grain_table_entries,
+     uint32_t number_of_grain_table_entries,
      size_t grain_size,
      libcerror_error_t **error )
 {
@@ -483,13 +494,13 @@ int libvmdk_offset_table_compare(
 
 		return( -1 );
 	}
-	if( amount_of_grain_table_entries != ( grain_table_size / 4 ) )
+	if( number_of_grain_table_entries != ( grain_table_size / 4 ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_RANGE,
-		 "%s: invalid amount of grain table entries size mismatch with calculated amount.",
+		 "%s: invalid number of grain table entries size mismatch with calculated number.",
 		 function );
 
 		return( -1 );
@@ -519,11 +530,11 @@ int libvmdk_offset_table_compare(
 	/* Allocate additional entries in the offset table if needed
 	 * - a single reallocation saves processing time
 	 */
-	if( offset_table->amount_of_grain_offsets < ( offset_table->last_grain_offset_compared + amount_of_grain_table_entries ) )
+	if( offset_table->number_of_grain_offsets < ( offset_table->last_grain_offset_compared + number_of_grain_table_entries ) )
 	{
 		if( libvmdk_offset_table_resize(
 		     offset_table,
-		     offset_table->last_grain_offset_compared + amount_of_grain_table_entries,
+		     offset_table->last_grain_offset_compared + number_of_grain_table_entries,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -537,7 +548,7 @@ int libvmdk_offset_table_compare(
 		}
 	}
 	for( grain_table_entry_iterator = 0;
-	     grain_table_entry_iterator < amount_of_grain_table_entries;
+	     grain_table_entry_iterator < number_of_grain_table_entries;
 	     grain_table_entry_iterator++ )
 	{
 		byte_stream_copy_to_uint32_little_endian(
@@ -597,7 +608,6 @@ int libvmdk_offset_table_compare(
 			 remarks );
 		}
 #endif
-
 		if( mismatch == 1 )
 		{
 			grain_offset->flags &= ~ ( LIBVMDK_GRAIN_OFFSET_FLAGS_CORRUPTED );
@@ -639,7 +649,7 @@ off64_t libvmdk_offset_table_seek_grain_offset(
 
 		return( -1 );
 	}
-	if( grain >= offset_table->amount_of_grain_offsets )
+	if( grain >= offset_table->number_of_grain_offsets )
 	{
 		libcerror_error_set(
 		 error,
@@ -648,11 +658,11 @@ off64_t libvmdk_offset_table_seek_grain_offset(
 		 "%s: grain: %" PRIu32 " out of range [0,%" PRIu32 "].",
 		 function,
 		 grain,
-		 offset_table->amount_of_grain_offsets - 1 );
+		 offset_table->number_of_grain_offsets - 1 );
 
 		return( -1 );
 	}
-	/* TODO */
+/* TODO */
 
 	return( offset_table->grain_offset[ grain ].file_offset );
 }

@@ -37,7 +37,7 @@
  */
 int libvmdk_segment_table_initialize(
      libvmdk_segment_table_t **segment_table,
-     int amount,
+     int number_of_handles,
      size64_t maximum_segment_size,
      libcerror_error_t **error )
 {
@@ -54,74 +54,83 @@ int libvmdk_segment_table_initialize(
 
 		return( -1 );
 	}
-	if( amount <= 0 )
+	if( *segment_table != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid segment table value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( number_of_handles <= 0 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
-		 "%s: invalid amount value cannot be zero or less.",
+		 "%s: invalid number of handles value cannot be zero or less.",
 		 function );
 
 		return( -1 );
 	}
+	*segment_table = memory_allocate_structure(
+	                  libvmdk_segment_table_t );
+
 	if( *segment_table == NULL )
 	{
-		*segment_table = (libvmdk_segment_table_t *) memory_allocate(
-		                                              sizeof( libvmdk_segment_table_t ) );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create segment table.",
+		 function );
 
-		if( *segment_table == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create segment table.",
-			 function );
-
-			return( -1 );
-		}
-		if( memory_set(
-		     *segment_table,
-		     0,
-		     sizeof( libvmdk_segment_table_t ) ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear segment table.",
-			 function );
-
-			memory_free(
-			 *segment_table );
-
-			*segment_table = NULL;
-
-			return( -1 );
-		}
-		if( libcdata_array_initialize(
-		     &( ( *segment_table )->segment_file_handle_array ),
-		     (int) amount,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create segment file handle array.",
-			 function );
-
-			memory_free(
-			 *segment_table );
-
-			*segment_table = NULL;
-
-			return( -1 );
-		}
-		( *segment_table )->maximum_segment_size = maximum_segment_size;
+		goto on_error;
 	}
+	if( memory_set(
+	     *segment_table,
+	     0,
+	     sizeof( libvmdk_segment_table_t ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear segment table.",
+		 function );
+
+		goto on_error;
+	}
+	if( libcdata_array_initialize(
+	     &( ( *segment_table )->segment_file_handle_array ),
+	     number_of_handles,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create segment file handle array.",
+		 function );
+
+		goto on_error;
+	}
+	( *segment_table )->maximum_segment_size = maximum_segment_size;
+
 	return( 1 );
+
+on_error:
+	if( *segment_table != NULL )
+	{
+		memory_free(
+		 *segment_table );
+
+		*segment_table = NULL;
+	}
+	return( -1 );
 }
 
 /* Frees the segment table including elements
@@ -179,7 +188,7 @@ int libvmdk_segment_table_free(
  */
 int libvmdk_segment_table_resize(
      libvmdk_segment_table_t *segment_table,
-     int amount,
+     int number_of_handles,
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_segment_table_resize";
@@ -195,20 +204,20 @@ int libvmdk_segment_table_resize(
 
 		return( -1 );
 	}
-	if( amount <= 0 )
+	if( number_of_handles <= 0 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
-		 "%s: invalid amount value cannot be zero or less.",
+		 "%s: invalid number of handles value cannot be zero or less.",
 		 function );
 
 		return( -1 );
 	}
 	if( libcdata_array_resize(
 	     segment_table->segment_file_handle_array,
-	     (int) amount,
+	     number_of_handles,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -595,13 +604,13 @@ int libvmdk_segment_table_set_basename(
 		 "%s: unable to determine basename size.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 #else
 	segment_table->basename_size = basename_length + 1;
 #endif
-	segment_table->basename = (libcstring_system_character_t *) memory_allocate(
-	                                                             sizeof( libcstring_system_character_t ) * segment_table->basename_size );
+	segment_table->basename = libcstring_system_string_allocate(
+	                           segment_table->basename_size );
 
 	if( segment_table->basename == NULL )
 	{
@@ -612,9 +621,7 @@ int libvmdk_segment_table_set_basename(
 		 "%s: unable to create basename.",
 		 function );
 
-		segment_table->basename_size = 0;
-
-		return( -1 );
+		goto on_error;
 	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libcstring_narrow_system_string_codepage == 0 )
@@ -668,13 +675,7 @@ int libvmdk_segment_table_set_basename(
 		 "%s: unable to set basename.",
 		 function );
 
-		memory_free(
-		 segment_table->basename );
-
-		segment_table->basename      = NULL;
-		segment_table->basename_size = 0;
-
-		return( -1 );
+		goto on_error;
 	}
 #else
 	if( libcstring_system_string_copy(
@@ -689,18 +690,24 @@ int libvmdk_segment_table_set_basename(
 		 "%s: unable to set basename.",
 		 function );
 
-		memory_free(
-		 segment_table->basename );
-
-		segment_table->basename      = NULL;
-		segment_table->basename_size = 0;
-
-		return( -1 );
+		goto on_error;
 	}
 	segment_table->basename[ basename_length ] = 0;
 #endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
 
 	return( 1 );
+
+on_error:
+	if( segment_table->basename != NULL )
+	{
+		memory_free(
+		 segment_table->basename );
+
+		segment_table->basename = NULL;
+	}
+	segment_table->basename_size = 0;
+
+	return( -1 );
 }
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
@@ -1075,11 +1082,11 @@ int libvmdk_segment_table_set_basename_wide(
 		 "%s: unable to determine basename size.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 #endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-	segment_table->basename = (libcstring_system_character_t *) memory_allocate(
-	                                                             sizeof( libcstring_system_character_t ) * segment_table->basename_size );
+	segment_table->basename = libcstring_system_string_allocate(
+	                           segment_table->basename_size );
 
 	if( segment_table->basename == NULL )
 	{
@@ -1090,7 +1097,7 @@ int libvmdk_segment_table_set_basename_wide(
 		 "%s: unable to create basename.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 #if defined( LIBCSTRING_WIDE_SYSTEM_CHARACTER_TYPE )
 	if( libcstring_system_string_copy(
@@ -1105,13 +1112,7 @@ int libvmdk_segment_table_set_basename_wide(
 		 "%s: unable to set basename.",
 		 function );
 
-		memory_free(
-		 segment_table->basename );
-
-		segment_table->basename      = NULL;
-		segment_table->basename_size = 0;
-
-		return( -1 );
+		goto on_error;
 	}
 	segment_table->basename[ basename_length ] = 0;
 #else
@@ -1166,28 +1167,34 @@ int libvmdk_segment_table_set_basename_wide(
 		 "%s: unable to set basename.",
 		 function );
 
-		memory_free(
-		 segment_table->basename );
-
-		segment_table->basename      = NULL;
-		segment_table->basename_size = 0;
-
-		return( -1 );
+		goto on_error;
 	}
 #endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
 	return( 1 );
+
+on_error:
+	if( segment_table->basename != NULL )
+	{
+		memory_free(
+		 segment_table->basename );
+
+		segment_table->basename = NULL;
+	}
+	segment_table->basename_size = 0;
+
+	return( -1 );
 }
 #endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
-/* Retrieves the amount of handles in the segment table
+/* Retrieves the number of handles in the segment table
  * Returns 1 if successful or -1 on error
  */
-int libvmdk_segment_table_get_amount_of_handles(
+int libvmdk_segment_table_get_number_of_handles(
      libvmdk_segment_table_t *segment_table,
-     int *amount_of_handles,
+     int *number_of_handles,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_segment_table_get_amount_of_handles";
+	static char *function = "libvmdk_segment_table_get_number_of_handles";
 
 	if( segment_table == NULL )
 	{
@@ -1200,16 +1207,16 @@ int libvmdk_segment_table_get_amount_of_handles(
 
 		return( -1 );
 	}
-	if( libcdata_array_get_amount_of_entries(
+	if( libcdata_array_get_number_of_entries(
 	     segment_table->segment_file_handle_array,
-	     amount_of_handles,
+	     number_of_handles,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve amount of entries in segment file handle array.",
+		 "%s: unable to retrieve number of entries in segment file handle array.",
 		 function );
 
 		return( -1 );
@@ -1268,8 +1275,8 @@ int libvmdk_segment_table_set_handle(
      libcerror_error_t **error )
 {
 	libvmdk_segment_file_handle_t *segment_file_handle = NULL;
-	static char *function                             = "libvmdk_segment_table_set_handle";
-	int amount_of_handles                             = 0;
+	static char *function                              = "libvmdk_segment_table_set_handle";
+	int number_of_handles                              = 0;
 
 	if( segment_table == NULL )
 	{
@@ -1282,21 +1289,21 @@ int libvmdk_segment_table_set_handle(
 
 		return( -1 );
 	}
-	if( libcdata_array_get_amount_of_entries(
+	if( libcdata_array_get_number_of_entries(
 	     segment_table->segment_file_handle_array,
-	     &amount_of_handles,
+	     &number_of_handles,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve amount of entries in segment file handle array.",
+		 "%s: unable to retrieve number of entries in segment file handle array.",
 		 function );
 
 		return( -1 );
 	}
-	if( handle_index >= amount_of_handles )
+	if( handle_index >= number_of_handles )
 	{
 		if( libvmdk_segment_table_resize(
 		     segment_table,

@@ -74,7 +74,6 @@ ssize_t libvmdk_segment_file_read_file_header(
 		 function );
 	}
 #endif
-
 	if( libbfio_pool_seek_offset(
 	     file_io_pool,
 	     segment_file_handle->file_io_pool_entry,
@@ -90,7 +89,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 		 function,
 		 0 );
 
-		return( -1 );
+		goto on_error;
 	}
 	file_header = (uint8_t *) memory_allocate(
 	                           sizeof( uint8_t ) * 4 );
@@ -104,7 +103,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 		 "%s: unable to create file header.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	read_count = libbfio_pool_read(
 	              file_io_pool,
@@ -122,10 +121,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 		 "%s: unable to read file header.",
 		 function );
 
-		memory_free(
-		 file_header );
-
-		return( -1 );
+		goto on_error;
 	}
 	if( memory_compare(
 	     file_header,
@@ -152,10 +148,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 		 "%s: unsupported file signature.",
 		 function );
 
-		memory_free(
-		 file_header );
-
-		return( -1 );
+		goto on_error;
 	}
 	reallocation = memory_reallocate(
 	                file_header,
@@ -170,10 +163,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 		 "%s: unable to resize file header.",
 		 function );
 
-		memory_free(
-		 file_header );
-
-		return( -1 );
+		goto on_error;
 	}
 	file_header = (uint8_t *) reallocation;
 
@@ -193,10 +183,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 		 "%s: unable to read file header.",
 		 function );
 
-		memory_free(
-		 file_header );
-
-		return( -1 );
+		goto on_error;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -209,7 +196,6 @@ ssize_t libvmdk_segment_file_read_file_header(
 		 read_size );
 	}
 #endif
-
 	if( segment_file_handle->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
 	{
 		byte_stream_copy_to_uint32_little_endian(
@@ -376,7 +362,6 @@ ssize_t libvmdk_segment_file_read_file_header(
 		}
 	}
 #endif
-
 	if( segment_file_handle->grain_size == 0 )
 	{
 		libcerror_error_set(
@@ -386,7 +371,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 		 "%s: unsupported grain size value is 0.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	if( segment_file_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
@@ -399,7 +384,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 			 "%s: unsupported grain size value is less than or equal to 8.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( ( segment_file_handle->grain_size % 2 ) != 0 )
 		{
@@ -410,10 +395,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 			 "%s: unsupported grain size value is not a power of 2.",
 			 function );
 
-			memory_free(
-			 file_header );
-
-			return( -1 );
+			goto on_error;
 		}
 		if( segment_file_handle->amount_of_grain_table_entries == 0 )
 		{
@@ -424,7 +406,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 			 "%s: unsupported amount of grain table entries value is 0.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 	}
 	if( ( segment_file_handle->maximum_data_size % segment_file_handle->grain_size ) != 0 )
@@ -436,10 +418,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 		 "%s: unsupported maximum data size not a multide of the grain size.",
 		 function );
 
-		memory_free(
-		 file_header );
-
-		return( -1 );
+		goto on_error;
 	}
 	if( segment_file_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
@@ -452,10 +431,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 			 "%s: unsupported single end of line character.",
 			 function );
 
-			memory_free(
-			 file_header );
-
-			return( -1 );
+			goto on_error;
 		}
 		if( ( (vmdk_sparse_file_header_t *) file_header )->non_end_of_line_character != (uint8_t) ' ' )
 		{
@@ -466,10 +442,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 			 "%s: unsupported non end of line character.",
 			 function );
 
-			memory_free(
-			 file_header );
-
-			return( -1 );
+			goto on_error;
 		}
 		if( ( (vmdk_sparse_file_header_t *) file_header )->first_double_end_of_line_character != (uint8_t) '\r' )
 		{
@@ -480,10 +453,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 			 "%s: unsupported first double end of line character.",
 			 function );
 
-			memory_free(
-			 file_header );
-
-			return( -1 );
+			goto on_error;
 		}
 		if( ( (vmdk_sparse_file_header_t *) file_header )->second_double_end_of_line_character != (uint8_t) '\n' )
 		{
@@ -494,14 +464,13 @@ ssize_t libvmdk_segment_file_read_file_header(
 			 "%s: unsupported second double end of line character.",
 			 function );
 
-			memory_free(
-			 file_header );
-
-			return( -1 );
+			goto on_error;
 		}
 	}
 	memory_free(
 	 file_header );
+
+	file_header = NULL;
 
 	if( ( segment_file_handle->compression_method != LIBVMDK_COMPRESSION_METHOD_NONE )
 	 && ( segment_file_handle->compression_method != LIBVMDK_COMPRESSION_METHOD_DEFLATE ) )
@@ -514,7 +483,7 @@ ssize_t libvmdk_segment_file_read_file_header(
 		 function,
 		 segment_file_handle->compression_method );
 
-		return( -1 );
+		goto on_error;
 	}
 	/* Change all sector values to byte values
 	 */
@@ -540,5 +509,13 @@ ssize_t libvmdk_segment_file_read_file_header(
 		segment_file_handle->secondary_grain_directory_offset *= LIBVMDK_SECTOR_SIZE;
 	}
 	return( (ssize_t) read_size );
+
+on_error:
+	if( file_header != NULL )
+	{
+		memory_free(
+		 file_header );
+	}
+	return( -1 );
 }
 

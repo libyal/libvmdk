@@ -37,10 +37,10 @@ typedef struct libvmdk_offset_table libvmdk_offset_table_t;
 
 struct libvmdk_offset_table
 {
-	/* Stores the amount of grains in the table
+	/* Stores the number of grains in the table
 	 * There is an offset per grain in the table
 	 */
-	uint32_t amount_of_grain_offsets;
+	uint32_t number_of_grain_offsets;
 
 	/* The last grain offset that was filled
 	 */
@@ -57,7 +57,7 @@ struct libvmdk_offset_table
 
 int libvmdk_offset_table_initialize(
      libvmdk_offset_table_t **offset_table,
-     uint32_t amount_of_grain_offsets,
+     uint32_t number_of_grain_offsets,
      libcerror_error_t **error );
 
 int libvmdk_offset_table_free(
@@ -66,14 +66,14 @@ int libvmdk_offset_table_free(
 
 int libvmdk_offset_table_resize(
      libvmdk_offset_table_t *offset_table,
-     uint32_t amount_of_grain_offsets,
+     uint32_t number_of_grain_offsets,
      libcerror_error_t **error );
 
 int libvmdk_offset_table_fill(
      libvmdk_offset_table_t *offset_table,
      uint8_t *grain_table,
      size_t grain_table_size,
-     uint32_t amount_of_grain_table_entries,
+     uint32_t number_of_grain_table_entries,
      size64_t grain_size,
      libcerror_error_t **error );
 
@@ -81,7 +81,7 @@ int libvmdk_offset_table_compare(
      libvmdk_offset_table_t *offset_table,
      uint8_t *grain_table,
      size_t grain_table_size,
-     uint32_t amount_of_grain_table_entries,
+     uint32_t number_of_grain_table_entries,
      size64_t grain_size,
      libcerror_error_t **error );
 
