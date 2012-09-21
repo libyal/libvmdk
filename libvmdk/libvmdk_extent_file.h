@@ -1,7 +1,7 @@
 /*
- * Segment file handle
+ * Extent file functions
  *
- * Copyright (c) 2010, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2012 Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -19,35 +19,39 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBVMDK_SEGMENT_FILE_HANDLE_H )
-#define _LIBVMDK_SEGMENT_FILE_HANDLE_H
+#if !defined( _LIBVMDK_EXTENT_FILE_H )
+#define _LIBVMDK_EXTENT_FILE_H
 
 #include <common.h>
 #include <types.h>
 
-#include <liberror.h>
+#include "libvmdk_libbfio.h"
+#include "libvmdk_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-typedef struct libvmdk_segment_file_handle libvmdk_segment_file_handle_t;
+extern const char cowd_sparse_file_signature[ 4 ];
+extern const char vmdk_sparse_file_signature[ 4 ];
 
-struct libvmdk_segment_file_handle
+typedef struct libvmdk_extent_file libvmdk_extent_file_t;
+
+struct libvmdk_extent_file
 {
 	/* The file io pool entry
 	 */
 	int file_io_pool_entry;
 
-	/* The segment file type
+	/* The extent file type
 	 */
 	uint8_t file_type;
 
-	/* The segment file format version
+	/* The extent file format version
 	 */
 	uint32_t format_version;
 
-	/* The segment file flags
+	/* The extent file flags
 	 */
 	uint32_t flags;
 
@@ -88,14 +92,19 @@ struct libvmdk_segment_file_handle
 	off64_t secondary_grain_directory_offset;
 };
 
-int libvmdk_segment_file_handle_initialize(
-     libvmdk_segment_file_handle_t **segment_file_handle,
+int libvmdk_extent_file_initialize(
+     libvmdk_extent_file_t **extent_file,
      int file_io_pool_entry,
      liberror_error_t **error );
 
-int libvmdk_segment_file_handle_free(
-     intptr_t *segment_file_handle,
+int libvmdk_extent_file_free(
+     libvmdk_extent_file_t **extent_file,
      liberror_error_t **error );
+
+ssize_t libvmdk_extent_file_read_file_header(
+         libvmdk_extent_file_t *extent_file,
+         libbfio_pool_t *file_io_pool,
+         libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

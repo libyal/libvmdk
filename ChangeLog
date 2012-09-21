@@ -1,11 +1,12 @@
 TODO
+* generic solution for text files - text value files
+
 * code clean up:
   - goto on_error
   - mem allocate structure
   - support and locale functions
   - libvmdk_descriptor_file_open use cfile stream ?
   - access flags
-  - free functions libvmdk_segment_file_handle_free
 * vmdkinfo:
   - add info handle
 * vmdkmount:
@@ -33,6 +34,10 @@ Deployment:
 * create msvscpp files
 * create macosx package files
 * create codegear files
+
+20120921
+* renamed segment file into extent file
+* merged segment file and segment file handle
 
 20120920
 * applied updates

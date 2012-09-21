@@ -1,7 +1,7 @@
 /*
  * Segment table functions
  *
- * Copyright (c) 2010, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2012 Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -28,7 +28,6 @@
 #include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcstring.h"
-#include "libvmdk_segment_file_handle.h"
 
 #if defined( __cplusplus )
 extern "C" {

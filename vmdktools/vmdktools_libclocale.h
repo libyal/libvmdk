@@ -1,5 +1,5 @@
 /*
- * Common output functions for the vmdktools
+ * The internal libclocale header
  *
  * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -9,40 +9,41 @@
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _VMDKOUTPUT_H )
-#define _VMDKOUTPUT_H
+#if !defined( _VMDKTOOLS_LIBCLOCALE_H )
+#define _VMDKTOOLS_LIBCLOCALE_H
 
 #include <common.h>
-#include <file_stream.h>
-#include <types.h>
 
-#if defined( __cplusplus )
-extern "C" {
+/* Define HAVE_LOCAL_LIBCLOCALE for local use of libclocale
+ */
+#if defined( HAVE_LOCAL_LIBCLOCALE )
+
+#include <libclocale_codepage.h>
+#include <libclocale_definitions.h>
+#include <libclocale_locale.h>
+#include <libclocale_support.h>
+
+#else
+
+/* If libtool DLL support is enabled set LIBCLOCALE_DLL_IMPORT
+ * before including libclocale.h
+ */
+#if defined( _WIN32 ) && defined( DLL_IMPORT )
+#define LIBCLOCALE_DLL_IMPORT
 #endif
 
-void vmdkoutput_copyright_fprint(
-      FILE *stream );
+#include <libclocale.h>
 
-void vmdkoutput_version_fprint(
-      FILE *stream,
-      const char *program );
-
-void vmdkoutput_version_detailed_fprint(
-      FILE *stream,
-      const char *program );
-
-#if defined( __cplusplus )
-}
 #endif
 
 #endif

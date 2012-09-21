@@ -1,7 +1,7 @@
 /*
  * Common output functions for the vmdktools
  *
- * Copyright (c) 2009-2010, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -20,6 +20,7 @@
  */
 
 #include <common.h>
+#include <file_stream.h>
 #include <memory.h>
 #include <types.h>
 
@@ -35,18 +36,18 @@
 #include <libbfio.h>
 #endif
 
-/* If libtool DLL support is enabled set LIBVMDK_DLL_IMPORT
- * before including libvmdk.h
- */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
-#define LIBVMDK_DLL_IMPORT
+#if defined( HAVE_LOCAL_LIBFVALUE )
+#include <libfvalue_definitions.h>
+#elif defined( HAVE_LIBFVALUE_H )
+#include <libfvalue.h>
 #endif
 
-#include <libvmdk.h>
-
-#include <libsystem.h>
-
 #include "vmdkoutput.h"
+#include "vmdktools_libcerror.h"
+#include "vmdktools_libclocale.h"
+#include "vmdktools_libcnotify.h"
+#include "vmdktools_libcsystem.h"
+#include "vmdktools_libvmdk.h"
 
 /* Prints the copyright information
  */
@@ -57,17 +58,53 @@ void vmdkoutput_copyright_fprint(
 	{
 		return;
 	}
+	/* TRANSLATORS: This is a proper name.
+	 */
 	fprintf(
 	 stream,
-	 "Copyright (c) 2009-2010, Joachim Metz <%s> and contributors.\n"
-	 "This is free software; see the source for copying conditions. There is NO\n"
-	 "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n",
+	 _( "Copyright (c) 2009-2012, %s.\n" ),
+	 _( "Joachim Metz" ) );
+
+	fprintf(
+	 stream,
+	 _( "This is free software; see the source for copying conditions. There is NO\n"
+	    "warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.\n" ) );
+
+	/* TRANSLATORS: The placeholder indicates the bug-reporting address
+	 * for this package.  Please add _another line_ saying
+	 * "Report translation bugs to <...>\n" with the address for translation
+	 * bugs (typically your translation team's web or email address).
+	 */
+	fprintf(
+	 stream,
+	 _( "Report bugs to <%s>.\n" ),
 	 PACKAGE_BUGREPORT );
 }
 
-/* Prints the version information
+/* Prints the (basic) version information
  */
 void vmdkoutput_version_fprint(
+      FILE *stream,
+      const char *program )
+{
+	if( stream == NULL )
+	{
+		return;
+	}
+	if( program == NULL )
+	{
+		return;
+	}
+        fprintf(
+	 stream,
+	 "%s %s\n\n",
+         program,
+	 LIBVMDK_VERSION_STRING );
+}
+
+/* Prints the detailed version information
+ */
+void vmdkoutput_version_detailed_fprint(
       FILE *stream,
       const char *program )
 {
@@ -95,6 +132,11 @@ void vmdkoutput_version_fprint(
 	 stream,
 	 ", libbfio %s",
 	 LIBBFIO_VERSION_STRING );
+
+	fprintf(
+	 stream,
+	 ", libfvalue %s",
+	 LIBFVALUE_VERSION_STRING );
 
         fprintf(
 	 stream,

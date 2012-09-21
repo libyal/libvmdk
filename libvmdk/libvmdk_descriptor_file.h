@@ -1,7 +1,7 @@
 /*
  * Descriptor file functions
  *
- * Copyright (c) 2010, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2012 Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -26,8 +26,9 @@
 #include <file_stream.h>
 #include <types.h>
 
+#include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
-#include "libvmdk_libcstring.h"
+#include "libvmdk_libcfile.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -45,9 +46,9 @@ struct libvmdk_descriptor_file
 	 */
 	size_t name_size;
 
-	/* The file stream
+	/* The file IO handle
 	 */
-	FILE *file_stream;
+	libbfio_handle_t *file_io_handle;
 };
 
 int libvmdk_descriptor_file_initialize(

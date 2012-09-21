@@ -1,7 +1,7 @@
 /*
- * Segment file reading/writing functions
+ * The internal libcfile header
  *
- * Copyright (c) 2010, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -19,30 +19,31 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBVMDK_SEGMENT_FILE_H )
-#define _LIBVMDK_SEGMENT_FILE_H
+#if !defined( _LIBVMDK_LIBCFILE_H )
+#define _LIBVMDK_LIBCFILE_H
 
 #include <common.h>
-#include <types.h>
 
-#include "libvmdk_libbfio.h"
-#include "libvmdk_libcerror.h"
-#include "libvmdk_segment_file_handle.h"
+/* Define HAVE_LOCAL_LIBCFILE for local use of libcfile
+ */
+#if defined( HAVE_LOCAL_LIBCFILE )
 
-#if defined( __cplusplus )
-extern "C" {
+#include <libcfile_definitions.h>
+#include <libcfile_file.h>
+#include <libcfile_support.h>
+#include <libcfile_types.h>
+
+#else
+
+/* If libtool DLL support is enabled set LIBCFILE_DLL_IMPORT
+ * before including libcfile.h
+ */
+#if defined( _WIN32 ) && defined( DLL_IMPORT )
+#define LIBCFILE_DLL_IMPORT
 #endif
 
-extern const char cowd_sparse_file_signature[ 4 ];
-extern const char vmdk_sparse_file_signature[ 4 ];
+#include <libcfile.h>
 
-ssize_t libvmdk_segment_file_read_file_header(
-         libvmdk_segment_file_handle_t *segment_file_handle,
-         libbfio_pool_t *file_io_pool,
-         libcerror_error_t **error );
-
-#if defined( __cplusplus )
-}
 #endif
 
 #endif

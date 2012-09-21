@@ -109,6 +109,7 @@ int libvmdk_descriptor_file_free(
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_descriptor_file_free";
+	int result            = 1;
 
 	if( descriptor_file == NULL )
 	{
@@ -123,6 +124,22 @@ int libvmdk_descriptor_file_free(
 	}
 	if( *descriptor_file != NULL )
 	{
+		if( ( *descriptor_file )->file_io_handle != NULL )
+		{
+			if( libvhdi_file_close(
+			     *descriptor_file,
+			     error ) != 0 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+				 "%s: unable to close descriptor file.",
+				 function );
+
+				result = -1;
+			}
+		}
 		if( ( *descriptor_file )->name != NULL )
 		{
 			memory_free(
@@ -133,7 +150,7 @@ int libvmdk_descriptor_file_free(
 
 		*descriptor_file = NULL;
 	}
-	return( 1 );
+	return( result );
 }
 
 /* Sets the filename
@@ -235,7 +252,8 @@ int libvmdk_descriptor_file_open(
      const libcstring_system_character_t *mode,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_descriptor_file_open";
+	libbfio_handle_t *file_io_handle = NULL;
+	static char *function            = "libvmdk_descriptor_file_open";
 
 	if( descriptor_file == NULL )
 	{
@@ -259,51 +277,78 @@ int libvmdk_descriptor_file_open(
 
 		return( -1 );
 	}
-	if( descriptor_file->file_stream != NULL )
+	if( libbfio_file_initialize(
+	     &file_io_handle,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid descriptor file - file stream already set.",
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create file IO handle.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-	if( mode == NULL )
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libbfio_handle_set_track_offsets_read(
+	     file_io_handle,
+	     1,
+	     error ) != 1 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid mode.",
-		 function );
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+                 "%s: unable to set track offsets read in file IO handle.",
+                 function );
 
-		return( -1 );
+		goto on_error;
 	}
-#if defined( LIBSMRAW_HAVE_WIDE_SYSTEM_CHARACTER )
-	descriptor_file->file_stream = file_stream_open_wide(
-	                                descriptor_file->name,
-	                                mode );
-#else
-	descriptor_file->file_stream = file_stream_open(
-	                                descriptor_file->name,
-	                                mode );
 #endif
+	if( libbfio_file_set_name(
+	     file_io_handle,
+	     descriptor_file->name,
+	     descriptor_file->name_size,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+                 "%s: unable to set filename in file IO handle.",
+                 function );
 
-	if( descriptor_file->file_stream == NULL )
+		goto on_error;
+	}
+	if( libvhdi_file_open_file_io_handle(
+	     file,
+	     file_io_handle,
+	     access_flags,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open: %" PRIs_LIBCSTRING_SYSTEM ".",
+		 "%s: unable to open file: %s.",
 		 function,
-		 descriptor_file->name );
+		 filename );
 
-		return( -1 );
+		goto on_error;
 	}
+	internal_file->file_io_handle_created_in_library = 1;
+
 	return( 1 );
+
+on_error:
+	if( file_io_handle != NULL )
+	{
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Closes the descriptor file

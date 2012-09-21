@@ -92,6 +92,9 @@ AX_LIBFDATA_CHECK_ENABLE
 dnl Check for enabling libfvalue for file value support
 AX_LIBFVALUE_CHECK_ENABLE
 
+dnl Check for library function support
+AX_LIBVMDK_CHECK_LOCAL
+
 dnl Check for enabling libcsystem for cross-platform C generic system functions
 AX_LIBCSYSTEM_CHECK_ENABLE
 

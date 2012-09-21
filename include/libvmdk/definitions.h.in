@@ -50,5 +50,23 @@ enum LIBVMDK_ACCESS_FLAGS
 /* Reserved: not supported yet */
 #define LIBVMDK_OPEN_READ_WRITE					( LIBVMDK_ACCESS_FLAG_READ | LIBVMDK_ACCESS_FLAG_WRITE )
 
+/* The file types
+ */
+enum LIBVMDK_FILE_TYPES
+{
+	LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA			= (uint8_t) 'c',
+	LIBVMDK_FILE_TYPE_DESCRIPTOR_FILE			= (uint8_t) 'd',
+	LIBVMDK_FILE_TYPE_RAW_DATA				= (uint8_t) 'r',
+	LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA			= (uint8_t) 'v'
+};
+
+/* The compression methods
+ */
+enum LIBVMDK_COMPRESSION_METHODS
+{
+	LIBVMDK_COMPRESSION_METHOD_NONE				= 0,
+	LIBVMDK_COMPRESSION_METHOD_DEFLATE			= 1
+};
+
 #endif
 

@@ -225,7 +225,7 @@ int libvmdk_handle_free(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-					 "%s: unable to free file io pool.",
+					 "%s: unable to free file IO pool.",
 					 function );
 
 					result = -1;
@@ -289,7 +289,7 @@ int libvmdk_handle_signal_abort(
 	return( 1 );
 }
 
-/* Opens a VMware Virtual Disk file(s)
+/* Opens a set of Mware Virtual Disk file(s)
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_open(
@@ -305,7 +305,7 @@ int libvmdk_handle_open(
 	static char *function                      = "libvmdk_handle_open";
 	size_t filename_length                     = 0;
 	int file_io_pool_entry                     = 0;
-	int filename_iterator                      = 0;
+	int filename_index                         = 0;
 
 	if( handle == NULL )
 	{
@@ -342,13 +342,13 @@ int libvmdk_handle_open(
 
 		return( -1 );
 	}
-	if( ( flags & LIBVMDK_FLAG_WRITE ) == LIBVMDK_FLAG_WRITE )
+	if( ( flags & LIBVMDK_ACCESS_FLAG_WRITE ) != 0 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: write access to VMware Virtual Disk file(s) currently not supported.",
+		 "%s: write access currently not supported.",
 		 function );
 
 		return( -1 );
@@ -363,19 +363,19 @@ int libvmdk_handle_open(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create file io pool.",
+		 "%s: unable to create file IO pool.",
 		 function );
 
 		goto on_error;
 	}
-	if( ( flags & LIBVMDK_FLAG_READ ) == LIBVMDK_FLAG_READ )
+	if( ( flags & LIBVMDK_ACCESS_FLAG_READ ) != 0 )
 	{
-		for( filename_iterator = 0;
-		     filename_iterator < number_of_filenames;
-		     filename_iterator++ )
+		for( filename_index = 0;
+		     filename_index < number_of_filenames;
+		     filename_index++ )
 		{
 			filename_length = libcstring_narrow_string_length(
-					   filenames[ filename_iterator ] );
+					   filenames[ filename_index ] );
 
 			/* Make sure there is more to the filename than the extension
 			 */
@@ -387,7 +387,7 @@ int libvmdk_handle_open(
 				 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
 				 "%s: filename: %s is too small.",
 				 function,
-				 filenames[ filename_iterator ] );
+				 filenames[ filename_index ] );
 
 				goto on_error;
 			}
@@ -422,7 +422,7 @@ int libvmdk_handle_open(
 #endif
 			if( libbfio_file_set_name(
 			     file_io_handle,
-			     filenames[ filename_iterator ],
+			     filenames[ filename_index ],
 			     filename_length + 1,
 			     error ) != 1 )
 			{
@@ -460,7 +460,7 @@ int libvmdk_handle_open(
 				 "%s: added pool entry: %d with filename: %s.\n",
 				 function,
 				 file_io_pool_entry,
-				 filenames[ filename_iterator ] );
+				 filenames[ filename_index ] );
 			}
 #endif
 		}
@@ -475,7 +475,7 @@ int libvmdk_handle_open(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open handle using a file io pool.",
+		 "%s: unable to open handle using a file IO pool.",
 		 function );
 
 		goto on_error;
@@ -502,7 +502,7 @@ on_error:
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
-/* Opens a VMware Virtual Disk file(s)
+/* Opens a set of VMware Virtual Disk file(s)
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_open_wide(
@@ -517,7 +517,7 @@ int libvmdk_handle_open_wide(
 	static char *function                      = "libvmdk_handle_open_wide";
 	size_t filename_length                     = 0;
 	int file_io_pool_entry                     = 0;
-	int filename_iterator                      = 0;
+	int filename_index                         = 0;
 
 	if( handle == NULL )
 	{
@@ -554,13 +554,13 @@ int libvmdk_handle_open_wide(
 
 		return( -1 );
 	}
-	if( ( flags & LIBVMDK_FLAG_WRITE ) == LIBVMDK_FLAG_WRITE )
+	if( ( flags & LIBVMDK_ACCESS_FLAG_WRITE ) != 0 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: write access to VMware Virtual Disk file(s) currently not supported.",
+		 "%s: write access currently not supported.",
 		 function );
 
 		return( -1 );
@@ -575,19 +575,19 @@ int libvmdk_handle_open_wide(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create file io pool.",
+		 "%s: unable to create file IO pool.",
 		 function );
 
 		goto on_error;
 	}
-	if( ( flags & LIBVMDK_FLAG_READ ) == LIBVMDK_FLAG_READ )
+	if( ( flags & LIBVMDK_ACCESS_FLAG_READ ) != 0 )
 	{
-		for( filename_iterator = 0;
-		     filename_iterator < number_of_filenames;
-		     filename_iterator++ )
+		for( filename_index = 0;
+		     filename_index < number_of_filenames;
+		     filename_index++ )
 		{
 			filename_length = libcstring_wide_string_length(
-					   filenames[ filename_iterator ] );
+					   filenames[ filename_index ] );
 
 			/* Make sure there is more to the filename than the extension
 			 */
@@ -599,7 +599,7 @@ int libvmdk_handle_open_wide(
 				 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
 				 "%s: filename: %ls is too small.",
 				 function,
-				 filenames[ filename_iterator ] );
+				 filenames[ filename_index ] );
 
 				goto on_error;
 			}
@@ -634,7 +634,7 @@ int libvmdk_handle_open_wide(
 #endif
 			if( libbfio_file_set_name_wide(
 			     file_io_handle,
-			     filenames[ filename_iterator ],
+			     filenames[ filename_index ],
 			     filename_length + 1,
 			     error ) != 1 )
 			{
@@ -669,10 +669,10 @@ int libvmdk_handle_open_wide(
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
-				 "%s: added pool entry: %d with filename: %s.\n",
+				 "%s: added pool entry: %d with filename: %ls.\n",
 				 function,
 				 file_io_pool_entry,
-				 filenames[ filename_iterator ] );
+				 filenames[ filename_index ] );
 			}
 #endif
 		}
@@ -687,7 +687,7 @@ int libvmdk_handle_open_wide(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open handle using a file io pool.",
+		 "%s: unable to open handle using a file IO pool.",
 		 function );
 
 		goto on_error;
@@ -714,7 +714,7 @@ on_error:
 
 #endif
 
-/* Opens a VMware Virtual Disk file(s) using a Basic File IO (bfio) pool
+/* Opens a set of VMware Virtual Disk file(s) using a Basic File IO (bfio) pool
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_open_file_io_pool(
@@ -727,7 +727,8 @@ int libvmdk_handle_open_file_io_pool(
 	libvmdk_internal_handle_t *internal_handle         = NULL;
 	libvmdk_segment_file_handle_t *segment_file_handle = NULL;
 	static char *function                              = "libvmdk_handle_open_file_io_pool";
-	int number_of_handles                              = 0;
+	uint8_t file_type                                  = 0;
+	int number_of_file_io_handles                      = 0;
 	int file_io_pool_entry                             = 0;
 	int result                                         = 0;
 
@@ -761,27 +762,27 @@ int libvmdk_handle_open_file_io_pool(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file io pool.",
+		 "%s: invalid file IO pool.",
 		 function );
 
 		return( -1 );
 	}
 	if( libbfio_pool_get_number_of_handles(
 	     file_io_pool,
-	     &number_of_handles,
+	     &number_of_file_io_handles,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve the number of handles in the file io pool.",
+		 "%s: unable to retrieve the number of handles in the file IO pool.",
 		 function );
 
 		return( -1 );
 	}
-	if( ( ( flags & LIBVMDK_FLAG_READ ) != LIBVMDK_FLAG_READ )
-	 && ( ( flags & LIBVMDK_FLAG_WRITE ) != LIBVMDK_FLAG_WRITE ) )
+	if( ( ( flags & LIBVMDK_ACCESS_FLAG_READ ) == 0 )
+	 && ( ( flags & LIBVMDK_ACCESS_FLAG_WRITE ) == 0 ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -795,12 +796,10 @@ int libvmdk_handle_open_file_io_pool(
 	internal_handle->io_handle->flags = flags;
 	internal_handle->file_io_pool     = file_io_pool;
 
-	if( ( flags & LIBVMDK_FLAG_READ ) == LIBVMDK_FLAG_READ )
+	if( ( flags & LIBVMDK_ACCESS_FLAG_READ ) != 0 )
 	{
-/* TODO look for descriptor file*/
-
 		for( file_io_pool_entry = 0;
-		     file_io_pool_entry < number_of_handles;
+		     file_io_pool_entry < number_of_file_io_handles;
 		     file_io_pool_entry++ )
 		{
 			file_io_handle = NULL;
@@ -830,64 +829,90 @@ int libvmdk_handle_open_file_io_pool(
 				 file_io_pool_entry );
 			}
 #endif
-			if( libvmdk_segment_file_handle_initialize(
-			     &segment_file_handle,
-			     file_io_pool_entry,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create segment file handle.",
-				 function );
+			result = libvmdk_handle_open_read_signature(
+			          file_io_pool,
+			          file_io_pool_entry,
+			          &file_type,
+			          error );
 
-				goto on_error;
-			}
-			if( libvmdk_segment_file_read_file_header(
-			     segment_file_handle,
-			     file_io_pool,
-			     error ) <= -1 )
+			if( result == -1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_IO,
 				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read segment file header.",
-				 function );
+				 "%s: unable to read signature of pool entry: %d.",
+				 function,
+				 file_io_pool_entry );
 
 				goto on_error;
 			}
-			/* TODO handle descriptor file, and raw files
-			 */
-			if( ( segment_file_handle->file_type != LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
-			 && ( segment_file_handle->file_type != LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA ) )
+			if( file_type == LIBVMDK_FILE_TYPE_DESCRIPTOR_FILE )
+			{
+/* TODO check if already set */
+			}
+			else if( file_type == LIBVMDK_FILE_TYPE_RAW_DATA )
+			{
+			}
+			else if( ( file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
+			      || ( file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA ) )
+			{
+				if( libvmdk_segment_file_handle_initialize(
+				     &segment_file_handle,
+				     file_io_pool_entry,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create segment file handle.",
+					 function );
+
+					goto on_error;
+				}
+				if( libvmdk_segment_file_read_file_header(
+				     segment_file_handle,
+				     file_io_pool,
+				     error ) <= -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read segment file header.",
+					 function );
+
+					goto on_error;
+				}
+				if( libvmdk_segment_table_set_handle(
+				     internal_handle->segment_table,
+				     /* TODO */ 0,
+				     segment_file_handle,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+					 "%s: unable to set handle in segment table.",
+					 function );
+
+					goto on_error;
+				}
+				segment_file_handle = NULL;
+			}
+			else
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 				 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-				 "%s: unsupported segment file type.",
+				 "%s: unsupported file type.",
 				 function );
 
 				goto on_error;
 			}
-			if( libvmdk_segment_table_set_handle(
-			     internal_handle->segment_table,
-			     /* TODO */ 0,
-			     segment_file_handle,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable to set handle in segment table.",
-				 function );
-
-				goto on_error;
-			}
-			segment_file_handle = NULL;
 		}
 		result = libvmdk_handle_open_read(
 		          internal_handle,
@@ -1041,6 +1066,95 @@ int libvmdk_handle_open_read(
 		}
 	}
 	return( 1 );
+}
+
+/* Reads the file signature and tries to determine the file type
+ * Returns 1 if successful, 0 if no file type could be determined or -1 on error
+ */
+int libvmdk_handle_open_read_signature(
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
+     uint8_t *file_type,
+     libcerror_error_t **error )
+{
+	uint8_t signature[ 32 ];
+
+	static char *function = "libvmdk_handle_open_read_signature";
+	ssize_t read_count    = 0;
+	int result            = 0;
+
+	if( file_type == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file type.",
+		 function );
+
+		return( -1 );
+	}
+	if( libbfio_pool_seek_offset(
+	     file_io_pool,
+	     file_io_pool_entry,
+	     0,
+	     SEEK_SET,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek offset: 0 in file IO pool entry: %d.",
+		 function,
+		 file_io_pool_entry );
+
+		goto on_error;
+	}
+	read_count = libbfio_pool_read(
+	              file_io_pool,
+	              file_io_pool_entry,
+	              signature,
+	              32,
+	              error );
+
+	if( read_count != (ssize_t) 32 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read signature of file IO pool entry: %d.",
+		 function,
+		 file_io_pool_entry );
+
+		goto on_error;
+	}
+	if( memory_compare(
+	     signature,
+	     cowd_sparse_file_signature,
+	     4 ) == 0 )
+	{
+		*file_type = LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA;
+		result     = 1;
+	}
+	else if( memory_compare(
+	          signature,
+	          vmdk_sparse_file_signature,
+	          4 ) == 0 )
+	{
+		*file_type = LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA;
+		result     = 1;
+	}
+	else if( memory_compare(
+	          signature,
+	          "# Disk DescriptorFile\n",
+	          22 ) == 0 )
+	{
+		*file_type = LIBVMDK_FILE_TYPE_DESCRIPTOR_FILE;
+		result     = 1;
+	}
+	return( result );
 }
 
 #ifdef TODO

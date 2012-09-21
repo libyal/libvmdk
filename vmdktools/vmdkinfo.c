@@ -1,7 +1,7 @@
 /*
- * Shows information obtained from a VMware Virtual Disk (VMDK) file(s)
+ * Shows information obtained from a VMware Virtual Disk (VMDK) file
  *
- * Copyright (c) 2009-2010, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -20,12 +20,9 @@
  */
 
 #include <common.h>
+#include <file_stream.h>
 #include <memory.h>
 #include <types.h>
-
-#include <liberror.h>
-
-#include <stdio.h>
 
 #if defined( HAVE_UNISTD_H )
 #include <unistd.h>
@@ -35,18 +32,17 @@
 #include <stdlib.h>
 #endif
 
-/* If libtool DLL support is enabled set LIBVMDK_DLL_IMPORT
- * before including libvmdk.h
- */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
-#define LIBVMDK_DLL_IMPORT
-#endif
-
-#include <libvmdk.h>
-
-#include <libsystem.h>
-
+#include "info_handle.h"
 #include "vmdkoutput.h"
+#include "vmdktools_libcerror.h"
+#include "vmdktools_libclocale.h"
+#include "vmdktools_libcnotify.h"
+#include "vmdktools_libcstring.h"
+#include "vmdktools_libcsystem.h"
+#include "vmdktools_libvmdk.h"
+
+info_handle_t *vmdkinfo_info_handle = NULL;
+int vmdkinfo_abort                  = 0;
 
 /* Prints the executable usage information
  */
@@ -57,58 +53,55 @@ void usage_fprint(
 	{
 		return;
 	}
-	fprintf( stream, "Use vmdkinfo to determine information about a VMware Virtual Disk (VMDK) file(s).\n\n" );
+	fprintf( stream, "Use vmdkinfo to determine information about a VMware Virtual Disk (VMDK)\n"
+	                 "image file.\n\n" );
 
-	fprintf( stream, "Usage: vmdkinfo [ -hvV ] vmdk_files\n\n" );
+	fprintf( stream, "Usage: vmdkinfo [ -hvV ] source\n\n" );
 
-	fprintf( stream, "\tvmdk_files: the entire set of VMDK segment files or the one containing the descriptor\n\n" );
+	fprintf( stream, "\tsource: the source file\n\n" );
 
-	fprintf( stream, "\t-h:         shows this help\n" );
-	fprintf( stream, "\t-v:         verbose output to stderr\n" );
-	fprintf( stream, "\t-V:         print version\n" );
+	fprintf( stream, "\t-h:     shows this help\n" );
+	fprintf( stream, "\t-v:     verbose output to stderr\n" );
+	fprintf( stream, "\t-V:     print version\n" );
 }
 
-/* Prints file information
- * Returns 1 if successful or -1 on error
+/* Signal handler for vmdkinfo
  */
-int vmdkinfo_handle_info_fprint(
-     FILE *stream,
-     libvmdk_handle_t *handle,
-     libvmdk_error_t **error )
+void vmdkinfo_signal_handler(
+      libcsystem_signal_t signal LIBCSYSTEM_ATTRIBUTE_UNUSED )
 {
-	static char *function = "vmdkinfo_handle_info_fprint";
+	libcerror_error_t *error = NULL;
+	static char *function   = "vmdkinfo_signal_handler";
 
-	if( stream == NULL )
+	LIBCSYSTEM_UNREFERENCED_PARAMETER( signal )
+
+	vmdkinfo_abort = 1;
+
+	if( vmdkinfo_info_handle != NULL )
 	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid stream.",
-		 function );
+		if( info_handle_signal_abort(
+		     vmdkinfo_info_handle,
+		     &error ) != 1 )
+		{
+			libcnotify_printf(
+			 "%s: unable to signal info handle to abort.\n",
+			 function );
 
-		return( -1 );
+			libcnotify_print_error_backtrace(
+			 error );
+			libcerror_error_free(
+			 &error );
+		}
 	}
-	if( handle == NULL )
+	/* Force stdin to close otherwise any function reading it will remain blocked
+	 */
+	if( libcsystem_file_io_close(
+	     0 ) != 0 )
 	{
-		liberror_error_set(
-		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid handle.",
+		libcnotify_printf(
+		 "%s: unable to close stdin.\n",
 		 function );
-
-		return( -1 );
 	}
-	fprintf(
-	 stream,
-	 "VMware Virtual Disk information:\n" );
-
-	fprintf(
-	 stream,
-	 "\n" );
-
-	return( 1 );
 }
 
 /* The main program
@@ -119,46 +112,43 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libcstring_system_character_t * const *argv_filenames = NULL;
+	libvmdk_error_t *error                = NULL;
+	libcstring_system_character_t *source = NULL;
+	char *program                         = "vmdkinfo";
+	libcstring_system_integer_t option    = 0;
+	int verbose                           = 0;
 
-#if !defined( LIBSYSTEM_HAVE_GLOB )
-	libsystem_glob_t *glob                                = NULL;
-#endif
-
-	libvmdk_error_t *error                                = NULL;
-	libvmdk_handle_t *vmdk_handle                         = NULL;
-	libcstring_system_character_t *source                 = NULL;
-	char *program                                         = "vmdkinfo";
-	libcstring_system_integer_t option                    = 0;
-	int amount_of_filenames                               = 0;
-	int result                                            = 0;
-	int verbose                                           = 0;
-
-	libsystem_notify_set_stream(
+	libcnotify_stream_set(
 	 stderr,
 	 NULL );
-	libsystem_notify_set_verbose(
+	libcnotify_verbose_set(
 	 1 );
 
-        if( libsystem_initialize(
+	if( libclocale_initialize(
+             "vmdktools",
+	     &error ) != 1 )
+	{
+		fprintf(
+		 stderr,
+		 "Unable to initialize locale values.\n" );
+
+		goto on_error;
+	}
+        if( libcsystem_initialize(
+             _IONBF,
              &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
 		 "Unable to initialize system values.\n" );
 
-		libsystem_notify_print_error_backtrace(
-		 error );
-		liberror_error_free(
-		 &error );
-
-		return( EXIT_FAILURE );
+		goto on_error;
 	}
 	vmdkoutput_version_fprint(
 	 stdout,
 	 program );
 
-	while( ( option = libsystem_getopt(
+	while( ( option = libcsystem_getopt(
 	                   argc,
 	                   argv,
 	                   _LIBCSTRING_SYSTEM_STRING( "hvV" ) ) ) != (libcstring_system_integer_t) -1 )
@@ -170,7 +160,7 @@ int main( int argc, char * const argv[] )
 				fprintf(
 				 stderr,
 				 "Invalid argument: %" PRIs_LIBCSTRING_SYSTEM "\n",
-				 argv[ optind ] );
+				 argv[ optind - 1 ] );
 
 				usage_fprint(
 				 stdout );
@@ -199,7 +189,7 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stderr,
-		 "Missing source file(s).\n" );
+		 "Missing source file.\n" );
 
 		usage_fprint(
 		 stdout );
@@ -208,7 +198,7 @@ int main( int argc, char * const argv[] )
 	}
 	source = argv[ optind ];
 
-	libsystem_notify_set_verbose(
+	libcnotify_verbose_set(
 	 verbose );
 	libvmdk_notify_set_stream(
 	 stderr,
@@ -216,177 +206,74 @@ int main( int argc, char * const argv[] )
 	libvmdk_notify_set_verbose(
 	 verbose );
 
-#if !defined( LIBSYSTEM_HAVE_GLOB )
-	if( libsystem_glob_initialize(
-	     &glob,
+	if( info_handle_initialize(
+	     &vmdkinfo_info_handle,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to initialize glob.\n" );
+		 "Unable to initialize info handle.\n" );
 
-		libsystem_notify_print_error_backtrace(
-		 error );
-		liberror_error_free(
-		 &error );
-
-		return( EXIT_FAILURE );
+		goto on_error;
 	}
-	if( libsystem_glob_resolve(
-	     glob,
-	     &( argv[ optind ] ),
-	     argc - optind,
+	if( info_handle_open_input(
+	     vmdkinfo_info_handle,
+	     source,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to resolve glob.\n" );
+		 "Unable to open: %" PRIs_LIBCSTRING_SYSTEM ".\n",
+		 source );
 
-		libsystem_notify_print_error_backtrace(
-		 error );
-		liberror_error_free(
-		 &error );
-
-		libsystem_glob_free(
-		 &glob,
-		 NULL );
-
-		return( EXIT_FAILURE );
+		goto on_error;
 	}
-	argv_filenames      = glob->result;
-	amount_of_filenames = glob->amount_of_results;
-#else
-	argv_filenames      = &( argv[ optind ] );
-	amount_of_filenames = argc - optind;
-
-#endif
-
-	if( libvmdk_handle_initialize(
-	     &vmdk_handle,
+	if( info_handle_file_fprint(
+	     vmdkinfo_info_handle,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to initialize libvmdk handle.\n" );
+		 "Unable to print file information.\n" );
 
-		libsystem_notify_print_error_backtrace(
-		 error );
-		libvmdk_error_free(
-		 &error );
-
-#if !defined( LIBSYSTEM_HAVE_GLOB )
-		libsystem_glob_free(
-		 &glob,
-		 NULL );
-#endif
-
-		return( EXIT_FAILURE );
+		goto on_error;
 	}
-#if defined( LIBSYSTEM_HAVE_WIDE_CHARACTER )
-	result = libvmdk_handle_open_wide(
-	          vmdk_handle,
-	          argv_filenames,
-	          amount_of_filenames,
-	          LIBVMDK_OPEN_READ,
-	          &error );
-#else
-	result = libvmdk_handle_open(
-	          vmdk_handle,
-	          argv_filenames,
-	          amount_of_filenames,
-	          LIBVMDK_OPEN_READ,
-	          &error );
-#endif
-
-#if !defined( LIBSYSTEM_HAVE_GLOB )
-	if( libsystem_glob_free(
-	     &glob,
-	     &error ) != 1 )
-	{
-		fprintf(
-		 stderr,
-		 "Unable to free glob.\n" );
-
-		libsystem_notify_print_error_backtrace(
-		 error );
-		liberror_error_free(
-		 &error );
-
-		return( EXIT_FAILURE );
-	}
-#endif
-
-	if( result != 1 )
-	{
-		fprintf(
-		 stderr,
-		 "Error opening file(s).\n" );
-
-		libsystem_notify_print_error_backtrace(
-		 error );
-		libvmdk_error_free(
-		 &error );
-
-		libvmdk_handle_free(
-		 &vmdk_handle,
-		 NULL );
-
-		return( EXIT_FAILURE );
-	}
-	if( vmdkinfo_handle_info_fprint(
-	     stdout,
-	     vmdk_handle,
-	     &error ) != 1 )
-	{
-		fprintf(
-		 stderr,
-		 "Unable to print handle information.\n" );
-
-		libsystem_notify_print_error_backtrace(
-		 error );
-		libvmdk_error_free(
-		 &error );
-
-		libvmdk_handle_free(
-		 &vmdk_handle,
-		 NULL );
-
-		return( EXIT_FAILURE );
-	}
-	if( libvmdk_handle_close(
-	     vmdk_handle,
+	if( info_handle_close(
+	     vmdkinfo_info_handle,
 	     &error ) != 0 )
 	{
 		fprintf(
 		 stderr,
-		 "Error closing file(s).\n" );
+		 "Unable to close info handle.\n" );
 
-		libsystem_notify_print_error_backtrace(
-		 error );
-		libvmdk_error_free(
-		 &error );
-
-		libvmdk_handle_free(
-		 &vmdk_handle,
-		 NULL );
-
-		return( EXIT_FAILURE );
+		goto on_error;
 	}
-	if( libvmdk_handle_free(
-	     &vmdk_handle,
+	if( info_handle_free(
+	     &vmdkinfo_info_handle,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to free libvmdk handle.\n" );
+		 "Unable to free info handle.\n" );
 
-		libsystem_notify_print_error_backtrace(
-		 error );
-		libvmdk_error_free(
-		 &error );
-
-		return( EXIT_FAILURE );
+		goto on_error;
 	}
 	return( EXIT_SUCCESS );
+
+on_error:
+	if( error != NULL )
+	{
+		libcnotify_print_error_backtrace(
+		 error );
+		libcerror_error_free(
+		 &error );
+	}
+	if( vmdkinfo_info_handle != NULL )
+	{
+		info_handle_free(
+		 &vmdkinfo_info_handle,
+		 NULL );
+	}
+	return( EXIT_FAILURE );
 }
 

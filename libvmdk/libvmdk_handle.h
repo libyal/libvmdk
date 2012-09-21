@@ -119,6 +119,12 @@ int libvmdk_handle_open_read(
      libvmdk_segment_table_t *segment_table,
      libcerror_error_t **error );
 
+int libvmdk_handle_open_read_signature(
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
+     uint8_t *file_type,
+     libcerror_error_t **error );
+
 LIBVMDK_EXTERN \
 int libvmdk_handle_set_maximum_number_of_open_handles(
      libvmdk_handle_t *handle,
