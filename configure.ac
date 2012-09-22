@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libvmdk],
- [20120920],
+ [20120922],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -83,14 +83,14 @@ AX_LIBCPATH_CHECK_ENABLE
 dnl Check for enabling libbfio for basic file IO support
 AX_LIBBFIO_CHECK_ENABLE
 
-dnl Check for enabling libfcache for file value cache support
-AX_LIBFCACHE_CHECK_ENABLE
-
-dnl Check for enabling libfdata for file and memory data block support
-AX_LIBFDATA_CHECK_ENABLE
-
 dnl Check for enabling libfvalue for file value support
 AX_LIBFVALUE_CHECK_ENABLE
+
+dnl Check for enabling libmfcache for multi-file value cache support
+AX_LIBMFCACHE_CHECK_ENABLE
+
+dnl Check for enabling libmfdata for multi-file data types support
+AX_LIBMFDATA_CHECK_ENABLE
 
 dnl Check for library function support
 AX_LIBVMDK_CHECK_LOCAL
@@ -130,7 +130,7 @@ AS_IF(
 
 dnl Check if requires and build requires should be set in spec file
 AS_IF(
- [test "x$ac_cv_libcstring" = xyes || test "x$ac_cv_libcerror" = xyes || test "x$ac_cv_libcdata" = xyes ||  test "x$ac_cv_libclocale" = xyes || test "x$ac_cv_libcnotify" = xyes || test "x$ac_cv_libcsplit" = xyes || test "x$ac_cv_libuna" = xyes || test "x$ac_cv_libcfile" = xyes || test "x$ac_cv_libcpath" = xyes || test "x$ac_cv_libbfio" = xyes || test "x$ac_cv_libfcache" = xyes || test "x$ac_cv_libfdata" = xyes || test "x$ac_cv_libfvalue" = xyes || test "x$ac_cv_libcrypto" != xno],
+ [test "x$ac_cv_libcstring" = xyes || test "x$ac_cv_libcerror" = xyes || test "x$ac_cv_libcdata" = xyes ||  test "x$ac_cv_libclocale" = xyes || test "x$ac_cv_libcnotify" = xyes || test "x$ac_cv_libcsplit" = xyes || test "x$ac_cv_libuna" = xyes || test "x$ac_cv_libcfile" = xyes || test "x$ac_cv_libcpath" = xyes || test "x$ac_cv_libbfio" = xyes || test "x$ac_cv_libfvalue" = xyes || test "x$ac_cv_libmfcache" = xyes || test "x$ac_cv_libmfdata" = xyes],
  [AC_SUBST(
   [libvmdk_spec_requires],
   [Requires:])
@@ -165,9 +165,9 @@ AC_CONFIG_FILES([libuna/Makefile])
 AC_CONFIG_FILES([libcfile/Makefile])
 AC_CONFIG_FILES([libcpath/Makefile])
 AC_CONFIG_FILES([libbfio/Makefile])
-AC_CONFIG_FILES([libfcache/Makefile])
-AC_CONFIG_FILES([libfdata/Makefile])
 AC_CONFIG_FILES([libfvalue/Makefile])
+AC_CONFIG_FILES([libmfcache/Makefile])
+AC_CONFIG_FILES([libmfdata/Makefile])
 AC_CONFIG_FILES([libvmdk/Makefile])
 AC_CONFIG_FILES([libcsystem/Makefile])
 AC_CONFIG_FILES([vmdktools/Makefile])
@@ -206,9 +206,9 @@ Building:
    libcfile support:                          $ac_cv_libcfile
    libcpath support:                          $ac_cv_libcpath
    libbfio support:                           $ac_cv_libbfio
-   libfcache support:                         $ac_cv_libfcache
-   libfdata support:                          $ac_cv_libfdata
    libfvalue support:                         $ac_cv_libfvalue
+   libmfcache support:                        $ac_cv_libmfcache
+   libmfdata support:                         $ac_cv_libmfdata
    libcsystem support:                        $ac_cv_libcsystem
    FUSE support:                              $ac_cv_libfuse
 

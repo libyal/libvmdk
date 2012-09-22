@@ -1,7 +1,7 @@
 /*
- * Virtual Hard Disk (VHD) library seek offset testing program
+ * VMware Virtual Disk (VMDK) format library seek offset testing program
  *
- * Copyright (c) 2012, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -27,20 +27,20 @@
 
 #include <stdio.h>
 
-#include "vhdi_test_libcstring.h"
-#include "vhdi_test_libvhdi.h"
+#include "vmdk_test_libcstring.h"
+#include "vmdk_test_libvmdk.h"
 
-/* Tests libvhdi_file_seek_offset
+/* Tests libvmdk_file_seek_offset
  * Returns 1 if successful, 0 if not or -1 on error
  */
-int vhdi_test_seek_offset(
-     libvhdi_file_t *file,
+int vmdk_test_seek_offset(
+     libvmdk_file_t *file,
      off64_t input_offset,
      int input_whence,
      off64_t output_offset )
 {
 	const char *whence_string = NULL;
-	libvhdi_error_t *error   = NULL;
+	libvmdk_error_t *error   = NULL;
 	off64_t result_offset     = 0;
 	int result                = 0;
 
@@ -70,7 +70,7 @@ int vhdi_test_seek_offset(
 	 input_offset,
 	 whence_string );
 
-	result_offset = libvhdi_file_seek_offset(
+	result_offset = libvmdk_file_seek_offset(
 	                 file,
 	                 input_offset,
 	                 input_whence,
@@ -78,11 +78,11 @@ int vhdi_test_seek_offset(
 
 	if( result_offset == -1 )
 	{
-		libvhdi_error_backtrace_fprint(
+		libvmdk_error_backtrace_fprint(
 		 error,
 		 stderr );
 
-		libvhdi_error_free(
+		libvmdk_error_free(
 		 &error );
 	}
 	if( result_offset == output_offset )
@@ -116,8 +116,8 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libvhdi_error_t *error = NULL;
-	libvhdi_file_t *file   = NULL;
+	libvmdk_error_t *error = NULL;
+	libvmdk_file_t *file   = NULL;
 	size64_t media_size    = 0;
 
 	if( argc < 2 )
@@ -130,7 +130,7 @@ int main( int argc, char * const argv[] )
 	}
 	/* Initialization
 	 */
-	if( libvhdi_file_initialize(
+	if( libvmdk_file_initialize(
 	     &file,
 	     &error ) != 1 )
 	{
@@ -141,16 +141,16 @@ int main( int argc, char * const argv[] )
 		goto on_error;
 	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libvhdi_file_open_wide(
+	if( libvmdk_file_open_wide(
 	     file,
 	     argv[ 1 ],
-	     LIBVHDI_OPEN_READ,
+	     LIBVMDK_OPEN_READ,
 	     &error ) != 1 )
 #else
-	if( libvhdi_file_open(
+	if( libvmdk_file_open(
 	     file,
 	     argv[ 1 ],
-	     LIBVHDI_OPEN_READ,
+	     LIBVMDK_OPEN_READ,
 	     &error ) != 1 )
 #endif
 	{
@@ -160,7 +160,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( libvhdi_file_get_media_size(
+	if( libvmdk_file_get_media_size(
 	     file,
 	     &media_size,
 	     &error ) != 1 )
@@ -182,7 +182,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_SET offset: 0
 	 * Expected result: 0
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     0,
 	     SEEK_SET,
@@ -197,7 +197,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_SET offset: <media_size>
 	 * Expected result: <media_size>
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     (off64_t) media_size,
 	     SEEK_SET,
@@ -212,7 +212,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_SET offset: <media_size / 5>
 	 * Expected result: <media_size / 5>
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     (off64_t) ( media_size / 5 ),
 	     SEEK_SET,
@@ -227,7 +227,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_SET offset: <media_size + 987>
 	 * Expected result: <media_size + 987>
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     (off64_t) ( media_size + 987 ),
 	     SEEK_SET,
@@ -242,7 +242,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_SET offset: -987
 	 * Expected result: -1
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     -987,
 	     SEEK_SET,
@@ -257,7 +257,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_CUR offset: 0
 	 * Expected result: <media_size + 987>
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     0,
 	     SEEK_CUR,
@@ -272,7 +272,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_CUR offset: <-1 * (media_size + 987)>
 	 * Expected result: 0
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     -1 * (off64_t) ( media_size + 987 ),
 	     SEEK_CUR,
@@ -287,7 +287,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_CUR offset: <media_size / 3>
 	 * Expected result: <media_size / 3>
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     (off64_t) ( media_size / 3 ),
 	     SEEK_CUR,
@@ -304,7 +304,7 @@ int main( int argc, char * const argv[] )
 		/* Test: SEEK_CUR offset: <-2 * (media_size / 3)>
 		 * Expected result: 0
 		 */
-		if( vhdi_test_seek_offset(
+		if( vmdk_test_seek_offset(
 		     file,
 		     -2 * (off64_t) ( media_size / 3 ),
 		     SEEK_CUR,
@@ -322,7 +322,7 @@ int main( int argc, char * const argv[] )
 		/* Test: SEEK_CUR offset: <-2 * (media_size / 3)>
 		 * Expected result: -1
 		 */
-		if( vhdi_test_seek_offset(
+		if( vmdk_test_seek_offset(
 		     file,
 		     -2 * (off64_t) ( media_size / 3 ),
 		     SEEK_CUR,
@@ -338,7 +338,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_END offset: 0
 	 * Expected result: <media_size>
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     0,
 	     SEEK_END,
@@ -353,7 +353,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_END offset: <-1 * media_size>
 	 * Expected result: 0
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     -1 * (off64_t) media_size,
 	     SEEK_END,
@@ -368,7 +368,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_END offset: <-1 * (media_size / 4)>
 	 * Expected result: <media_size - (media_size / 4)>
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     -1 * (off64_t) ( media_size / 4 ),
 	     SEEK_END,
@@ -383,7 +383,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_END offset: 542
 	 * Expected result: <media_size + 542>
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     542,
 	     SEEK_END,
@@ -398,7 +398,7 @@ int main( int argc, char * const argv[] )
 	/* Test: SEEK_END offset: <-1 * (media_size + 542)>
 	 * Expected result: -1
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     -1 * (off64_t) ( media_size + 542 ),
 	     SEEK_END,
@@ -413,7 +413,7 @@ int main( int argc, char * const argv[] )
 	/* Test: UNKNOWN (88) offset: 0
 	 * Expected result: -1
 	 */
-	if( vhdi_test_seek_offset(
+	if( vmdk_test_seek_offset(
 	     file,
 	     0,
 	     88,
@@ -427,7 +427,7 @@ int main( int argc, char * const argv[] )
 	}
 	/* Clean up
 	 */
-	if( libvhdi_file_close(
+	if( libvmdk_file_close(
 	     file,
 	     &error ) != 0 )
 	{
@@ -437,7 +437,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( libvhdi_file_free(
+	if( libvmdk_file_free(
 	     &file,
 	     &error ) != 1 )
 	{
@@ -452,18 +452,18 @@ int main( int argc, char * const argv[] )
 on_error:
 	if( error != NULL )
 	{
-		libvhdi_error_backtrace_fprint(
+		libvmdk_error_backtrace_fprint(
 		 error,
 		 stderr );
-		libvhdi_error_free(
+		libvmdk_error_free(
 		 &error );
 	}
 	if( file != NULL )
 	{
-		libvhdi_file_close(
+		libvmdk_file_close(
 		 file,
 		 NULL );
-		libvhdi_file_free(
+		libvmdk_file_free(
 		 &file,
 		 NULL );
 	}

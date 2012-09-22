@@ -81,15 +81,15 @@ int info_handle_initialize(
 
 			goto on_error;
 		}
-		if( libvmdk_file_initialize(
-		     &( ( *info_handle )->input_file ),
+		if( libvmdk_handle_initialize(
+		     &( ( *info_handle )->input_handle ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to initialize input file.",
+			 "%s: unable to initialize input handle.",
 			 function );
 
 			goto on_error;
@@ -132,17 +132,17 @@ int info_handle_free(
 	}
 	if( *info_handle != NULL )
 	{
-		if( ( *info_handle )->input_file != NULL )
+		if( ( *info_handle )->input_handle != NULL )
 		{
-			if( libvmdk_file_free(
-			     &( ( *info_handle )->input_file ),
+			if( libvmdk_handle_free(
+			     &( ( *info_handle )->input_handle ),
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free input file.",
+				 "%s: unable to free input handle.",
 				 function );
 
 				result = -1;
@@ -176,17 +176,17 @@ int info_handle_signal_abort(
 
 		return( -1 );
 	}
-	if( info_handle->input_file != NULL )
+	if( info_handle->input_handle != NULL )
 	{
-		if( libvmdk_file_signal_abort(
-		     info_handle->input_file,
+		if( libvmdk_handle_signal_abort(
+		     info_handle->input_handle,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to signal input file to abort.",
+			 "%s: unable to signal input handle to abort.",
 			 function );
 
 			return( -1 );
@@ -200,7 +200,8 @@ int info_handle_signal_abort(
  */
 int info_handle_open_input(
      info_handle_t *info_handle,
-     const libcstring_system_character_t *filename,
+     libcstring_system_character_t * const * filenames,
+     int number_of_filenames,
      libcerror_error_t **error )
 {
 	static char *function = "info_handle_open_input";
@@ -218,15 +219,17 @@ int info_handle_open_input(
 		return( -1 );
 	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	result = libvmdk_file_open_wide(
-	          info_handle->input_file,
-	          filename,
+	result = libvmdk_handle_open_wide(
+	          info_handle->input_handle,
+	          filenames,
+	          number_of_filenames,
 	          LIBVMDK_OPEN_READ,
 	          error );
 #else
-	result = libvmdk_file_open(
-	          info_handle->input_file,
-	          filename,
+	result = libvmdk_handle_open(
+	          info_handle->input_handle,
+	          filenames,
+	          number_of_filenames,
 	          LIBVMDK_OPEN_READ,
 	          error );
 #endif
@@ -236,7 +239,7 @@ int info_handle_open_input(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open input file.",
+		 "%s: unable to open input handle.",
 		 function );
 
 		return( -1 );
@@ -264,26 +267,26 @@ int info_handle_close(
 
 		return( -1 );
 	}
-	if( info_handle->input_file == NULL )
+	if( info_handle->input_handle == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid info handle - missing input file.",
+		 "%s: invalid info handle - missing input handle.",
 		 function );
 
 		return( -1 );
 	}
-	if( libvmdk_file_close(
-	     info_handle->input_file,
+	if( libvmdk_handle_close(
+	     info_handle->input_handle,
 	     error ) != 0 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-		 "%s: unable to close input file.",
+		 "%s: unable to close input handle.",
 		 function );
 
 		return( -1 );
@@ -300,9 +303,9 @@ int info_handle_file_fprint(
 {
 	static char *function  = "vmdkinfo_file_info_fprint";
 	size64_t media_size    = 0;
-	uint32_t disk_type     = 0;
 	uint16_t major_version = 0;
 	uint16_t minor_version = 0;
+	int disk_type          = 0;
 
 	if( info_handle == NULL )
 	{
@@ -319,8 +322,9 @@ int info_handle_file_fprint(
 	 info_handle->notify_stream,
 	 "VMware Virtual Disk (VMDK) information:\n" );
 
-	if( libvmdk_file_get_format_version(
-	     info_handle->input_file,
+/* TODO
+	if( libvmdk_handle_get_format_version(
+	     info_handle->input_handle,
 	     &major_version,
 	     &minor_version,
 	     error ) != 1 )
@@ -339,9 +343,10 @@ int info_handle_file_fprint(
 	 "\tFormat:\t\t%" PRIu16 ".%" PRIu16 "\n",
 	 major_version,
 	 minor_version );
+*/
 
-	if( libvmdk_file_get_disk_type(
-	     info_handle->input_file,
+	if( libvmdk_handle_get_disk_type(
+	     info_handle->input_handle,
 	     &disk_type,
 	     error ) != 1 )
 	{
@@ -360,22 +365,94 @@ int info_handle_file_fprint(
 
 	switch( disk_type )
 	{
-		case LIBVMDK_DISK_TYPE_FIXED:
+		case LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT:
 			fprintf(
 			 info_handle->notify_stream,
-			 "Fixed" );
+			 "2GB extent flat" );
 			break;
 
-		case LIBVMDK_DISK_TYPE_DYNAMIC:
+		case LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE:
 			fprintf(
 			 info_handle->notify_stream,
-			 "Dynamic" );
+			 "2GB extent sparse" );
 			break;
 
-		case LIBVMDK_DISK_TYPE_DIFFERENTIAL:
+		case LIBVMDK_DISK_TYPE_CUSTOM:
 			fprintf(
 			 info_handle->notify_stream,
-			 "Differential" );
+			 "Custom" );
+			break;
+
+		case LIBVMDK_DISK_TYPE_DEVICE:
+			fprintf(
+			 info_handle->notify_stream,
+			 "Device" );
+			break;
+
+		case LIBVMDK_DISK_TYPE_DEVICE_PARITIONED:
+			fprintf(
+			 info_handle->notify_stream,
+			 "Device paritioned" );
+			break;
+
+		case LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT:
+			fprintf(
+			 info_handle->notify_stream,
+			 "Monolithic flat" );
+			break;
+
+		case LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE:
+			fprintf(
+			 info_handle->notify_stream,
+			 "Monolithic sparse" );
+			break;
+
+		case LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED:
+			fprintf(
+			 info_handle->notify_stream,
+			 "Stream optimized" );
+			break;
+
+		case LIBVMDK_DISK_TYPE_VMFS_FLAT:
+			fprintf(
+			 info_handle->notify_stream,
+			 "VMFS flat" );
+			break;
+
+		case LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED:
+			fprintf(
+			 info_handle->notify_stream,
+			 "VMFS flat zeroed" );
+			break;
+
+		case LIBVMDK_DISK_TYPE_VMFS_RAW:
+			fprintf(
+			 info_handle->notify_stream,
+			 "VMFS RAW" );
+			break;
+
+		case LIBVMDK_DISK_TYPE_VMFS_RDM:
+			fprintf(
+			 info_handle->notify_stream,
+			 "VMFS RDM" );
+			break;
+
+		case LIBVMDK_DISK_TYPE_VMFS_RDMP:
+			fprintf(
+			 info_handle->notify_stream,
+			 "VMFS RDMP" );
+			break;
+
+		case LIBVMDK_DISK_TYPE_VMFS_SPARSE:
+			fprintf(
+			 info_handle->notify_stream,
+			 "VMFS sparse" );
+			break;
+
+		case LIBVMDK_DISK_TYPE_VMFS_THIN:
+			fprintf(
+			 info_handle->notify_stream,
+			 "VMFS thin" );
 			break;
 
 		default:
@@ -388,8 +465,8 @@ int info_handle_file_fprint(
 	 info_handle->notify_stream,
 	 "\n" );
 
-	if( libvmdk_file_get_media_size(
-	     info_handle->input_file,
+	if( libvmdk_handle_get_media_size(
+	     info_handle->input_handle,
 	     &media_size,
 	     error ) != 1 )
 	{
@@ -404,7 +481,7 @@ int info_handle_file_fprint(
 	}
 	fprintf(
 	 info_handle->notify_stream,
-	 "\tMedia size:\t%" PRIu64 "\n",
+	 "\tMedia size:\t%" PRIu64 " bytes\n",
 	 media_size );
 
 /* TODO add more info */

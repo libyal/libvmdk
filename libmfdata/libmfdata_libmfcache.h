@@ -1,7 +1,7 @@
 /*
- * The internal libvhdi header
+ * The internal libmfcache header
  *
- * Copyright (c) 2012, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2010-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -19,19 +19,34 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _VHDITOOLS_LIBVHDI_H )
-#define _VHDITOOLS_LIBVHDI_H
+#if !defined( _LIBMFDATA_LIBMFCACHE_H )
+#define _LIBMFDATA_LIBMFCACHE_H
 
 #include <common.h>
 
-/* If Cygwin libtool DLL support is enabled set LIBVHDI_DLL_IMPORT
- * before including libvhdi.h
+/* Define HAVE_LOCAL_LIBMFCACHE for local use of libmfcache
  */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
-#define LIBVHDI_DLL_IMPORT
+#if defined( HAVE_LOCAL_LIBMFCACHE )
+
+#include <libmfcache_cache.h>
+#include <libmfcache_date_time.h>
+#include <libmfcache_definitions.h>
+#include <libmfcache_types.h>
+
+#elif defined( HAVE_LIBMFCACHE_H )
+
+/* If libtool DLL support is enabled set LIBMFCACHE_DLL_IMPORT
+ * before including libmfcache.h
+ */
+#if defined( _WIN32 ) && defined( DLL_IMPORT )
+#define LIBMFCACHE_DLL_IMPORT
 #endif
 
-#include <libvhdi.h>
+#include <libmfcache.h>
+
+#else
+#error Missing libmfcache.h
+#endif
 
 #endif
 

@@ -27,6 +27,8 @@
 
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libmfcache.h"
+#include "libvmdk_libmfdata.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -39,10 +41,6 @@ typedef struct libvmdk_extent_file libvmdk_extent_file_t;
 
 struct libvmdk_extent_file
 {
-	/* The file IO pool entry
-	 */
-	int file_io_pool_entry;
-
 	/* The extent file type
 	 */
 	uint8_t file_type;
@@ -94,7 +92,6 @@ struct libvmdk_extent_file
 
 int libvmdk_extent_file_initialize(
      libvmdk_extent_file_t **extent_file,
-     int file_io_pool_entry,
      libcerror_error_t **error );
 
 int libvmdk_extent_file_free(
@@ -104,7 +101,25 @@ int libvmdk_extent_file_free(
 ssize_t libvmdk_extent_file_read_file_header(
          libvmdk_extent_file_t *extent_file,
          libbfio_pool_t *file_io_pool,
+         int file_io_pool_entry,
          libcerror_error_t **error );
+
+ssize_t libvmdk_extent_file_read_descriptor_data(
+         libvmdk_extent_file_t *extent_file,
+         libbfio_pool_t *file_io_pool,
+         int file_io_pool_entry,
+         uint8_t *descriptor_data,
+         size_t descriptor_data_size,
+         libcerror_error_t **error );
+
+int libvmdk_extent_file_read(
+     intptr_t *io_handle,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
+     libmfdata_file_t *file,
+     libmfcache_cache_t *cache,
+     uint8_t read_flags,
+     libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

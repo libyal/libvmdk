@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Virtual Hard Disk (VHD) library seek offset testing script
+# VMware Virtual Disk (VMDK) format library seek offset testing script
 #
-# Copyright (c) 2012, Joachim Metz <joachim.metz@gmail.com>
+# Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
 #
 # Refer to AUTHORS for acknowledgements.
 #
@@ -31,13 +31,13 @@ LS="ls";
 TR="tr";
 WC="wc";
 
-VHDI_TEST_SEEK="vhdi_test_seek";
+VMDK_TEST_SEEK="vmdk_test_seek";
 
 test_seek()
 { 
 	echo "Testing seek offset of input:" $*;
 
-	./${VHDI_TEST_SEEK} $*;
+	./${VMDK_TEST_SEEK} $*;
 
 	RESULT=$?;
 
@@ -46,9 +46,9 @@ test_seek()
 	return ${RESULT};
 }
 
-if ! test -x ${VHDI_TEST_SEEK};
+if ! test -x ${VMDK_TEST_SEEK};
 then
-	echo "Missing executable: ${VHDI_TEST_SEEK}";
+	echo "Missing executable: ${VMDK_TEST_SEEK}";
 
 	exit ${EXIT_FAILURE};
 fi
@@ -69,9 +69,9 @@ then
 	exit ${EXIT_IGNORE};
 fi
 
-for VHDI_FILE in `${LS} ${INPUT}/*.[iI][mM][gG] | ${TR} ' ' '\n'`;
+for VMDK_FILE in `${LS} ${INPUT}/*.[iI][mM][gG] | ${TR} ' ' '\n'`;
 do
-	if ! test_seek ${VHDI_FILE};
+	if ! test_seek ${VMDK_FILE};
 	then
 		exit ${EXIT_FAILURE};
 	fi

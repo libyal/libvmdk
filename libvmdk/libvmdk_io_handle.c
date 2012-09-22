@@ -32,9 +32,6 @@
 #include "libvmdk_libcnotify.h"
 #include "libvmdk_offset_table.h"
 
-#include "cowd_sparse_file_header.h"
-#include "vmdk_sparse_file_header.h"
-
 /* Initialize an io handle
  * Make sure the value io_handle is pointing to is set to NULL
  * Returns 1 if successful or -1 on error
@@ -244,7 +241,7 @@ int libvmdk_io_handle_read_grain_directory(
 
 		goto on_error;
 	}
-	read_count = libbfio_handle_read(
+	read_count = libbfio_handle_read_buffer(
 	              file_io_handle,
 	              sector_blocks_data,
 	              sector_blocks_data_size,
@@ -269,10 +266,10 @@ int libvmdk_io_handle_read_grain_directory(
 		 function );
 		libcnotify_print_data(
 		 sector_blocks_data,
-		 sector_blocks_data_size );
+		 sector_blocks_data_size,
+		 0 );
 	}
 #endif
-
 	grain_directory_data = sector_blocks_data;
 
 	for( grain_directory_entry_iterator = 0;
@@ -294,7 +291,7 @@ int libvmdk_io_handle_read_grain_directory(
 			 grain_table_offset );
 		}
 #endif
-		grain_table_offset *= LIBVMDK_SECTOR_SIZE;
+		grain_table_offset *= 512;
 
 		if( libvmdk_io_handle_read_grain_table(
 		     io_handle,
@@ -444,7 +441,7 @@ int libvmdk_io_handle_read_grain_table(
 
 		goto on_error;
 	}
-	read_count = libbfio_handle_read(
+	read_count = libbfio_handle_read_buffer(
 	              file_io_handle,
 	              sector_blocks_data,
 	              sector_blocks_data_size,
@@ -469,7 +466,8 @@ int libvmdk_io_handle_read_grain_table(
 		 function );
 		libcnotify_print_data(
 		 sector_blocks_data,
-		 sector_blocks_data_size );
+		 sector_blocks_data_size,
+		 0 );
 	}
 #endif
 	if( is_secondary_grain_directory ==  0 )

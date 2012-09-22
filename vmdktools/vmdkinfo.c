@@ -58,7 +58,7 @@ void usage_fprint(
 
 	fprintf( stream, "Usage: vmdkinfo [ -hvV ] source\n\n" );
 
-	fprintf( stream, "\tsource: the source file\n\n" );
+	fprintf( stream, "\tsource: the source file(s)\n\n" );
 
 	fprintf( stream, "\t-h:     shows this help\n" );
 	fprintf( stream, "\t-v:     verbose output to stderr\n" );
@@ -112,11 +112,12 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libvmdk_error_t *error                = NULL;
-	libcstring_system_character_t *source = NULL;
-	char *program                         = "vmdkinfo";
-	libcstring_system_integer_t option    = 0;
-	int verbose                           = 0;
+	libcstring_system_character_t * const *source_filenames = NULL;
+	libvmdk_error_t *error                                  = NULL;
+	char *program                                           = "vmdkinfo";
+	libcstring_system_integer_t option                      = 0;
+	int number_of_source_filenames                          = 0;
+	int verbose                                             = 0;
 
 	libcnotify_stream_set(
 	 stderr,
@@ -189,14 +190,15 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stderr,
-		 "Missing source file.\n" );
+		 "Missing source file(s).\n" );
 
 		usage_fprint(
 		 stdout );
 
 		return( EXIT_FAILURE );
 	}
-	source = argv[ optind ];
+	source_filenames           = &( argv[ optind ] );
+	number_of_source_filenames = argc - optind;
 
 	libcnotify_verbose_set(
 	 verbose );
@@ -218,13 +220,13 @@ int main( int argc, char * const argv[] )
 	}
 	if( info_handle_open_input(
 	     vmdkinfo_info_handle,
-	     source,
+	     source_filenames,
+	     number_of_source_filenames,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to open: %" PRIs_LIBCSTRING_SYSTEM ".\n",
-		 source );
+		 "Unable to open source file(s).\n" );
 
 		goto on_error;
 	}

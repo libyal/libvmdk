@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# Virtual Hard Disk (VHD) library read buffer testing script
+# VMware Virtual Disk (VMDK) format library read buffer testing script
 #
-# Copyright (c) 2012, Joachim Metz <joachim.metz@gmail.com>
+# Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
 #
 # Refer to AUTHORS for acknowledgements.
 #
@@ -31,13 +31,13 @@ LS="ls";
 TR="tr";
 WC="wc";
 
-VHDI_TEST_READ="vhdi_test_read";
+VMDK_TEST_READ="vmdk_test_read";
 
 test_read()
 { 
 	echo "Testing read of input:" $*;
 
-	./${VHDI_TEST_READ} $*;
+	./${VMDK_TEST_READ} $*;
 
 	RESULT=$?;
 
@@ -46,9 +46,9 @@ test_read()
 	return ${RESULT};
 }
 
-if ! test -x ${VHDI_TEST_READ};
+if ! test -x ${VMDK_TEST_READ};
 then
-	echo "Missing executable: ${VHDI_TEST_READ}";
+	echo "Missing executable: ${VMDK_TEST_READ}";
 
 	exit ${EXIT_FAILURE};
 fi
@@ -69,9 +69,9 @@ then
 	exit ${EXIT_IGNORE};
 fi
 
-for VHDI_FILE in `${LS} ${INPUT}/*.[iI][mM][gG] | ${TR} ' ' '\n'`;
+for VMDK_FILE in `${LS} ${INPUT}/*.[iI][mM][gG] | ${TR} ' ' '\n'`;
 do
-	if ! test_read ${VHDI_FILE};
+	if ! test_read ${VMDK_FILE};
 	then
 		exit ${EXIT_FAILURE};
 	fi

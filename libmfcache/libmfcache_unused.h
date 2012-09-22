@@ -1,7 +1,7 @@
 /*
- * The internal libcerror header
+ * The internal unused definition
  *
- * Copyright (c) 2012, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2010-2012, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -19,31 +19,25 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _VHDI_TEST_LIBCERROR_H )
-#define _VHDI_TEST_LIBCERROR_H
+#if !defined( _LIBMFCACHE_INTERNAL_UNUSED_H )
+#define _LIBMFCACHE_INTERNAL_UNUSED_H
 
 #include <common.h>
 
-/* Define HAVE_LOCAL_LIBCERROR for local use of libcerror
- */
-#if defined( HAVE_LOCAL_LIBCERROR )
-
-#include <libcerror_definitions.h>
-#include <libcerror_error.h>
-#include <libcerror_system.h>
-#include <libcerror_types.h>
-
+#if !defined( LIBMFCACHE_ATTRIBUTE_UNUSED )
+#if defined( __GNUC__ ) && __GNUC__ >= 3
+#define LIBMFCACHE_ATTRIBUTE_UNUSED	__attribute__ ((__unused__))
 #else
-
-/* If libtool DLL support is enabled set LIBCERROR_DLL_IMPORT
- * before including libcerror.h
- */
-#if defined( _WIN32 ) && defined( DLL_IMPORT )
-#define LIBCERROR_DLL_IMPORT
+#define LIBMFCACHE_ATTRIBUTE_UNUSED
+#endif
 #endif
 
-#include <libcerror.h>
-
+#if defined( _MSC_VER )
+#define LIBMFCACHE_UNREFERENCED_PARAMETER( parameter ) \
+	UNREFERENCED_PARAMETER( parameter );
+#else
+#define LIBMFCACHE_UNREFERENCED_PARAMETER( parameter ) \
+	/* parameter */
 #endif
 
 #endif

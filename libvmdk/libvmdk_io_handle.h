@@ -37,9 +37,17 @@ typedef struct libvmdk_io_handle libvmdk_io_handle_t;
 
 struct libvmdk_io_handle
 {
-	/* The flags
+	/* The current (storage media) offset
 	 */
-	uint8_t flags;
+	off64_t current_offset;
+
+	/* The (storage) media size
+	 */
+	size64_t media_size;
+
+	/* The access flags
+	 */
+	uint8_t access_flags;
 
 	/* The file type
 	 */
@@ -64,18 +72,6 @@ int libvmdk_io_handle_initialize(
 
 int libvmdk_io_handle_free(
      libvmdk_io_handle_t **io_handle,
-     libcerror_error_t **error );
-
-int libvmdk_io_handle_read_file_header(
-     libvmdk_io_handle_t *io_handle,
-     libbfio_handle_t *file_io_handle,
-     off64_t *descriptor_offset,
-     size64_t *descriptor_size,
-     off64_t *grain_directory_offset,
-     off64_t *secondary_grain_directory_offset,
-     uint32_t *number_of_grain_directory_entries,
-     uint32_t *number_of_grain_table_entries,
-     size64_t *grain_size,
      libcerror_error_t **error );
 
 int libvmdk_io_handle_read_grain_directory(

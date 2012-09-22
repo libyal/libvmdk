@@ -24,10 +24,10 @@
 #include <types.h>
 
 #include "libvmdk_definitions.h"
+#include "libvmdk_extent_file.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcstring.h"
-#include "libvmdk_segment_file.h"
 #include "libvmdk_support.h"
 
 /* Returns the library version
@@ -327,7 +327,7 @@ int libvmdk_check_file_signature_file_io_handle(
 		}
 		return( -1 );
 	}
-	read_count = libbfio_handle_read(
+	read_count = libbfio_handle_read_buffer(
 	              file_io_handle,
 	              signature,
 	              4,

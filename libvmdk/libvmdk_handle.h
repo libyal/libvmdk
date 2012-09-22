@@ -25,12 +25,21 @@
 #include <common.h>
 #include <types.h>
 
+#include "libvmdk_descriptor_file.h"
 #include "libvmdk_extern.h"
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libmfdata.h"
 #include "libvmdk_offset_table.h"
-#include "libvmdk_segment_table.h"
+
+#if defined( _MSC_VER ) || defined( __BORLANDC__ ) || defined( __MINGW32_VERSION ) || defined( __MINGW64_VERSION_MAJOR )
+
+/* This inclusion is needed otherwise some linkers
+ * mess up exporting the metadata functions
+ */
+#include "libvmdk_metadata.h"
+#endif
 
 #if defined( __cplusplus )
 extern "C" {
@@ -40,6 +49,18 @@ typedef struct libvmdk_internal_handle libvmdk_internal_handle_t;
 
 struct libvmdk_internal_handle
 {
+	/* The descriptor file
+	 */
+	libvmdk_descriptor_file_t *descriptor_file;
+
+	/* The extent files list
+	 */
+	libmfdata_file_list_t *extent_files_list;
+
+	/* The grain offset table
+	 */
+	libvmdk_offset_table_t *offset_table;
+
 	/* The io handle
 	 */
 	libvmdk_io_handle_t *io_handle;
@@ -55,14 +76,6 @@ struct libvmdk_internal_handle
 	/* The maximum number of open handles in the pool
 	 */
 	int maximum_number_of_open_handles;
-
-	/* The list of segment files
-	 */
-	libvmdk_segment_table_t *segment_table;
-
-	/* The grain offset table
-	 */
-	libvmdk_offset_table_t *offset_table;
 
 	/* Value to indicate if abort was signalled
 	 */
@@ -114,15 +127,44 @@ int libvmdk_handle_close(
      libvmdk_handle_t *handle,
      libcerror_error_t **error );
 
-int libvmdk_handle_open_read(
+int libvmdk_handle_open_read_grain_table(
      libvmdk_internal_handle_t *internal_handle,
-     libvmdk_segment_table_t *segment_table,
+     libbfio_pool_t *file_io_pool,
      libcerror_error_t **error );
 
 int libvmdk_handle_open_read_signature(
      libbfio_pool_t *file_io_pool,
      int file_io_pool_entry,
      uint8_t *file_type,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+ssize_t libvmdk_handle_read_buffer(
+         libvmdk_handle_t *handle,
+         void *buffer,
+         size_t buffer_size,
+         libcerror_error_t **error );
+
+#ifdef TODO
+LIBVMDK_EXTERN \
+ssize_t libvmdk_handle_write_buffer(
+         libvmdk_handle_t *handle,
+         const void *buffer,
+         size_t buffer_size,
+         libcerror_error_t **error );
+#endif
+
+LIBVMDK_EXTERN \
+off64_t libvmdk_handle_seek_offset(
+         libvmdk_handle_t *handle,
+         off64_t offset,
+         int whence,
+         libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_offset(
+     libvmdk_handle_t *handle,
+     off64_t *offset,
      libcerror_error_t **error );
 
 LIBVMDK_EXTERN \

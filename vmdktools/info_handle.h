@@ -38,9 +38,9 @@ typedef struct info_handle info_handle_t;
 
 struct info_handle
 {
-	/* The libvmdk input file
+	/* The libvmdk input handle
 	 */
-	libvmdk_file_t *input_file;
+	libvmdk_handle_t *input_handle;
 
 	/* The nofication output stream
 	 */
@@ -61,7 +61,8 @@ int info_handle_signal_abort(
 
 int info_handle_open_input(
      info_handle_t *info_handle,
-     const libcstring_system_character_t *filename,
+     libcstring_system_character_t * const * filenames,
+     int number_of_filenames,
      libcerror_error_t **error );
 
 int info_handle_close(

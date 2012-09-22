@@ -26,6 +26,7 @@
 #include <file_stream.h>
 #include <types.h>
 
+#include "libvmdk_extent_descriptor.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
@@ -57,6 +58,10 @@ struct libvmdk_descriptor_file
 	 */
 	int disk_type;
 
+	/* The (storage) media size
+	 */
+	size64_t media_size;
+
 	/* The extents array
 	 */
 	libcdata_array_t *extents_array;
@@ -74,6 +79,12 @@ int libvmdk_descriptor_file_read(
      libvmdk_descriptor_file_t *descriptor_file,
      libbfio_pool_t *file_io_pool,
      int file_io_pool_entry,
+     libcerror_error_t **error );
+
+int libvmdk_descriptor_file_read_string(
+     libvmdk_descriptor_file_t *descriptor_file,
+     char *value_string,
+     size_t value_string_size,
      libcerror_error_t **error );
 
 int libvmdk_descriptor_file_read_header(
@@ -95,6 +106,17 @@ int libvmdk_descriptor_file_read_disk_database(
      libcsplit_narrow_split_string_t *lines,
      int number_of_lines,
      int *line_index,
+     libcerror_error_t **error );
+
+int libvmdk_descriptor_file_get_number_of_extents(
+     libvmdk_descriptor_file_t *descriptor_file,
+     int *number_of_extents,
+     libcerror_error_t **error );
+
+int libvmdk_descriptor_file_get_extent_by_index(
+     libvmdk_descriptor_file_t *descriptor_file,
+     int extent_index,
+     libvmdk_extent_descriptor_t **extent_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

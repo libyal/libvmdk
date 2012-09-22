@@ -83,15 +83,15 @@ int mount_handle_initialize(
 
 			return( -1 );
 		}
-		if( libvmdk_file_initialize(
-		     &( ( *mount_handle )->input_file ),
+		if( libvmdk_handle_initialize(
+		     &( ( *mount_handle )->input_handle ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to initialize input file.",
+			 "%s: unable to initialize input handle.",
 			 function );
 
 			goto on_error;
@@ -133,15 +133,15 @@ int mount_handle_free(
 	}
 	if( *mount_handle != NULL )
 	{
-		if( libvmdk_file_free(
-		     &( ( *mount_handle )->input_file ),
+		if( libvmdk_handle_free(
+		     &( ( *mount_handle )->input_handle ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free input file.",
+			 "%s: unable to free input handle.",
 			 function );
 
 			result = -1;
@@ -174,17 +174,17 @@ int mount_handle_signal_abort(
 
 		return( -1 );
 	}
-	if( mount_handle->input_file != NULL )
+	if( mount_handle->input_handle != NULL )
 	{
-		if( libvmdk_file_signal_abort(
-		     mount_handle->input_file,
+		if( libvmdk_handle_signal_abort(
+		     mount_handle->input_handle,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to signal input file to abort.",
+			 "%s: unable to signal input handle to abort.",
 			 function );
 
 			return( -1 );
@@ -198,7 +198,8 @@ int mount_handle_signal_abort(
  */
 int mount_handle_open_input(
      mount_handle_t *mount_handle,
-     const libcstring_system_character_t *filename,
+     libcstring_system_character_t * const * filenames,
+     int number_of_filenames,
      libcerror_error_t **error )
 {
 	static char *function = "mount_handle_open_input";
@@ -215,15 +216,17 @@ int mount_handle_open_input(
 		return( -1 );
 	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libvmdk_file_open_wide(
-	     mount_handle->input_file,
-	     filename,
+	if( libvmdk_handle_open_wide(
+	     mount_handle->input_handle,
+	     filenames,
+	     number_of_filenames,
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
 #else
-	if( libvmdk_file_open(
-	     mount_handle->input_file,
-	     filename,
+	if( libvmdk_handle_open(
+	     mount_handle->input_handle,
+	     filenames,
+	     number_of_filenames,
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
 #endif
@@ -232,7 +235,7 @@ int mount_handle_open_input(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open file.",
+		 "%s: unable to open input handle.",
 		 function );
 
 		return( -1 );
@@ -260,15 +263,15 @@ int mount_handle_close(
 
 		return( -1 );
 	}
-	if( libvmdk_file_close(
-	     mount_handle->input_file,
+	if( libvmdk_handle_close(
+	     mount_handle->input_handle,
 	     error ) != 0 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-		 "%s: unable to close input file.",
+		 "%s: unable to close input handle.",
 		 function );
 
 		return( -1 );
@@ -276,7 +279,7 @@ int mount_handle_close(
 	return( 0 );
 }
 
-/* Read a buffer from the input file
+/* Read a buffer from the input handle
  * Return the number of bytes read if successful or -1 on error
  */
 ssize_t mount_handle_read_buffer(
@@ -299,8 +302,8 @@ ssize_t mount_handle_read_buffer(
 
 		return( -1 );
 	}
-	read_count = libvmdk_file_read_buffer(
-	              mount_handle->input_file,
+	read_count = libvmdk_handle_read_buffer(
+	              mount_handle->input_handle,
 	              buffer,
 	              size,
 	              error );
@@ -311,7 +314,7 @@ ssize_t mount_handle_read_buffer(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read buffer from input file.",
+		 "%s: unable to read buffer from input handle.",
 		 function );
 
 		return( -1 );
@@ -319,7 +322,7 @@ ssize_t mount_handle_read_buffer(
 	return( read_count );
 }
 
-/* Seeks a specific offset from the input file
+/* Seeks a specific offset from the input handle
  * Return the offset if successful or -1 on error
  */
 off64_t mount_handle_seek_offset(
@@ -341,8 +344,8 @@ off64_t mount_handle_seek_offset(
 
 		return( -1 );
 	}
-	offset = libvmdk_file_seek_offset(
-	          mount_handle->input_file,
+	offset = libvmdk_handle_seek_offset(
+	          mount_handle->input_handle,
 	          offset,
 	          whence,
 	          error );
@@ -353,7 +356,7 @@ off64_t mount_handle_seek_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek offset in input file.",
+		 "%s: unable to seek offset in input handle.",
 		 function );
 
 		return( -1 );
@@ -361,7 +364,7 @@ off64_t mount_handle_seek_offset(
 	return( offset );
 }
 
-/* Retrieves the media size of the input file
+/* Retrieves the media size of the input handle
  * Returns 1 if successful or -1 on error
  */
 int mount_handle_get_media_size(
@@ -382,8 +385,8 @@ int mount_handle_get_media_size(
 
 		return( -1 );
 	}
-	if( libvmdk_file_get_media_size(
-	     mount_handle->input_file,
+	if( libvmdk_handle_get_media_size(
+	     mount_handle->input_handle,
 	     size,
 	     error ) != 1 )
 	{
@@ -391,7 +394,7 @@ int mount_handle_get_media_size(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve media size from input file.",
+		 "%s: unable to retrieve media size from input handle.",
 		 function );
 
 		return( -1 );

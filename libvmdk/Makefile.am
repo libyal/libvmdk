@@ -12,9 +12,9 @@ AM_CPPFLAGS = \
 	@LIBCFILE_CPPFLAGS@ \
 	@LIBCPATH_CPPFLAGS@ \
 	@LIBBFIO_CPPFLAGS@ \
-	@LIBFCACHE_CPPFLAGS@ \
-	@LIBFDATA_CPPFLAGS@ \
-	@LIBFVALUE_CPPFLAGS@
+	@LIBFVALUE_CPPFLAGS@ \
+	@LIBMFCACHE_CPPFLAGS@ \
+	@LIBMFDATA_CPPFLAGS@
 
 lib_LTLIBRARIES = libvmdk.la
 
@@ -37,7 +37,10 @@ libvmdk_la_SOURCES = \
 	libvmdk_libcsplit.h \
 	libvmdk_libcstring.h \
 	libvmdk_libfvalue.h \
+	libvmdk_libmfcache.h \
+	libvmdk_libmfdata.h \
 	libvmdk_libuna.h \
+	libvmdk_metadata.c libvmdk_metadata.h \
 	libvmdk_notify.c libvmdk_notify.h \
 	libvmdk_offset_table.c libvmdk_offset_table.h \
 	libvmdk_support.c libvmdk_support.h \
@@ -57,9 +60,9 @@ libvmdk_la_LIBADD = \
 	@LIBCFILE_LIBADD@ \
 	@LIBCPATH_LIBADD@ \
 	@LIBBFIO_LIBADD@ \
-	@LIBFCACHE_LIBADD@ \
-	@LIBFDATA_LIBADD@ \
-	@LIBFVALUE_LIBADD@
+	@LIBFVALUE_LIBADD@ \
+	@LIBMFCACHE_LIBADD@ \
+	@LIBMFDATA_LIBADD@
 
 libvmdk_la_LDFLAGS = -no-undefined -version-info 1:0:0
 

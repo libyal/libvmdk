@@ -42,16 +42,16 @@ void libvmdk_notify_set_verbose(
 LIBVMDK_EXTERN \
 int libvmdk_notify_set_stream(
      FILE *stream,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 LIBVMDK_EXTERN \
 int libvmdk_notify_stream_open(
      const char *filename,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 LIBVMDK_EXTERN \
 int libvmdk_notify_stream_close(
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 #endif
 

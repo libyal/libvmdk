@@ -1,5 +1,5 @@
 TODO
-* what about libvmdk_segment_table.[ch]
+* add descriptor file support
 * put disk data base in fvalue table ?
 
 * code clean up:
@@ -30,7 +30,6 @@ library
 
 File format
 * complete COWD support
-* add support for descriptor file
 
 Deployment:
 * update manuals
@@ -38,9 +37,14 @@ Deployment:
 * create macosx package files
 * create codegear files
 
+20120922
+* code clean up
+* worked on descriptor file support
+
 20120921
 * renamed segment file into extent file
 * merged segment file and segment file handle
+* worked on descriptor file support
 
 20120920
 * applied updates

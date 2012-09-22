@@ -38,9 +38,9 @@ typedef struct mount_handle mount_handle_t;
 
 struct mount_handle
 {
-	/* The libvmdk input file
+	/* The libvmdk input handle
 	 */
-	libvmdk_file_t *input_file;
+	libvmdk_handle_t *input_handle;
 
 	/* The nofication output stream
 	 */
@@ -66,7 +66,8 @@ int mount_handle_set_format(
 
 int mount_handle_open_input(
      mount_handle_t *mount_handle,
-     const libcstring_system_character_t *filename,
+     libcstring_system_character_t * const * filenames,
+     int number_of_filenames,
      libcerror_error_t **error );
 
 int mount_handle_close(

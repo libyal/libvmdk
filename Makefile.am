@@ -13,9 +13,9 @@ SUBDIRS = \
 	libcfile \
 	libcpath \
 	libbfio \
-	libfcache \
-	libfdata \
 	libfvalue \
+	libmfcache \
+	libmfdata \
 	libvmdk \
 	libcsystem \
 	vmdktools \
@@ -82,9 +82,9 @@ library:
 	(cd $(srcdir)/libcfile && $(MAKE) $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libcpath && $(MAKE) $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libbfio && $(MAKE) $(AM_MAKEFLAGS))
-	(cd $(srcdir)/libfcache && $(MAKE) $(AM_MAKEFLAGS))
-	(cd $(srcdir)/libfdata && $(MAKE) $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfvalue && $(MAKE) $(AM_MAKEFLAGS))
+	(cd $(srcdir)/libmfcache && $(MAKE) $(AM_MAKEFLAGS))
+	(cd $(srcdir)/libmfdata && $(MAKE) $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libvmdk && $(MAKE) $(AM_MAKEFLAGS))
 	(cd $(srcdir)/po && $(MAKE) $(AM_MAKEFLAGS))
 
@@ -111,9 +111,9 @@ splint:
 	(cd $(srcdir)/libcfile && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libcpath && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libbfio && $(MAKE) splint $(AM_MAKEFLAGS))
-	(cd $(srcdir)/libfcache && $(MAKE) splint $(AM_MAKEFLAGS))
-	(cd $(srcdir)/libfdata && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfvalue && $(MAKE) splint $(AM_MAKEFLAGS))
+	(cd $(srcdir)/libmfcache && $(MAKE) splint $(AM_MAKEFLAGS))
+	(cd $(srcdir)/libmfdata && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libvmdk && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libcsystem && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/vmdktools && $(MAKE) splint $(AM_MAKEFLAGS))

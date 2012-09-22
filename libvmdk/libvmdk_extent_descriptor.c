@@ -26,6 +26,7 @@
 #include "libvmdk_definitions.h"
 #include "libvmdk_extent_descriptor.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libcnotify.h"
 #include "libvmdk_libcsplit.h"
 #include "libvmdk_libfvalue.h"
 
@@ -40,7 +41,7 @@ int libvmdk_extent_descriptor_initialize(
 
 	if( extent_descriptor == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
@@ -65,7 +66,7 @@ int libvmdk_extent_descriptor_initialize(
 
 	if( *extent_descriptor == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
@@ -79,7 +80,7 @@ int libvmdk_extent_descriptor_initialize(
 	     0,
 	     sizeof( libvmdk_extent_descriptor_t ) ) == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
@@ -112,7 +113,7 @@ int libvmdk_extent_descriptor_free(
 
 	if( extent_descriptor == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
@@ -123,6 +124,11 @@ int libvmdk_extent_descriptor_free(
 	}
 	if( *extent_descriptor != NULL )
 	{
+		if( ( *extent_descriptor )->filename != NULL )
+		{
+			memory_free(
+			 ( *extent_descriptor )->filename );
+		}
 		memory_free(
 		 *extent_descriptor );
 
@@ -136,20 +142,24 @@ int libvmdk_extent_descriptor_free(
  */
 int libvmdk_extent_descriptor_read(
      libvmdk_extent_descriptor_t *extent_descriptor,
-     const char *value_string,
+     char *value_string,
      size_t value_string_size,
      libcerror_error_t **error )
 {
 	libcsplit_narrow_split_string_t *values = NULL;
+	char *filename                          = NULL;
 	char *value_string_segment              = NULL;
 	static char *function                   = "libvmdk_extent_descriptor_read";
+	size_t filename_length                  = 0;
+	size_t value_string_index               = 0;
+	size_t value_string_length              = 0;
 	size_t value_string_segment_size        = 0;
 	uint64_t value_64bit                    = 0;
 	int number_of_values                    = 0;
 
 	if( extent_descriptor == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
@@ -158,9 +168,124 @@ int libvmdk_extent_descriptor_read(
 
 		return( -1 );
 	}
+	if( extent_descriptor->filename != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid extent descriptor - filename value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( value_string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid value string.",
+		 function );
+
+		return( -1 );
+	}
+	if( value_string_size < 10 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: value string is too small.",
+		 function );
+
+		return( -1 );
+	}
+	if( value_string_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid value string size value exceeds maximum.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: value string\t\t\t\t: %s\n",
+		 function,
+		 value_string );
+	}
+#endif
+	/* Look for the start of the filename since this value
+	 * can contain spaces, naive split cannot be used for it
+	 */
+	for( value_string_index = 0;
+	     value_string_index < value_string_size;
+	     value_string_index++ )
+	{
+		if( ( value_string[ value_string_index ] == '"' )
+		 || ( value_string[ value_string_index ] == '\'' ) )
+		{
+			break;
+		}
+	}
+	if( value_string_index == value_string_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid value string missing filename value.",
+		 function );
+
+		goto on_error;
+	}
+	value_string_length = value_string_index - 1;
+
+	value_string[ value_string_length ] = 0;
+
+	value_string_index++;
+
+	filename = &( value_string[ value_string_index ] );
+
+	/* Look for the end of the filename
+	 */
+	for( filename_length = value_string_size - 1;
+	     filename_length > value_string_index;
+	     filename_length-- )
+	{
+		if( ( value_string[ filename_length ] == '"' )
+		 || ( value_string[ filename_length ] == '\'' ) )
+		{
+			break;
+		}
+	}
+	if( filename_length <= value_string_index )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid value string missing filename value.",
+		 function );
+
+		goto on_error;
+	}
+	filename_length -= value_string_index;
+
+	filename[ filename_length ] = 0;
+
+	value_string_index += filename_length + 2;
+	value_string_size  -= value_string_index;
+
 	if( libcsplit_narrow_string_split(
 	     value_string,
-	     value_string_size,
+	     value_string_length + 1,
 	     ' ',
 	     &values,
 	     error ) != 1 )
@@ -188,8 +313,7 @@ int libvmdk_extent_descriptor_read(
 
 		goto on_error;
 	}
-	if( ( number_of_values != 4 )
-	 && ( number_of_values != 5 ) )
+	if( number_of_values != 3 )
 	{
 		libcerror_error_set(
 		 error,
@@ -230,6 +354,15 @@ int libvmdk_extent_descriptor_read(
 
 		goto on_error;
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: access\t\t\t\t\t: %s\n",
+		 function,
+		 value_string_segment );
+	}
+#endif
 	if( ( value_string_segment_size == 3 )
 	 && ( libcstring_narrow_string_compare(
 	       value_string_segment,
@@ -294,6 +427,15 @@ int libvmdk_extent_descriptor_read(
 
 		goto on_error;
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: number of sectors\t\t\t: %s\n",
+		 function,
+		 value_string_segment );
+	}
+#endif
 	if( libfvalue_utf8_string_copy_to_integer(
 	     value_string_segment,
 	     value_string_segment_size,
@@ -353,6 +495,15 @@ int libvmdk_extent_descriptor_read(
 
 		goto on_error;
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: type\t\t\t\t\t: %s\n",
+		 function,
+		 value_string_segment );
+	}
+#endif
 	if( ( value_string_segment_size == 5 )
 	 && ( libcstring_narrow_string_compare(
 	       value_string_segment,
@@ -420,41 +571,78 @@ int libvmdk_extent_descriptor_read(
 
 		goto on_error;
 	}
-/* TODO value 3 */
-	if( number_of_values == 5 )
+	if( libcsplit_narrow_split_string_free(
+	     &values,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free values.",
+		 function );
+
+		goto on_error;
+	}
+	/* The extent value: 3 contains the filename
+	 */
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: filename\t\t\t\t: %s\n",
+		 function,
+		 filename );
+	}
+#endif
+	extent_descriptor->filename_size = filename_length + 1;
+
+	extent_descriptor->filename = libcstring_narrow_string_allocate(
+	                               extent_descriptor->filename_size );
+
+	if( extent_descriptor->filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create filename.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_copy(
+	     extent_descriptor->filename,
+	     filename,
+	     filename_length ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy filename.",
+		 function );
+
+		goto on_error;
+	}
+	extent_descriptor->filename[ filename_length ] = 0;
+
+	if( value_string_size > 0 )
 	{
 		/* The extent value: 4 contains the offset
 		 */
-		if( libcsplit_narrow_split_string_get_segment_by_index(
-		     values,
-		     4,
-		     &value_string_segment,
-		     &value_string_segment_size,
-		     error ) != 1 )
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve value: 4.",
-			 function );
-
-			goto on_error;
+			libcnotify_printf(
+			 "%s: offset\t\t\t\t\t: %s\n",
+			 function,
+			 &( value_string[ value_string_index ] ) );
 		}
-		if( value_string_segment == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing value string segment: 4.",
-			 function );
-
-			goto on_error;
-		}
+#endif
 		if( libfvalue_utf8_string_copy_to_integer(
-		     value_string_segment,
-		     value_string_segment_size,
+		     &( value_string[ value_string_index ] ),
+		     value_string_size,
 		     &value_64bit,
 		     64,
 		     LIBFVALUE_INTEGER_FORMAT_TYPE_DECIMAL_UNSIGNED,
@@ -482,19 +670,13 @@ int libvmdk_extent_descriptor_read(
 		}
 		extent_descriptor->offset = (off64_t) value_64bit;
 	}
-	if( libcsplit_narrow_split_string_free(
-	     &values,
-	     error ) != 1 )
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to free values.",
-		 function );
-
-		goto on_error;
+		libcnotify_printf(
+		 "\n" );
 	}
+#endif
 	return( 1 );
 
 on_error:
@@ -504,6 +686,15 @@ on_error:
 		 &values,
 		 NULL );
 	}
+	if( extent_descriptor->filename != NULL )
+	{
+		memory_free(
+		 extent_descriptor->filename );
+
+		extent_descriptor->filename = NULL;
+	}
+	extent_descriptor->filename_size = 0;
+
 	return( -1 );
 }
 

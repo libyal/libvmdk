@@ -651,21 +651,22 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libvmdk_error_t *error                                 = NULL;
-	libcstring_system_character_t *mount_point             = NULL;
-	libcstring_system_character_t *option_extended_options = NULL;
-	libcstring_system_character_t *source                  = NULL;
-	char *program                                          = "vmdkmount";
-	libcstring_system_integer_t option                     = 0;
-	int result                                             = 0;
-	int verbose                                            = 0;
+	libcstring_system_character_t * const *source_filenames = NULL;
+	libvmdk_error_t *error                                  = NULL;
+	libcstring_system_character_t *mount_point              = NULL;
+	libcstring_system_character_t *option_extended_options  = NULL;
+	char *program                                           = "vmdkmount";
+	libcstring_system_integer_t option                      = 0;
+	int number_of_source_filenames                          = 0;
+	int result                                              = 0;
+	int verbose                                             = 0;
 
 #if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE )
 	struct fuse_operations vmdkmount_fuse_operations;
 
-	struct fuse_args vmdkmount_fuse_arguments              = FUSE_ARGS_INIT(0, NULL);
-	struct fuse_chan *vmdkmount_fuse_channel               = NULL;
-	struct fuse *vmdkmount_fuse_handle                     = NULL;
+	struct fuse_args vmdkmount_fuse_arguments               = FUSE_ARGS_INIT(0, NULL);
+	struct fuse_chan *vmdkmount_fuse_channel                = NULL;
+	struct fuse *vmdkmount_fuse_handle                      = NULL;
 #endif
 
 	libcnotify_stream_set(
@@ -744,15 +745,15 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stderr,
-		 "Missing VMDK image file.\n" );
-
+		 "Missing source file(s).\n" );
 
 		usage_fprint(
 		 stdout );
 
 		return( EXIT_FAILURE );
 	}
-	source = argv[ optind++ ];
+	source_filenames           = &( argv[ optind ] );
+	number_of_source_filenames = argc - optind;
 
 	if( optind == argc )
 	{
@@ -787,12 +788,13 @@ int main( int argc, char * const argv[] )
 	}
 	if( mount_handle_open_input(
 	     vmdkmount_mount_handle,
-	     source,
+	     source_filenames,
+	     number_of_source_filenames,
 	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to open VMDK file.\n" );
+		 "Unable to open source file(s).\n" );
 
 		goto on_error;
 	}

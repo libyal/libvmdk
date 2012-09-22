@@ -338,8 +338,8 @@ int libvmdk_offset_table_fill(
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_RANGE,
-		 "%s: invalid number of grain table entries size mismatch with calculated number.",
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of grain table entries size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -396,7 +396,7 @@ int libvmdk_offset_table_fill(
 
 		grain_table += sizeof( uint32_t );
 
-		current_offset *= LIBVMDK_SECTOR_SIZE;
+		current_offset *= 512;
 
 		if( current_offset == 0 )
 		{
@@ -499,8 +499,8 @@ int libvmdk_offset_table_compare(
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_RANGE,
-		 "%s: invalid number of grain table entries size mismatch with calculated number.",
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of grain table entries size value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -557,7 +557,7 @@ int libvmdk_offset_table_compare(
 
 		grain_table += sizeof( uint32_t );
 
-		current_offset *= LIBVMDK_SECTOR_SIZE;
+		current_offset *= 512;
 
 		if( current_offset == 0 )
 		{
@@ -654,8 +654,8 @@ off64_t libvmdk_offset_table_seek_grain_offset(
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_RANGE,
-		 "%s: grain: %" PRIu32 " out of range [0,%" PRIu32 "].",
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: grain: %" PRIu32 " value out of bounds [0,%" PRIu32 "].",
 		 function,
 		 grain,
 		 offset_table->number_of_grain_offsets - 1 );

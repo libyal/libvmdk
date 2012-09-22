@@ -49,52 +49,52 @@ struct vmdk_sparse_file_header
 	 */
 	uint8_t flags[ 4 ];
 
-	/* The maximum data size (capacity)
+	/* The maximum data number of sectors (capacity)
 	 * Consists of 8 bytes
 	 * Contains a value in sectors
 	 */
-	uint8_t maximum_data_size[ 8 ];
+	uint8_t maximum_data_number_of_sectors[ 8 ];
 
-	/* The grain size
+	/* The grain number of sectors
 	 * Consists of 8 bytes
 	 * Contains a value in sectors
 	 */
-	uint8_t grain_size[ 8 ];
+	uint8_t grain_number_of_sectors[ 8 ];
 
-	/* The descriptor offset
+	/* The descriptor sector number
 	 * Consists of 8 bytes
 	 * Contains a value in sectors
 	 */
-	uint8_t descriptor_offset[ 8 ];
+	uint8_t descriptor_sector_number[ 8 ];
 
-	/* The descriptor size
+	/* The descriptor number of sectors
 	 * Consists of 8 bytes
 	 * Contains a value in sectors
 	 */
-	uint8_t descriptor_size[ 8 ];
+	uint8_t descriptor_number_of_sectors[ 8 ];
 
 	/* The number of grain table entries
 	 * Consists of 4 bytes
 	 */
 	uint8_t number_of_grain_table_entries[ 4 ];
 
-	/* The secondary grain directory offset
+	/* The secondary grain directory sector number
 	 * Consists of 8 bytes
 	 * Contains a value in sectors
 	 */
-	uint8_t secondary_grain_directory_offset[ 8 ];
+	uint8_t secondary_grain_directory_sector_number[ 8 ];
 
-	/* The grain directory offset
+	/* The grain directory sector number
 	 * Consists of 8 bytes
 	 * Contains a value in sectors
 	 */
-	uint8_t grain_directory_offset[ 8 ];
+	uint8_t grain_directory_sector_number[ 8 ];
 
-	/* The metadata (overhead) size
+	/* The metadata (overhead) number of sectors
 	 * Consists of 8 bytes
 	 * Contains a value in sectors
 	 */
-	uint8_t metadata_size[ 8 ];
+	uint8_t metadata_number_of_sectors[ 8 ];
 
 	/* Value to indicate the VMDK was cleanly closed
 	 * Consists of 1 byte

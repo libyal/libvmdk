@@ -36,6 +36,14 @@ typedef struct libvmdk_extent_descriptor libvmdk_extent_descriptor_t;
 
 struct libvmdk_extent_descriptor
 {
+	/* The filename
+	 */
+	char *filename;
+
+	/* The filename size
+	 */
+	size_t filename_size;
+
 	/* The extent offset
 	 */
 	off64_t offset;
@@ -63,7 +71,7 @@ int libvmdk_extent_descriptor_free(
 
 int libvmdk_extent_descriptor_read(
      libvmdk_extent_descriptor_t *extent_descriptor,
-     const char *value_string,
+     char *value_string,
      size_t value_string_size,
      libcerror_error_t **error );
 
