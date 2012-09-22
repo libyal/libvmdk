@@ -196,7 +196,7 @@ int info_handle_signal_abort(
 }
 
 /* Opens the info handle
- * Returns 1 if successful, 0 if the keys could not be read or -1 on error
+ * Returns 1 if successful or -1 on error
  */
 int info_handle_open_input(
      info_handle_t *info_handle,
@@ -205,7 +205,6 @@ int info_handle_open_input(
      libcerror_error_t **error )
 {
 	static char *function = "info_handle_open_input";
-	int result            = 0;
 
 	if( info_handle == NULL )
 	{
@@ -218,22 +217,41 @@ int info_handle_open_input(
 
 		return( -1 );
 	}
+	if( filenames == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid filenames.",
+		 function );
+
+		return( -1 );
+	}
+	if( number_of_filenames <= 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: number of filenames value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	result = libvmdk_handle_open_wide(
-	          info_handle->input_handle,
-	          filenames,
-	          number_of_filenames,
-	          LIBVMDK_OPEN_READ,
-	          error );
+	if( libvmdk_handle_open_wide(
+	     info_handle->input_handle,
+	     filenames[ 0 ],
+	     LIBVMDK_OPEN_READ,
+	     error ) != 1 )
 #else
-	result = libvmdk_handle_open(
-	          info_handle->input_handle,
-	          filenames,
-	          number_of_filenames,
-	          LIBVMDK_OPEN_READ,
-	          error );
+	if( libvmdk_handle_open(
+	     info_handle->input_handle,
+	     filenames[ 0 ],
+	     LIBVMDK_OPEN_READ,
+	     error ) != 1 )
 #endif
-	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -244,7 +262,11 @@ int info_handle_open_input(
 
 		return( -1 );
 	}
-	return( result );
+	if( number_of_filenames > 1 )
+	{
+/* TODO set up data files ? */
+	}
+	return( 1 );
 }
 
 /* Closes the info handle

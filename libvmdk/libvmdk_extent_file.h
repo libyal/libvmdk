@@ -98,19 +98,29 @@ int libvmdk_extent_file_free(
      libvmdk_extent_file_t **extent_file,
      libcerror_error_t **error );
 
-ssize_t libvmdk_extent_file_read_file_header(
+int libvmdk_extent_file_read_file_header_file_io_handle(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error );
+
+ssize_t libvmdk_extent_file_read_file_header_file_io_pool(
          libvmdk_extent_file_t *extent_file,
          libbfio_pool_t *file_io_pool,
          int file_io_pool_entry,
          libcerror_error_t **error );
 
-ssize_t libvmdk_extent_file_read_descriptor_data(
-         libvmdk_extent_file_t *extent_file,
-         libbfio_pool_t *file_io_pool,
-         int file_io_pool_entry,
-         uint8_t *descriptor_data,
-         size_t descriptor_data_size,
-         libcerror_error_t **error );
+int libvmdk_extent_file_read_file_header_data(
+     libvmdk_extent_file_t *extent_file,
+     const uint8_t *file_header_data,
+     size_t file_header_data_size,
+     libcerror_error_t **error );
+
+int libvmdk_extent_file_read_descriptor_data_file_io_handle(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_handle_t *file_io_handle,
+     uint8_t *descriptor_data,
+     size_t descriptor_data_size,
+     libcerror_error_t **error );
 
 int libvmdk_extent_file_read(
      intptr_t *io_handle,

@@ -215,18 +215,38 @@ int mount_handle_open_input(
 
 		return( -1 );
 	}
+	if( filenames == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid filenames.",
+		 function );
+
+		return( -1 );
+	}
+	if( number_of_filenames <= 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: number of filenames value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libvmdk_handle_open_wide(
 	     mount_handle->input_handle,
-	     filenames,
-	     number_of_filenames,
+	     filenames[ 0 ],
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
 #else
 	if( libvmdk_handle_open(
 	     mount_handle->input_handle,
-	     filenames,
-	     number_of_filenames,
+	     filenames[ 0 ],
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
 #endif
@@ -239,6 +259,10 @@ int mount_handle_open_input(
 		 function );
 
 		return( -1 );
+	}
+	if( number_of_filenames > 1 )
+	{
+/* TODO set up data files ? */
 	}
 	return( 1 );
 }

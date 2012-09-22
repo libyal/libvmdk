@@ -142,23 +142,170 @@ int libvmdk_extent_file_free(
 	return( 1 );
 }
 
-/* Reads the file header from the extent file
+/* Reads the file header from the extent file using the file IO handle
+ * Returns 1 if successful, or -1 on errror
+ */
+int libvmdk_extent_file_read_file_header_file_io_handle(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error )
+{
+	uint8_t *file_header_data = NULL;
+	static char *function     = "libvmdk_extent_file_read_file_header";
+	size_t read_size          = 0;
+	ssize_t read_count        = 0;
+
+	if( extent_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent file.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+	 	 "%s: reading file header at offset: 0 (0x00000000)\n",
+		 function );
+	}
+#endif
+	if( libbfio_handle_seek_offset(
+	     file_io_handle,
+	     0,
+	     SEEK_SET,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek file header offset: 0.",
+		 function );
+
+		goto on_error;
+	}
+	file_header_data = (uint8_t *) memory_allocate(
+	                                sizeof( uint8_t ) * 2048 );
+
+	if( file_header_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create file header data.",
+		 function );
+
+		goto on_error;
+	}
+	read_count = libbfio_handle_read_buffer(
+	              file_io_handle,
+	              file_header_data,
+	              4,
+	              error );
+
+	if( read_count != (ssize_t) 4 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read file header data.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_compare(
+	     file_header_data,
+	     cowd_sparse_file_signature,
+	     4 ) == 0 )
+	{
+		read_size = sizeof( cowd_sparse_file_header_t );
+	}
+	else if( memory_compare(
+	          file_header_data,
+	          vmdk_sparse_file_signature,
+	          4 ) == 0 )
+	{
+		read_size = sizeof( vmdk_sparse_file_header_t );
+	}
+	else
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported file signature.",
+		 function );
+
+		goto on_error;
+	}
+	read_count = libbfio_handle_read_buffer(
+	              file_io_handle,
+	              &( file_header_data[ 4 ] ),
+	              read_size - 4,
+	              error );
+
+	if( read_count != (ssize_t) ( read_size - 4 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read file header data.",
+		 function );
+
+		goto on_error;
+	}
+	if( libvmdk_extent_file_read_file_header_data(
+	     extent_file,
+	     file_header_data,
+	     read_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read file header data.",
+		 function );
+
+		goto on_error;
+	}
+	memory_free(
+	 file_header_data );
+
+	file_header_data = NULL;
+
+	return( 1 );
+
+on_error:
+	if( file_header_data != NULL )
+	{
+		memory_free(
+		 file_header_data );
+	}
+	return( -1 );
+}
+
+/* Reads the file header from the extent file using the file IO pool entry
  * Returns the number of bytes read if successful, or -1 on errror
  */
-ssize_t libvmdk_extent_file_read_file_header(
+ssize_t libvmdk_extent_file_read_file_header_file_io_pool(
          libvmdk_extent_file_t *extent_file,
          libbfio_pool_t *file_io_pool,
          int file_io_pool_entry,
          libcerror_error_t **error )
 {
-	uint8_t *file_header  = NULL;
-	static char *function = "libvmdk_extent_file_read_file_header";
-	size_t read_size      = 0;
-	ssize_t read_count    = 0;
-
-#if defined( HAVE_VERBOSE_OUTPUT )
-	uint64_t value_64bit  = 0;
-#endif
+	uint8_t *file_header_data = NULL;
+	static char *function     = "libvmdk_extent_file_read_file_header_file_io_pool";
+	size_t read_size          = 0;
+	ssize_t read_count        = 0;
 
 	if( extent_file == NULL )
 	{
@@ -190,22 +337,21 @@ ssize_t libvmdk_extent_file_read_file_header(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek file header offset: %" PRIu64 ".",
-		 function,
-		 0 );
+		 "%s: unable to seek file header offset: 0.",
+		 function );
 
 		goto on_error;
 	}
-	file_header = (uint8_t *) memory_allocate(
-	                           sizeof( uint8_t ) * 2048 );
+	file_header_data = (uint8_t *) memory_allocate(
+	                                sizeof( uint8_t ) * 2048 );
 
-	if( file_header == NULL )
+	if( file_header_data == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create file header.",
+		 "%s: unable to create file header data.",
 		 function );
 
 		goto on_error;
@@ -213,7 +359,7 @@ ssize_t libvmdk_extent_file_read_file_header(
 	read_count = libbfio_pool_read_buffer(
 	              file_io_pool,
 	              file_io_pool_entry,
-	              file_header,
+	              file_header_data,
 	              4,
 	              error );
 
@@ -223,26 +369,24 @@ ssize_t libvmdk_extent_file_read_file_header(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read file header.",
+		 "%s: unable to read file header data.",
 		 function );
 
 		goto on_error;
 	}
 	if( memory_compare(
-	     file_header,
+	     file_header_data,
 	     cowd_sparse_file_signature,
 	     4 ) == 0 )
 	{
-		extent_file->file_type = LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA;
-		read_size              = sizeof( cowd_sparse_file_header_t );
+		read_size = sizeof( cowd_sparse_file_header_t );
 	}
 	else if( memory_compare(
-	          file_header,
+	          file_header_data,
 	          vmdk_sparse_file_signature,
 	          4 ) == 0 )
 	{
-		extent_file->file_type = LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA;
-		read_size              = sizeof( vmdk_sparse_file_header_t );
+		read_size = sizeof( vmdk_sparse_file_header_t );
 	}
 	else
 	{
@@ -258,7 +402,7 @@ ssize_t libvmdk_extent_file_read_file_header(
 	read_count = libbfio_pool_read_buffer(
 	              file_io_pool,
 	              file_io_pool_entry,
-	              &( file_header[ 4 ] ),
+	              &( file_header_data[ 4 ] ),
 	              read_size - 4,
 	              error );
 
@@ -268,10 +412,136 @@ ssize_t libvmdk_extent_file_read_file_header(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read file header.",
+		 "%s: unable to read file header data.",
 		 function );
 
 		goto on_error;
+	}
+	if( libvmdk_extent_file_read_file_header_data(
+	     extent_file,
+	     file_header_data,
+	     read_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read file header data.",
+		 function );
+
+		goto on_error;
+	}
+	memory_free(
+	 file_header_data );
+
+	file_header_data = NULL;
+
+	return( (ssize_t) read_size );
+
+on_error:
+	if( file_header_data != NULL )
+	{
+		memory_free(
+		 file_header_data );
+	}
+	return( -1 );
+}
+
+/* Reads the file header from the extent file
+ * Returns 1 if successful, or -1 on errror
+ */
+int libvmdk_extent_file_read_file_header_data(
+     libvmdk_extent_file_t *extent_file,
+     const uint8_t *file_header_data,
+     size_t file_header_data_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_extent_file_read_file_header_data";
+
+#if defined( HAVE_VERBOSE_OUTPUT )
+	uint64_t value_64bit  = 0;
+#endif
+
+	if( extent_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent file.",
+		 function );
+
+		return( -1 );
+	}
+	if( file_header_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file header data.",
+		 function );
+
+		return( -1 );
+	}
+	if( file_header_data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid file header data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( memory_compare(
+	     file_header_data,
+	     cowd_sparse_file_signature,
+	     4 ) == 0 )
+	{
+		if( file_header_data_size < sizeof( cowd_sparse_file_header_t ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+			 "%s: invalid file header data value too small.",
+			 function );
+
+			return( -1 );
+		}
+		extent_file->file_type = LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA;
+	}
+	else if( memory_compare(
+	          file_header_data,
+	          vmdk_sparse_file_signature,
+	          4 ) == 0 )
+	{
+		if( file_header_data_size < sizeof( vmdk_sparse_file_header_t ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+			 "%s: invalid file header data value too small.",
+			 function );
+
+			return( -1 );
+		}
+		extent_file->file_type = LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA;
+	}
+	else
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported file signature.",
+		 function );
+
+		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -280,79 +550,77 @@ ssize_t libvmdk_extent_file_read_file_header(
 		 "%s: file header:\n",
 		 function );
 		libcnotify_print_data(
-		 file_header,
-		 read_size,
+		 file_header_data,
+		 file_header_data_size,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
 	if( extent_file->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
 	{
 		byte_stream_copy_to_uint32_little_endian(
-		 ( (cowd_sparse_file_header_t *) file_header )->version,
+		 ( (cowd_sparse_file_header_t *) file_header_data )->version,
 		 extent_file->format_version );
 
 		byte_stream_copy_to_uint32_little_endian(
-		 ( (cowd_sparse_file_header_t *) file_header )->flags,
+		 ( (cowd_sparse_file_header_t *) file_header_data )->flags,
 		 extent_file->flags );
 
 		byte_stream_copy_to_uint32_little_endian(
-		 ( (cowd_sparse_file_header_t *) file_header )->maximum_data_number_of_sectors,
+		 ( (cowd_sparse_file_header_t *) file_header_data )->maximum_data_number_of_sectors,
 		 extent_file->maximum_data_size );
 
 		byte_stream_copy_to_uint32_little_endian(
-		 ( (cowd_sparse_file_header_t *) file_header )->grain_number_of_sectors,
+		 ( (cowd_sparse_file_header_t *) file_header_data )->grain_number_of_sectors,
 		 extent_file->grain_size );
 
 		byte_stream_copy_to_uint32_little_endian(
-		 ( (cowd_sparse_file_header_t *) file_header )->grain_directory_sector_number,
+		 ( (cowd_sparse_file_header_t *) file_header_data )->grain_directory_sector_number,
 		 extent_file->grain_directory_offset );
 
 		byte_stream_copy_to_uint32_little_endian(
-		 ( (cowd_sparse_file_header_t *) file_header )->number_of_grain_directory_entries,
+		 ( (cowd_sparse_file_header_t *) file_header_data )->number_of_grain_directory_entries,
 		 extent_file->number_of_grain_directory_entries );
-
-		/* TODO */
 	}
 	else if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
 		byte_stream_copy_to_uint32_little_endian(
-		 ( (vmdk_sparse_file_header_t *) file_header )->version,
+		 ( (vmdk_sparse_file_header_t *) file_header_data )->version,
 		 extent_file->format_version );
 
 		byte_stream_copy_to_uint32_little_endian(
-		 ( (vmdk_sparse_file_header_t *) file_header )->flags,
+		 ( (vmdk_sparse_file_header_t *) file_header_data )->flags,
 		 extent_file->flags );
 
 		byte_stream_copy_to_uint64_little_endian(
-		 ( (vmdk_sparse_file_header_t *) file_header )->maximum_data_number_of_sectors,
+		 ( (vmdk_sparse_file_header_t *) file_header_data )->maximum_data_number_of_sectors,
 		 extent_file->maximum_data_size );
 
 		byte_stream_copy_to_uint64_little_endian(
-		 ( (vmdk_sparse_file_header_t *) file_header )->grain_number_of_sectors,
+		 ( (vmdk_sparse_file_header_t *) file_header_data )->grain_number_of_sectors,
 		 extent_file->grain_size );
 
 		byte_stream_copy_to_uint64_little_endian(
-		 ( (vmdk_sparse_file_header_t *) file_header )->descriptor_sector_number,
+		 ( (vmdk_sparse_file_header_t *) file_header_data )->descriptor_sector_number,
 		 extent_file->descriptor_offset );
 
 		byte_stream_copy_to_uint64_little_endian(
-		 ( (vmdk_sparse_file_header_t *) file_header )->descriptor_number_of_sectors,
+		 ( (vmdk_sparse_file_header_t *) file_header_data )->descriptor_number_of_sectors,
 		 extent_file->descriptor_size );
 
 		byte_stream_copy_to_uint32_little_endian(
-		 ( (vmdk_sparse_file_header_t *) file_header )->number_of_grain_table_entries,
+		 ( (vmdk_sparse_file_header_t *) file_header_data )->number_of_grain_table_entries,
 		 extent_file->number_of_grain_table_entries );
 
 		byte_stream_copy_to_uint64_little_endian(
-		 ( (vmdk_sparse_file_header_t *) file_header )->secondary_grain_directory_sector_number,
+		 ( (vmdk_sparse_file_header_t *) file_header_data )->secondary_grain_directory_sector_number,
 		 extent_file->secondary_grain_directory_offset );
 
 		byte_stream_copy_to_uint64_little_endian(
-		 ( (vmdk_sparse_file_header_t *) file_header )->grain_directory_sector_number,
+		 ( (vmdk_sparse_file_header_t *) file_header_data )->grain_directory_sector_number,
 		 extent_file->grain_directory_offset );
 
 		byte_stream_copy_to_uint16_little_endian(
-		 ( (vmdk_sparse_file_header_t *) file_header )->compression_method,
+		 ( (vmdk_sparse_file_header_t *) file_header_data )->compression_method,
 		 extent_file->compression_method );
 	}
 #if defined( HAVE_VERBOSE_OUTPUT )
@@ -361,10 +629,10 @@ ssize_t libvmdk_extent_file_read_file_header(
 		libcnotify_printf(
 		 "%s: signature\t\t\t\t\t: %c%c%c%c\n",
 		 function,
-		 (char) file_header[ 0 ],
-		 (char) file_header[ 1 ],
-		 (char) file_header[ 2 ],
-		 (char) file_header[ 3 ] );
+		 (char) file_header_data[ 0 ],
+		 (char) file_header_data[ 1 ],
+		 (char) file_header_data[ 2 ],
+		 (char) file_header_data[ 3 ] );
 
 		libcnotify_printf(
 		 "%s: format version\t\t\t\t: %" PRIu32 "\n",
@@ -394,7 +662,7 @@ ssize_t libvmdk_extent_file_read_file_header(
 			 extent_file->descriptor_offset );
 
 			libcnotify_printf(
-			 "%s: descriptor number of sectors\t\t: %" PRIu64 "\n",
+			 "%s: descriptor number of sectors\t\t\t: %" PRIu64 "\n",
 			 function,
 			 extent_file->descriptor_size );
 
@@ -419,42 +687,42 @@ ssize_t libvmdk_extent_file_read_file_header(
 			 "%s: padding:\n",
 			 function );
 			libcnotify_print_data(
-			 (uint8_t *) ( (vmdk_sparse_file_header_t *) file_header )->padding,
+			 (uint8_t *) ( (vmdk_sparse_file_header_t *) file_header_data )->padding,
 			 433,
 			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 		}
 		else if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 		{
 			byte_stream_copy_to_uint64_little_endian(
-			 ( (vmdk_sparse_file_header_t *) file_header )->metadata_number_of_sectors,
+			 ( (vmdk_sparse_file_header_t *) file_header_data )->metadata_number_of_sectors,
 			 value_64bit );
 			libcnotify_printf(
-			 "%s: metadata number of sectors\t\t: %" PRIu64 "\n",
+			 "%s: metadata number of sectors\t\t\t: %" PRIu64 "\n",
 			 function,
 			 value_64bit );
 
 			libcnotify_printf(
-			 "%s: single end of line character\t\t: 0x%02" PRIx8 "\n",
+			 "%s: single end of line character\t\t\t: 0x%02" PRIx8 "\n",
 			 function,
-			 ( (vmdk_sparse_file_header_t *) file_header )->single_end_of_line_character );
+			 ( (vmdk_sparse_file_header_t *) file_header_data )->single_end_of_line_character );
 
 			libcnotify_printf(
 			 "%s: non end of line character\t\t\t: 0x%02" PRIx8 "\n",
 			 function,
-			 ( (vmdk_sparse_file_header_t *) file_header )->non_end_of_line_character );
+			 ( (vmdk_sparse_file_header_t *) file_header_data )->non_end_of_line_character );
 
 			libcnotify_printf(
-			 "%s: first double end of line character\t: 0x%02" PRIx8 "\n",
+			 "%s: first double end of line character\t\t: 0x%02" PRIx8 "\n",
 			 function,
-			 ( (vmdk_sparse_file_header_t *) file_header )->first_double_end_of_line_character );
+			 ( (vmdk_sparse_file_header_t *) file_header_data )->first_double_end_of_line_character );
 
 			libcnotify_printf(
-			 "%s: second double end of line character\t: 0x%02" PRIx8 "\n",
+			 "%s: second double end of line character\t\t: 0x%02" PRIx8 "\n",
 			 function,
-			 ( (vmdk_sparse_file_header_t *) file_header )->second_double_end_of_line_character );
+			 ( (vmdk_sparse_file_header_t *) file_header_data )->second_double_end_of_line_character );
 
 			libcnotify_printf(
-			 "%s: compression method\t\t\t: %" PRIu16 "\n",
+			 "%s: compression method\t\t\t\t: %" PRIu16 "\n",
 			 function,
 			 extent_file->compression_method );
 
@@ -462,7 +730,7 @@ ssize_t libvmdk_extent_file_read_file_header(
 			 "%s: padding:\n",
 			 function );
 			libcnotify_print_data(
-			 ( (vmdk_sparse_file_header_t *) file_header )->padding,
+			 ( (vmdk_sparse_file_header_t *) file_header_data )->padding,
 			 433,
 			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 		}
@@ -477,7 +745,7 @@ ssize_t libvmdk_extent_file_read_file_header(
 		 "%s: unsupported grain number of sectors value is 0.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
@@ -490,7 +758,7 @@ ssize_t libvmdk_extent_file_read_file_header(
 			 "%s: unsupported grain number of sectors value is less than or equal to 8.",
 			 function );
 
-			goto on_error;
+			return( -1 );
 		}
 		if( ( extent_file->grain_size % 2 ) != 0 )
 		{
@@ -501,7 +769,7 @@ ssize_t libvmdk_extent_file_read_file_header(
 			 "%s: unsupported grain number of sectors value is not a power of 2.",
 			 function );
 
-			goto on_error;
+			return( -1 );
 		}
 		if( extent_file->number_of_grain_table_entries == 0 )
 		{
@@ -512,7 +780,7 @@ ssize_t libvmdk_extent_file_read_file_header(
 			 "%s: unsupported number of grain table entries value is 0.",
 			 function );
 
-			goto on_error;
+			return( -1 );
 		}
 	}
 	if( ( extent_file->maximum_data_size % extent_file->grain_size ) != 0 )
@@ -524,11 +792,11 @@ ssize_t libvmdk_extent_file_read_file_header(
 		 "%s: unsupported maximum data number of sectors not a multide of the grain number of sectors.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
-		if( ( (vmdk_sparse_file_header_t *) file_header )->single_end_of_line_character != (uint8_t) '\n' )
+		if( ( (vmdk_sparse_file_header_t *) file_header_data )->single_end_of_line_character != (uint8_t) '\n' )
 		{
 			libcerror_error_set(
 			 error,
@@ -537,9 +805,9 @@ ssize_t libvmdk_extent_file_read_file_header(
 			 "%s: unsupported single end of line character.",
 			 function );
 
-			goto on_error;
+			return( -1 );
 		}
-		if( ( (vmdk_sparse_file_header_t *) file_header )->non_end_of_line_character != (uint8_t) ' ' )
+		if( ( (vmdk_sparse_file_header_t *) file_header_data )->non_end_of_line_character != (uint8_t) ' ' )
 		{
 			libcerror_error_set(
 			 error,
@@ -548,9 +816,9 @@ ssize_t libvmdk_extent_file_read_file_header(
 			 "%s: unsupported non end of line character.",
 			 function );
 
-			goto on_error;
+			return( -1 );
 		}
-		if( ( (vmdk_sparse_file_header_t *) file_header )->first_double_end_of_line_character != (uint8_t) '\r' )
+		if( ( (vmdk_sparse_file_header_t *) file_header_data )->first_double_end_of_line_character != (uint8_t) '\r' )
 		{
 			libcerror_error_set(
 			 error,
@@ -559,9 +827,9 @@ ssize_t libvmdk_extent_file_read_file_header(
 			 "%s: unsupported first double end of line character.",
 			 function );
 
-			goto on_error;
+			return( -1 );
 		}
-		if( ( (vmdk_sparse_file_header_t *) file_header )->second_double_end_of_line_character != (uint8_t) '\n' )
+		if( ( (vmdk_sparse_file_header_t *) file_header_data )->second_double_end_of_line_character != (uint8_t) '\n' )
 		{
 			libcerror_error_set(
 			 error,
@@ -570,14 +838,9 @@ ssize_t libvmdk_extent_file_read_file_header(
 			 "%s: unsupported second double end of line character.",
 			 function );
 
-			goto on_error;
+			return( -1 );
 		}
 	}
-	memory_free(
-	 file_header );
-
-	file_header = NULL;
-
 	if( ( extent_file->compression_method != LIBVMDK_COMPRESSION_METHOD_NONE )
 	 && ( extent_file->compression_method != LIBVMDK_COMPRESSION_METHOD_DEFLATE ) )
 	{
@@ -589,7 +852,7 @@ ssize_t libvmdk_extent_file_read_file_header(
 		 function,
 		 extent_file->compression_method );
 
-		goto on_error;
+		return( -1 );
 	}
 	/* Change all sector values to byte values
 	 */
@@ -625,29 +888,20 @@ ssize_t libvmdk_extent_file_read_file_header(
 
 		return( -1 );
 	}
-	return( (ssize_t) read_size );
-
-on_error:
-	if( file_header != NULL )
-	{
-		memory_free(
-		 file_header );
-	}
-	return( -1 );
+	return( 1 );
 }
 
 /* Reads the descriptor data from the extent file
- * Returns the number of bytes read if successful, 0 if no descriptor data, or -1 on errror
+ * Returns 1 if successful, 0 if no descriptor data, or -1 on errror
  */
-ssize_t libvmdk_extent_file_read_descriptor_data(
-         libvmdk_extent_file_t *extent_file,
-         libbfio_pool_t *file_io_pool,
-         int file_io_pool_entry,
-         uint8_t *descriptor_data,
-         size_t descriptor_data_size,
-         libcerror_error_t **error )
+int libvmdk_extent_file_read_descriptor_data_file_io_handle(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_handle_t *file_io_handle,
+     uint8_t *descriptor_data,
+     size_t descriptor_data_size,
+     libcerror_error_t **error )
 {
-	static char *function = "libvmdk_extent_file_read_descriptor_data";
+	static char *function = "libvmdk_extent_file_read_descriptor_data_file_io_handle";
 	ssize_t read_count    = 0;
 
 	if( extent_file == NULL )
@@ -704,9 +958,8 @@ ssize_t libvmdk_extent_file_read_descriptor_data(
 		 extent_file->descriptor_offset );
 	}
 #endif
-	if( libbfio_pool_seek_offset(
-	     file_io_pool,
-	     file_io_pool_entry,
+	if( libbfio_handle_seek_offset(
+	     file_io_handle,
 	     extent_file->descriptor_offset,
 	     SEEK_SET,
 	     error ) == -1 )
@@ -721,9 +974,8 @@ ssize_t libvmdk_extent_file_read_descriptor_data(
 
 		return( -1 );
 	}
-	read_count = libbfio_pool_read_buffer(
-	              file_io_pool,
-	              file_io_pool_entry,
+	read_count = libbfio_handle_read_buffer(
+	              file_io_handle,
 	              descriptor_data,
 	              (size_t) extent_file->descriptor_size,
 	              error );
@@ -739,7 +991,7 @@ ssize_t libvmdk_extent_file_read_descriptor_data(
 
 		return( -1 );
 	}
-	return( read_count );
+	return( 1 );
 }
 
 /* Reads the extent file
@@ -792,7 +1044,7 @@ int libvmdk_extent_file_read(
 
 		goto on_error;
 	}
-	read_count = libvmdk_extent_file_read_file_header(
+	read_count = libvmdk_extent_file_read_file_header_file_io_pool(
 		      extent_file,
 		      file_io_pool,
 		      file_io_pool_entry,
@@ -804,8 +1056,9 @@ int libvmdk_extent_file_read(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read extent file header.",
-		 function );
+		 "%s: unable to read extent file header from file IO pool entry: %d.",
+		 function,
+		 file_io_pool_entry );
 
 		goto on_error;
 	}

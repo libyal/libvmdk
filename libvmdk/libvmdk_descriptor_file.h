@@ -77,8 +77,7 @@ int libvmdk_descriptor_file_free(
 
 int libvmdk_descriptor_file_read(
      libvmdk_descriptor_file_t *descriptor_file,
-     libbfio_pool_t *file_io_pool,
-     int file_io_pool_entry,
+     libbfio_handle_t *file_io_handle,
      libcerror_error_t **error );
 
 int libvmdk_descriptor_file_read_string(

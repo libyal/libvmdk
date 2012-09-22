@@ -33,6 +33,7 @@
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcnotify.h"
+#include "libvmdk_libcpath.h"
 #include "libvmdk_libcstring.h"
 #include "libvmdk_libmfdata.h"
 #include "libvmdk_offset_table.h"
@@ -192,19 +193,19 @@ int libvmdk_handle_free(
 				result = -1;
 			}
 		}
-		if( internal_handle->file_io_pool_created_in_library != 0 )
+		if( internal_handle->extent_data_file_io_pool_created_in_library != 0 )
 		{
-			if( internal_handle->file_io_pool != NULL )
+			if( internal_handle->extent_data_file_io_pool != NULL )
 			{
 				if( libbfio_pool_free(
-				     &( internal_handle->file_io_pool ),
+				     &( internal_handle->extent_data_file_io_pool ),
 				     error ) != 1 )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-					 "%s: unable to free file IO pool.",
+					 "%s: unable to extent data free file IO pool.",
 					 function );
 
 					result = -1;
@@ -260,18 +261,14 @@ int libvmdk_handle_signal_abort(
  */
 int libvmdk_handle_open(
      libvmdk_handle_t *handle,
-     char * const filenames[],
-     int number_of_filenames,
+     const char *filename,
      int access_flags,
      libcerror_error_t **error )
 {
 	libbfio_handle_t *file_io_handle           = NULL;
-	libbfio_pool_t *file_io_pool               = NULL;
 	libvmdk_internal_handle_t *internal_handle = NULL;
 	static char *function                      = "libvmdk_handle_open";
 	size_t filename_length                     = 0;
-	int file_io_pool_entry                     = 0;
-	int filename_index                         = 0;
 
 	if( handle == NULL )
 	{
@@ -286,154 +283,67 @@ int libvmdk_handle_open(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-	if( filenames == NULL )
+	if( filename == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid filenames.",
+		 "%s: invalid filename.",
 		 function );
 
 		return( -1 );
 	}
-	if( number_of_filenames <= 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
-		 "%s: invalid number of files zero or less.",
-		 function );
+	filename_length = libcstring_narrow_string_length(
+	                   filename );
 
-		return( -1 );
-	}
-	if( ( access_flags & LIBVMDK_ACCESS_FLAG_WRITE ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: write access currently not supported.",
-		 function );
-
-		return( -1 );
-	}
-	if( libbfio_pool_initialize(
-	     &file_io_pool,
-	     0,
-	     internal_handle->maximum_number_of_open_handles,
+	if( libbfio_file_initialize(
+	     &file_io_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create file IO pool.",
+		 "%s: unable to create file IO handle.",
 		 function );
 
 		goto on_error;
 	}
-	if( ( access_flags & LIBVMDK_ACCESS_FLAG_READ ) != 0 )
-	{
-		for( filename_index = 0;
-		     filename_index < number_of_filenames;
-		     filename_index++ )
-		{
-			filename_length = libcstring_narrow_string_length(
-					   filenames[ filename_index ] );
-
-			/* Make sure there is more to the filename than the extension
-			 */
-			if( filename_length <= 4 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-				 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-				 "%s: filename: %s is too small.",
-				 function,
-				 filenames[ filename_index ] );
-
-				goto on_error;
-			}
-			if( libbfio_file_initialize(
-			     &file_io_handle,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create file IO handle.",
-				 function );
-
-				goto on_error;
-			}
 #if defined( HAVE_DEBUG_OUTPUT )
-			if( libbfio_handle_set_track_offsets_read(
-			     file_io_handle,
-			     1,
-			     error ) != 1 )
-			{
-		                libcerror_error_set(
-		                 error,
-		                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		                 "%s: unable to set track offsets read in file IO handle.",
-		                 function );
+	if( libbfio_handle_set_track_offsets_read(
+	     file_io_handle,
+	     1,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set track offsets read in file IO handle.",
+		 function );
 
-				goto on_error;
-			}
-#endif
-			if( libbfio_file_set_name(
-			     file_io_handle,
-			     filenames[ filename_index ],
-			     filename_length + 1,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable to set name in file IO handle.",
-				 function );
-
-				goto on_error;
-			}
-			if( libbfio_pool_append_handle(
-			     file_io_pool,
-			     &file_io_pool_entry,
-			     file_io_handle,
-			     LIBBFIO_OPEN_READ,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-				 "%s: unable to add file IO handle to pool.",
-				 function );
-
-				goto on_error;
-			}
-			file_io_handle = NULL;
-
-#if defined( HAVE_VERBOSE_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				libcnotify_printf(
-				 "%s: added pool entry: %d with filename: %s.\n",
-				 function,
-				 file_io_pool_entry,
-				 filenames[ filename_index ] );
-			}
-#endif
-		}
+		goto on_error;
 	}
-	if( libvmdk_handle_open_file_io_pool(
+#endif
+	if( libbfio_file_set_name(
+	     file_io_handle,
+	     filename,
+	     filename_length + 1,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set name in file IO handle.",
+		 function );
+
+		goto on_error;
+	}
+	if( libvmdk_handle_open_file_io_handle(
 	     handle,
-	     file_io_pool,
+	     file_io_handle,
 	     access_flags,
 	     error ) != 1 )
 	{
@@ -441,13 +351,37 @@ int libvmdk_handle_open(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open handle using a file IO pool.",
+		 "%s: unable to open handle using a file IO handle.",
 		 function );
 
 		goto on_error;
 	}
-	internal_handle->file_io_pool_created_in_library = 1;
+	if( libbfio_handle_close(
+	     file_io_handle,
+	     error ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+		 "%s: unable to close file IO handle.",
+		 function );
 
+		goto on_error;
+	}
+	if( libbfio_handle_free(
+	     &file_io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free file IO handle.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
@@ -455,12 +389,6 @@ on_error:
 	{
 		libbfio_handle_free(
 		 &file_io_handle,
-		 NULL );
-	}
-	if( file_io_pool != NULL )
-	{
-		libbfio_pool_free(
-		 &file_io_pool,
 		 NULL );
 	}
 	return( -1 );
@@ -478,12 +406,9 @@ int libvmdk_handle_open_wide(
      libcerror_error_t **error )
 {
 	libbfio_handle_t *file_io_handle           = NULL;
-	libbfio_pool_t *file_io_pool               = NULL;
 	libvmdk_internal_handle_t *internal_handle = NULL;
 	static char *function                      = "libvmdk_handle_open_wide";
 	size_t filename_length                     = 0;
-	int file_io_pool_entry                     = 0;
-	int filename_index                         = 0;
 
 	if( handle == NULL )
 	{
@@ -509,143 +434,56 @@ int libvmdk_handle_open_wide(
 
 		return( -1 );
 	}
-	if( number_of_filenames <= 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_ZERO_OR_LESS,
-		 "%s: invalid number of files zero or less.",
-		 function );
+	filename_length = libcstring_wide_string_length(
+	                   filename );
 
-		return( -1 );
-	}
-	if( ( access_flags & LIBVMDK_ACCESS_FLAG_WRITE ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: write access currently not supported.",
-		 function );
-
-		return( -1 );
-	}
-	if( libbfio_pool_initialize(
-	     &file_io_pool,
-	     0,
-	     internal_handle->maximum_number_of_open_handles,
+	if( libbfio_file_initialize(
+	     &file_io_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create file IO pool.",
+		 "%s: unable to create file IO handle.",
 		 function );
 
 		goto on_error;
 	}
-	if( ( access_flags & LIBVMDK_ACCESS_FLAG_READ ) != 0 )
-	{
-		for( filename_index = 0;
-		     filename_index < number_of_filenames;
-		     filename_index++ )
-		{
-			filename_length = libcstring_wide_string_length(
-					   filenames[ filename_index ] );
-
-			/* Make sure there is more to the filename than the extension
-			 */
-			if( filename_length <= 4 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-				 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-				 "%s: filename: %ls is too small.",
-				 function,
-				 filenames[ filename_index ] );
-
-				goto on_error;
-			}
-			if( libbfio_file_initialize(
-			     &file_io_handle,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create file IO handle.",
-				 function );
-
-				goto on_error;
-			}
 #if defined( HAVE_DEBUG_OUTPUT )
-			if( libbfio_handle_set_track_offsets_read(
-			     file_io_handle,
-			     1,
-			     error ) != 1 )
-			{
-		                libcerror_error_set(
-		                 error,
-		                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		                 "%s: unable to set track offsets read in file IO handle.",
-		                 function );
+	if( libbfio_handle_set_track_offsets_read(
+	     file_io_handle,
+	     1,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set track offsets read in file IO handle.",
+		 function );
 
-				goto on_error;
-			}
-#endif
-			if( libbfio_file_set_name_wide(
-			     file_io_handle,
-			     filenames[ filename_index ],
-			     filename_length + 1,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable to set name in file IO handle.",
-				 function );
-
-				goto on_error;
-			}
-			if( libbfio_pool_append_handle(
-			     file_io_pool,
-			     &file_io_pool_entry,
-			     file_io_handle,
-			     LIBBFIO_OPEN_READ,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-				 "%s: unable to add file IO handle to pool.",
-				 function );
-
-				goto on_error;
-			}
-			file_io_handle = NULL;
-
-#if defined( HAVE_VERBOSE_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				libcnotify_printf(
-				 "%s: added pool entry: %d with filename: %ls.\n",
-				 function,
-				 file_io_pool_entry,
-				 filenames[ filename_index ] );
-			}
-#endif
-		}
+		goto on_error;
 	}
-	if( libvmdk_handle_open_file_io_pool(
+#endif
+	if( libbfio_file_set_name_wide(
+	     file_io_handle,
+	     filename,
+	     filename_length + 1,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set name in file IO handle.",
+		 function );
+
+		goto on_error;
+	}
+	if( libvmdk_handle_open_file_io_handle(
 	     handle,
-	     file_io_pool,
+	     file_io_handle,
 	     access_flags,
 	     error ) != 1 )
 	{
@@ -653,13 +491,37 @@ int libvmdk_handle_open_wide(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open handle using a file IO pool.",
+		 "%s: unable to open handle using a file IO handle.",
 		 function );
 
 		goto on_error;
 	}
-	internal_handle->file_io_pool_created_in_library = 1;
+	if( libbfio_handle_close(
+	     file_io_handle,
+	     error ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+		 "%s: unable to close file IO handle.",
+		 function );
 
+		goto on_error;
+	}
+	if( libbfio_handle_free(
+	     &file_io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free file IO handle.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
@@ -669,35 +531,27 @@ on_error:
 		 &file_io_handle,
 		 NULL );
 	}
-	if( file_io_pool != NULL )
-	{
-		libbfio_pool_free(
-		 &file_io_pool,
-		 NULL );
-	}
 	return( -1 );
 }
 
 #endif
 
-/* Opens a set of VMware Virtual Disk file(s) using a Basic File IO (bfio) pool
+/* Opens a set of VMware Virtual Disk file(s) using a Basic File IO (bfio) handle
  * Returns 1 if successful or -1 on error
  */
-int libvmdk_handle_open_file_io_pool(
+int libvmdk_handle_open_file_io_handle(
      libvmdk_handle_t *handle,
-     libbfio_pool_t *file_io_pool,
+     libbfio_handle_t *file_io_handle,
      int access_flags,
      libcerror_error_t **error )
 {
-	libbfio_handle_t *file_io_handle           = NULL;
 	libvmdk_internal_handle_t *internal_handle = NULL;
 	libvmdk_extent_file_t *extent_file         = NULL;
 	uint8_t *descriptor_data                   = NULL;
-	static char *function                      = "libvmdk_handle_open_file_io_pool";
-	ssize_t read_count                         = 0;
+	static char *function                      = "libvmdk_handle_open_file_io_handle";
+	int bfio_access_flags                      = 0;
 	uint8_t file_type                          = 0;
-	int file_io_pool_entry                     = 0;
-	int number_of_file_io_handles              = 0;
+	int file_io_handle_is_open                 = 0;
 	int result                                 = 0;
 
 	if( handle == NULL )
@@ -735,27 +589,13 @@ int libvmdk_handle_open_file_io_pool(
 
 		return( -1 );
 	}
-	if( file_io_pool == NULL )
+	if( file_io_handle == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file IO pool.",
-		 function );
-
-		return( -1 );
-	}
-	if( libbfio_pool_get_number_of_handles(
-	     file_io_pool,
-	     &number_of_file_io_handles,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve the number of handles in the file IO pool.",
+		 "%s: invalid file IO handle.",
 		 function );
 
 		return( -1 );
@@ -772,273 +612,257 @@ int libvmdk_handle_open_file_io_pool(
 
 		goto on_error;
 	}
+	if( ( access_flags & LIBVMDK_ACCESS_FLAG_WRITE ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: write access currently not supported.",
+		 function );
+
+		return( -1 );
+	}
 	if( ( access_flags & LIBVMDK_ACCESS_FLAG_READ ) != 0 )
 	{
-		for( file_io_pool_entry = 0;
-		     file_io_pool_entry < number_of_file_io_handles;
-		     file_io_pool_entry++ )
+		bfio_access_flags = LIBBFIO_ACCESS_FLAG_READ;
+	}
+	file_io_handle_is_open = libbfio_handle_is_open(
+	                          file_io_handle,
+	                          error );
+
+	if( file_io_handle_is_open == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to open file.",
+		 function );
+
+		return( -1 );
+	}
+	else if( file_io_handle_is_open == 0 )
+	{
+		if( libbfio_handle_open(
+		     file_io_handle,
+		     bfio_access_flags,
+		     error ) != 1 )
 		{
-			if( libbfio_pool_get_handle(
-			     file_io_pool,
-			     file_io_pool_entry,
-			     &file_io_handle,
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_OPEN_FAILED,
+			 "%s: unable to open file IO handle.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	result = libvmdk_handle_open_read_signature(
+		  file_io_handle,
+		  &file_type,
+		  error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read signature.",
+		 function );
+
+		goto on_error;
+	}
+	else if( result == 0 )
+	{
+		file_type = LIBVMDK_FILE_TYPE_RAW_DATA;
+	}
+	switch( file_type )
+	{
+		case LIBVMDK_FILE_TYPE_DESCRIPTOR_FILE:
+			if( internal_handle->descriptor_file != NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+				 "%s: invalid handle - descriptor file already set.",
+				 function );
+
+				goto on_error;
+			}
+			if( libvmdk_descriptor_file_initialize(
+			     &( internal_handle->descriptor_file ),
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-				 "%s: unable to retrieve file IO handle from pool entry: %d.",
-				 function,
-				 file_io_pool_entry );
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create descriptor file.",
+				 function );
 
 				goto on_error;
 			}
-#if defined( HAVE_VERBOSE_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				libcnotify_printf(
-				 "%s: processing pool entry: %d.\n",
-				 function,
-				 file_io_pool_entry );
-			}
-#endif
-			result = libvmdk_handle_open_read_signature(
-			          file_io_pool,
-			          file_io_pool_entry,
-			          &file_type,
-			          error );
-
-			if( result == -1 )
+			if( libvmdk_descriptor_file_read(
+			     internal_handle->descriptor_file,
+			     file_io_handle,
+			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_IO,
 				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read signature of pool entry: %d.",
-				 function,
-				 file_io_pool_entry );
+				 "%s: unable to read descriptor file.",
+				 function );
 
 				goto on_error;
 			}
-			else if( result == 0 )
+			break;
+
+		case LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA:
+			if( libvmdk_extent_file_initialize(
+			     &extent_file,
+			     error ) != 1 )
 			{
-				file_type = LIBVMDK_FILE_TYPE_RAW_DATA;
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create extent file.",
+				 function );
+
+				goto on_error;
 			}
-			switch( file_type )
+			if( libvmdk_extent_file_read_file_header_file_io_handle(
+			     extent_file,
+			     file_io_handle,
+			     error ) != 1 )
 			{
-				case LIBVMDK_FILE_TYPE_DESCRIPTOR_FILE:
-					if( internal_handle->descriptor_file != NULL )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-						 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-						 "%s: invalid handle - descriptor file already set.",
-						 function );
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read extent file header.",
+				 function );
 
-						goto on_error;
-					}
-					if( libvmdk_descriptor_file_initialize(
-					     &( internal_handle->descriptor_file ),
-					     error ) != 1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-						 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-						 "%s: unable to create descriptor file.",
-						 function );
-
-						goto on_error;
-					}
-					if( libvmdk_descriptor_file_read(
-					     internal_handle->descriptor_file,
-					     file_io_pool,
-					     file_io_pool_entry,
-					     error ) != 1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_IO,
-						 LIBCERROR_IO_ERROR_READ_FAILED,
-						 "%s: unable to read descriptor file from file IO pool entry: %d.",
-						 function,
-						 file_io_pool_entry );
-
-						goto on_error;
-					}
-					break;
-
-				case LIBVMDK_FILE_TYPE_RAW_DATA:
-					break;
-
-				case LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA:
-					break;
-
-				case LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA:
-					if( libvmdk_extent_file_initialize(
-					     &extent_file,
-					     error ) != 1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-						 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-						 "%s: unable to create extent file.",
-						 function );
-
-						goto on_error;
-					}
-					if( libvmdk_extent_file_read_file_header(
-					     extent_file,
-					     file_io_pool,
-					     file_io_pool_entry,
-					     error ) == -1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_IO,
-						 LIBCERROR_IO_ERROR_READ_FAILED,
-						 "%s: unable to read extent file header from file IO pool entry: %d.",
-						 function,
-						 file_io_pool_entry );
-
-						goto on_error;
-					}
-					if( extent_file->descriptor_size > 0 )
-					{
-						if( internal_handle->descriptor_file != NULL )
-						{
-							libcerror_error_set(
-							 error,
-							 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-							 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-							 "%s: invalid handle - descriptor file already set.",
-							 function );
-
-							goto on_error;
-						}
-						if( libvmdk_descriptor_file_initialize(
-						     &( internal_handle->descriptor_file ),
-						     error ) != 1 )
-						{
-							libcerror_error_set(
-							 error,
-							 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-							 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-							 "%s: unable to create descriptor file.",
-							 function );
-
-							goto on_error;
-						}
-						if( extent_file->descriptor_size > (size64_t) SSIZE_MAX )
-						{
-							libcerror_error_set(
-							 error,
-							 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-							 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-							 "%s: invalid extent file - descriptor size value exceeds maximum.",
-							 function );
-
-							goto on_error;
-						}
-						descriptor_data = (uint8_t *) memory_allocate(
-						                               sizeof( uint8_t ) * (size_t) extent_file->descriptor_size );
-
-						if( descriptor_data == NULL )
-						{
-							libcerror_error_set(
-							 error,
-							 LIBCERROR_ERROR_DOMAIN_MEMORY,
-							 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-							 "%s: unable to create descriptor data.",
-							 function );
-
-							goto on_error;
-						}
-						read_count = libvmdk_extent_file_read_descriptor_data(
-							      extent_file,
-							      file_io_pool,
-							      file_io_pool_entry,
-							      descriptor_data,
-							      (size_t) extent_file->descriptor_size,
-							      error );
-
-						if( read_count != (ssize_t) extent_file->descriptor_size )
-						{
-							libcerror_error_set(
-							 error,
-							 LIBCERROR_ERROR_DOMAIN_IO,
-							 LIBCERROR_IO_ERROR_READ_FAILED,
-							 "%s: unable to read descriptor data from file IO pool entry: %d.",
-							 function,
-							 file_io_pool_entry );
-
-							goto on_error;
-						}
-						if( libvmdk_descriptor_file_read_string(
-						     internal_handle->descriptor_file,
-						     descriptor_data,
-						     (size_t) extent_file->descriptor_size,
-						     error ) != 1 )
-						{
-							libcerror_error_set(
-							 error,
-							 LIBCERROR_ERROR_DOMAIN_IO,
-							 LIBCERROR_IO_ERROR_READ_FAILED,
-							 "%s: unable to read descriptor from string.",
-							 function );
-
-							goto on_error;
-						}
-						memory_free(
-						 descriptor_data );
-
-						descriptor_data = NULL;
-					}
-					if( libvmdk_extent_file_free(
-					     &extent_file,
-					     error ) != 1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-						 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-						 "%s: unable to free extent file.",
-						 function );
-
-						goto on_error;
-					}
-					break;
-
-				default:
+				goto on_error;
+			}
+			if( extent_file->descriptor_size > 0 )
+			{
+				if( internal_handle->descriptor_file != NULL )
+				{
 					libcerror_error_set(
 					 error,
-					 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-					 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-					 "%s: unsupported file type.",
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+					 "%s: invalid handle - descriptor file already set.",
 					 function );
 
 					goto on_error;
-			}
-		}
-		result = libvmdk_handle_open_read_grain_table(
-		          internal_handle,
-		          file_io_pool,
-		          error );
+				}
+				if( libvmdk_descriptor_file_initialize(
+				     &( internal_handle->descriptor_file ),
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create descriptor file.",
+					 function );
 
-		if( result != 1 )
-		{
+					goto on_error;
+				}
+				if( extent_file->descriptor_size > (size64_t) SSIZE_MAX )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+					 "%s: invalid extent file - descriptor size value exceeds maximum.",
+					 function );
+
+					goto on_error;
+				}
+				descriptor_data = (uint8_t *) memory_allocate(
+							       sizeof( uint8_t ) * (size_t) extent_file->descriptor_size );
+
+				if( descriptor_data == NULL )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_MEMORY,
+					 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+					 "%s: unable to create descriptor data.",
+					 function );
+
+					goto on_error;
+				}
+				if( libvmdk_extent_file_read_descriptor_data_file_io_handle(
+				     extent_file,
+				     file_io_handle,
+				     descriptor_data,
+				     (size_t) extent_file->descriptor_size,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read descriptor data.",
+					 function );
+
+					goto on_error;
+				}
+				if( libvmdk_descriptor_file_read_string(
+				     internal_handle->descriptor_file,
+				     descriptor_data,
+				     (size_t) extent_file->descriptor_size,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read descriptor from string.",
+					 function );
+
+					goto on_error;
+				}
+				memory_free(
+				 descriptor_data );
+
+				descriptor_data = NULL;
+			}
+			if( libvmdk_extent_file_free(
+			     &extent_file,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free extent file.",
+				 function );
+
+				goto on_error;
+			}
+			break;
+
+		case LIBVMDK_FILE_TYPE_RAW_DATA:
+		case LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA:
+		default:
 			libcerror_error_set(
 			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read files.",
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported file type.",
 			 function );
 
 			goto on_error;
-		}
 	}
 	if( internal_handle->descriptor_file == NULL )
 	{
@@ -1053,8 +877,25 @@ int libvmdk_handle_open_file_io_pool(
 	}
 	internal_handle->io_handle->media_size   = internal_handle->descriptor_file->media_size;
 	internal_handle->io_handle->access_flags = access_flags;
-	internal_handle->file_io_pool            = file_io_pool;
 
+/* TODO
+	result = libvmdk_handle_open_read_grain_table(
+		  internal_handle,
+		  file_io_pool,
+		  error );
+
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read files.",
+		 function );
+
+		goto on_error;
+	}
+*/
 	return( 1 );
 
 on_error:
@@ -1076,6 +917,717 @@ on_error:
 		 NULL );
 	}
 	return( -1 );
+}
+
+/* Opens the extent data files
+ * If the extent data filenames were not set explicitly this function assumes the extent data files
+ * are in the same location as the descriptor file
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_open_extent_data_files(
+     libvmdk_handle_t *handle,
+     libcerror_error_t **error )
+{
+	libcstring_system_character_t *extent_data_file_location  = NULL;
+	libcstring_system_character_t *extent_data_filename_start = NULL;
+	libvmdk_extent_descriptor_t *extent_descriptor            = NULL;
+	libvmdk_extent_file_t *extent_file                        = NULL;
+	libvmdk_internal_handle_t *internal_handle                = NULL;
+	static char *function                                     = "libvmdk_handle_open_extent_data_files";
+	size_t extent_data_file_location_size                     = 0;
+	size_t extent_data_filename_size                          = 0;
+	int extent_index                                          = 0;
+	int number_of_extents                                     = 0;
+	int result                                                = 0;
+
+	if( handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid handle.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle = (libvmdk_internal_handle_t *) handle;
+
+	if( internal_handle->descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid internal handle - missing descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( libvmdk_descriptor_file_get_number_of_extents(
+	     internal_handle->descriptor_file,
+	     &number_of_extents,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of extents.",
+		 function );
+
+		goto on_error;
+	}
+	if( number_of_extents == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing extents.",
+		 function );
+
+		goto on_error;
+	}
+	for( extent_index = 0;
+	     extent_index < number_of_extents;
+	     extent_index++ )
+	{
+		if( libvmdk_descriptor_file_get_extent_by_index(
+		     internal_handle->descriptor_file,
+		     extent_index,
+		     &extent_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve extent: %d from descriptor file.",
+			 function,
+			 extent_index );
+
+			goto on_error;
+		}
+		if( extent_descriptor == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing extent descriptor: %d.",
+			 function,
+			 extent_index );
+
+			goto on_error;
+		}
+		if( ( extent_descriptor->filename == NULL )
+		 || ( extent_descriptor->filename_size == 0 ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: invalid extent descriptor: %d - missing filename.",
+			 function,
+			 extent_index );
+
+			goto on_error;
+		}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+		extent_data_filename_start = libcstring_wide_string_search_character_reverse(
+		                              extent_descriptor->filename,
+		                              (wint_t) LIBCPATH_SEPARATOR,
+		                              extent_descriptor->filename_size );
+#else
+		extent_data_filename_start = libcstring_narrow_string_search_character_reverse(
+		                              extent_descriptor->filename,
+		                              (int) LIBCPATH_SEPARATOR,
+		                              extent_descriptor->filename_size );
+#endif
+		if( extent_data_filename_start != NULL )
+		{
+			/* Ignore the path separator itself
+			 */
+			extent_data_filename_start++;
+
+/* TODO does this work for UTF-16 ? */
+			extent_data_filename_size = (size_t) ( extent_data_filename_start - extent_descriptor->name );
+		}
+		else
+		{
+			extent_data_filename_start = extent_descriptor->name;
+			extent_data_filename_size  = extent_descriptor->name_size;
+		}
+		if( internal_handle->basename != NULL )
+		{
+			extent_data_file_location_size = internal_handle->basename_size + extent_data_filename_size - 1;
+
+			extent_data_file_location = libcstring_system_string_allocate(
+			                             extent_data_file_location_size );
+
+			if( extent_data_file_location == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+				 "%s: unable to create extent data file location.",
+				 function );
+
+				goto on_error;
+			}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+			if( libcstring_wide_string_copy(
+			     extent_data_file_location,
+			     internal_handle->basename,
+			     internal_handle->basename_size - 1 ) == NULL )
+#else
+			if( libcstring_narrow_string_copy(
+			     extent_data_file_location,
+			     internal_handle->basename,
+			     internal_handle->basename_size - 1 ) == NULL )
+#endif
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+				 "%s: unable to copy basename to extent data file location.",
+				 function );
+
+				goto on_error;
+			}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+			if( libcstring_wide_string_copy(
+			     &( extent_data_file_location[ internal_handle->basename_size - 1 ] ),
+			     extent_data_filename_start,
+			     extent_data_filename_size - 1 ) == NULL )
+#else
+			if( libcstring_narrow_string_copy(
+			     &( extent_data_file_location[ internal_handle->basename_size - 1 ] ),
+			     extent_data_filename_start,
+			     extent_data_filename_size - 1 ) == NULL )
+#endif
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+				 "%s: unable to copy extent data filename to extent data file location.",
+				 function );
+
+				goto on_error;
+			}
+			extent_data_file_location[ extent_data_file_location_size - 1 ] = 0;
+		}
+		else
+		{
+			extent_data_file_location      = extent_data_filename_start;
+			extent_data_file_location_size = extent_data_filename_size;
+		}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libvmdk_handle_open_extent_data_file_wide(
+			  internal_handle,
+			  extent_index,
+			  extent_data_file_location,
+			  error );
+#else
+		result = libvmdk_handle_open_extent_data_file(
+			  internal_handle,
+			  extent_index,
+			  extent_data_file_location,
+			  error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_OPEN_FAILED,
+			 "%s: unable to open extent data file: %" PRIs_LIBCSTRING_SYSTEM ".",
+			 function,
+			 extent_data_file_location );
+
+			goto on_error;
+		}
+		if( ( extent_data_file_location != NULL )
+		 && ( extent_data_file_location != extent_data_filename_start ) )
+		{
+			memory_free(
+			 extent_data_file_location );
+		}
+		extent_data_filename_start = NULL;
+		extent_data_file_location  = NULL;
+	}
+	if( libvmdk_handle_set_media_values(
+	     internal_handle,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+                 "%s: unable to set media values.",
+                 function );
+
+                return( -1 );
+	}
+	return( 1 );
+
+on_error:
+	if( ( extent_data_file_location != NULL )
+	 && ( extent_data_file_location != extent_data_filename_start ) )
+	{
+		memory_free(
+		 extent_data_file_location );
+	}
+	return( -1 );
+}
+
+/* Opens the extent data files using a Basic File IO (bfio) pool
+ * This function assumes the extent data files are in same order as defined by the descriptor file
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_open_extent_data_files_file_io_pool(
+     libvmdk_handle_t *handle,
+     libbfio_pool_t *file_io_pool,
+     libcerror_error_t **error )
+{
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	static char *function                      = "libvmdk_handle_open_extent_data_files_file_io_pool";
+
+	if( handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid handle.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle = (libvmdk_internal_handle_t *) handle;
+
+	if( internal_handle->descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid internal handle - missing descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->extent_data_file_io_pool != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid handle - extent data file IO pool already exists.",
+		 function );
+
+		return( -1 );
+	}
+	if( file_io_pool == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file IO pool.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle->extent_data_file_io_pool = file_io_pool;
+
+	return( 1 );
+}
+
+/* Opens a specific extent data file
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_open_extent_data_file(
+     libvmdk_internal_handle_t *internal_handle,
+     int data_file_index,
+     const char *filename,
+     libcerror_error_t **error )
+{
+	libbfio_handle_t *file_io_handle = NULL;
+	static char *function            = "libvmdk_handle_open_extent_data_file";
+
+	if( internal_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid internal handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->toc_file_io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid handle - missing TOC file IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid filename.",
+		 function );
+
+		return( -1 );
+	}
+	if( libbfio_file_initialize(
+	     &file_io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create file IO handle.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libbfio_handle_set_track_offsets_read(
+	     file_io_handle,
+	     1,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+                 "%s: unable to set track offsets read in file IO handle.",
+                 function );
+
+                goto on_error;
+	}
+#endif
+	if( libbfio_file_set_name(
+	     file_io_handle,
+	     filename,
+	     libcstring_narrow_string_length(
+	      filename ) + 1,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+                 "%s: unable to set filename in file IO handle.",
+                 function );
+
+                goto on_error;
+	}
+	if( libvmdk_handle_open_extent_data_file_io_handle(
+	     internal_handle,
+	     data_file_index,
+	     file_io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to open extent data file: %s.",
+		 function,
+		 filename );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( file_io_handle != NULL )
+	{
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
+	}
+	return( -1 );
+}
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+
+/* Opens a specific extent data file
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_open_extent_data_file_wide(
+     libvmdk_internal_handle_t *internal_handle,
+     int data_file_index,
+     const wchar_t *filename,
+     libcerror_error_t **error )
+{
+	libbfio_handle_t *file_io_handle = NULL;
+	static char *function            = "libvmdk_handle_open_extent_data_file_wide";
+
+	if( internal_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid internal handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->toc_file_io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid handle - missing TOC file IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid filename.",
+		 function );
+
+		return( -1 );
+	}
+	if( libbfio_file_initialize(
+	     &file_io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create file IO handle.",
+		 function );
+
+                goto on_error;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libbfio_handle_set_track_offsets_read(
+	     file_io_handle,
+	     1,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+                 "%s: unable to set track offsets read in file IO handle.",
+                 function );
+
+                goto on_error;
+	}
+#endif
+	if( libbfio_file_set_name_wide(
+	     file_io_handle,
+	     filename,
+	     libcstring_wide_string_length(
+	      filename ) + 1,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+                 "%s: unable to set filename in file IO handle.",
+                 function );
+
+                goto on_error;
+	}
+	if( libvmdk_handle_open_extent_data_file_io_handle(
+	     internal_handle,
+	     data_file_index,
+	     file_io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to open extent data file: %ls.",
+		 function,
+		 filename );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( file_io_handle != NULL )
+	{
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
+	}
+	return( -1 );
+}
+
+#endif
+
+/* Opens an extent data file using a Basic File IO (bfio) handle
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_open_extent_data_file_io_handle(
+     libvmdk_internal_handle_t *internal_handle,
+     int data_file_index,
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error )
+{
+	static char *function               = "libvmdk_handle_open_extent_data_file_io_handle";
+	int bfio_access_flags               = 0;
+	int number_of_data_file_descriptors = 0;
+
+	if( internal_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid internal handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->toc_file_io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid handle - missing TOC file IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( file_io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( ( internal_handle->access_flags & LIBODRAW_ACCESS_FLAG_READ ) == 0 )
+	 && ( ( internal_handle->access_flags & LIBODRAW_ACCESS_FLAG_WRITE ) == 0 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported access flags.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( internal_handle->access_flags & LIBODRAW_ACCESS_FLAG_WRITE ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: write access currently not supported.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->data_file_io_pool == NULL )
+	{
+		if( libvmdk_array_get_number_of_entries(
+		     internal_handle->data_file_descriptors_array,
+		     &number_of_data_file_descriptors,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve number of extent data file descriptors.",
+			 function );
+
+			return( -1 );
+		}
+		if( libbfio_pool_initialize(
+		     &( internal_handle->data_file_io_pool ),
+		     number_of_data_file_descriptors,
+		     internal_handle->maximum_number_of_open_handles,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create extent data file file IO pool.",
+			 function );
+
+			return( -1 );
+		}
+		internal_handle->data_file_io_pool_created_in_library = 1;
+	}
+	if( ( internal_handle->access_flags & LIBODRAW_ACCESS_FLAG_READ ) != 0 )
+	{
+		bfio_access_flags = LIBBFIO_ACCESS_FLAG_READ;
+	}
+	if( libbfio_handle_open(
+	     file_io_handle,
+	     bfio_access_flags,
+	     error ) != 1 )
+	{
+                libcerror_error_set(
+                 error,
+                 LIBCERROR_ERROR_DOMAIN_IO,
+                 LIBCERROR_IO_ERROR_OPEN_FAILED,
+                 "%s: unable to open file IO handle.",
+                 function );
+
+                return( -1 );
+	}
+	/* This function currently does not allow the file_io_handle to be set more than once
+	 */
+	if( libbfio_pool_set_handle(
+	     internal_handle->data_file_io_pool,
+	     data_file_index,
+	     file_io_handle,
+	     bfio_access_flags,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set file IO handle: %d in pool.",
+		 function,
+		 data_file_index );
+
+		return( -1 );
+	}
+	return( 1 );
 }
 
 /* Closes a VMware Virtual Disk file(s)
@@ -1289,7 +1841,7 @@ int libvmdk_handle_open_read_grain_table(
 	     extent_index < number_of_extents;
 	     extent_index++ )
 	{
-		if( libvmdk_descriptor_file_get_extent(
+		if( libvmdk_descriptor_file_get_extent_by_index(
 		     internal_handle->descriptor_file,
 		     extent_index,
 		     &extent_descriptor,
@@ -1530,8 +2082,7 @@ int libvmdk_handle_open_read(
  * Returns 1 if successful, 0 if no file type could be determined or -1 on error
  */
 int libvmdk_handle_open_read_signature(
-     libbfio_pool_t *file_io_pool,
-     int file_io_pool_entry,
+     libbfio_handle_t *file_io_handle,
      uint8_t *file_type,
      libcerror_error_t **error )
 {
@@ -1552,9 +2103,8 @@ int libvmdk_handle_open_read_signature(
 
 		return( -1 );
 	}
-	if( libbfio_pool_seek_offset(
-	     file_io_pool,
-	     file_io_pool_entry,
+	if( libbfio_handle_seek_offset(
+	     file_io_handle,
 	     0,
 	     SEEK_SET,
 	     error ) == -1 )
@@ -1563,15 +2113,13 @@ int libvmdk_handle_open_read_signature(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek offset: 0 in file IO pool entry: %d.",
-		 function,
-		 file_io_pool_entry );
+		 "%s: unable to seek offset: 0.",
+		 function );
 
 		return( -1 );
 	}
-	read_count = libbfio_pool_read_buffer(
-	              file_io_pool,
-	              file_io_pool_entry,
+	read_count = libbfio_handle_read_buffer(
+	              file_io_handle,
 	              signature,
 	              32,
 	              error );
@@ -1582,9 +2130,8 @@ int libvmdk_handle_open_read_signature(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read signature from file IO pool entry: %d.",
-		 function,
-		 file_io_pool_entry );
+		 "%s: unable to read signature.",
+		 function );
 
 		return( -1 );
 	}
@@ -2030,4 +2577,960 @@ int libvmdk_handle_get_offset(
 
 	return( 1 );
 }
+
+/* Retrieves the size of the basename
+ * Returns 1 if successful, 0 if value not present or -1 on error
+ */
+int libvmdk_handle_get_basename_size(
+     libvmdk_internal_handle_t *internal_handle,
+     size_t *basename_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_handle_get_basename_size";
+
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	int result            = 0;
+#endif
+
+	if( internal_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid internal handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( basename_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid basename size.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->basename == NULL )
+	{
+		return( 0 );
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( libclocale_codepage == 0 )
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf8_string_size_from_utf32(
+		          (libuna_utf32_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          basename_size,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf8_string_size_from_utf16(
+		          (libuna_utf16_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          basename_size,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	else
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_byte_stream_size_from_utf32(
+		          (libuna_utf32_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          libclocale_codepage,
+		          basename_size,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_byte_stream_size_from_utf16(
+		          (libuna_utf16_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          libclocale_codepage,
+		          basename_size,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
+		 "%s: unable to determine basename size.",
+		 function );
+
+		return( -1 );
+	}
+#else
+	*basename_size = internal_handle->basename_size;
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+
+	return( 1 );
+}
+
+/* Retrieves the basename
+ * Returns 1 if successful, 0 if value not present or -1 on error
+ */
+int libvmdk_handle_get_basename(
+     libvmdk_internal_handle_t *internal_handle,
+     char *basename,
+     size_t basename_size,
+     libcerror_error_t **error )
+{
+	static char *function       = "libvmdk_handle_get_basename";
+	size_t narrow_basename_size = 0;
+
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	int result                  = 0;
+#endif
+
+	if( internal_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid internal handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( basename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid basename.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->basename == NULL )
+	{
+		return( 0 );
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( libclocale_codepage == 0 )
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf8_string_size_from_utf32(
+		          (libuna_utf32_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          &narrow_basename_size,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf8_string_size_from_utf16(
+		          (libuna_utf16_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          &narrow_basename_size,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	else
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_byte_stream_size_from_utf32(
+		          (libuna_utf32_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          libclocale_codepage,
+		          &narrow_basename_size,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_byte_stream_size_from_utf16(
+		          (libuna_utf16_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          libclocale_codepage,
+		          &narrow_basename_size,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
+		 "%s: unable to determine narrow basename size.",
+		 function );
+
+		return( -1 );
+	}
+#else
+	narrow_basename_size = internal_handle->basename_size;
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+
+	if( basename_size < narrow_basename_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: basename too small.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( libclocale_codepage == 0 )
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf8_string_copy_from_utf32(
+		          (libuna_utf8_character_t *) basename,
+		          basename_size,
+		          (libuna_utf32_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf8_string_copy_from_utf16(
+		          (libuna_utf8_character_t *) basename,
+		          basename_size,
+		          (libuna_utf16_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	else
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_byte_stream_copy_from_utf32(
+		          (uint8_t *) basename,
+		          basename_size,
+		          libclocale_codepage,
+		          (libuna_utf32_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_byte_stream_copy_from_utf16(
+		          (uint8_t *) basename,
+		          basename_size,
+		          libclocale_codepage,
+		          (libuna_utf16_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
+		 "%s: unable to set basename.",
+		 function );
+
+		return( -1 );
+	}
+#else
+	if( libcstring_system_string_copy(
+	     basename,
+	     internal_handle->basename,
+	     internal_handle->basename_size ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to set basename.",
+		 function );
+
+		return( -1 );
+	}
+	basename[ internal_handle->basename_size - 1 ] = 0;
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+
+	return( 1 );
+}
+
+/* Sets the basename
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_set_basename(
+     libvmdk_internal_handle_t *internal_handle,
+     const char *basename,
+     size_t basename_length,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_handle_set_basename";
+
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	int result            = 0;
+#endif
+
+	if( internal_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid internal handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( basename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid basename.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->basename != NULL )
+	{
+		memory_free(
+		 internal_handle->basename );
+
+		internal_handle->basename      = NULL;
+		internal_handle->basename_size = 0;
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( libclocale_codepage == 0 )
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf32_string_size_from_utf8(
+		          (libuna_utf8_character_t *) basename,
+		          basename_length + 1,
+		          &( internal_handle->basename_size ),
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf16_string_size_from_utf8(
+		          (libuna_utf8_character_t *) basename,
+		          basename_length + 1,
+		          &( internal_handle->basename_size ),
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	else
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf32_string_size_from_byte_stream(
+		          (uint8_t *) basename,
+		          basename_length + 1,
+		          libclocale_codepage,
+		          &( internal_handle->basename_size ),
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf16_string_size_from_byte_stream(
+		          (uint8_t *) basename,
+		          basename_length + 1,
+		          libclocale_codepage,
+		          &( internal_handle->basename_size ),
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
+		 "%s: unable to determine basename size.",
+		 function );
+
+		return( -1 );
+	}
+#else
+	internal_handle->basename_size = basename_length + 1;
+#endif
+	internal_handle->basename = libcstring_system_string_allocate(
+	                             internal_handle->basename_size );
+
+	if( internal_handle->basename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create basename.",
+		 function );
+
+		internal_handle->basename_size = 0;
+
+		return( -1 );
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( libclocale_codepage == 0 )
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf32_string_copy_from_utf8(
+		          (libuna_utf32_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          (libuna_utf8_character_t *) basename,
+		          basename_length + 1,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf16_string_copy_from_utf8(
+		          (libuna_utf16_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          (libuna_utf8_character_t *) basename,
+		          basename_length + 1,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	else
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf32_string_copy_from_byte_stream(
+		          (libuna_utf32_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          (uint8_t *) basename,
+		          basename_length + 1,
+		          libclocale_codepage,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf16_string_copy_from_byte_stream(
+		          (libuna_utf16_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          (uint8_t *) basename,
+		          basename_length + 1,
+		          libclocale_codepage,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
+		 "%s: unable to set basename.",
+		 function );
+
+		memory_free(
+		 internal_handle->basename );
+
+		internal_handle->basename      = NULL;
+		internal_handle->basename_size = 0;
+
+		return( -1 );
+	}
+#else
+	if( libcstring_system_string_copy(
+	     internal_handle->basename,
+	     basename,
+	     basename_length ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to set basename.",
+		 function );
+
+		memory_free(
+		 internal_handle->basename );
+
+		internal_handle->basename      = NULL;
+		internal_handle->basename_size = 0;
+
+		return( -1 );
+	}
+	internal_handle->basename[ basename_length ] = 0;
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+
+	return( 1 );
+}
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+/* Retrieves the size of the basename
+ * Returns 1 if successful, 0 if value not present or -1 on error
+ */
+int libvmdk_handle_get_basename_size_wide(
+     libvmdk_internal_handle_t *internal_handle,
+     size_t *basename_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_handle_get_basename_size_wide";
+
+#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	int result            = 0;
+#endif
+
+	if( internal_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid internal handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( basename_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid basename size.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->basename == NULL )
+	{
+		return( 0 );
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	*basename_size = internal_handle->basename_size;
+#else
+	if( libclocale_codepage == 0 )
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf32_string_size_from_utf8(
+		          (libuna_utf8_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          basename_size,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf16_string_size_from_utf8(
+		          (libuna_utf8_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          basename_size,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	else
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf32_string_size_from_byte_stream(
+		          (uint8_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          libclocale_codepage,
+		          basename_size,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf16_string_size_from_byte_stream(
+		          (uint8_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          libclocale_codepage,
+		          basename_size,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
+		 "%s: unable to determine basename size.",
+		 function );
+
+		return( -1 );
+	}
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+	return( 1 );
+}
+
+/* Retrieves the basename
+ * Returns 1 if successful, 0 if value not present or -1 on error
+ */
+int libvmdk_handle_get_basename_wide(
+     libvmdk_internal_handle_t *internal_handle,
+     wchar_t *basename,
+     size_t basename_size,
+     libcerror_error_t **error )
+{
+	static char *function     = "libvmdk_handle_get_basename_wide";
+	size_t wide_basename_size = 0;
+
+#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	int result                = 0;
+#endif
+
+	if( internal_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid internal handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( basename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid basename.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->basename == NULL )
+	{
+		return( 0 );
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	wide_basename_size = internal_handle->basename_size;
+#else
+	if( libclocale_codepage == 0 )
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf32_string_size_from_utf8(
+		          (libuna_utf8_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          &wide_basename_size,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf16_string_size_from_utf8(
+		          (libuna_utf8_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          &wide_basename_size,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	else
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf32_string_size_from_byte_stream(
+		          (uint8_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          libclocale_codepage,
+		          &wide_basename_size,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf16_string_size_from_byte_stream(
+		          (uint8_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          libclocale_codepage,
+		          &wide_basename_size,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
+		 "%s: unable to determine basename size.",
+		 function );
+
+		return( -1 );
+	}
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+	if( basename_size < wide_basename_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: basename too small.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( libcstring_system_string_copy(
+	     basename,
+	     internal_handle->basename,
+	     internal_handle->basename_size ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to set basename.",
+		 function );
+
+		return( -1 );
+	}
+	basename[ internal_handle->basename_size - 1 ] = 0;
+#else
+	if( libclocale_codepage == 0 )
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf32_string_copy_from_utf8(
+		          (libuna_utf32_character_t *) basename,
+		          basename_size,
+		          (libuna_utf8_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf16_string_copy_from_utf8(
+		          (libuna_utf16_character_t *) basename,
+		          basename_size,
+		          (libuna_utf8_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	else
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf32_string_copy_from_byte_stream(
+		          (libuna_utf32_character_t *) basename,
+		          basename_size,
+		          (uint8_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          libclocale_codepage,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf16_string_copy_from_byte_stream(
+		          (libuna_utf16_character_t *) basename,
+		          basename_size,
+		          (uint8_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          libclocale_codepage,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
+		 "%s: unable to set basename.",
+		 function );
+
+		return( -1 );
+	}
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+	return( 1 );
+}
+
+/* Sets the basename
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_set_basename_wide(
+     libvmdk_internal_handle_t *internal_handle,
+     const wchar_t *basename,
+     size_t basename_length,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_handle_set_basename_wide";
+
+#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	int result            = 0;
+#endif
+
+	if( internal_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid internal handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( basename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid basename.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->basename != NULL )
+	{
+		memory_free(
+		 internal_handle->basename );
+
+		internal_handle->basename      = NULL;
+		internal_handle->basename_size = 0;
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	internal_handle->basename_size = basename_length + 1;
+#else
+	if( libclocale_codepage == 0 )
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf8_string_size_from_utf32(
+		          (libuna_utf32_character_t *) basename,
+		          basename_length + 1,
+		          &( internal_handle->basename_size ),
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf8_string_size_from_utf16(
+		          (libuna_utf16_character_t *) basename,
+		          basename_length + 1,
+		          &( internal_handle->basename_size ),
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	else
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_byte_stream_size_from_utf32(
+		          (libuna_utf32_character_t *) basename,
+		          basename_length + 1,
+		          libclocale_codepage,
+		          &( internal_handle->basename_size ),
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_byte_stream_size_from_utf16(
+		          (libuna_utf16_character_t *) basename,
+		          basename_length + 1,
+		          libclocale_codepage,
+		          &( internal_handle->basename_size ),
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
+		 "%s: unable to determine basename size.",
+		 function );
+
+		return( -1 );
+	}
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+	internal_handle->basename = libcstring_system_string_allocate(
+	                             internal_handle->basename_size );
+
+	if( internal_handle->basename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create basename.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( libcstring_system_string_copy(
+	     internal_handle->basename,
+	     basename,
+	     basename_length ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to set basename.",
+		 function );
+
+		memory_free(
+		 internal_handle->basename );
+
+		internal_handle->basename      = NULL;
+		internal_handle->basename_size = 0;
+
+		return( -1 );
+	}
+	internal_handle->basename[ basename_length ] = 0;
+#else
+	if( libclocale_codepage == 0 )
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_utf8_string_copy_from_utf32(
+		          (libuna_utf8_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          (libuna_utf32_character_t *) basename,
+		          basename_length + 1,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_utf8_string_copy_from_utf16(
+		          (libuna_utf8_character_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          (libuna_utf16_character_t *) basename,
+		          basename_length + 1,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	else
+	{
+#if SIZEOF_WCHAR_T == 4
+		result = libuna_byte_stream_copy_from_utf32(
+		          (uint8_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          libclocale_codepage,
+		          (libuna_utf32_character_t *) basename,
+		          basename_length + 1,
+		          error );
+#elif SIZEOF_WCHAR_T == 2
+		result = libuna_byte_stream_copy_from_utf16(
+		          (uint8_t *) internal_handle->basename,
+		          internal_handle->basename_size,
+		          libclocale_codepage,
+		          (libuna_utf16_character_t *) basename,
+		          basename_length + 1,
+		          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
+		 "%s: unable to set basename.",
+		 function );
+
+		memory_free(
+		 internal_handle->basename );
+
+		internal_handle->basename      = NULL;
+		internal_handle->basename_size = 0;
+
+		return( -1 );
+	}
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+	return( 1 );
+}
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 

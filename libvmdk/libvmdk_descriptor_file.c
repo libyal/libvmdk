@@ -174,8 +174,7 @@ int libvmdk_descriptor_file_free(
  */
 int libvmdk_descriptor_file_read(
      libvmdk_descriptor_file_t *descriptor_file,
-     libbfio_pool_t *file_io_pool,
-     int file_io_pool_entry,
+     libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
 	uint8_t *descriptor_data = NULL;
@@ -194,9 +193,8 @@ int libvmdk_descriptor_file_read(
 
 		return( -1 );
 	}
-	if( libbfio_pool_get_size(
-	     file_io_pool,
-	     file_io_pool_entry,
+	if( libbfio_handle_get_size(
+	     file_io_handle,
 	     &file_size,
 	     error ) == -1 )
 	{
@@ -204,9 +202,8 @@ int libvmdk_descriptor_file_read(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to determine size of file IO pool entry: %d.",
-		 function,
-		 file_io_pool_entry );
+		 "%s: unable to determine size of file IO handle entry.",
+		 function );
 
 		goto on_error;
 	}
@@ -221,9 +218,8 @@ int libvmdk_descriptor_file_read(
 
 		goto on_error;
 	}
-	if( libbfio_pool_seek_offset(
-	     file_io_pool,
-	     file_io_pool_entry,
+	if( libbfio_handle_seek_offset(
+	     file_io_handle,
 	     0,
 	     SEEK_SET,
 	     error ) == -1 )
@@ -232,9 +228,8 @@ int libvmdk_descriptor_file_read(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek offset: 0 in file IO pool entry: %d.",
-		 function,
-		 file_io_pool_entry );
+		 "%s: unable to seek offset: 0 in file IO handle entry.",
+		 function );
 
 		goto on_error;
 	}
@@ -252,9 +247,8 @@ int libvmdk_descriptor_file_read(
 
 		goto on_error;
 	}
-	read_count = libbfio_pool_read_buffer(
-	              file_io_pool,
-	              file_io_pool_entry,
+	read_count = libbfio_handle_read_buffer(
+	              file_io_handle,
 	              descriptor_data,
 	              (size_t) file_size,
 	              error );
@@ -265,9 +259,8 @@ int libvmdk_descriptor_file_read(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read data of file IO pool entry: %d.",
-		 function,
-		 file_io_pool_entry );
+		 "%s: unable to read data of file IO handle entry.",
+		 function );
 
 		goto on_error;
 	}

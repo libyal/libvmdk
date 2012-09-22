@@ -53,6 +53,14 @@ struct libvmdk_internal_handle
 	 */
 	libvmdk_descriptor_file_t *descriptor_file;
 
+	/* The basename
+	 */
+	libcstring_system_character_t *basename;
+
+	/* The basename size
+	 */
+	size_t basename_size;
+
 	/* The extent files list
 	 */
 	libmfdata_file_list_t *extent_files_list;
@@ -65,13 +73,13 @@ struct libvmdk_internal_handle
 	 */
 	libvmdk_io_handle_t *io_handle;
 
-	/* The file IO pool
+	/* The extent data file IO pool
 	 */
-	libbfio_pool_t *file_io_pool;
+	libbfio_pool_t *extent_data_file_io_pool;
 
 	/* Value to indicate if the pool was created inside the library
 	 */
-	uint8_t file_io_pool_created_in_library;
+	uint8_t extent_data_file_io_pool_created_in_library;
 
 	/* The maximum number of open handles in the pool
 	 */
@@ -100,8 +108,7 @@ int libvmdk_handle_signal_abort(
 LIBVMDK_EXTERN \
 int libvmdk_handle_open(
      libvmdk_handle_t *handle,
-     char * const filenames[],
-     int number_of_filenames,
+     const char *filename,
      int access_flags,
      libcerror_error_t **error );
 
@@ -109,17 +116,47 @@ int libvmdk_handle_open(
 LIBVMDK_EXTERN \
 int libvmdk_handle_open_wide(
      libvmdk_handle_t *handle,
-     wchar_t * const filenames[],
-     int number_of_filenames,
+     const wchar_t *filename,
      int access_flags,
      libcerror_error_t **error );
 #endif
 
 LIBVMDK_EXTERN \
-int libvmdk_handle_open_file_io_pool(
+int libvmdk_handle_open_file_io_handle(
+     libvmdk_handle_t *handle,
+     libbfio_handle_t *file_io_handle,
+     int access_flags,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_open_extent_data_files(
+     libvmdk_handle_t *handle,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_open_extent_data_files_file_io_pool(
      libvmdk_handle_t *handle,
      libbfio_pool_t *file_io_pool,
-     int access_flags,
+     libcerror_error_t **error );
+
+int libvmdk_handle_open_extent_data_file(
+     libvmdk_internal_handle_t *internal_handle,
+     int extent_index,
+     const char *filename,
+     libcerror_error_t **error );
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+int libvmdk_handle_open_extent_data_file_wide(
+     libvmdk_internal_handle_t *internal_handle,
+     int extent_index,
+     const wchar_t *filename,
+     libcerror_error_t **error );
+#endif
+
+int libvmdk_handle_open_extent_data_file_io_handle(
+     libvmdk_internal_handle_t *internal_handle,
+     int extent_index,
+     libbfio_handle_t *file_io_handle,
      libcerror_error_t **error );
 
 LIBVMDK_EXTERN \
@@ -133,8 +170,7 @@ int libvmdk_handle_open_read_grain_table(
      libcerror_error_t **error );
 
 int libvmdk_handle_open_read_signature(
-     libbfio_pool_t *file_io_pool,
-     int file_io_pool_entry,
+     libbfio_handle_t *file_io_handle,
      uint8_t *file_type,
      libcerror_error_t **error );
 
@@ -166,6 +202,42 @@ int libvmdk_handle_get_offset(
      libvmdk_handle_t *handle,
      off64_t *offset,
      libcerror_error_t **error );
+
+int libvmdk_handle_get_basename_size(
+     libvmdk_internal_handle_t *internal_handle,
+     size_t *basename_size,
+     libcerror_error_t **error );
+
+int libvmdk_handle_get_basename(
+     libvmdk_internal_handle_t *internal_handle,
+     char *basename,
+     size_t basename_size,
+     libcerror_error_t **error );
+
+int libvmdk_handle_set_basename(
+     libvmdk_internal_handle_t *internal_handle,
+     const char *basename,
+     size_t basename_length,
+     libcerror_error_t **error );
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+int libvmdk_handle_get_basename_size_wide(
+     libvmdk_internal_handle_t *internal_handle,
+     size_t *basename_size,
+     libcerror_error_t **error );
+
+int libvmdk_handle_get_basename_wide(
+     libvmdk_internal_handle_t *internal_handle,
+     wchar_t *basename,
+     size_t basename_size,
+     libcerror_error_t **error );
+
+int libvmdk_handle_set_basename_wide(
+     libvmdk_internal_handle_t *internal_handle,
+     const wchar_t *basename,
+     size_t basename_length,
+     libcerror_error_t **error );
+#endif
 
 LIBVMDK_EXTERN \
 int libvmdk_handle_set_maximum_number_of_open_handles(

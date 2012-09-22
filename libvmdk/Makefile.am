@@ -34,6 +34,7 @@ libvmdk_la_SOURCES = \
 	libvmdk_libcdata.h \
 	libvmdk_libcerror.h \
 	libvmdk_libcnotify.h \
+	libvmdk_libcpath.h \
 	libvmdk_libcsplit.h \
 	libvmdk_libcstring.h \
 	libvmdk_libfvalue.h \

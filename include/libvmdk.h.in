@@ -189,8 +189,7 @@ int libvmdk_handle_signal_abort(
 LIBVMDK_EXTERN \
 int libvmdk_handle_open(
      libvmdk_handle_t *handle,
-     char * const filenames[],
-     int number_of_filenames,
+     const char *filename,
      int access_flags,
      libvmdk_error_t **error );
 
@@ -201,21 +200,42 @@ int libvmdk_handle_open(
 LIBVMDK_EXTERN \
 int libvmdk_handle_open_wide(
      libvmdk_handle_t *handle,
-     wchar_t * const filenames[],
-     int number_of_filenames,
+     const wchar_t *filename,
      int access_flags,
      libvmdk_error_t **error );
 #endif
 
 #if defined( LIBVMDK_HAVE_BFIO )
-/* Opens a set of VMware Virtual Disk file(s) using a Basic File IO (bfio) pool
+/* Opens a set of VMware Virtual Disk file(s) using a Basic File IO (bfio) handle
  * Returns 1 if successful or -1 on error
  */
 LIBVMDK_EXTERN \
-int libvmdk_handle_open_file_io_pool(
+int libvmdk_handle_open_file_io_handle(
+     libvmdk_handle_t *handle,
+     libbfio_handle_t *file_io_handle,
+     int access_flags,
+     libvmdk_error_t **error );
+#endif
+
+/* Opens the extent data files
+ * If the extent data filenames were not set explicitly this function assumes the extent data files
+ * are in the same location as the descriptor file
+ * Returns 1 if successful or -1 on error
+ */
+LIBVMDK_EXTERN \
+int libvmdk_handle_open_extent_data_files(
+     libvmdk_handle_t *handle,
+     libvmdk_error_t **error );
+
+#if defined( LIBVMDK_HAVE_BFIO )
+/* Opens the extent data files using a Basic File IO (bfio) pool
+ * This function assumes the extent data files are in same order as defined by the descriptor file
+ * Returns 1 if successful or -1 on error
+ */
+LIBVMDK_EXTERN \
+int libvmdk_handle_open_extent_data_files_file_io_pool(
      libvmdk_handle_t *handle,
      libbfio_pool_t *file_io_pool,
-     int access_flags,
      libvmdk_error_t **error );
 #endif
 

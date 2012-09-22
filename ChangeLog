@@ -1,26 +1,18 @@
 TODO
-* add descriptor file support
-* put disk data base in fvalue table ?
+* read extent data files
+* descriptor file: put disk data base in fvalue table ?
 
 * code clean up:
-  - goto on_error
-  - mem allocate structure
   - support and locale functions
-  - libvmdk_descriptor_file_open use cfile stream ?
-  - access flags
-* vmdkinfo:
-  - add info handle
-* vmdkmount:
-  - create
-* libcdata update
-* check the segment files for a descriptor file
-  otherwise look for the descriptor in one of the segment files
 * add glob functions
 * debug output
-  - print out extent info ?
+  - descriptor file: disk database
+  - extent file: flags
+  - extent file: compression method
 
 API
 * add functions to access storage media data
+* add functions to access extents
 
 library
 * implement grain cache
