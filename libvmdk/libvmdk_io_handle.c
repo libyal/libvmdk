@@ -146,8 +146,8 @@ int libvmdk_io_handle_read_grain_directory(
      libbfio_handle_t *file_io_handle,
      libvmdk_offset_table_t *offset_table,
      off64_t grain_directory_offset,
-     uint32_t amount_of_grain_directory_entries,
-     uint32_t amount_of_grain_table_entries,
+     uint32_t number_of_grain_directory_entries,
+     uint32_t number_of_grain_table_entries,
      size64_t grain_size,
      uint8_t is_secondary_grain_directory,
      libcerror_error_t **error )
@@ -183,7 +183,7 @@ int libvmdk_io_handle_read_grain_directory(
 
 		return( -1 );
 	}
-	grain_directory_data_size = amount_of_grain_directory_entries * sizeof( uint32_t );
+	grain_directory_data_size = number_of_grain_directory_entries * sizeof( uint32_t );
 
 	if( grain_directory_data_size > (size_t) SSIZE_MAX )
 	{
@@ -276,7 +276,7 @@ int libvmdk_io_handle_read_grain_directory(
 	grain_directory_data = sector_blocks_data;
 
 	for( grain_directory_entry_iterator = 0;
-	     grain_directory_entry_iterator < amount_of_grain_directory_entries;
+	     grain_directory_entry_iterator < number_of_grain_directory_entries;
 	     grain_directory_entry_iterator++ )
 	{
 		byte_stream_copy_to_uint32_little_endian(
@@ -301,7 +301,7 @@ int libvmdk_io_handle_read_grain_directory(
 		     file_io_handle,
 		     offset_table,
 		     grain_table_offset,
-		     amount_of_grain_table_entries,
+		     number_of_grain_table_entries,
 		     grain_size,
 		     is_secondary_grain_directory,
 		     error ) != 1 )
@@ -350,7 +350,7 @@ int libvmdk_io_handle_read_grain_table(
      libbfio_handle_t *file_io_handle,
      libvmdk_offset_table_t *offset_table,
      off64_t grain_table_offset,
-     uint32_t amount_of_grain_table_entries,
+     uint32_t number_of_grain_table_entries,
      size64_t grain_size,
      uint8_t is_secondary_grain_directory,
      libcerror_error_t **error )
@@ -383,7 +383,7 @@ int libvmdk_io_handle_read_grain_table(
 
 		return( -1 );
 	}
-	grain_table_data_size = amount_of_grain_table_entries * sizeof( uint32_t );
+	grain_table_data_size = number_of_grain_table_entries * sizeof( uint32_t );
 
 	if( grain_table_data_size > (size_t) SSIZE_MAX )
 	{
@@ -478,7 +478,7 @@ int libvmdk_io_handle_read_grain_table(
 		     offset_table,
 		     sector_blocks_data,
 		     grain_table_data_size,
-		     amount_of_grain_table_entries,
+		     number_of_grain_table_entries,
 		     grain_size,
 		     error ) != 1 )
 		{
@@ -498,7 +498,7 @@ int libvmdk_io_handle_read_grain_table(
 		     offset_table,
 		     sector_blocks_data,
 		     grain_table_data_size,
-		     amount_of_grain_table_entries,
+		     number_of_grain_table_entries,
 		     grain_size,
 		     error ) != 1 )
 		{

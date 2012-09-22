@@ -25,6 +25,8 @@
 
 #include "libvmdk_debug.h"
 #include "libvmdk_definitions.h"
+#include "libvmdk_descriptor_file.h"
+#include "libvmdk_extent_file.h"
 #include "libvmdk_handle.h"
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
@@ -32,7 +34,7 @@
 #include "libvmdk_libcnotify.h"
 #include "libvmdk_libcstring.h"
 #include "libvmdk_offset_table.h"
-#include "libvmdk_segment_file.h"
+
 #include "libvmdk_segment_table.h"
 
 /* Initialize a handle
@@ -143,7 +145,7 @@ int libvmdk_handle_initialize(
 
 		goto on_error;
 	}
-	internal_handle->maximum_number_of_open_handles = LIBBFIO_POOL_UNLIMITED_AMOUNT_OF_OPEN_HANDLES;
+	internal_handle->maximum_number_of_open_handles = LIBBFIO_POOL_UNLIMITED_NUMBER_OF_OPEN_HANDLES;
 
 	*handle = (libvmdk_handle_t *) internal_handle;
 
@@ -399,7 +401,7 @@ int libvmdk_handle_open(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create file io handle.",
+				 "%s: unable to create file IO handle.",
 				 function );
 
 				goto on_error;
@@ -414,7 +416,7 @@ int libvmdk_handle_open(
 		                 error,
 		                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		                 "%s: unable to set track offsets read in file io handle.",
+		                 "%s: unable to set track offsets read in file IO handle.",
 		                 function );
 
 				goto on_error;
@@ -430,7 +432,7 @@ int libvmdk_handle_open(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable to set name in file io handle.",
+				 "%s: unable to set name in file IO handle.",
 				 function );
 
 				goto on_error;
@@ -446,7 +448,7 @@ int libvmdk_handle_open(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-				 "%s: unable to add file io handle to pool.",
+				 "%s: unable to add file IO handle to pool.",
 				 function );
 
 				goto on_error;
@@ -611,7 +613,7 @@ int libvmdk_handle_open_wide(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create file io handle.",
+				 "%s: unable to create file IO handle.",
 				 function );
 
 				goto on_error;
@@ -626,7 +628,7 @@ int libvmdk_handle_open_wide(
 		                 error,
 		                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		                 "%s: unable to set track offsets read in file io handle.",
+		                 "%s: unable to set track offsets read in file IO handle.",
 		                 function );
 
 				goto on_error;
@@ -642,7 +644,7 @@ int libvmdk_handle_open_wide(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-				 "%s: unable to set name in file io handle.",
+				 "%s: unable to set name in file IO handle.",
 				 function );
 
 				goto on_error;
@@ -658,7 +660,7 @@ int libvmdk_handle_open_wide(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-				 "%s: unable to add file io handle to pool.",
+				 "%s: unable to add file IO handle to pool.",
 				 function );
 
 				goto on_error;
@@ -723,14 +725,14 @@ int libvmdk_handle_open_file_io_pool(
      int flags,
      libcerror_error_t **error )
 {
-	libbfio_handle_t *file_io_handle                   = NULL;
-	libvmdk_internal_handle_t *internal_handle         = NULL;
-	libvmdk_segment_file_handle_t *segment_file_handle = NULL;
-	static char *function                              = "libvmdk_handle_open_file_io_pool";
-	uint8_t file_type                                  = 0;
-	int number_of_file_io_handles                      = 0;
-	int file_io_pool_entry                             = 0;
-	int result                                         = 0;
+	libbfio_handle_t *file_io_handle           = NULL;
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	libvmdk_extent_file_t *extent_file         = NULL;
+	static char *function                      = "libvmdk_handle_open_file_io_pool";
+	uint8_t file_type                          = 0;
+	int number_of_file_io_handles              = 0;
+	int file_io_pool_entry                     = 0;
+	int result                                 = 0;
 
 	if( handle == NULL )
 	{
@@ -814,7 +816,7 @@ int libvmdk_handle_open_file_io_pool(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-				 "%s: unable to retrieve file io handle from pool entry: %d.",
+				 "%s: unable to retrieve file IO handle from pool entry: %d.",
 				 function,
 				 file_io_pool_entry );
 
@@ -857,8 +859,8 @@ int libvmdk_handle_open_file_io_pool(
 			else if( ( file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
 			      || ( file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA ) )
 			{
-				if( libvmdk_segment_file_handle_initialize(
-				     &segment_file_handle,
+				if( libvmdk_extent_file_initialize(
+				     &extent_file,
 				     file_io_pool_entry,
 				     error ) != 1 )
 				{
@@ -866,13 +868,13 @@ int libvmdk_handle_open_file_io_pool(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-					 "%s: unable to create segment file handle.",
+					 "%s: unable to create extent file.",
 					 function );
 
 					goto on_error;
 				}
-				if( libvmdk_segment_file_read_file_header(
-				     segment_file_handle,
+				if( libvmdk_extent_file_read_header(
+				     extent_file,
 				     file_io_pool,
 				     error ) <= -1 )
 				{
@@ -880,7 +882,7 @@ int libvmdk_handle_open_file_io_pool(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_IO,
 					 LIBCERROR_IO_ERROR_READ_FAILED,
-					 "%s: unable to read segment file header.",
+					 "%s: unable to read extent file header.",
 					 function );
 
 					goto on_error;
@@ -888,7 +890,7 @@ int libvmdk_handle_open_file_io_pool(
 				if( libvmdk_segment_table_set_handle(
 				     internal_handle->segment_table,
 				     /* TODO */ 0,
-				     segment_file_handle,
+				     extent_file,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
@@ -900,7 +902,7 @@ int libvmdk_handle_open_file_io_pool(
 
 					goto on_error;
 				}
-				segment_file_handle = NULL;
+				extent_file = NULL;
 			}
 			else
 			{
@@ -934,10 +936,10 @@ int libvmdk_handle_open_file_io_pool(
 	return( 1 );
 
 on_error:
-	if( segment_file_handle != NULL )
+	if( extent_file != NULL )
 	{
-		libvmdk_segment_file_handle_free(
-		 (intptr_t *) segment_file_handle,
+		libvmdk_extent_file_free(
+		 &extent_file,
 		 NULL );
 	}
 	internal_handle->file_io_pool = NULL;
@@ -995,10 +997,10 @@ int libvmdk_handle_open_read(
      libvmdk_segment_table_t *segment_table,
      libcerror_error_t **error )
 {
-	libvmdk_segment_file_handle_t *segment_file_handle = NULL;
-	static char *function                              = "libvmdk_handle_open_read";
-	int number_of_segment_file_handles                 = 0;
-	int segment_number                                 = 0;
+	libvmdk_extent_file_t *extent_file = NULL;
+	static char *function              = "libvmdk_handle_open_read";
+	int number_of_extent_files         = 0;
+	int segment_number                 = 0;
 
 	if( internal_handle == NULL )
 	{
@@ -1013,7 +1015,7 @@ int libvmdk_handle_open_read(
 	}
 	if( libvmdk_segment_table_get_number_of_handles(
 	     segment_table,
-	     &number_of_segment_file_handles,
+	     &number_of_extent_files,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1028,7 +1030,7 @@ int libvmdk_handle_open_read(
 	/* Read the segment and offset table from the segment file(s)
 	 */
 	for( segment_number = 1;
-	     segment_number < number_of_segment_file_handles;
+	     segment_number < number_of_extent_files;
 	     segment_number++ )
 	{
 #if defined( HAVE_VERBOSE_OUTPUT )
@@ -1040,12 +1042,12 @@ int libvmdk_handle_open_read(
 			 segment_number );
 		}
 #endif
-		segment_file_handle = NULL;
+		extent_file = NULL;
 
 		if( libvmdk_segment_table_get_handle(
 		     segment_table,
 		     segment_number,
-		     &segment_file_handle,
+		     &extent_file,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1128,7 +1130,7 @@ int libvmdk_handle_open_read_signature(
 		 function,
 		 file_io_pool_entry );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( memory_compare(
 	     signature,
@@ -1148,11 +1150,14 @@ int libvmdk_handle_open_read_signature(
 	}
 	else if( memory_compare(
 	          signature,
-	          "# Disk DescriptorFile\n",
-	          22 ) == 0 )
+	          vmdk_descriptor_file_signature,
+	          21 ) == 0 )
 	{
-		*file_type = LIBVMDK_FILE_TYPE_DESCRIPTOR_FILE;
-		result     = 1;
+		if( signature[ 21 ] == (uint8_t) '\n' )
+		{
+			*file_type = LIBVMDK_FILE_TYPE_DESCRIPTOR_FILE;
+			result     = 1;
+		}
 	}
 	return( result );
 }

@@ -24,10 +24,18 @@
 #include <memory.h>
 #include <types.h>
 
+#include "libvmdk_definitions.h"
 #include "libvmdk_descriptor_file.h"
+#include "libvmdk_extent_descriptor.h"
+#include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libcsplit.h"
 #include "libvmdk_libcstring.h"
 #include "libvmdk_libfvalue.h"
+
+const char vmdk_descriptor_file_signature[ 21 ]                       = "# Disk DescriptorFile";
+const char vmdk_descriptor_file_extent_section_signature[ 20 ]        = "# Extent description";
+const char vmdk_descriptor_file_disk_database_section_signature[ 20 ] = "# The Disk Data Base";
 
 /* Creates the descriptor file
  * Returns 1 if successful or -1 on error
@@ -88,6 +96,20 @@ int libvmdk_descriptor_file_initialize(
 
 		goto on_error;
 	}
+	if( libcdata_array_initialize(
+	     &( ( *descriptor_file )->extents_array ),
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create extents array.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
@@ -124,26 +146,19 @@ int libvmdk_descriptor_file_free(
 	}
 	if( *descriptor_file != NULL )
 	{
-		if( ( *descriptor_file )->file_io_handle != NULL )
+		if( libcdata_array_free(
+		     &( ( *descriptor_file )->extents_array ),
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_descriptor_free,
+		     error ) != 1 )
 		{
-			if( libvhdi_file_close(
-			     *descriptor_file,
-			     error ) != 0 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-				 "%s: unable to close descriptor file.",
-				 function );
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free extents array.",
+			 function );
 
-				result = -1;
-			}
-		}
-		if( ( *descriptor_file )->name != NULL )
-		{
-			memory_free(
-			 ( *descriptor_file )->name );
+			result = -1;
 		}
 		memory_free(
 		 *descriptor_file );
@@ -153,16 +168,22 @@ int libvmdk_descriptor_file_free(
 	return( result );
 }
 
-/* Sets the filename
- * Returns 1 if successful or -1 on error
+/* Reads the descriptor file
+ * Returns the 1 if succesful or -1 on error
  */
-int libvmdk_descriptor_file_set_name(
+int libvmdk_descriptor_file_read(
      libvmdk_descriptor_file_t *descriptor_file,
-     const libcstring_system_character_t *name,
-     size_t name_length,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_descriptor_file_set_name";
+	libcsplit_narrow_split_string_t *lines = NULL;
+	uint8_t *file_data                     = NULL;
+	static char *function                  = "libvmdk_descriptor_file_read";
+	size64_t file_size                     = 0;
+	ssize_t read_count                     = 0;
+	int line_index                         = 0;
+	int number_of_lines                    = 0;
 
 	if( descriptor_file == NULL )
 	{
@@ -175,226 +196,165 @@ int libvmdk_descriptor_file_set_name(
 
 		return( -1 );
 	}
-	if( name == NULL )
+	if( libbfio_pool_get_size(
+	     file_io_pool,
+	     file_io_pool_entry,
+	     &file_size,
+	     error ) == -1 )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid name.",
-		 function );
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to determine size of file IO pool entry: %d.",
+		 function,
+		 file_io_pool_entry );
 
-		return( -1 );
+		goto on_error;
 	}
-	if( name_length > (size_t) SSIZE_MAX )
+	if( file_size > (size64_t) SSIZE_MAX )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid name length value exceeds maximum.",
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid file size value exceeds maximum.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-	descriptor_file->name = libcstring_system_string_allocate(
-	                         name_length + 1 );
+	if( libbfio_pool_seek_offset(
+	     file_io_pool,
+	     file_io_pool_entry,
+	     0,
+	     SEEK_SET,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek offset: 0 in file IO pool entry: %d.",
+		 function,
+		 file_io_pool_entry );
 
-	if( descriptor_file->name == NULL )
+		goto on_error;
+	}
+	file_data = (uint8_t *) memory_allocate(
+	                         sizeof( uint8_t ) * file_size );
+
+	if( file_data == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to allocate name.",
+		 "%s: unable to create file data.",
 		 function );
 
 		goto on_error;
 	}
-	if( libcstring_system_string_copy(
-	     descriptor_file->name,
-	     name,
-	     name_length ) == NULL )
+	read_count = libbfio_pool_read(
+	              file_io_pool,
+	              file_io_pool_entry,
+	              file_data,
+	              (size_t) file_size,
+	              error );
+
+	if( read_count != (ssize_t) file_size )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to set name.",
-		 function );
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read data of file IO pool entry: %d.",
+		 function,
+		 file_io_pool_entry );
 
 		goto on_error;
 	}
-	descriptor_file->name[ name_length ] = 0;
-
-	descriptor_file->name_size = name_length + 1;
-
-	return( 1 );
-
-on_error:
-	if( descriptor_file->name != NULL )
-	{
-		memory_free(
-		 descriptor_file->name );
-
-		descriptor_file->name = NULL;
-	}
-	descriptor_file->name_size = 0;
-
-	return( -1 );
-}
-
-/* Opens a descriptor file
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_descriptor_file_open(
-     libvmdk_descriptor_file_t *descriptor_file,
-     const libcstring_system_character_t *mode,
-     libcerror_error_t **error )
-{
-	libbfio_handle_t *file_io_handle = NULL;
-	static char *function            = "libvmdk_descriptor_file_open";
-
-	if( descriptor_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid descriptor file.",
-		 function );
-
-		return( -1 );
-	}
-	if( descriptor_file->name == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid descriptor file - missing name.",
-		 function );
-
-		return( -1 );
-	}
-	if( libbfio_file_initialize(
-	     &file_io_handle,
+	if( libcsplit_narrow_string_split(
+	     file_data,
+	     (size_t) file_size,
+	     '\n',
+	     &lines,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create file IO handle.",
+		 "%s: unable to split file data into lines.",
 		 function );
 
 		goto on_error;
 	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libbfio_handle_set_track_offsets_read(
-	     file_io_handle,
-	     1,
+/* TODO pass mgt of file data onto lines ? */
+	memory_free(
+	 file_data );
+
+	file_data = NULL;
+
+	if( libcsplit_narrow_split_string_get_number_of_segments(
+	     lines,
+	     &number_of_lines,
 	     error ) != 1 )
 	{
-                libcerror_error_set(
-                 error,
-                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-                 "%s: unable to set track offsets read in file IO handle.",
-                 function );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to retrieve number of lines.",
+		 function );
 
 		goto on_error;
 	}
-#endif
-	if( libbfio_file_set_name(
-	     file_io_handle,
-	     descriptor_file->name,
-	     descriptor_file->name_size,
-	     error ) != 1 )
-	{
-                libcerror_error_set(
-                 error,
-                 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-                 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-                 "%s: unable to set filename in file IO handle.",
-                 function );
-
-		goto on_error;
-	}
-	if( libvhdi_file_open_file_io_handle(
-	     file,
-	     file_io_handle,
-	     access_flags,
+	if( libvmdk_descriptor_file_read_header(
+	     descriptor_file,
+	     lines,
+	     number_of_lines,
+	     &line_index,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open file: %s.",
-		 function,
-		 filename );
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read descriptor file header.",
+		 function );
 
 		goto on_error;
 	}
-	internal_file->file_io_handle_created_in_library = 1;
+/* TODO */
 
-	return( 1 );
-
-on_error:
-	if( file_io_handle != NULL )
-	{
-		libbfio_handle_free(
-		 &file_io_handle,
-		 NULL );
-	}
-	return( -1 );
-}
-
-/* Closes the descriptor file
- * Returns the 0 if succesful or -1 on error
- */
-int libvmdk_descriptor_file_close(
-     libvmdk_descriptor_file_t *descriptor_file,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_descriptor_file_close";
-
-	if( descriptor_file == NULL )
+	if( libcsplit_narrow_split_string_free(
+	     &lines,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid descriptor file.",
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to free lines.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-	if( descriptor_file->name != NULL )
+	return( 1 );
+
+on_error:
+	if( lines != NULL )
+	{
+		libcsplit_narrow_split_string_free(
+		 &lines,
+		 NULL );
+	}
+	if( file_data != NULL )
 	{
 		memory_free(
-		 descriptor_file->name );
-
-		descriptor_file->name = NULL;
+		 file_data );
 	}
-	if( descriptor_file->file_stream != NULL )
-	{
-		if( file_stream_close(
-		     descriptor_file->file_stream ) != 0 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-			 "%s: unable to close file stream.",
-			 function );
-
-			return( -1 );
-		}
-		descriptor_file->file_stream = NULL;
-	}
-	return( 0 );
+	return( -1 );
 }
 
 /* Reads the header from the descriptor file
@@ -402,18 +362,20 @@ int libvmdk_descriptor_file_close(
  */
 int libvmdk_descriptor_file_read_header(
      libvmdk_descriptor_file_t *descriptor_file,
+     libcsplit_narrow_split_string_t *lines,
+     int number_of_lines,
+     int *line_index,
      libcerror_error_t **error )
 {
-	uint8_t input_string[ 128 ];
-
-	uint8_t *value_identifier      = NULL;
-	uint8_t *value                 = NULL;
-	char *result_string            = NULL;
-	static char *function          = "libvmdk_descriptor_file_read_header";
-	size_t input_string_index      = 0;
-	size_t value_identifier_length = 0;
-	size_t value_length            = 0;
-	uint8_t in_header              = 0;
+	char *line_string_segment        = NULL;
+	char *value_identifier           = NULL;
+	static char *function            = "libvmdk_descriptor_file_read_header";
+	size_t line_string_segment_index = 0;
+	size_t line_string_segment_size  = 0;
+	size_t value_identifier_length   = 0;
+	size_t value_index               = 0;
+	size_t value_length              = 0;
+	uint64_t value_64bit             = 0;
 
 	if( descriptor_file == NULL )
 	{
@@ -426,100 +388,103 @@ int libvmdk_descriptor_file_read_header(
 
 		return( -1 );
 	}
-	if( descriptor_file->file_stream == NULL )
+	if( line_index == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid line index.",
+		 function );
+
+		return( -1 );
+	}
+	*line_index = 0;
+
+	if( libcsplit_narrow_split_string_get_segment_by_index(
+	     lines,
+	     *line_index,
+	     &line_string_segment,
+	     &line_string_segment_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve line: %d.",
+		 function,
+		 *line_index );
+
+		return( -1 );
+	}
+	if( line_string_segment == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid descriptor file - missing file stream.",
-		 function );
+		 "%s: missing line string segment: %d.",
+		 function,
+		 *line_index );
 
 		return( -1 );
 	}
-	/* Reset the offset to start of the file stream
-	 */
-	if( file_stream_seek_offset(
-	     descriptor_file->file_stream,
-	     0,
-	     SEEK_SET ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek start of stream.",
-		 function );
-
-		return( -1 );
-	}
-	result_string = file_stream_get_string(
-			 descriptor_file->file_stream,
-			 (char *) input_string,
-			 128 );
-
-	if( result_string == NULL )
-	{
-		if( file_stream_at_end(
-		     descriptor_file->file_stream ) == 0 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: error reading string from file stream.",
-			 function );
-
-			return( -1 );
-		}
-	}
-	/* Check for the start of the header
-	 */
-	if( libcstring_narrow_string_compare(
-	     (char *) input_string,
-	     "# Disk DescriptorFile",
-	     21 ) != 0 )
+	if( ( line_string_segment_size != 22 )
+	 || ( libcstring_narrow_string_compare(
+	       line_string_segment,
+	       vmdk_descriptor_file_signature,
+	       21 ) != 0 ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported file signature.",
+		 "%s: unsupported descriptor file signature.",
 		 function );
 
 		return( -1 );
 	}
-	while( file_stream_at_end(
-	        descriptor_file->file_stream ) == 0 )
+	for( *line_index = 1;
+	     *line_index < number_of_lines;
+	     *line_index += 1 )
 	{
-		result_string = file_stream_get_string(
-		                 descriptor_file->file_stream,
-		                 (char *) input_string,
-		                 128 );
-
-		if( result_string == NULL )
+		if( libcsplit_narrow_split_string_get_segment_by_index(
+		     lines,
+		     *line_index,
+		     &line_string_segment,
+		     &line_string_segment_size,
+		     error ) != 1 )
 		{
-			if( file_stream_at_end(
-			     descriptor_file->file_stream ) != 0 )
-			{
-				break;
-			}
 			libcerror_error_set(
 			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: error reading string from file stream.",
-			 function );
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve line: %d.",
+			 function,
+			 *line_index );
 
 			return( -1 );
 		}
-		/* Check for the end of the header
-		 */
-		if( input_string[ 0 ] == (uint8_t) '#' )
+		if( line_string_segment == NULL )
 		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing line string segment: %d.",
+			 function,
+			 *line_index );
+
+			return( -1 );
+		}
+		if( line_string_segment_size == 21 )
+		{
+			/* Check for the end of the header
+			 */
 			if( libcstring_narrow_string_compare(
-			     (char *) input_string,
-			     "# Extent description",
+			     line_string_segment,
+			     vmdk_descriptor_file_extent_section_signature,
 			     20 ) == 0 )
 			{
 				break;
@@ -527,134 +492,354 @@ int libvmdk_descriptor_file_read_header(
 		}
 		/* Skip leading white space
 		 */
-		for( input_string_index = 0;
-		     input_string_index < 128;
-		     input_string_index++ )
+		for( line_string_segment_index = 0;
+		     line_string_segment_index < line_string_segment_size;
+		     line_string_segment_index++ )
 		{
-			if( ( input_string[ input_string_index ] != (uint8_t) '\t' )
-			 && ( input_string[ input_string_index ] != (uint8_t) '\n' )
-			 && ( input_string[ input_string_index ] != (uint8_t) '\f' )
-			 && ( input_string[ input_string_index ] != (uint8_t) '\v' )
-			 && ( input_string[ input_string_index ] != (uint8_t) '\r' )
-			 && ( input_string[ input_string_index ] != (uint8_t) ' ' ) )
+			if( ( line_string_segment[ line_string_segment_index ] != '\t' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\n' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\f' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\v' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\r' )
+			 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
 			{
 				break;
 			}
 		}
 		/* Skip an empty line
 		 */
-		if( input_string[ input_string_index ] == 0 )
+		if( line_string_segment[ line_string_segment_index ] == 0 )
 		{
 			continue;
 		}
 		/* Determine the value identifier
 		 */
-		value_identifier        = &( input_string[ input_string_index ] );
+		value_identifier        = &( line_string_segment[ line_string_segment_index ] );
 		value_identifier_length = 0;
 
-		while( input_string_index < 128 )
+		while( line_string_segment_index < line_string_segment_size )
 		{
-			if( input_string[ input_string_index ] == (uint8_t) '=' )
+			if( line_string_segment[ line_string_segment_index ] == '=' )
 			{
 				break;
 			}
 			value_identifier_length++;
 
-			input_string_index++;
+			line_string_segment_index++;
 		}
 		/* Make sure the value identifier is terminated by an end of string
 		 */
-		input_string[ input_string_index ] = 0;
+		line_string_segment[ line_string_segment_index ] = 0;
 
 		/* Determine the value
 		 */
-		input_string_index++;
+		line_string_segment_index++;
 
-		value        = &( input_string[ input_string_index ] );
+		value_index  = line_string_segment_index;
 		value_length = 0;
 
-		/* TODO handle quotes */
-		while( input_string_index < 128 )
+		/* Ingore quotes at the beginning of the value data
+		 */
+		if( ( line_string_segment[ line_string_segment_index ] == '"' )
+		 || ( line_string_segment[ line_string_segment_index ] == '\'' ) )
 		{
-			if( ( input_string[ input_string_index ] == 0 )
-			 || ( input_string[ input_string_index ] == (uint8_t) '\t' )
-			 || ( input_string[ input_string_index ] == (uint8_t) '\n' )
-			 || ( input_string[ input_string_index ] == (uint8_t) '\f' )
-			 || ( input_string[ input_string_index ] == (uint8_t) '\v' )
-			 || ( input_string[ input_string_index ] == (uint8_t) '\r' ) )
+			value_index++;
+		}
+		while( line_string_segment_index < line_string_segment_size )
+		{
+			if( ( line_string_segment[ line_string_segment_index ] == 0 )
+			 || ( line_string_segment[ line_string_segment_index ] == '\t' )
+			 || ( line_string_segment[ line_string_segment_index ] == '\n' )
+			 || ( line_string_segment[ line_string_segment_index ] == '\f' )
+			 || ( line_string_segment[ line_string_segment_index ] == '\v' )
+			 || ( line_string_segment[ line_string_segment_index ] == '\r' ) )
 			{
 				break;
 			}
 			value_length++;
 
-			input_string_index++;
+			line_string_segment_index++;
+		}
+		/* Ingore quotes at the end of the value data
+		 */
+		if( ( line_string_segment[ line_string_segment_index ] == '"' )
+		 || ( line_string_segment[ line_string_segment_index ] == '\'' ) )
+		{
+			value_length--;
+
+			line_string_segment_index--;
 		}
 		/* Make sure the value is terminated by an end of string
 		 */
-		input_string[ input_string_index ] = 0;
+		line_string_segment[ line_string_segment_index ] = 0;
 
 		if( value_identifier_length == 3 )
 		{
 			if( libcstring_narrow_string_compare(
-			     (char *) value_identifier,
+			     value_identifier,
 			     "CID",
 			     3 ) == 0 )
 			{
+				if( libfvalue_utf8_string_with_index_copy_to_integer(
+				     line_string_segment,
+				     value_index,
+				     value_index + value_length,
+				     &value_64bit,
+				     64,
+				     LIBFVALUE_INTEGER_FORMAT_TYPE_HEXADECIMAL | LIBFVALUE_INTEGER_FORMAT_FLAG_NO_BASE_INDICATOR,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to determine content identifier value from string.",
+					 function );
+
+					return( -1 );
+				}
+				if( value_64bit > (uint64_t) INT32_MAX )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+					 "%s: invalid content identifier value exceeds maximum.",
+					 function );
+
+					return( -1 );
+				}
+				descriptor_file->content_identifier = (uint32_t) value_64bit;
 			}
 		}
 		else if( value_identifier_length == 7 )
 		{
 			if( libcstring_narrow_string_compare(
-			     (char *) value_identifier,
+			     value_identifier,
 			     "version",
 			     7 ) == 0 )
 			{
+				if( libfvalue_utf8_string_with_index_copy_to_integer(
+				     line_string_segment,
+				     value_index,
+				     value_index + value_length,
+				     &value_64bit,
+				     64,
+				     LIBFVALUE_INTEGER_FORMAT_TYPE_DECIMAL_UNSIGNED,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to determine version value from string.",
+					 function );
+
+					return( -1 );
+				}
+				if( value_64bit > (uint64_t) INT_MAX )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+					 "%s: invalid version value exceeds maximum.",
+					 function );
+
+					return( -1 );
+				}
+				descriptor_file->version = (int) value_64bit;
 			}
 		}
 		else if( value_identifier_length == 9 )
 		{
 			if( libcstring_narrow_string_compare(
-			     (char *) value_identifier,
+			     value_identifier,
 			     "parentCID",
 			     9 ) == 0 )
 			{
+				if( libfvalue_utf8_string_with_index_copy_to_integer(
+				     line_string_segment,
+				     value_index,
+				     value_index + value_length,
+				     &value_64bit,
+				     64,
+				     LIBFVALUE_INTEGER_FORMAT_TYPE_HEXADECIMAL | LIBFVALUE_INTEGER_FORMAT_FLAG_NO_BASE_INDICATOR,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to determine parent content identifier value from string.",
+					 function );
+
+					return( -1 );
+				}
+				if( value_64bit > (uint64_t) INT32_MAX )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+					 "%s: invalid content parent identifier value exceeds maximum.",
+					 function );
+
+					return( -1 );
+				}
+				descriptor_file->parent_content_identifier = (uint32_t) value_64bit;
 			}
 		}
 		else if( value_identifier_length == 10 )
 		{
 			if( libcstring_narrow_string_compare(
-			     (char *) value_identifier,
+			     value_identifier,
 			     "createType",
 			     10 ) == 0 )
 			{
+				if( value_length == 6 )
+				{
+					if( libcstring_narrow_string_compare(
+					     &( line_string_segment[ value_index ] ),
+					     "custom",
+					     6 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_CUSTOM;
+					}
+				}
+				else if( value_length == 7 )
+				{
+					if( libcstring_narrow_string_compare(
+					     &( line_string_segment[ value_index ] ),
+					     "vmfsRaw",
+					     7 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_RAW;
+					}
+					else if( libcstring_narrow_string_compare(
+					          &( line_string_segment[ value_index ] ),
+					          "vmfsRDM",
+					          7 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_RDM;
+					}
+				}
+				else if( value_length == 8 )
+				{
+					if( libcstring_narrow_string_compare(
+					     &( line_string_segment[ value_index ] ),
+					     "vmfsRDMP",
+					     8 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_RDMP;
+					}
+					else if( libcstring_narrow_string_compare(
+					          &( line_string_segment[ value_index ] ),
+					          "vmfsThin",
+					          8 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_THIN;
+					}
+				}
+				else if( value_length == 10 )
+				{
+					if( libcstring_narrow_string_compare(
+					     &( line_string_segment[ value_index ] ),
+					     "fullDevice",
+					     10 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_DEVICE;
+					}
+					else if( libcstring_narrow_string_compare(
+					          &( line_string_segment[ value_index ] ),
+					          "vmfsSparse",
+					          10 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_SPARSE;
+					}
+				}
+				else if( value_length == 14 )
+				{
+					if( libcstring_narrow_string_compare(
+					     &( line_string_segment[ value_index ] ),
+					     "monolithicFlat",
+					     14 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT;
+					}
+				}
+				else if( value_length == 15 )
+				{
+					if( libcstring_narrow_string_compare(
+					     &( line_string_segment[ value_index ] ),
+					     "streamOptimized",
+					     15 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED;
+					}
+				}
+				else if( value_length == 16 )
+				{
+					if( libcstring_narrow_string_compare(
+					     &( line_string_segment[ value_index ] ),
+					     "2GbMaxExtentFlat",
+					     16 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT;
+					}
+					else if( libcstring_narrow_string_compare(
+					          &( line_string_segment[ value_index ] ),
+					          "monolithicSparse",
+					          16 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE;
+					}
+					else if( libcstring_narrow_string_compare(
+					          &( line_string_segment[ value_index ] ),
+					          "partitionedDevice",
+					          16 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_DEVICE_PARITIONED;
+					}
+					else if( libcstring_narrow_string_compare(
+					          &( line_string_segment[ value_index ] ),
+					          "vmfsPreallocated",
+					          16 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_FLAT;
+					}
+				}
+				else if( value_length == 18 )
+				{
+					if( libcstring_narrow_string_compare(
+					     &( line_string_segment[ value_index ] ),
+					     "2GbMaxExtentSparse",
+					     18 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE;
+					}
+				}
+				else if( value_length == 20 )
+				{
+					if( libcstring_narrow_string_compare(
+					     &( line_string_segment[ value_index ] ),
+					     "vmfsEagerZeroedThick",
+					     20 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED;
+					}
+				}
 			}
 		}
 		else if( value_identifier_length == 18 )
 		{
 			if( libcstring_narrow_string_compare(
-			     (char *) value_identifier,
+			     value_identifier,
 			     "parentFileNameHint",
 			     18 ) == 0 )
 			{
+/* TODO */
 			}
-		}
-		if( libfvalue_table_set_value(
-		     values_table,
-		     value_identifier,
-		     value_identifier_length,
-		     value,
-		     value_length,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set value with identifier: %s.",
-			 function,
-			 value_identifier );
-
-			return( -1 );
 		}
 	}
 	return( 1 );
@@ -665,10 +850,270 @@ int libvmdk_descriptor_file_read_header(
  */
 int libvmdk_descriptor_file_read_extents(
      libvmdk_descriptor_file_t *descriptor_file,
+     libcsplit_narrow_split_string_t *lines,
+     int number_of_lines,
+     int *line_index,
      libcerror_error_t **error )
 {
-/* TODO */
+	libvmdk_extent_descriptor_t *extent_descriptor = NULL;
+	char *line_string_segment                      = NULL;
+	static char *function                          = "libvmdk_descriptor_file_read_extents";
+	size_t line_string_segment_index               = 0;
+	size_t line_string_segment_length              = 0;
+	size_t line_string_segment_size                = 0;
+	int entry_index                                = 0;
+
+	if( descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( line_index == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid line index.",
+		 function );
+
+		return( -1 );
+	}
+	if( number_of_lines <= 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of lines value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( *line_index != 0 )
+	 || ( *line_index >= number_of_lines ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid line index value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcsplit_narrow_split_string_get_segment_by_index(
+	     lines,
+	     *line_index,
+	     &line_string_segment,
+	     &line_string_segment_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve line: %d.",
+		 function,
+		 *line_index );
+
+		goto on_error;
+	}
+	if( line_string_segment == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing line string segment: %d.",
+		 function,
+		 *line_index );
+
+		goto on_error;
+	}
+	if( ( line_string_segment_size != 21 )
+	 || ( libcstring_narrow_string_compare(
+	       line_string_segment,
+	       vmdk_descriptor_file_extent_section_signature,
+	       21 ) != 0 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported extent section signature.",
+		 function );
+
+		goto on_error;
+	}
+	if( libcdata_array_emtpy(
+	     descriptor_file->extents_array,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_descriptor_free,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to empty extents array.",
+		 function );
+
+		goto on_error;
+	}
+	for( *line_index = 1;
+	     *line_index < number_of_lines;
+	     *line_index += 1 )
+	{
+		if( libcsplit_narrow_split_string_get_segment_by_index(
+		     lines,
+		     *line_index,
+		     &line_string_segment,
+		     &line_string_segment_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve line: %d.",
+			 function,
+			 *line_index );
+
+			goto on_error;
+		}
+		if( line_string_segment == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing line string segment: %d.",
+			 function,
+			 *line_index );
+
+			goto on_error;
+		}
+		if( line_string_segment_size == 21 )
+		{
+			/* Check for the end of the section
+			 */
+			if( libcstring_narrow_string_compare(
+			     line_string_segment,
+			     vmdk_descriptor_file_disk_database_section_signature,
+			     20 ) == 0 )
+			{
+				break;
+			}
+		}
+		/* Skip leading white space
+		 */
+		for( line_string_segment_index = 0;
+		     line_string_segment_index < line_string_segment_size;
+		     line_string_segment_index++ )
+		{
+			if( ( line_string_segment[ line_string_segment_index ] != '\t' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\n' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\f' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\v' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\r' )
+			 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
+			{
+				break;
+			}
+		}
+		/* Skip an empty line
+		 */
+		if( line_string_segment[ line_string_segment_index ] == 0 )
+		{
+			continue;
+		}
+		/* Ingore white space at the end of the string
+		 */
+		while( line_string_segment_index < line_string_segment_size )
+		{
+			if( ( line_string_segment[ line_string_segment_size - 1 ] == 0 )
+			 || ( line_string_segment[ line_string_segment_size - 1 ] == '\t' )
+			 || ( line_string_segment[ line_string_segment_size - 1 ] == '\n' )
+			 || ( line_string_segment[ line_string_segment_size - 1 ] == '\f' )
+			 || ( line_string_segment[ line_string_segment_size - 1 ] == '\v' )
+			 || ( line_string_segment[ line_string_segment_size - 1 ] == '\r' )
+			 || ( line_string_segment[ line_string_segment_size - 1 ] == ' ' ) )
+			{
+				break;
+			}
+			line_string_segment_size--;
+		}
+		/* Make sure the string is terminated by an end of string
+		 */
+		line_string_segment[ line_string_segment_size - 1 ] = 0;
+
+		if( libvmdk_extent_descriptor_initialize(
+		     &extent_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create extent descriptor.",
+			 function );
+
+			goto on_error;
+		}
+		if( libvmdk_extent_descriptor_read(
+		     extent_descriptor,
+		     &( line_string_segment[ line_string_segment_index ] ),
+		     line_string_segment_size - line_string_segment_index,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read extent descriptor from line: %d.",
+			 function,
+			 *line_index );
+
+			goto on_error;
+		}
+		if( libcdata_array_append_entry(
+		     descriptor_file->extents_array,
+		     &entry_index,
+		     (intptr_t *) extent_descriptor,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append extent descriptor to extents array.",
+			 function );
+
+			goto on_error;
+		}
+		extent_descriptor = NULL;
+	}
 	return( 1 );
+
+on_error:
+	if( extent_descriptor != NULL )
+	{
+		libvmdk_extent_descriptor_free(
+		 &extent_descriptor,
+		 NULL );
+	}
+	libcdata_array_empty(
+	 descriptor_file->extents_array,
+	 (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_descriptor_free,
+	 NULL );
+
+	return( -1 );
 }
 
 /* Reads the disk database from the descriptor file
@@ -676,9 +1121,227 @@ int libvmdk_descriptor_file_read_extents(
  */
 int libvmdk_descriptor_file_read_disk_database(
      libvmdk_descriptor_file_t *descriptor_file,
+     libcsplit_narrow_split_string_t *lines,
+     int number_of_lines,
+     int *line_index,
      libcerror_error_t **error )
 {
+	char *line_string_segment        = NULL;
+	char *value_identifier           = NULL;
+	static char *function            = "libvmdk_descriptor_file_read_disk_database";
+	size_t line_string_segment_index = 0;
+	size_t line_string_segment_size  = 0;
+	size_t value_identifier_length   = 0;
+	size_t value_index               = 0;
+	size_t value_length              = 0;
+	uint64_t value_64bit             = 0;
+
+	if( descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( line_index == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid line index.",
+		 function );
+
+		return( -1 );
+	}
+	if( number_of_lines <= 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of lines value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( *line_index != 0 )
+	 || ( *line_index >= number_of_lines ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid line index value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcsplit_narrow_split_string_get_segment_by_index(
+	     lines,
+	     *line_index,
+	     &line_string_segment,
+	     &line_string_segment_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve line: %d.",
+		 function,
+		 *line_index );
+
+		return( -1 );
+	}
+	if( line_string_segment == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing line string segment: %d.",
+		 function,
+		 *line_index );
+
+		return( -1 );
+	}
+	if( ( line_string_segment_size != 21 )
+	 || ( libcstring_narrow_string_compare(
+	       line_string_segment,
+	       vmdk_descriptor_file_disk_database_section_signature,
+	       21 ) != 0 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported disk database section signature.",
+		 function );
+
+		return( -1 );
+	}
+	for( *line_index = 1;
+	     *line_index < number_of_lines;
+	     *line_index += 1 )
+	{
+		if( libcsplit_narrow_split_string_get_segment_by_index(
+		     lines,
+		     *line_index,
+		     &line_string_segment,
+		     &line_string_segment_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve line: %d.",
+			 function,
+			 *line_index );
+
+			return( -1 );
+		}
+		if( line_string_segment == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing line string segment: %d.",
+			 function,
+			 *line_index );
+
+			return( -1 );
+		}
+		/* Skip leading white space
+		 */
+		for( line_string_segment_index = 0;
+		     line_string_segment_index < line_string_segment_size;
+		     line_string_segment_index++ )
+		{
+			if( ( line_string_segment[ line_string_segment_index ] != '\t' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\n' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\f' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\v' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\r' )
+			 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
+			{
+				break;
+			}
+		}
+		/* Skip an empty line
+		 */
+		if( line_string_segment[ line_string_segment_index ] == 0 )
+		{
+			continue;
+		}
+		/* Determine the value identifier
+		 */
+		value_identifier        = &( line_string_segment[ line_string_segment_index ] );
+		value_identifier_length = 0;
+
+		while( line_string_segment_index < line_string_segment_size )
+		{
+			if( line_string_segment[ line_string_segment_index ] == '=' )
+			{
+				break;
+			}
+			value_identifier_length++;
+
+			line_string_segment_index++;
+		}
+		/* Make sure the value identifier is terminated by an end of string
+		 */
+		line_string_segment[ line_string_segment_index ] = 0;
+
+		/* Determine the value
+		 */
+		line_string_segment_index++;
+
+		value_index  = line_string_segment_index;
+		value_length = 0;
+
+		/* Ingore quotes at the beginning of the value data
+		 */
+		if( ( line_string_segment[ line_string_segment_index ] == '"' )
+		 || ( line_string_segment[ line_string_segment_index ] == '\'' ) )
+		{
+			value_index++;
+		}
+		while( line_string_segment_index < line_string_segment_size )
+		{
+			if( ( line_string_segment[ line_string_segment_index ] == 0 )
+			 || ( line_string_segment[ line_string_segment_index ] == '\t' )
+			 || ( line_string_segment[ line_string_segment_index ] == '\n' )
+			 || ( line_string_segment[ line_string_segment_index ] == '\f' )
+			 || ( line_string_segment[ line_string_segment_index ] == '\v' )
+			 || ( line_string_segment[ line_string_segment_index ] == '\r' ) )
+			{
+				break;
+			}
+			value_length++;
+
+			line_string_segment_index++;
+		}
+		/* Ingore quotes at the end of the value data
+		 */
+		if( ( line_string_segment[ line_string_segment_index ] == '"' )
+		 || ( line_string_segment[ line_string_segment_index ] == '\'' ) )
+		{
+			value_length--;
+
+			line_string_segment_index--;
+		}
+		/* Make sure the value is terminated by an end of string
+		 */
+		line_string_segment[ line_string_segment_index ] = 0;
 /* TODO */
+	}
 	return( 1 );
 }
 

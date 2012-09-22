@@ -39,7 +39,7 @@ typedef struct libvmdk_extent_file libvmdk_extent_file_t;
 
 struct libvmdk_extent_file
 {
-	/* The file io pool entry
+	/* The file IO pool entry
 	 */
 	int file_io_pool_entry;
 
@@ -75,13 +75,13 @@ struct libvmdk_extent_file
 	 */
 	size64_t grain_size;
 
-	/* The amount of grain table entries
+	/* The number of grain table entries
 	 */
-	uint32_t amount_of_grain_table_entries;
+	uint32_t number_of_grain_table_entries;
 
-	/* The amount of grain directory entries
+	/* The number of grain directory entries
 	 */
-	uint32_t amount_of_grain_directory_entries;
+	uint32_t number_of_grain_directory_entries;
 
 	/* The grain directory offset
 	 */
@@ -95,11 +95,11 @@ struct libvmdk_extent_file
 int libvmdk_extent_file_initialize(
      libvmdk_extent_file_t **extent_file,
      int file_io_pool_entry,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 int libvmdk_extent_file_free(
      libvmdk_extent_file_t **extent_file,
-     liberror_error_t **error );
+     libcerror_error_t **error );
 
 ssize_t libvmdk_extent_file_read_file_header(
          libvmdk_extent_file_t *extent_file,

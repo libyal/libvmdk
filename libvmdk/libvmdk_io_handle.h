@@ -73,8 +73,8 @@ int libvmdk_io_handle_read_file_header(
      size64_t *descriptor_size,
      off64_t *grain_directory_offset,
      off64_t *secondary_grain_directory_offset,
-     uint32_t *amount_of_grain_directory_entries,
-     uint32_t *amount_of_grain_table_entries,
+     uint32_t *number_of_grain_directory_entries,
+     uint32_t *number_of_grain_table_entries,
      size64_t *grain_size,
      libcerror_error_t **error );
 
@@ -83,8 +83,8 @@ int libvmdk_io_handle_read_grain_directory(
      libbfio_handle_t *file_io_handle,
      libvmdk_offset_table_t *offset_table,
      off64_t grain_directory_offset,
-     uint32_t amount_of_grain_directory_entries,
-     uint32_t amount_of_grain_table_entries,
+     uint32_t number_of_grain_directory_entries,
+     uint32_t number_of_grain_table_entries,
      size64_t grain_size,
      uint8_t is_secondary_grain_directory,
      libcerror_error_t **error );
@@ -94,7 +94,7 @@ int libvmdk_io_handle_read_grain_table(
      libbfio_handle_t *file_io_handle,
      libvmdk_offset_table_t *offset_table,
      off64_t grain_table_offset,
-     uint32_t amount_of_grain_table_entries,
+     uint32_t number_of_grain_table_entries,
      size64_t grain_size,
      uint8_t is_secondary_grain_directory,
      libcerror_error_t **error );

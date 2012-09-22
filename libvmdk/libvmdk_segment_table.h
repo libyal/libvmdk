@@ -56,7 +56,7 @@ struct libvmdk_segment_table
 
 int libvmdk_segment_table_initialize(
      libvmdk_segment_table_t **segment_table,
-     int amount,
+     int number_of_handles,
      size64_t maximum_segment_size,
      libcerror_error_t **error );
 
@@ -66,7 +66,7 @@ int libvmdk_segment_table_free(
 
 int libvmdk_segment_table_resize(
      libvmdk_segment_table_t *segment_table,
-     int amount,
+     int number_of_handles,
      libcerror_error_t **error );
 
 int libvmdk_segment_table_get_basename_size(
@@ -105,9 +105,9 @@ int libvmdk_segment_table_set_basename_wide(
      libcerror_error_t **error );
 #endif
 
-int libvmdk_segment_table_get_amount_of_handles(
+int libvmdk_segment_table_get_number_of_handles(
      libvmdk_segment_table_t *segment_table,
-     int *amount_of_handles,
+     int *number_of_handles,
      libcerror_error_t **error );
 
 int libvmdk_segment_table_get_handle(

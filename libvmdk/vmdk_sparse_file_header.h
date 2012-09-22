@@ -73,10 +73,10 @@ struct vmdk_sparse_file_header
 	 */
 	uint8_t descriptor_size[ 8 ];
 
-	/* The amount of grain table entries
+	/* The number of grain table entries
 	 * Consists of 4 bytes
 	 */
-	uint8_t amount_of_grain_table_entries[ 4 ];
+	uint8_t number_of_grain_table_entries[ 4 ];
 
 	/* The secondary grain directory offset
 	 * Consists of 8 bytes

@@ -38,7 +38,7 @@ void libvmdk_error_free(
 }
 
 /* Prints a descriptive string of the error to the stream
- * Returns the amount of printed characters if successful or -1 on error
+ * Returns the number of printed characters if successful or -1 on error
  */
 int libvmdk_error_fprint(
      libvmdk_error_t *error,
@@ -50,7 +50,7 @@ int libvmdk_error_fprint(
 }
 
 /* Prints a descriptive string of the error to the string
- * Returns the amount of printed characters if successful or -1 on error
+ * Returns the number of printed characters if successful or -1 on error
  */
 int libvmdk_error_sprint(
      libvmdk_error_t *error,
@@ -64,7 +64,7 @@ int libvmdk_error_sprint(
 }
 
 /* Prints a backtrace of the error to the stream
- * Returns the amount of printed characters if successful or -1 on error
+ * Returns the number of printed characters if successful or -1 on error
  */
 int libvmdk_error_backtrace_fprint(
      libvmdk_error_t *error,
@@ -76,7 +76,7 @@ int libvmdk_error_backtrace_fprint(
 }
 
 /* Prints a backtrace of the error to the string
- * Returns the amount of printed characters if successful or -1 on error
+ * Returns the number of printed characters if successful or -1 on error
  */
 int libvmdk_error_backtrace_sprint(
      libvmdk_error_t *error,

@@ -83,7 +83,7 @@ int libvmdk_check_file_signature(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create file io handle.",
+		 "%s: unable to create file IO handle.",
 		 function );
 
 		return( -1 );
@@ -98,7 +98,7 @@ int libvmdk_check_file_signature(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set filename in file io handle.",
+		 "%s: unable to set filename in file IO handle.",
 		 function );
 
 		libbfio_handle_free(
@@ -134,7 +134,7 @@ int libvmdk_check_file_signature(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to free file io handle.",
+		 "%s: unable to free file IO handle.",
 		 function );
 
 		return( -1 );
@@ -189,7 +189,7 @@ int libvmdk_check_file_signature_wide(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create file io handle.",
+		 "%s: unable to create file IO handle.",
 		 function );
 
 		return( -1 );
@@ -204,7 +204,7 @@ int libvmdk_check_file_signature_wide(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set filename in file io handle.",
+		 "%s: unable to set filename in file IO handle.",
 		 function );
 
 		libbfio_handle_free(
@@ -240,7 +240,7 @@ int libvmdk_check_file_signature_wide(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to free file io handle.",
+		 "%s: unable to free file IO handle.",
 		 function );
 
 		return( -1 );
@@ -269,7 +269,7 @@ int libvmdk_check_file_signature_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file io handle.",
+		 "%s: invalid file IO handle.",
 		 function );
 
 		return( -1 );

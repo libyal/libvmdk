@@ -42,16 +42,16 @@ const char vmdk_sparse_file_signature[ 4 ] = "KDMV";
 int libvmdk_extent_file_initialize(
      libvmdk_extent_file_t **extent_file,
      int file_io_pool_entry,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_file_initialize";
 
 	if( extent_file == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid extent file.",
 		 function );
 
@@ -73,10 +73,10 @@ int libvmdk_extent_file_initialize(
 
 	if( *extent_file == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_INSUFFICIENT,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
 		 "%s: unable to create extent file.",
 		 function );
 
@@ -87,10 +87,10 @@ int libvmdk_extent_file_initialize(
 	     0,
 	     sizeof( libvmdk_extent_file_t ) ) == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_MEMORY,
-		 LIBERROR_MEMORY_ERROR_SET_FAILED,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
 		 "%s: unable to clear extent file.",
 		 function );
 
@@ -116,16 +116,16 @@ on_error:
  */
 int libvmdk_extent_file_free(
      libvmdk_extent_file_t **extent_file,
-     liberror_error_t **error )
+     libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_file_free";
 
 	if( extent_file == NULL )
 	{
-		liberror_error_set(
+		libcerror_error_set(
 		 error,
-		 LIBERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid extent file.",
 		 function );
 
@@ -142,7 +142,7 @@ int libvmdk_extent_file_free(
 }
 
 /* Reads the file header from an extent file
- * Returns the amount of bytes read if successful, or -1 on errror
+ * Returns the number of bytes read if successful, or -1 on errror
  */
 ssize_t libvmdk_extent_file_read_file_header(
          libvmdk_extent_file_t *extent_file,
@@ -294,65 +294,64 @@ ssize_t libvmdk_extent_file_read_file_header(
 
 		byte_stream_copy_to_uint32_little_endian(
 		 ( (cowd_sparse_file_header_t *) file_header )->maximum_data_size,
-		 extent_file_handle->maximum_data_size );
+		 extent_file->maximum_data_size );
 
 		byte_stream_copy_to_uint32_little_endian(
 		 ( (cowd_sparse_file_header_t *) file_header )->grain_size,
-		 extent_file_handle->grain_size );
+		 extent_file->grain_size );
 
 		byte_stream_copy_to_uint32_little_endian(
 		 ( (cowd_sparse_file_header_t *) file_header )->grain_directory_offset,
-		 extent_file_handle->grain_directory_offset );
+		 extent_file->grain_directory_offset );
 
 		byte_stream_copy_to_uint32_little_endian(
-		 ( (cowd_sparse_file_header_t *) file_header )->amount_of_grain_directory_entries,
-		 extent_file_handle->amount_of_grain_directory_entries );
+		 ( (cowd_sparse_file_header_t *) file_header )->number_of_grain_directory_entries,
+		 extent_file->number_of_grain_directory_entries );
 
 		/* TODO */
 	}
-	else if( extent_file_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+	else if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
 		byte_stream_copy_to_uint32_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header )->version,
-		 extent_file_handle->format_version );
+		 extent_file->format_version );
 
 		byte_stream_copy_to_uint32_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header )->flags,
-		 extent_file_handle->flags );
+		 extent_file->flags );
 
 		byte_stream_copy_to_uint64_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header )->maximum_data_size,
-		 extent_file_handle->maximum_data_size );
+		 extent_file->maximum_data_size );
 
 		byte_stream_copy_to_uint64_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header )->grain_size,
-		 extent_file_handle->grain_size );
+		 extent_file->grain_size );
 
 		byte_stream_copy_to_uint64_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header )->descriptor_offset,
-		 extent_file_handle->descriptor_offset );
+		 extent_file->descriptor_offset );
 
 		byte_stream_copy_to_uint64_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header )->descriptor_size,
-		 extent_file_handle->descriptor_size );
+		 extent_file->descriptor_size );
 
 		byte_stream_copy_to_uint32_little_endian(
-		 ( (vmdk_sparse_file_header_t *) file_header )->amount_of_grain_table_entries,
-		 extent_file_handle->amount_of_grain_table_entries );
+		 ( (vmdk_sparse_file_header_t *) file_header )->number_of_grain_table_entries,
+		 extent_file->number_of_grain_table_entries );
 
 		byte_stream_copy_to_uint64_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header )->secondary_grain_directory_offset,
-		 extent_file_handle->secondary_grain_directory_offset );
+		 extent_file->secondary_grain_directory_offset );
 
 		byte_stream_copy_to_uint64_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header )->grain_directory_offset,
-		 extent_file_handle->grain_directory_offset );
+		 extent_file->grain_directory_offset );
 
 		byte_stream_copy_to_uint16_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header )->compression_method,
-		 extent_file_handle->compression_method );
+		 extent_file->compression_method );
 	}
-
 #if defined( HAVE_VERBOSE_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -367,51 +366,51 @@ ssize_t libvmdk_extent_file_read_file_header(
 		libcnotify_printf(
 		 "%s: format version\t\t\t\t: %" PRIu32 "\n",
 		 function,
-		 extent_file_handle->format_version );
+		 extent_file->format_version );
 
 		libcnotify_printf(
 		 "%s: flags\t\t\t\t\t: 0x%08" PRIx32 "\n",
 		 function,
-		 extent_file_handle->flags );
+		 extent_file->flags );
 
 		libcnotify_printf(
 		 "%s: maximum data size\t\t\t: %" PRIu64 " sectors\n",
 		 function,
-		 extent_file_handle->maximum_data_size );
+		 extent_file->maximum_data_size );
 
 		libcnotify_printf(
 		 "%s: grain size\t\t\t\t: %" PRIu64 " sectors\n",
 		 function,
-		 extent_file_handle->grain_size );
+		 extent_file->grain_size );
 
-		if( extent_file_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+		if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 		{
 			libcnotify_printf(
 			 "%s: descriptor offset\t\t\t: %" PRIu64 "\n",
 			 function,
-			 extent_file_handle->descriptor_offset );
+			 extent_file->descriptor_offset );
 
 			libcnotify_printf(
 			 "%s: descriptor size\t\t\t\t: %" PRIu64 " sectors\n",
 			 function,
-			 extent_file_handle->descriptor_size );
+			 extent_file->descriptor_size );
 
 			libcnotify_printf(
-			 "%s: amount of grain table entries\t\t: %" PRIu32 "\n",
+			 "%s: number of grain table entries\t\t: %" PRIu32 "\n",
 			 function,
-			 extent_file_handle->amount_of_grain_table_entries );
+			 extent_file->number_of_grain_table_entries );
 
 			libcnotify_printf(
 			 "%s: secondary grain directory offset\t\t: %" PRIu64 "\n",
 			 function,
-			 extent_file_handle->secondary_grain_directory_offset );
+			 extent_file->secondary_grain_directory_offset );
 		}
 		libcnotify_printf(
 		 "%s: grain directory offset\t\t\t: %" PRIu64 "\n",
 		 function,
-		 extent_file_handle->grain_directory_offset );
+		 extent_file->grain_directory_offset );
 
-		if( extent_file_handle->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
+		if( extent_file->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
 		{
 			libcnotify_printf(
 			 "%s: padding:\n",
@@ -420,7 +419,7 @@ ssize_t libvmdk_extent_file_read_file_header(
 			 (uint8_t *) ( (vmdk_sparse_file_header_t *) file_header )->padding,
 			 433 );
 		}
-		else if( extent_file_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+		else if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 		{
 			byte_stream_copy_to_uint64_little_endian(
 			 ( (vmdk_sparse_file_header_t *) file_header )->metadata_size,
@@ -453,18 +452,18 @@ ssize_t libvmdk_extent_file_read_file_header(
 			libcnotify_printf(
 			 "%s: compression method\t\t\t: %" PRIu16 "\n",
 			 function,
-			 extent_file_handle->compression_method );
+			 extent_file->compression_method );
 
 			libcnotify_printf(
 			 "%s: padding:\n",
 			 function );
 			libcnotify_print_data(
-			 (uint8_t *) ( (vmdk_sparse_file_header_t *) file_header )->padding,
+			 ( (vmdk_sparse_file_header_t *) file_header )->padding,
 			 433 );
 		}
 	}
 #endif
-	if( extent_file_handle->grain_size == 0 )
+	if( extent_file->grain_size == 0 )
 	{
 		libcerror_error_set(
 		 error,
@@ -475,9 +474,9 @@ ssize_t libvmdk_extent_file_read_file_header(
 
 		goto on_error;
 	}
-	if( extent_file_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+	if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
-		if( extent_file_handle->grain_size <= 8 )
+		if( extent_file->grain_size <= 8 )
 		{
 			libcerror_error_set(
 			 error,
@@ -488,7 +487,7 @@ ssize_t libvmdk_extent_file_read_file_header(
 
 			goto on_error;
 		}
-		if( ( extent_file_handle->grain_size % 2 ) != 0 )
+		if( ( extent_file->grain_size % 2 ) != 0 )
 		{
 			libcerror_error_set(
 			 error,
@@ -499,19 +498,19 @@ ssize_t libvmdk_extent_file_read_file_header(
 
 			goto on_error;
 		}
-		if( extent_file_handle->amount_of_grain_table_entries == 0 )
+		if( extent_file->number_of_grain_table_entries == 0 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-			 "%s: unsupported amount of grain table entries value is 0.",
+			 "%s: unsupported number of grain table entries value is 0.",
 			 function );
 
 			goto on_error;
 		}
 	}
-	if( ( extent_file_handle->maximum_data_size % extent_file_handle->grain_size ) != 0 )
+	if( ( extent_file->maximum_data_size % extent_file->grain_size ) != 0 )
 	{
 		libcerror_error_set(
 		 error,
@@ -522,7 +521,7 @@ ssize_t libvmdk_extent_file_read_file_header(
 
 		goto on_error;
 	}
-	if( extent_file_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+	if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
 		if( ( (vmdk_sparse_file_header_t *) file_header )->single_end_of_line_character != (uint8_t) '\n' )
 		{
@@ -574,8 +573,8 @@ ssize_t libvmdk_extent_file_read_file_header(
 
 	file_header = NULL;
 
-	if( ( extent_file_handle->compression_method != LIBVMDK_COMPRESSION_METHOD_NONE )
-	 && ( extent_file_handle->compression_method != LIBVMDK_COMPRESSION_METHOD_DEFLATE ) )
+	if( ( extent_file->compression_method != LIBVMDK_COMPRESSION_METHOD_NONE )
+	 && ( extent_file->compression_method != LIBVMDK_COMPRESSION_METHOD_DEFLATE ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -583,32 +582,32 @@ ssize_t libvmdk_extent_file_read_file_header(
 		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 		 "%s: unsupported compression method: %" PRIu16 ".",
 		 function,
-		 extent_file_handle->compression_method );
+		 extent_file->compression_method );
 
 		goto on_error;
 	}
 	/* Change all sector values to byte values
 	 */
-	extent_file_handle->maximum_data_size      *= LIBVMDK_SECTOR_SIZE;
-	extent_file_handle->grain_size             *= LIBVMDK_SECTOR_SIZE;
-	extent_file_handle->grain_directory_offset *= LIBVMDK_SECTOR_SIZE;
+	extent_file->maximum_data_size      *= LIBVMDK_SECTOR_SIZE;
+	extent_file->grain_size             *= LIBVMDK_SECTOR_SIZE;
+	extent_file->grain_directory_offset *= LIBVMDK_SECTOR_SIZE;
 
-	if( extent_file_handle->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
+	if( extent_file->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
 	{
-		extent_file_handle->amount_of_grain_table_entries = 4096;
+		extent_file->number_of_grain_table_entries = 4096;
 	}
-	else if( extent_file_handle->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+	else if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
-		extent_file_handle->amount_of_grain_directory_entries = extent_file_handle->maximum_data_size
-		                                                      / ( extent_file_handle->amount_of_grain_table_entries * extent_file_handle->grain_size );
+		extent_file->number_of_grain_directory_entries = extent_file->maximum_data_size
+		                                               / ( extent_file->number_of_grain_table_entries * extent_file->grain_size );
 
-		if( ( extent_file_handle->maximum_data_size % ( extent_file_handle->amount_of_grain_table_entries * extent_file_handle->grain_size ) ) != 0 )
+		if( ( extent_file->maximum_data_size % ( extent_file->number_of_grain_table_entries * extent_file->grain_size ) ) != 0 )
 		{
-			extent_file_handle->amount_of_grain_directory_entries += 1;
+			extent_file->number_of_grain_directory_entries += 1;
 		}
-		extent_file_handle->descriptor_offset                *= LIBVMDK_SECTOR_SIZE;
-		extent_file_handle->descriptor_size                  *= LIBVMDK_SECTOR_SIZE;
-		extent_file_handle->secondary_grain_directory_offset *= LIBVMDK_SECTOR_SIZE;
+		extent_file->descriptor_offset                *= LIBVMDK_SECTOR_SIZE;
+		extent_file->descriptor_size                  *= LIBVMDK_SECTOR_SIZE;
+		extent_file->secondary_grain_directory_offset *= LIBVMDK_SECTOR_SIZE;
 	}
 	return( (ssize_t) read_size );
 

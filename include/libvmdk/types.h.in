@@ -197,13 +197,7 @@ typedef int64_t off64_t;
 
 /* The following type definitions hide internal data structures
  */
-typedef intptr_t libvmdk_file_t;
-typedef intptr_t libvmdk_table_t;
-typedef intptr_t libvmdk_column_t;
-typedef intptr_t libvmdk_index_t;
-typedef intptr_t libvmdk_record_t;
-typedef intptr_t libvmdk_long_value_t;
-typedef intptr_t libvmdk_multi_value_t;
+typedef intptr_t libvmdk_handle_t;
 
 #ifdef __cplusplus
 }

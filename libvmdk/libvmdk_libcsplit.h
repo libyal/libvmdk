@@ -1,5 +1,5 @@
 /*
- * The internal libcfile header
+ * The internal libcsplit header
  *
  * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,30 +19,32 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBVMDK_LIBCFILE_H )
-#define _LIBVMDK_LIBCFILE_H
+#if !defined( _LIBVMDK_LIBCSPLIT_H )
+#define _LIBVMDK_LIBCSPLIT_H
 
 #include <common.h>
 
-/* Define HAVE_LOCAL_LIBCFILE for local use of libcfile
+/* Define HAVE_LOCAL_LIBCSPLIT for local use of libcsplit
  */
-#if defined( HAVE_LOCAL_LIBCFILE )
+#if defined( HAVE_LOCAL_LIBCSPLIT )
 
-#include <libcfile_definitions.h>
-#include <libcfile_file.h>
-#include <libcfile_support.h>
-#include <libcfile_types.h>
+#include <libcsplit_definitions.h>
+#include <libcsplit_narrow_split_string.h>
+#include <libcsplit_narrow_string.h>
+#include <libcsplit_types.h>
+#include <libcsplit_wide_split_string.h>
+#include <libcsplit_wide_string.h>
 
 #else
 
-/* If libtool DLL support is enabled set LIBCFILE_DLL_IMPORT
- * before including libcfile.h
+/* If libtool DLL support is enabled set LIBCSPLIT_DLL_IMPORT
+ * before including libcsplit.h
  */
 #if defined( _WIN32 ) && defined( DLL_IMPORT )
-#define LIBCFILE_DLL_IMPORT
+#define LIBCSPLIT_DLL_IMPORT
 #endif
 
-#include <libcfile.h>
+#include <libcsplit.h>
 
 #endif
 

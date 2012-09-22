@@ -44,7 +44,7 @@ struct libvmdk_internal_handle
 	 */
 	libvmdk_io_handle_t *io_handle;
 
-	/* The file io pool
+	/* The file IO pool
 	 */
 	libbfio_pool_t *file_io_pool;
 

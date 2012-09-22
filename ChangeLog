@@ -1,5 +1,6 @@
 TODO
-* generic solution for text files - text value files
+* what about libvmdk_segment_table.[ch]
+* put disk data base in fvalue table ?
 
 * code clean up:
   - goto on_error
@@ -15,6 +16,8 @@ TODO
 * check the segment files for a descriptor file
   otherwise look for the descriptor in one of the segment files
 * add glob functions
+* debug output
+  - print out extent info ?
 
 API
 * add functions to access storage media data

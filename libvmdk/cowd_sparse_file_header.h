@@ -67,10 +67,10 @@ struct cowd_sparse_file_header
 	 */
 	uint8_t grain_directory_offset[ 4 ];
 
-	/* The amount of grain directory entries
+	/* The number of grain directory entries
 	 * Consists of 4 bytes
 	 */
-	uint8_t amount_of_grain_directory_entries[ 4 ];
+	uint8_t number_of_grain_directory_entries[ 4 ];
 
 	/* The next free grain
 	 * Consists of 4 bytes
@@ -81,20 +81,20 @@ struct cowd_sparse_file_header
 	{
 		struct
 		{
-			/* The amount of cylinders
+			/* The number of cylinders
 			 * Consists of 4 bytes
 			 */
-			uint8_t amount_of_cylinders[ 4 ];
+			uint8_t number_of_cylinders[ 4 ];
 
-			/* The amount of heads
+			/* The number of heads
 			 * Consists of 4 bytes
 			 */
-			uint8_t amount_of_heads[ 4 ];
+			uint8_t number_of_heads[ 4 ];
 
-			/* The amount of sectors
+			/* The number of sectors
 			 * Consists of 4 bytes
 			 */
-			uint8_t amount_of_sectors[ 4 ];
+			uint8_t number_of_sectors[ 4 ];
 		};
 		struct
 		{

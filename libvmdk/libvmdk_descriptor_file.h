@@ -27,28 +27,39 @@
 #include <types.h>
 
 #include "libvmdk_libbfio.h"
+#include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
-#include "libvmdk_libcfile.h"
+#include "libvmdk_libcsplit.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
+extern const char vmdk_descriptor_file_signature[ 21 ];
+
 typedef struct libvmdk_descriptor_file libvmdk_descriptor_file_t;
 
 struct libvmdk_descriptor_file
 {
-	/* The filename
+	/* The format version
 	 */
-	libcstring_system_character_t *name;
+	int version;
 
-	/* The size of the filename
+	/* The content identifier
 	 */
-	size_t name_size;
+	uint32_t content_identifier;
 
-	/* The file IO handle
+	/* The parent content identifier
 	 */
-	libbfio_handle_t *file_io_handle;
+	uint32_t parent_content_identifier;
+
+	/* The disk type
+	 */
+	int disk_type;
+
+	/* The extents array
+	 */
+	libcdata_array_t *extents_array;
 };
 
 int libvmdk_descriptor_file_initialize(
@@ -59,31 +70,31 @@ int libvmdk_descriptor_file_free(
      libvmdk_descriptor_file_t **descriptor_file,
      libcerror_error_t **error );
 
-int libvmdk_descriptor_file_set_name(
+int libvmdk_descriptor_file_read(
      libvmdk_descriptor_file_t *descriptor_file,
-     const libcstring_system_character_t *name,
-     size_t name_length,
-     libcerror_error_t **error );
-
-int libvmdk_descriptor_file_open(
-     libvmdk_descriptor_file_t *descriptor_file,
-     const libcstring_system_character_t *mode,
-     libcerror_error_t **error );
-
-int libvmdk_descriptor_file_close(
-     libvmdk_descriptor_file_t *descriptor_file,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
      libcerror_error_t **error );
 
 int libvmdk_descriptor_file_read_header(
      libvmdk_descriptor_file_t *descriptor_file,
+     libcsplit_narrow_split_string_t *lines,
+     int number_of_lines,
+     int *line_index,
      libcerror_error_t **error );
 
 int libvmdk_descriptor_file_read_extents(
      libvmdk_descriptor_file_t *descriptor_file,
+     libcsplit_narrow_split_string_t *lines,
+     int number_of_lines,
+     int *line_index,
      libcerror_error_t **error );
 
 int libvmdk_descriptor_file_read_disk_database(
      libvmdk_descriptor_file_t *descriptor_file,
+     libcsplit_narrow_split_string_t *lines,
+     int number_of_lines,
+     int *line_index,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
