@@ -34,17 +34,9 @@
 /* Prints the flags
  * Returns 1 if successful or -1 on error
  */
-int libvmdk_debug_print_flags(
-     uint32_t flags,
-     libcerror_error_t **error )
+void libvmdk_debug_print_vmdk_flags(
+      uint32_t flags )
 {
-	static char *function = "libvmdk_debug_print_flags";
-
-	libcnotify_printf(
-	 "%s: flags: 0x%08" PRIx32 "\n",
-	 function,
-	 flags );
-
 	if( ( flags & LIBVMDK_FLAG_NEW_LINE_DETECION_VALID ) != 0 )
 	{
 		libcnotify_printf(
@@ -56,21 +48,18 @@ int libvmdk_debug_print_flags(
 		 "\tUse secondary grain directory\n" );
 	}
 
-	if( ( flags & LIBVMDK_FLAG_USE_GRAIN_COMPRESSION ) != 0 )
+	if( ( flags & LIBVMDK_FLAG_HAS_GRAIN_COMPRESSION ) != 0 )
 	{
 		libcnotify_printf(
-		 "\tUse grain compression\n" );
+		 "\tHas grain compression\n" );
 	}
-	if( ( flags & LIBVMDK_FLAG_USE_DATA_MARKERS ) != 0 )
+	if( ( flags & LIBVMDK_FLAG_HAS_DATA_MARKERS ) != 0 )
 	{
 		libcnotify_printf(
-		 "\tUse data markers\n" );
+		 "\tHas data markers\n" );
 	}
-
 	libcnotify_printf(
 	 "\n" );
-
-	return( 1 );
 }
 
 /* Prints the read offsets

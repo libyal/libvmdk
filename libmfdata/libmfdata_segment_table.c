@@ -25,6 +25,7 @@
 
 #include "libmfdata_definitions.h"
 #include "libmfdata_libbfio.h"
+#include "libmfdata_libcdata.h"
 #include "libmfdata_libcerror.h"
 #include "libmfdata_libcnotify.h"
 #include "libmfdata_segment.h"
@@ -132,7 +133,7 @@ int libmfdata_segment_table_initialize(
 
 		goto on_error;
 	}
-	if( libmfdata_array_initialize(
+	if( libcdata_array_initialize(
 	     &( internal_segment_table->segments ),
 	     0,
 	     error ) != 1 )
@@ -195,7 +196,7 @@ int libmfdata_segment_table_free(
 		internal_segment_table = (libmfdata_internal_segment_table_t *) *segment_table;
 		*segment_table         = NULL;
 
-		if( libmfdata_array_free(
+		if( libcdata_array_free(
 		     &( internal_segment_table->segments ),
 		     (int (*)(intptr_t **, libcerror_error_t **)) &libmfdata_segment_free,
 		     error ) != 1 )
@@ -426,7 +427,7 @@ int libmfdata_segment_table_clone_segments(
 	}
 	internal_source_segment_table = (libmfdata_internal_segment_table_t *) source_segment_table;
 
-	if( libmfdata_array_get_number_of_entries(
+	if( libcdata_array_get_number_of_entries(
 	     internal_source_segment_table->segments,
 	     &number_of_segments,
 	     error ) != 1 )
@@ -440,7 +441,7 @@ int libmfdata_segment_table_clone_segments(
 
 		return( -1 );
 	}
-	if( libmfdata_array_empty(
+	if( libcdata_array_empty(
 	     internal_destination_segment_table->segments,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libmfdata_segment_free,
 	     error ) != 1 )
@@ -454,7 +455,7 @@ int libmfdata_segment_table_clone_segments(
 
 		return( -1 );
 	}
-	if( libmfdata_array_resize(
+	if( libcdata_array_resize(
 	     internal_destination_segment_table->segments,
 	     number_of_segments,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libmfdata_segment_free,
@@ -473,7 +474,7 @@ int libmfdata_segment_table_clone_segments(
 	     segment_index < number_of_segments;
 	     segment_index++ )
 	{
-		if( libmfdata_array_get_entry_by_index(
+		if( libcdata_array_get_entry_by_index(
 		     internal_source_segment_table->segments,
 		     segment_index,
 		     (intptr_t **) &internal_source_segment,
@@ -508,7 +509,7 @@ int libmfdata_segment_table_clone_segments(
 		internal_destination_segment->size               = internal_source_segment->size;
 		internal_destination_segment->value_offset       = internal_source_segment->value_offset;
 
-		if( libmfdata_array_set_entry_by_index(
+		if( libcdata_array_set_entry_by_index(
 		     internal_destination_segment_table->segments,
 		     segment_index,
 		     (intptr_t *) internal_destination_segment,
@@ -558,7 +559,7 @@ int libmfdata_segment_table_empty(
 	}
 	internal_segment_table = (libmfdata_internal_segment_table_t *) segment_table;
 
-	if( libmfdata_array_empty(
+	if( libcdata_array_empty(
 	     internal_segment_table->segments,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libmfdata_segment_free,
 	     error ) != 1 )
@@ -599,7 +600,7 @@ int libmfdata_segment_table_resize(
 	}
 	internal_segment_table = (libmfdata_internal_segment_table_t *) segment_table;
 
-	if( libmfdata_array_resize(
+	if( libcdata_array_resize(
 	     internal_segment_table->segments,
 	     number_of_segments,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libmfdata_segment_free,
@@ -801,7 +802,7 @@ int libmfdata_segment_table_get_number_of_segments(
 	}
 	internal_segment_table = (libmfdata_internal_segment_table_t *) segment_table;
 
-	if( libmfdata_array_get_number_of_entries(
+	if( libcdata_array_get_number_of_entries(
 	     internal_segment_table->segments,
 	     number_of_segments,
 	     error ) != 1 )
@@ -843,7 +844,7 @@ int libmfdata_segment_table_get_segment_by_index(
 	}
 	internal_segment_table = (libmfdata_internal_segment_table_t *) segment_table;
 
-	if( libmfdata_array_get_entry_by_index(
+	if( libcdata_array_get_entry_by_index(
 	     internal_segment_table->segments,
 	     segment_index,
 	     (intptr_t **) segment,
@@ -950,7 +951,7 @@ int libmfdata_segment_table_get_segment_at_value_offset(
 
 		return( -1 );
 	}
-	if( libmfdata_array_get_number_of_entries(
+	if( libcdata_array_get_number_of_entries(
 	     internal_segment_table->segments,
 	     &number_of_segments,
 	     error ) != 1 )
@@ -970,7 +971,7 @@ int libmfdata_segment_table_get_segment_at_value_offset(
 		     calculated_segment_index < number_of_segments;
 		     calculated_segment_index++ )
 		{
-			if( libmfdata_array_get_entry_by_index(
+			if( libcdata_array_get_entry_by_index(
 			     internal_segment_table->segments,
 			     calculated_segment_index,
 			     (intptr_t **) segment,
@@ -1037,7 +1038,7 @@ int libmfdata_segment_table_get_segment_at_value_offset(
 	     calculated_segment_index < number_of_segments;
 	     calculated_segment_index++ )
 	{
-		if( libmfdata_array_get_entry_by_index(
+		if( libcdata_array_get_entry_by_index(
 		     internal_segment_table->segments,
 		     calculated_segment_index,
 		     (intptr_t **) segment,
@@ -1110,7 +1111,7 @@ int libmfdata_segment_table_get_segment_at_value_offset(
 		     calculated_segment_index >= 0;
 		     calculated_segment_index-- )
 		{
-			if( libmfdata_array_get_entry_by_index(
+			if( libcdata_array_get_entry_by_index(
 			     internal_segment_table->segments,
 			     calculated_segment_index,
 			     (intptr_t **) segment,
@@ -1233,7 +1234,7 @@ int libmfdata_segment_table_set_segment_by_index(
 	}
 	internal_segment_table = (libmfdata_internal_segment_table_t *) segment_table;
 
-	if( libmfdata_array_get_entry_by_index(
+	if( libcdata_array_get_entry_by_index(
 	     internal_segment_table->segments,
 	     segment_index,
 	     (intptr_t **) &segment,
@@ -1266,7 +1267,7 @@ int libmfdata_segment_table_set_segment_by_index(
 
 			return( -1 );
 		}
-		if( libmfdata_array_set_entry_by_index(
+		if( libcdata_array_set_entry_by_index(
 		     internal_segment_table->segments,
 		     segment_index,
 		     (intptr_t *) segment,
@@ -1408,7 +1409,7 @@ int libmfdata_segment_table_append_segment(
 
 		return( -1 );
 	}
-	if( libmfdata_array_append_entry(
+	if( libcdata_array_append_entry(
 	     internal_segment_table->segments,
 	     segment_index,
 	     (intptr_t *) segment,
@@ -1646,7 +1647,7 @@ ssize_t libmfdata_segment_table_read_buffer(
 	{
 		return( 0 );
 	}
-	if( libmfdata_array_get_number_of_entries(
+	if( libcdata_array_get_number_of_entries(
 	     internal_segment_table->segments,
 	     &number_of_segments,
 	     error ) != 1 )
@@ -1660,7 +1661,7 @@ ssize_t libmfdata_segment_table_read_buffer(
 
 		return( -1 );
 	}
-	if( libmfdata_array_get_entry_by_index(
+	if( libcdata_array_get_entry_by_index(
 	     internal_segment_table->segments,
 	     internal_segment_table->segment_index,
 	     (intptr_t **) &segment,
@@ -1789,7 +1790,7 @@ ssize_t libmfdata_segment_table_read_buffer(
 
 			if( internal_segment_table->segment_index < number_of_segments )
 			{
-				if( libmfdata_array_get_entry_by_index(
+				if( libcdata_array_get_entry_by_index(
 				     internal_segment_table->segments,
 				     internal_segment_table->segment_index,
 				     (intptr_t **) &segment,
@@ -1937,7 +1938,7 @@ ssize_t libmfdata_segment_table_write_buffer(
 	{
 		return( 0 );
 	}
-	if( libmfdata_array_get_number_of_entries(
+	if( libcdata_array_get_number_of_entries(
 	     internal_segment_table->segments,
 	     &number_of_segments,
 	     error ) != 1 )
@@ -2049,7 +2050,7 @@ ssize_t libmfdata_segment_table_write_buffer(
 			}
 			number_of_segments++;
 		}
-		if( libmfdata_array_get_entry_by_index(
+		if( libcdata_array_get_entry_by_index(
 		     internal_segment_table->segments,
 		     internal_segment_table->segment_index,
 		     (intptr_t **) &segment,
@@ -2343,7 +2344,7 @@ off64_t libmfdata_segment_table_seek_offset(
 	}
 	else
 	{
-		if( libmfdata_array_get_number_of_entries(
+		if( libcdata_array_get_number_of_entries(
 		     internal_segment_table->segments,
 		     &segment_index,
 		     error ) != 1 )

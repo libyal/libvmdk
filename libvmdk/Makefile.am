@@ -27,12 +27,14 @@ libvmdk_la_SOURCES = \
 	libvmdk_extent_descriptor.c libvmdk_extent_descriptor.h \
 	libvmdk_extent_file.c libvmdk_extent_file.h \
 	libvmdk_extern.h \
-	libvmdk_grain_offset.h \
+	libvmdk_grain_data.c libvmdk_grain_data.h \
+	libvmdk_grain_table.c libvmdk_grain_table.h \
 	libvmdk_handle.c libvmdk_handle.h \
 	libvmdk_io_handle.c libvmdk_io_handle.h \
 	libvmdk_libbfio.h \
 	libvmdk_libcdata.h \
 	libvmdk_libcerror.h \
+	libvmdk_libclocale.h \
 	libvmdk_libcnotify.h \
 	libvmdk_libcpath.h \
 	libvmdk_libcsplit.h \
@@ -43,7 +45,6 @@ libvmdk_la_SOURCES = \
 	libvmdk_libuna.h \
 	libvmdk_metadata.c libvmdk_metadata.h \
 	libvmdk_notify.c libvmdk_notify.h \
-	libvmdk_offset_table.c libvmdk_offset_table.h \
 	libvmdk_support.c libvmdk_support.h \
 	libvmdk_types.h \
 	libvmdk_unused.h \

@@ -84,11 +84,11 @@ struct vmdk_sparse_file_header
 	 */
 	uint8_t secondary_grain_directory_sector_number[ 8 ];
 
-	/* The grain directory sector number
+	/* The primary grain directory sector number
 	 * Consists of 8 bytes
 	 * Contains a value in sectors
 	 */
-	uint8_t grain_directory_sector_number[ 8 ];
+	uint8_t primary_grain_directory_sector_number[ 8 ];
 
 	/* The metadata (overhead) number of sectors
 	 * Consists of 8 bytes

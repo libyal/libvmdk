@@ -753,9 +753,9 @@ int main( int argc, char * const argv[] )
 		return( EXIT_FAILURE );
 	}
 	source_filenames           = &( argv[ optind ] );
-	number_of_source_filenames = argc - optind;
+	number_of_source_filenames = argc - optind - 1;
 
-	if( optind == argc )
+	if( ( optind + 1 ) == argc )
 	{
 		fprintf(
 		 stderr,
@@ -766,7 +766,7 @@ int main( int argc, char * const argv[] )
 
 		return( EXIT_FAILURE );
 	}
-	mount_point = argv[ optind ];
+	mount_point = argv[ argc - 1 ];
 
 	libcnotify_verbose_set(
 	 verbose );

@@ -33,11 +33,11 @@
  * for local use of libmfdata
  */
 #else
-#define LIBMFDATA_VERSION						20120724
+#define LIBMFDATA_VERSION						20120923
 
 /* The libmfdata version string
  */
-#define LIBMFDATA_VERSION_STRING					"20120724"
+#define LIBMFDATA_VERSION_STRING					"20120923"
 
 /* The library flags definitions
  */

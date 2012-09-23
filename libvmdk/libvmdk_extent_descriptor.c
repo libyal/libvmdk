@@ -437,7 +437,7 @@ int libvmdk_extent_descriptor_read(
 	}
 #endif
 	if( libfvalue_utf8_string_copy_to_integer(
-	     value_string_segment,
+	     (uint8_t *) value_string_segment,
 	     value_string_segment_size,
 	     &value_64bit,
 	     64,
@@ -641,7 +641,7 @@ int libvmdk_extent_descriptor_read(
 		}
 #endif
 		if( libfvalue_utf8_string_copy_to_integer(
-		     &( value_string[ value_string_index ] ),
+		     (uint8_t *) &( value_string[ value_string_index ] ),
 		     value_string_size,
 		     &value_64bit,
 		     64,

@@ -1,5 +1,5 @@
 /*
- * Debug functions
+ * The internal libclocale header
  *
  * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,32 +19,31 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBVMDK_DEBUG_H )
-#define _LIBVMDK_DEBUG_H
+#if !defined( _LIBVMDK_LIBCLOCALE_H )
+#define _LIBVMDK_LIBCLOCALE_H
 
 #include <common.h>
-#include <types.h>
 
-#include "libvmdk_libbfio.h"
-#include "libvmdk_libcerror.h"
+/* Define HAVE_LOCAL_LIBCLOCALE for local use of libclocale
+ */
+#if defined( HAVE_LOCAL_LIBCLOCALE )
 
-#if defined( __cplusplus )
-extern "C" {
+#include <libclocale_codepage.h>
+#include <libclocale_definitions.h>
+#include <libclocale_locale.h>
+#include <libclocale_support.h>
+
+#else
+
+/* If libtool DLL support is enabled set LIBCLOCALE_DLL_IMPORT
+ * before including libclocale.h
+ */
+#if defined( _WIN32 ) && defined( DLL_IMPORT )
+#define LIBCLOCALE_DLL_IMPORT
 #endif
 
-#if defined( HAVE_DEBUG_OUTPUT )
+#include <libclocale.h>
 
-void libvmdk_debug_print_vmdk_flags(
-      uint32_t flags );
-
-int libvmdk_debug_print_read_offsets(
-     libbfio_handle_t *file_io_handle,
-     libcerror_error_t **error );
-
-#endif
-
-#if defined( __cplusplus )
-}
 #endif
 
 #endif

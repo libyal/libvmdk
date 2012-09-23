@@ -25,10 +25,10 @@
 #include <common.h>
 #include <types.h>
 
-#include "libmfcache_array_type.h"
 #include "libmfcache_date_time.h"
 #include "libmfcache_cache_value.h"
 #include "libmfcache_extern.h"
+#include "libmfcache_libcdata.h"
 #include "libmfcache_libcerror.h"
 #include "libmfcache_types.h"
 
@@ -42,7 +42,7 @@ struct libmfcache_internal_cache
 {
 	/* The cache entries (array)
 	 */
-	libmfcache_array_t *entries;
+	libcdata_array_t *entries;
 
 	/* The number of cache values
 	 */

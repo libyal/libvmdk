@@ -82,7 +82,7 @@ int libvmdk_descriptor_file_read(
 
 int libvmdk_descriptor_file_read_string(
      libvmdk_descriptor_file_t *descriptor_file,
-     char *value_string,
+     const char *value_string,
      size_t value_string_size,
      libcerror_error_t **error );
 

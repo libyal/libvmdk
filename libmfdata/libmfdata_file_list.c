@@ -28,6 +28,7 @@
 #include "libmfdata_file.h"
 #include "libmfdata_file_list.h"
 #include "libmfdata_libbfio.h"
+#include "libmfdata_libcdata.h"
 #include "libmfdata_libcerror.h"
 #include "libmfdata_libcnotify.h"
 #include "libmfdata_libmfcache.h"
@@ -129,7 +130,7 @@ int libmfdata_file_list_initialize(
 
 		goto on_error;
 	}
-	if( libmfdata_array_initialize(
+	if( libcdata_array_initialize(
 	     &( internal_file_list->files ),
 	     0,
 	     error ) != 1 )
@@ -189,7 +190,7 @@ int libmfdata_file_list_free(
 		internal_file_list = (libmfdata_internal_file_list_t *) *file_list;
 		*file_list         = NULL;
 
-		if( libmfdata_array_free(
+		if( libcdata_array_free(
 		     &( internal_file_list->files ),
 		     (int (*)(intptr_t **, libcerror_error_t **)) &libmfdata_file_free,
 		     error ) != 1 )
@@ -417,7 +418,7 @@ int libmfdata_file_list_clone_files(
 	}
 	internal_source_file_list = (libmfdata_internal_file_list_t *) source_file_list;
 
-	if( libmfdata_array_get_number_of_entries(
+	if( libcdata_array_get_number_of_entries(
 	     internal_source_file_list->files,
 	     &number_of_files,
 	     error ) != 1 )
@@ -431,7 +432,7 @@ int libmfdata_file_list_clone_files(
 
 		goto on_error;
 	}
-	if( libmfdata_array_empty(
+	if( libcdata_array_empty(
 	     internal_destination_file_list->files,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libmfdata_file_free,
 	     error ) != 1 )
@@ -445,7 +446,7 @@ int libmfdata_file_list_clone_files(
 
 		goto on_error;
 	}
-	if( libmfdata_array_resize(
+	if( libcdata_array_resize(
 	     internal_destination_file_list->files,
 	     number_of_files,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libmfdata_file_free,
@@ -464,7 +465,7 @@ int libmfdata_file_list_clone_files(
 	     file_index < number_of_files;
 	     file_index++ )
 	{
-		if( libmfdata_array_get_entry_by_index(
+		if( libcdata_array_get_entry_by_index(
 		     internal_source_file_list->files,
 		     file_index,
 		     (intptr_t **) &internal_source_file,
@@ -497,7 +498,7 @@ int libmfdata_file_list_clone_files(
 		}
 		internal_destination_file->file_io_pool_entry  = internal_source_file->file_io_pool_entry;
 
-		if( libmfdata_array_set_entry_by_index(
+		if( libcdata_array_set_entry_by_index(
 		     internal_destination_file_list->files,
 		     file_index,
 		     (intptr_t *) internal_destination_file,
@@ -551,7 +552,7 @@ int libmfdata_file_list_resize(
 	}
 	internal_file_list = (libmfdata_internal_file_list_t *) file_list;
 
-	if( libmfdata_array_resize(
+	if( libcdata_array_resize(
 	     internal_file_list->files,
 	     number_of_files,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libmfdata_file_free,
@@ -593,7 +594,7 @@ int libmfdata_file_list_get_number_of_files(
 	}
 	internal_file_list = (libmfdata_internal_file_list_t *) file_list;
 
-	if( libmfdata_array_get_number_of_entries(
+	if( libcdata_array_get_number_of_entries(
 	     internal_file_list->files,
 	     number_of_files,
 	     error ) != 1 )
@@ -635,7 +636,7 @@ int libmfdata_file_list_get_file_item_by_index(
 	}
 	internal_file_list = (libmfdata_internal_file_list_t *) file_list;
 
-	if( libmfdata_array_get_entry_by_index(
+	if( libcdata_array_get_entry_by_index(
 	     internal_file_list->files,
 	     file_index,
 	     (intptr_t **) file,
@@ -680,7 +681,7 @@ int libmfdata_file_list_get_file_by_index(
 	}
 	internal_file_list = (libmfdata_internal_file_list_t *) file_list;
 
-	if( libmfdata_array_get_entry_by_index(
+	if( libcdata_array_get_entry_by_index(
 	     internal_file_list->files,
 	     file_index,
 	     (intptr_t **) &file,
@@ -752,7 +753,7 @@ int libmfdata_file_list_set_file_by_index(
 	}
 	internal_file_list = (libmfdata_internal_file_list_t *) file_list;
 
-	if( libmfdata_array_get_entry_by_index(
+	if( libcdata_array_get_entry_by_index(
 	     internal_file_list->files,
 	     file_index,
 	     (intptr_t **) &file,
@@ -803,7 +804,7 @@ int libmfdata_file_list_set_file_by_index(
 
 			return( -1 );
 		}
-		if( libmfdata_array_set_entry_by_index(
+		if( libcdata_array_set_entry_by_index(
 		     internal_file_list->files,
 		     file_index,
 		     (intptr_t *) file,
@@ -897,7 +898,7 @@ int libmfdata_file_list_append_file(
 
 		goto on_error;
 	}
-	if( libmfdata_array_append_entry(
+	if( libcdata_array_append_entry(
 	     internal_file_list->files,
 	     file_index,
 	     (intptr_t *) file,
@@ -1259,7 +1260,7 @@ int libmfdata_file_list_get_file_value_by_index(
 	}
 	internal_file_list = (libmfdata_internal_file_list_t *) file_list;
 
-	if( libmfdata_array_get_entry_by_index(
+	if( libcdata_array_get_entry_by_index(
 	     internal_file_list->files,
 	     file_index,
 	     (intptr_t **) &file,
@@ -1464,7 +1465,7 @@ int libmfdata_file_list_set_file_value_by_index(
 	}
 	internal_file_list = (libmfdata_internal_file_list_t *) file_list;
 
-	if( libmfdata_array_get_entry_by_index(
+	if( libcdata_array_get_entry_by_index(
 	     internal_file_list->files,
 	     file_index,
 	     (intptr_t **) &file,

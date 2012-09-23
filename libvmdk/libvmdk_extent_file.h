@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libvmdk_grain_table.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libmfcache.h"
@@ -77,17 +78,29 @@ struct libvmdk_extent_file
 	 */
 	uint32_t number_of_grain_table_entries;
 
+	/* The grain table size
+	 */
+	size_t grain_table_size;
+
 	/* The number of grain directory entries
 	 */
 	uint32_t number_of_grain_directory_entries;
 
-	/* The grain directory offset
+	/* The grain directory size
 	 */
-	off64_t grain_directory_offset;
+	size_t grain_directory_size;
+
+	/* The primary grain directory offset
+	 */
+	off64_t primary_grain_directory_offset;
 
 	/* The secondary grain directory offset
 	 */
 	off64_t secondary_grain_directory_offset;
+
+	/* Value to indicate the extent file is dirty
+	 */
+	uint8_t is_dirty;
 };
 
 int libvmdk_extent_file_initialize(
@@ -103,11 +116,11 @@ int libvmdk_extent_file_read_file_header_file_io_handle(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error );
 
-ssize_t libvmdk_extent_file_read_file_header_file_io_pool(
-         libvmdk_extent_file_t *extent_file,
-         libbfio_pool_t *file_io_pool,
-         int file_io_pool_entry,
-         libcerror_error_t **error );
+int libvmdk_extent_file_read_file_header(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
+     libcerror_error_t **error );
 
 int libvmdk_extent_file_read_file_header_data(
      libvmdk_extent_file_t *extent_file,
@@ -120,6 +133,24 @@ int libvmdk_extent_file_read_descriptor_data_file_io_handle(
      libbfio_handle_t *file_io_handle,
      uint8_t *descriptor_data,
      size_t descriptor_data_size,
+     libcerror_error_t **error );
+
+int libvmdk_extent_file_read_grain_directory(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
+     off64_t file_offset,
+     libvmdk_grain_table_t *grain_table,
+     libmfdata_list_t *grain_table_list,
+     libcerror_error_t **error );
+
+int libvmdk_extent_file_read_backup_grain_directory(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
+     off64_t file_offset,
+     libvmdk_grain_table_t *grain_table,
+     libmfdata_list_t *grain_table_list,
      libcerror_error_t **error );
 
 int libvmdk_extent_file_read(

@@ -203,6 +203,7 @@ int mount_handle_open_input(
      libcerror_error_t **error )
 {
 	static char *function = "mount_handle_open_input";
+	int result            = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -260,9 +261,26 @@ int mount_handle_open_input(
 
 		return( -1 );
 	}
-	if( number_of_filenames > 1 )
+	if( number_of_filenames == 1 )
 	{
-/* TODO set up data files ? */
+		result = libvmdk_handle_open_extent_data_files(
+		          mount_handle->input_handle,
+		          error );
+	}
+	else
+	{
+/* TODO */
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to open extent data files.",
+		 function );
+
+		return( -1 );
 	}
 	return( 1 );
 }

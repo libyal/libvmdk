@@ -1,5 +1,5 @@
 /*
- * The internal definitions
+ * The internal libcdata header
  *
  * Copyright (c) 2010-2012, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,39 +19,37 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBMFCACHE_INTERNAL_DEFINITIONS_H )
-#define _LIBMFCACHE_INTERNAL_DEFINITIONS_H
+#if !defined( _LIBMFCACHE_LIBCDATA_H )
+#define _LIBMFCACHE_LIBCDATA_H
 
 #include <common.h>
 
-/* Define HAVE_LOCAL_LIBMFCACHE for local use of libmfcache
+/* Define HAVE_LOCAL_LIBCDATA for local use of libcdata
  */
-#if !defined( HAVE_LOCAL_LIBMFCACHE )
-#include <libmfcache/definitions.h>
+#if defined( HAVE_LOCAL_LIBCDATA )
 
-/* The definitions in <libmfcache/definitions.h> are copied here
- * for local use of libmfcache
+#include <libcdata_array.h>
+#include <libcdata_btree.h>
+#include <libcdata_definitions.h>
+#include <libcdata_list.h>
+#include <libcdata_list_element.h>
+#include <libcdata_range_list.h>
+#include <libcdata_tree_node.h>
+#include <libcdata_types.h>
+
+#elif defined( HAVE_LIBCDATA_H )
+
+/* If libtool DLL support is enabled set LIBCDATA_DLL_IMPORT
+ * before including libcdata.h
  */
+#if defined( _WIN32 ) && defined( DLL_IMPORT )
+#define LIBCDATA_DLL_IMPORT
+#endif
+
+#include <libcdata.h>
+
 #else
-#define LIBMFCACHE_VERSION					20120923
-
-/* The libmfcache version string
- */
-#define LIBMFCACHE_VERSION_STRING				"20120923"
-
-/* The cache value flags definitions
- */
-enum LIBMFCACHE_CACHE_VALUE_FLAGS
-{
-	/* The cache value is not managed by the library
-	 */
-	LIBMFCACHE_CACHE_VALUE_FLAG_NON_MANAGED			= 0x00,
-
-	/* The cache value is managed by the library
-	 */
-	LIBMFCACHE_CACHE_VALUE_FLAG_MANAGED			= 0x01
-};
-
+#error Missing libcdata.h
 #endif
 
 #endif

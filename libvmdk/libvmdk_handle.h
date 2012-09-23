@@ -30,8 +30,8 @@
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libmfcache.h"
 #include "libvmdk_libmfdata.h"
-#include "libvmdk_offset_table.h"
 
 #if defined( _MSC_VER ) || defined( __BORLANDC__ ) || defined( __MINGW32_VERSION ) || defined( __MINGW64_VERSION_MAJOR )
 
@@ -65,9 +65,13 @@ struct libvmdk_internal_handle
 	 */
 	libmfdata_file_list_t *extent_files_list;
 
-	/* The grain offset table
+	/* The grain table (data) list
 	 */
-	libvmdk_offset_table_t *offset_table;
+	libmfdata_list_t *grain_table_list;
+
+	/* The grain table cache
+	 */
+	libmfcache_cache_t *grain_table_cache;
 
 	/* The io handle
 	 */
@@ -81,13 +85,13 @@ struct libvmdk_internal_handle
 	 */
 	uint8_t extent_data_file_io_pool_created_in_library;
 
+	/* The access flags
+	 */
+	int access_flags;
+
 	/* The maximum number of open handles in the pool
 	 */
 	int maximum_number_of_open_handles;
-
-	/* Value to indicate if abort was signalled
-	 */
-	int abort;
 };
 
 LIBVMDK_EXTERN \
@@ -166,7 +170,6 @@ int libvmdk_handle_close(
 
 int libvmdk_handle_open_read_grain_table(
      libvmdk_internal_handle_t *internal_handle,
-     libbfio_pool_t *file_io_pool,
      libcerror_error_t **error );
 
 int libvmdk_handle_open_read_signature(

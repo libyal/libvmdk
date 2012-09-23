@@ -266,7 +266,7 @@ int libvmdk_descriptor_file_read(
 	}
 	if( libvmdk_descriptor_file_read_string(
 	     descriptor_file,
-	     descriptor_data,
+	     (char *) descriptor_data,
 	     (size_t) file_size,
 	     error ) != 1 )
 	{
@@ -300,7 +300,7 @@ on_error:
  */
 int libvmdk_descriptor_file_read_string(
      libvmdk_descriptor_file_t *descriptor_file,
-     char *value_string,
+     const char *value_string,
      size_t value_string_size,
      libcerror_error_t **error )
 {
@@ -748,7 +748,7 @@ int libvmdk_descriptor_file_read_header(
 				}
 #endif
 				if( libfvalue_utf8_string_copy_to_integer(
-				     value,
+				     (uint8_t *) value,
 				     value_length,
 				     &value_64bit,
 				     64,
@@ -795,7 +795,7 @@ int libvmdk_descriptor_file_read_header(
 				}
 #endif
 				if( libfvalue_utf8_string_copy_to_integer(
-				     value,
+				     (uint8_t *) value,
 				     value_length,
 				     &value_64bit,
 				     64,
@@ -842,7 +842,7 @@ int libvmdk_descriptor_file_read_header(
 				}
 #endif
 				if( libfvalue_utf8_string_copy_to_integer(
-				     value,
+				     (uint8_t *) value,
 				     value_length,
 				     &value_64bit,
 				     64,

@@ -61,11 +61,11 @@ struct cowd_sparse_file_header
 	 */
 	uint8_t grain_number_of_sectors[ 4 ];
 
-	/* The grain directory sector number
+	/* The primary grain directory sector number
 	 * Consists of 4 bytes
 	 * Contains a value in sectors
 	 */
-	uint8_t grain_directory_sector_number[ 4 ];
+	uint8_t primary_grain_directory_sector_number[ 4 ];
 
 	/* The number of grain directory entries
 	 * Consists of 4 bytes

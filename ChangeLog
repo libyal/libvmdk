@@ -1,5 +1,10 @@
 TODO
-* read extent data files
+* vmdkinfo: print dirty status
+* add support for parent images
+* add support for zero-grain table entry support
+* test multi segment sparse image support
+* add and test flat image support
+* build grain table
 * descriptor file: put disk data base in fvalue table ?
 
 * code clean up:
@@ -29,9 +34,13 @@ Deployment:
 * create macosx package files
 * create codegear files
 
+20120923
+* worked on multi-file image support
+
 20120922
 * code clean up
 * worked on descriptor file support
+* worked on multi-file image support
 
 20120921
 * renamed segment file into extent file

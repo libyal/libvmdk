@@ -25,9 +25,9 @@
 #include <common.h>
 #include <types.h>
 
-#include "libmfdata_array_type.h"
 #include "libmfdata_extern.h"
 #include "libmfdata_libbfio.h"
+#include "libmfdata_libcdata.h"
 #include "libmfdata_libcerror.h"
 #include "libmfdata_types.h"
 
@@ -57,7 +57,7 @@ struct libmfdata_internal_segment_table
 
 	/* The segments (array)
 	 */
-	libmfdata_array_t *segments;
+	libcdata_array_t *segments;
 
 	/* The flags
 	 */

@@ -27,6 +27,7 @@
 #include "libmfcache_cache_value.h"
 #include "libmfcache_date_time.h"
 #include "libmfcache_definitions.h"
+#include "libmfcache_libcdata.h"
 #include "libmfcache_libcerror.h"
 #include "libmfcache_libcnotify.h"
 #include "libmfcache_types.h"
@@ -103,7 +104,7 @@ int libmfcache_cache_initialize(
 
 		goto on_error;
 	}
-	if( libmfcache_array_initialize(
+	if( libcdata_array_initialize(
 	     &( internal_cache->entries ),
 	     maximum_cache_entries,
 	     error ) != 1 )
@@ -157,7 +158,7 @@ int libmfcache_cache_free(
 		internal_cache = (libmfcache_internal_cache_t *) *cache;
 		*cache         = NULL;
 
-		if( libmfcache_array_free(
+		if( libcdata_array_free(
 		     &( internal_cache->entries ),
 		     (int (*)(intptr_t **, libcerror_error_t **)) &libmfcache_cache_value_free,
 		     error ) != 1 )
@@ -219,7 +220,7 @@ int libmfcache_cache_clone(
 	}
 	internal_source_cache = (libmfcache_internal_cache_t *) source_cache;
 
-	if( libmfcache_array_get_number_of_entries(
+	if( libcdata_array_get_number_of_entries(
 	     internal_source_cache->entries,
 	     &number_of_cache_entries,
 	     error ) != 1 )
@@ -274,7 +275,7 @@ int libmfcache_cache_get_number_of_entries(
 	}
 	internal_cache = (libmfcache_internal_cache_t *) cache;
 
-	if( libmfcache_array_get_number_of_entries(
+	if( libcdata_array_get_number_of_entries(
 	     internal_cache->entries,
 	     number_of_entries,
 	     error ) != 1 )
@@ -354,7 +355,7 @@ int libmfcache_cache_clear(
 	}
 	internal_cache = (libmfcache_internal_cache_t *) cache;
 
-	if( libmfcache_array_clear(
+	if( libcdata_array_clear(
 	     internal_cache->entries,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libmfcache_cache_value_free,
 	     error ) != 1 )
@@ -398,7 +399,7 @@ int libmfcache_cache_get_value_by_index(
 	}
 	internal_cache = (libmfcache_internal_cache_t *) cache;
 
-	if( libmfcache_array_get_entry_by_index(
+	if( libcdata_array_get_entry_by_index(
 	     internal_cache->entries,
 	     cache_entry_index,
 	     (intptr_t **) cache_value,
@@ -450,7 +451,7 @@ int libmfcache_cache_set_value_by_index(
 	}
 	internal_cache = (libmfcache_internal_cache_t *) cache;
 
-	if( libmfcache_array_get_entry_by_index(
+	if( libcdata_array_get_entry_by_index(
 	     internal_cache->entries,
 	     cache_entry_index,
 	     (intptr_t **) &cache_value,
@@ -481,7 +482,7 @@ int libmfcache_cache_set_value_by_index(
 
 			return( -1 );
 		}
-		if( libmfcache_array_set_entry_by_index(
+		if( libcdata_array_set_entry_by_index(
 		     internal_cache->entries,
 		     cache_entry_index,
 		     (intptr_t *) cache_value,

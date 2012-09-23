@@ -25,9 +25,9 @@
 #include <common.h>
 #include <types.h>
 
-#include "libmfdata_array_type.h"
 #include "libmfdata_extern.h"
 #include "libmfdata_libbfio.h"
+#include "libmfdata_libcdata.h"
 #include "libmfdata_libcerror.h"
 #include "libmfdata_libmfcache.h"
 #include "libmfdata_types.h"
@@ -46,7 +46,7 @@ struct libmfdata_internal_list
 
 	/* The (list) elements (array)
 	 */
-	libmfdata_array_t *elements;
+	libcdata_array_t *elements;
 
 	/* The flags
 	 */
@@ -95,6 +95,7 @@ struct libmfdata_internal_list
 	       int file_io_pool_entry,
 	       off64_t element_group_offset,
 	       size64_t element_group_size,
+	       uint32_t element_group_flags,
                uint8_t read_flags,
 	       libcerror_error_t **error );
 };
@@ -131,6 +132,7 @@ int libmfdata_list_initialize(
             int file_io_pool_entry,
             off64_t element_group_offset,
             size64_t element_group_size,
+            uint32_t element_group_flags,
             uint8_t read_flags,
             libcerror_error_t **error ),
      uint8_t flags,
