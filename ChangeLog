@@ -34,6 +34,10 @@ Deployment:
 * create macosx package files
 * create codegear files
 
+20120924
+* added extent data file sector restriction
+* bug fixes
+
 20120923
 * worked on multi-file image support
 

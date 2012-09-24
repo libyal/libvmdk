@@ -1089,10 +1089,13 @@ int libvmdk_extent_file_read_grain_directory(
 	uint8_t *grain_directory_entry       = NULL;
 	static char *function                = "libvmdk_extent_file_read_grain_directory";
 	off64_t grain_table_offset           = 0;
+	size64_t grain_data_size             = 0;
 	size64_t grain_directory_size        = 0;
+	size64_t total_grain_data_size       = 0;
 	ssize_t read_count                   = 0;
 	uint32_t grain_directory_entry_index = 0;
 	uint32_t range_flags                 = 0;
+	int number_of_grain_table_entries    = 0;
 
 	if( extent_file == NULL )
 	{
@@ -1185,19 +1188,7 @@ int libvmdk_extent_file_read_grain_directory(
 		byte_stream_copy_to_uint32_little_endian(
 		 grain_directory_entry,
 		 grain_table_offset );
-		 
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: grain directory entry: %" PRIu32 " sector number: %" PRIi64 " (offset: 0x%08" PRIx64 ") file IO pool entry: %d\n",
-			 function,
-			 grain_directory_entry_index,
-			 grain_table_offset,
-			 grain_table_offset * 512,
-			 file_io_pool_entry );
-		}
-#endif
+
 		if( grain_table_offset == 0 )
 		{
 			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
@@ -1209,10 +1200,57 @@ int libvmdk_extent_file_read_grain_directory(
 		}
 		grain_table->previous_last_grain_offset_filled = grain_table->last_grain_offset_filled;
 
+		number_of_grain_table_entries = (int) extent_file->number_of_grain_table_entries;
+		grain_data_size               = number_of_grain_table_entries * extent_file->grain_size;
+
+		if( ( total_grain_data_size + grain_data_size ) > extent_file->maximum_data_size )
+		{
+			grain_data_size               = extent_file->maximum_data_size - total_grain_data_size;
+			number_of_grain_table_entries = grain_data_size / extent_file->grain_size;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: grain directory entry: %03" PRIu32 " sector number\t\t: %" PRIi64 "\n",
+			 function,
+			 grain_directory_entry_index,
+			 grain_table_offset );
+
+			libcnotify_printf(
+			 "%s: grain directory entry: %03" PRIu32 " offset\t\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
+			 function,
+			 grain_directory_entry_index,
+			 grain_table_offset * 512,
+			 grain_table_offset * 512 );
+
+			libcnotify_printf(
+			 "%s: grain directory entry: %03" PRIu32 " size\t\t\t: %" PRIu64 " (%d)\n",
+			 function,
+			 grain_directory_entry_index,
+			 grain_data_size,
+			 number_of_grain_table_entries );
+
+			libcnotify_printf(
+			 "%s: grain directory entry: %03" PRIu32 " file IO pool entry\t\t: %d\n",
+			 function,
+			 grain_directory_entry_index,
+			 file_io_pool_entry );
+
+			libcnotify_printf(
+			 "%s: grain directory entry: %03" PRIu32 " range flags\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 grain_directory_entry_index,
+			 range_flags );
+
+			libcnotify_printf(
+			 "\n" );
+		}
+#endif
 		if( libmfdata_list_append_group(
 		     grain_table_list,
 		     &( grain_table->last_grain_offset_filled ),
-		     (int) extent_file->number_of_grain_table_entries,
+		     number_of_grain_table_entries,
 		     file_io_pool_entry,
 		     grain_table_offset,
 		     (size64_t) extent_file->grain_table_size,
@@ -1228,8 +1266,9 @@ int libvmdk_extent_file_read_grain_directory(
 
 			goto on_error;
 		}
-		grain_table->last_grain_offset_filled += (int) extent_file->number_of_grain_directory_entries;
+		grain_table->last_grain_offset_filled += number_of_grain_table_entries;
 
+		total_grain_data_size += grain_data_size;
 		grain_directory_entry += sizeof( uint32_t );
 	}
 /* TODO check if remainder of sector block is emtpy */
@@ -1239,13 +1278,6 @@ int libvmdk_extent_file_read_grain_directory(
 
 	grain_directory_data = NULL;
 
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "\n" );
-	}
-#endif
 	return( 1 );
 
 on_error:
@@ -1274,14 +1306,17 @@ int libvmdk_extent_file_read_backup_grain_directory(
 	static char *function                = "libvmdk_extent_file_read_backup_grain_directory";
 	off64_t grain_table_offset           = 0;
 	off64_t group_offset                 = 0;
+	size64_t grain_data_size             = 0;
 	size64_t grain_directory_size        = 0;
 	size64_t group_size                  = 0;
+	size64_t total_grain_data_size       = 0;
 	ssize_t read_count                   = 0;
 	uint32_t grain_directory_entry_index = 0;
 	uint32_t group_flags                 = 0;
 	uint32_t range_flags                 = 0;
 	int group_number_of_entries          = 0;
 	int group_file_io_pool_entry         = 0;
+	int number_of_grain_table_entries    = 0;
 
 	if( extent_file == NULL )
 	{
@@ -1374,19 +1409,7 @@ int libvmdk_extent_file_read_backup_grain_directory(
 		byte_stream_copy_to_uint32_little_endian(
 		 grain_directory_entry,
 		 grain_table_offset );
-		 
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: grain directory entry: %" PRIu32 " sector number: %" PRIi64 " (offset: 0x%08" PRIx64 ") file IO pool entry: %d\n",
-			 function,
-			 grain_directory_entry_index,
-			 grain_table_offset,
-			 grain_table_offset * 512,
-			 file_io_pool_entry );
-		}
-#endif
+
 		if( grain_table_offset == 0 )
 		{
 			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
@@ -1396,6 +1419,53 @@ int libvmdk_extent_file_read_backup_grain_directory(
 			grain_table_offset *= 512;
 			range_flags         = 0;
 		}
+		number_of_grain_table_entries = (int) extent_file->number_of_grain_table_entries;
+		grain_data_size               = number_of_grain_table_entries * extent_file->grain_size;
+
+		if( ( total_grain_data_size + grain_data_size ) > extent_file->maximum_data_size )
+		{
+			grain_data_size               = extent_file->maximum_data_size - total_grain_data_size;
+			number_of_grain_table_entries = grain_data_size / extent_file->grain_size;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: grain directory entry: %03" PRIu32 " sector number\t: %" PRIi64 "\n",
+			 function,
+			 grain_directory_entry_index,
+			 grain_table_offset );
+
+			libcnotify_printf(
+			 "%s: grain directory entry: %03" PRIu32 " offset\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
+			 function,
+			 grain_directory_entry_index,
+			 grain_table_offset * 512,
+			 grain_table_offset * 512 );
+
+			libcnotify_printf(
+			 "%s: grain directory entry: %03" PRIu32 " size\t\t: %" PRIu64 " (%d)\n",
+			 function,
+			 grain_directory_entry_index,
+			 grain_data_size,
+			 number_of_grain_table_entries );
+
+			libcnotify_printf(
+			 "%s: grain directory entry: %03" PRIu32 " file IO pool entry\t: %d\n",
+			 function,
+			 grain_directory_entry_index,
+			 file_io_pool_entry );
+
+			libcnotify_printf(
+			 "%s: grain directory entry: %03" PRIu32 " range flags\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 grain_directory_entry_index,
+			 range_flags );
+
+			libcnotify_printf(
+			 "\n" );
+		}
+#endif
 		if( libmfdata_list_get_group_by_index(
 		     grain_table_list,
 		     grain_table->last_grain_offset_compared,
@@ -1417,7 +1487,7 @@ int libvmdk_extent_file_read_backup_grain_directory(
 
 			goto on_error;
 		}
-		if( group_number_of_entries != (int) extent_file->number_of_grain_table_entries )
+		if( group_number_of_entries != number_of_grain_table_entries )
 		{
 			libcerror_error_set(
 			 error,
@@ -1444,12 +1514,13 @@ int libvmdk_extent_file_read_backup_grain_directory(
 			 "%s: unable to set backup data range of grain offset group: %d - %d.",
 			 function,
 			 grain_table->last_grain_offset_compared,
-			 grain_table->last_grain_offset_compared + (int) extent_file->number_of_grain_table_entries );
+			 grain_table->last_grain_offset_compared + number_of_grain_table_entries );
 
 			goto on_error;
 		}
-		grain_table->last_grain_offset_compared += (int) extent_file->number_of_grain_table_entries;
+		grain_table->last_grain_offset_compared += number_of_grain_table_entries;
 
+		total_grain_data_size += grain_data_size;
 		grain_directory_entry += sizeof( uint32_t );
 	}
 /* TODO check if remainder of sector block is emtpy */
@@ -1459,13 +1530,6 @@ int libvmdk_extent_file_read_backup_grain_directory(
 
 	grain_directory_data = NULL;
 
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "\n" );
-	}
-#endif
 	return( 1 );
 
 on_error:

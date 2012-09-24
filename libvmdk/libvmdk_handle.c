@@ -2212,35 +2212,19 @@ int libvmdk_handle_open_read_grain_table(
 			}
 			if( extent_index == 0 )
 			{
-				internal_handle->io_handle->grain_size     = extent_file->grain_size;
-				grain_table->number_of_grain_table_entries = extent_file->number_of_grain_table_entries;
+				internal_handle->io_handle->grain_size = extent_file->grain_size;
 			}
-			else
+			else if( extent_file->grain_size != internal_handle->io_handle->grain_size )
 			{
-				if( extent_file->grain_size != internal_handle->io_handle->grain_size )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_INPUT,
-					 LIBCERROR_INPUT_ERROR_VALUE_MISMATCH,
-					 "%s: extent file: %d grain size mismatch.",
-					 function,
-					 extent_index );
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_INPUT,
+				 LIBCERROR_INPUT_ERROR_VALUE_MISMATCH,
+				 "%s: extent file: %d grain size mismatch.",
+				 function,
+				 extent_index );
 
-					goto on_error;
-				}
-				if( extent_file->number_of_grain_table_entries != grain_table->number_of_grain_table_entries )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_INPUT,
-					 LIBCERROR_INPUT_ERROR_VALUE_MISMATCH,
-					 "%s: extent file: %d number of grain table entries mismatch.",
-					 function,
-					 extent_index );
-
-					goto on_error;
-				}
+				goto on_error;
 			}
 			if( extent_file->is_dirty != 0 )
 			{
@@ -2552,7 +2536,6 @@ ssize_t libvmdk_handle_read_buffer(
 	off64_t grain_offset                       = 0;
 	size_t buffer_offset                       = 0;
 	size_t read_size                           = 0;
-	ssize_t total_read_count                   = 0;
 	uint64_t grain_index                       = 0;
 	uint64_t grain_data_offset                 = 0;
 	int result                                 = 0;
@@ -2680,7 +2663,7 @@ ssize_t libvmdk_handle_read_buffer(
 
 		return( -1 );
 	}
-	while( buffer_offset < buffer_size )
+	while( buffer_size > 0 )
 	{
 		/* This function will expand element groups
 		 */
@@ -2731,7 +2714,6 @@ ssize_t libvmdk_handle_read_buffer(
 		}
 		buffer_offset    += read_size;
 		buffer_size      -= read_size;
-		total_read_count += (ssize_t) read_size;
 		grain_index      += 1;
 		grain_offset     += internal_handle->io_handle->grain_size;
 		grain_data        = NULL;

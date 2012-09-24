@@ -56,7 +56,7 @@ struct libvmdk_extent_file
 
 	/* The maximum data size
 	 */
-	uint64_t maximum_data_size;
+	size64_t maximum_data_size;
 
 	/* The compression method
 	 */

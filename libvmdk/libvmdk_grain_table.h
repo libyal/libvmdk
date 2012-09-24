@@ -43,10 +43,6 @@ struct libvmdk_grain_table
 	 */
 	libvmdk_io_handle_t *io_handle;
 
-	/* The number of grain table entries
-	 */
-	uint32_t number_of_grain_table_entries;
-
 	/* The previous last grain offset that was filled
 	 */
 	int previous_last_grain_offset_filled;
@@ -107,6 +103,7 @@ int libvmdk_grain_table_fill(
      int file_io_pool_entry,
      const uint8_t *grain_table_data,
      size_t grain_table_data_size,
+     int number_of_grain_table_entries,
      libcerror_error_t **error );
 
 int libvmdk_grain_table_correct(
@@ -116,6 +113,7 @@ int libvmdk_grain_table_correct(
      int file_io_pool_entry,
      const uint8_t *grain_table_data,
      size_t grain_table_data_size,
+     int number_of_grain_table_entries,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

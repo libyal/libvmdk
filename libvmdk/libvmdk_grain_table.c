@@ -567,6 +567,7 @@ int libvmdk_grain_table_read_offsets(
 		     file_io_pool_entry,
 		     grain_table_data,
 		     (size_t) element_group_size,
+		     number_of_elements,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -588,6 +589,7 @@ int libvmdk_grain_table_read_offsets(
 		     file_io_pool_entry,
 		     grain_table_data,
 		     (size_t) element_group_size,
+		     number_of_elements,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -635,13 +637,14 @@ int libvmdk_grain_table_fill(
      int file_io_pool_entry,
      const uint8_t *grain_table_data,
      size_t grain_table_data_size,
+     int number_of_grain_table_entries,
      libcerror_error_t **error )
 {
 	const uint8_t *grain_table_entry = NULL;
 	static char *function            = "libvmdk_grain_table_fill";
 	off64_t grain_data_offset        = 0;
-	uint32_t grain_table_entry_index = 0;
 	uint32_t range_flags             = 0;
+	int grain_table_entry_index      = 0;
 	int result                       = 0;
 
 	if( grain_table == NULL )
@@ -662,6 +665,17 @@ int libvmdk_grain_table_fill(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid grain table - missing IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( grain_table->io_handle->grain_size == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid grain table - invalid IO handle - missing grain size.",
 		 function );
 
 		return( -1 );
@@ -688,10 +702,21 @@ int libvmdk_grain_table_fill(
 
 		return( -1 );
 	}
+	if( ( (size_t) number_of_grain_table_entries * 4 ) > grain_table_data_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of grain table entries value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
 	grain_table_entry = grain_table_data;
 
 	for( grain_table_entry_index = 0;
-	     grain_table_entry_index < grain_table->number_of_grain_table_entries;
+	     grain_table_entry_index < number_of_grain_table_entries;
 	     grain_table_entry_index++ )
 	{
 		byte_stream_copy_to_uint32_little_endian(
@@ -788,13 +813,14 @@ int libvmdk_grain_table_correct(
      int file_io_pool_entry,
      const uint8_t *grain_table_data,
      size_t grain_table_data_size,
+     int number_of_grain_table_entries,
      libcerror_error_t **error )
 {
 	const uint8_t *grain_table_entry = NULL;
 	static char *function            = "libvmdk_grain_table_correct";
 	off64_t grain_data_offset        = 0;
-	uint32_t grain_table_entry_index = 0;
 	uint32_t range_flags             = 0;
+	int grain_table_entry_index      = 0;
 	int result                       = 0;
 
 	if( grain_table == NULL )
@@ -815,6 +841,17 @@ int libvmdk_grain_table_correct(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid grain table - missing IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( grain_table->io_handle->grain_size == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid grain table - invalid IO handle - missing grain size.",
 		 function );
 
 		return( -1 );
@@ -841,10 +878,21 @@ int libvmdk_grain_table_correct(
 
 		return( -1 );
 	}
+	if( ( (size_t) number_of_grain_table_entries * 4 ) > grain_table_data_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of grain table entries value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
 	grain_table_entry = grain_table_data;
 
 	for( grain_table_entry_index = 0;
-	     grain_table_entry_index < grain_table->number_of_grain_table_entries;
+	     grain_table_entry_index < number_of_grain_table_entries;
 	     grain_table_entry_index++ )
 	{
 		byte_stream_copy_to_uint32_little_endian(
