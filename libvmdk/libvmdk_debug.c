@@ -73,7 +73,7 @@ int libvmdk_debug_print_read_offsets(
 	off64_t offset        = 0;
 	size64_t size         = 0;
 	int number_of_offsets = 0;
-	int offset_index      = 0;
+	int offset_iterator   = 0;
 
 	if( file_io_handle == NULL )
 	{
@@ -103,13 +103,13 @@ int libvmdk_debug_print_read_offsets(
 	libcnotify_printf(
 	 "Offsets read:\n" );
 
-	for( offset_index = 0;
-	     offset_index < number_of_offsets;
-	     offset_index++ )
+	for( offset_iterator = 0;
+	     offset_iterator < number_of_offsets;
+	     offset_iterator++ )
 	{
 		if( libbfio_handle_get_offset_read(
 		     file_io_handle,
-		     offset_index,
+		     offset_iterator,
 		     &offset,
 		     &size,
 		     error ) != 1 )
@@ -120,7 +120,7 @@ int libvmdk_debug_print_read_offsets(
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 			 "%s: unable to retrieve offset: %d.",
 			 function,
-			 offset_index );
+			 offset_iterator );
 
 			return( -1 );
 		}

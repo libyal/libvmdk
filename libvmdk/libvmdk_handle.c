@@ -134,7 +134,7 @@ on_error:
 	return( -1 );
 }
 
-/* Frees an exisisting handle
+/* Frees the handle
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_free(
@@ -161,21 +161,18 @@ int libvmdk_handle_free(
 		internal_handle = (libvmdk_internal_handle_t *) *handle;
 		*handle         = NULL;
 
-		if( internal_handle->io_handle != NULL )
+		if( libvmdk_io_handle_free(
+		     &( internal_handle->io_handle ),
+		     error ) != 1 )
 		{
-			if( libvmdk_io_handle_free(
-			     &( internal_handle->io_handle ),
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free io handle.",
-				 function );
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free io handle.",
+			 function );
 
-				result = -1;
-			}
+			result = -1;
 		}
 		if( internal_handle->extent_data_file_io_pool_created_in_library != 0 )
 		{
@@ -202,7 +199,7 @@ int libvmdk_handle_free(
 	return( result );
 }
 
-/* Signals the libvmdk handle to abort its current activity
+/* Signals the handle to abort its current activity
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_signal_abort(
@@ -241,7 +238,7 @@ int libvmdk_handle_signal_abort(
 	return( 1 );
 }
 
-/* Opens a set of Mware Virtual Disk file(s)
+/* Opens a set of VMDK file(s)
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_open(
@@ -433,7 +430,7 @@ on_error:
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
-/* Opens a set of VMware Virtual Disk file(s)
+/* Opens a set of VMDK file(s)
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_open_wide(
@@ -626,7 +623,7 @@ on_error:
 
 #endif
 
-/* Opens a set of VMware Virtual Disk file(s) using a Basic File IO (bfio) handle
+/* Opens a set of VMDK file(s) using a Basic File IO (bfio) handle
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_open_file_io_handle(
@@ -1686,7 +1683,7 @@ int libvmdk_handle_open_extent_data_file_io_handle(
 	return( 1 );
 }
 
-/* Closes a VMware Virtual Disk file(s)
+/* Closes the VMDK file(s)
  * Returns 0 if successful or -1 on error
  */
 int libvmdk_handle_close(

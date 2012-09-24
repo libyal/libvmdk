@@ -104,7 +104,7 @@ on_error:
 	return( -1 );
 }
 
-/* Frees an exisisting io handle
+/* Frees an IO handle
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_io_handle_free(

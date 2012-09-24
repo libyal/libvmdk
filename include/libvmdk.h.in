@@ -80,13 +80,13 @@ int libvmdk_check_file_signature_file_io_handle(
  * Notify functions
  * ------------------------------------------------------------------------- */
 
-/* Set the verbose notification
+/* Sets the verbose notification
  */
 LIBVMDK_EXTERN \
 void libvmdk_notify_set_verbose(
       int verbose );
 
-/* Set the notification stream
+/* Sets the notification stream
  * Returns 1 if successful or -1 on error
  */
 LIBVMDK_EXTERN \
@@ -158,7 +158,7 @@ int libvmdk_error_backtrace_sprint(
  * File functions
  * ------------------------------------------------------------------------- */
 
-/* Initializes the VMware Virtual Disk file(s)
+/* Initializes a handle
  * Make sure the value file is pointing to is set to NULL
  * Returns 1 if successful or -1 on error
  */
@@ -167,7 +167,7 @@ int libvmdk_handle_initialize(
      libvmdk_handle_t **handle,
      libvmdk_error_t **error );
 
-/* Frees an exisisting VMware Virtual Disk file(s)
+/* Frees the handle
  * Returns 1 if successful or -1 on error
  */
 LIBVMDK_EXTERN \
@@ -175,7 +175,7 @@ int libvmdk_handle_free(
      libvmdk_handle_t **handle,
      libvmdk_error_t **error );
 
-/* Signals the libvmdk handle to abort its current activity
+/* Signals the handle to abort its current activity
  * Returns 1 if successful or -1 on error
  */
 LIBVMDK_EXTERN \
@@ -183,7 +183,7 @@ int libvmdk_handle_signal_abort(
      libvmdk_handle_t *handle,
      libvmdk_error_t **error );
 
-/* Opens a set of VMware Virtual Disk file(s)
+/* Opens a set of VMDK file(s)
  * Returns 1 if successful or -1 on error
  */
 LIBVMDK_EXTERN \
@@ -194,7 +194,7 @@ int libvmdk_handle_open(
      libvmdk_error_t **error );
 
 #if defined( LIBVMDK_HAVE_WIDE_CHARACTER_TYPE )
-/* Opens a set of VMware Virtual Disk file(s)
+/* Opens a set of VMDK file(s)
  * Returns 1 if successful or -1 on error
  */
 LIBVMDK_EXTERN \
@@ -206,7 +206,7 @@ int libvmdk_handle_open_wide(
 #endif
 
 #if defined( LIBVMDK_HAVE_BFIO )
-/* Opens a set of VMware Virtual Disk file(s) using a Basic File IO (bfio) handle
+/* Opens a set of VMDK file(s) using a Basic File IO (bfio) handle
  * Returns 1 if successful or -1 on error
  */
 LIBVMDK_EXTERN \
@@ -239,7 +239,7 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
      libvmdk_error_t **error );
 #endif
 
-/* Closes a VMware Virtual Disk file(s)
+/* Closes the VMDK file(s)
  * Returns 0 if successful or -1 on error
  */
 LIBVMDK_EXTERN \

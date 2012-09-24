@@ -30,6 +30,9 @@ File format
 
 Deployment:
 * update manuals
+  - update libvmdk.3
+  - update vmdkinfo.1
+  - add vmdkmount.1
 * create msvscpp files
 * create macosx package files
 * create codegear files
@@ -37,6 +40,7 @@ Deployment:
 20120924
 * added extent data file sector restriction
 * bug fixes
+* code clean up
 
 20120923
 * worked on multi-file image support

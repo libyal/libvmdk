@@ -322,7 +322,7 @@ int mount_handle_close(
 }
 
 /* Read a buffer from the input handle
- * Return the number of bytes read if successful or -1 on error
+ * Returns the number of bytes read if successful or -1 on error
  */
 ssize_t mount_handle_read_buffer(
          mount_handle_t *mount_handle,
@@ -365,7 +365,7 @@ ssize_t mount_handle_read_buffer(
 }
 
 /* Seeks a specific offset from the input handle
- * Return the offset if successful or -1 on error
+ * Returns the offset if successful or -1 on error
  */
 off64_t mount_handle_seek_offset(
          mount_handle_t *mount_handle,
