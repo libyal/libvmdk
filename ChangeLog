@@ -37,6 +37,9 @@ Deployment:
 * create macosx package files
 * create codegear files
 
+20121009
+* worked on COWD file support
+
 20120924
 * added extent data file sector restriction
 * bug fixes

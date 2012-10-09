@@ -62,7 +62,7 @@ struct libvmdk_io_handle
 
 	/* Value to indicate one or more extent files is are dirty
 	 */
-	uint8_t is_dirty;
+	uint32_t is_dirty;
 
 	/* The compression method
 	 */

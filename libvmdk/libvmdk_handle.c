@@ -962,7 +962,7 @@ int libvmdk_handle_open_file_io_handle(
 
 		goto on_error;
 	}
-	internal_handle->io_handle->media_size   = internal_handle->descriptor_file->media_size;
+	internal_handle->io_handle->media_size = internal_handle->descriptor_file->media_size;
 
 	internal_handle->access_flags = access_flags;
 
