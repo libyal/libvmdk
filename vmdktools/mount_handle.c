@@ -261,6 +261,20 @@ int mount_handle_open_input(
 
 		return( -1 );
 	}
+	if( mount_handle_open_input_parent_handle(
+	     mount_handle,
+	     mount_handle->input_handle,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to open parent handle.",
+		 function );
+
+		return( -1 );
+	}
 	if( number_of_filenames == 1 )
 	{
 		result = libvmdk_handle_open_extent_data_files(
@@ -283,6 +297,220 @@ int mount_handle_open_input(
 		return( -1 );
 	}
 	return( 1 );
+}
+
+/* Opens the parent handle
+ * Returns 1 if successful, 0 if no parent or -1 on error
+ */
+int mount_handle_open_input_parent_handle(
+     mount_handle_t *mount_handle,
+     libvmdk_handle_t *handle,
+     libcerror_error_t **error )
+{
+	libcstring_system_character_t *parent_filename = NULL;
+	libvmdk_handle_t *parent_handle                = NULL;
+	static char *function                          = "mount_handle_open_input_parent_handle";
+	size_t parent_filename_size                    = 0;
+	uint32_t parent_content_identifier             = 0;
+	int result                                     = 0;
+
+	if( mount_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid mount handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( libvmdk_handle_get_parent_content_identifier(
+	     handle,
+	     &parent_content_identifier,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve parent content identifier.",
+		 function );
+
+		goto on_error;
+	}
+	if( parent_content_identifier == 0xffffffffUL )
+	{
+		return( 0 );
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libvmdk_handle_get_utf16_parent_filename_size(
+		  handle,
+		  &parent_filename_size,
+		  error );
+#else
+	result = libvmdk_handle_get_utf8_parent_filename_size(
+		  handle,
+		  &parent_filename_size,
+		  error );
+#endif
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve parent filename size.",
+		 function );
+
+		goto on_error;
+	}
+	if( parent_filename_size == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing parent filename.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( parent_filename_size > (size_t) SSIZE_MAX )
+	 || ( ( sizeof( libcstring_system_character_t ) * parent_filename_size ) > (size_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid parent filename size value exceeds maximum.",
+		 function );
+
+		goto on_error;
+	}
+	parent_filename = libcstring_system_string_allocate(
+			   parent_filename_size );
+
+	if( parent_filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create parent filename string.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libvmdk_handle_get_utf16_parent_filename(
+		  handle,
+		  (uint16_t *) parent_filename,
+		  parent_filename_size,
+		  error );
+#else
+	result = libvmdk_handle_get_utf8_parent_filename(
+		  handle,
+		  (uint8_t *) parent_filename,
+		  parent_filename_size,
+		  error );
+#endif
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve parent filename.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( libvmdk_handle_open_wide(
+	     parent_handle,
+	     parent_filename,
+	     LIBVMDK_OPEN_READ,
+	     error ) != 1 )
+#else
+	if( libvmdk_handle_open(
+	     parent_handle,
+	     parent_filename,
+	     LIBVMDK_OPEN_READ,
+	     error ) != 1 )
+#endif
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to open parent handle: %" PRIs_LIBCSTRING_SYSTEM ".",
+		 function,
+		 parent_filename );
+
+		goto on_error;
+	}
+	memory_free(
+	 parent_filename );
+
+	parent_filename = NULL;
+
+	if( mount_handle_open_input_parent_handle(
+	     mount_handle,
+	     parent_handle,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to open parent handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( libvmdk_handle_open_extent_data_files(
+	     parent_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to open parent extent data files.",
+		 function );
+
+		goto on_error;
+	}
+	if( libvmdk_handle_set_parent_handle(
+	     handle,
+	     parent_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set parent handle.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( parent_handle != NULL )
+	{
+		libvmdk_handle_free(
+		 &parent_handle,
+		 NULL );
+	}
+	if( parent_filename != NULL )
+	{
+		memory_free(
+		 parent_filename );
+	}
+	return( -1 );
 }
 
 /* Closes the mount handle

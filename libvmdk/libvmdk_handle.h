@@ -248,6 +248,12 @@ int libvmdk_handle_set_maximum_number_of_open_handles(
      int maximum_number_of_open_handles,
      libcerror_error_t **error );
 
+LIBVMDK_EXTERN \
+int libvmdk_handle_set_parent_handle(
+     libvmdk_handle_t *handle,
+     libvmdk_handle_t *parent_handle,
+     libcerror_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

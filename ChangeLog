@@ -1,4 +1,8 @@
 TODO
+* add parent image support
+  - bail out on read if parent is not set
+* implement libvmdk_handle_set_maximum_number_of_open_handles
+* vmdkmount: show device files for all previous snapshots
 * vmdkinfo: print dirty status
 * add support for parent images
 * add support for zero-grain table entry support
@@ -37,8 +41,9 @@ Deployment:
 * create macosx package files
 * create codegear files
 
-20121009
-* worked on COWD file support
+20121127
+* worked on parent image support
+* updated libvmdk.3 man page
 
 20120924
 * added extent data file sector restriction

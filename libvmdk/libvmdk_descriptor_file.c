@@ -147,6 +147,11 @@ int libvmdk_descriptor_file_free(
 	}
 	if( *descriptor_file != NULL )
 	{
+		if( ( *descriptor_file )->parent_filename != NULL )
+		{
+			memory_free(
+			 ( *descriptor_file )->parent_filename );
+		}
 		if( libcdata_array_free(
 		     &( ( *descriptor_file )->extents_array ),
 		     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_descriptor_free,
@@ -482,7 +487,7 @@ int libvmdk_descriptor_file_read_header(
 		 function,
 		 *line_index );
 
-		return( -1 );
+		goto on_error;
 	}
 	if( line_string_segment == NULL )
 	{
@@ -494,7 +499,7 @@ int libvmdk_descriptor_file_read_header(
 		 function,
 		 *line_index );
 
-		return( -1 );
+		goto on_error;
 	}
 	/* Ignore trailing white space
 	 */
@@ -544,7 +549,7 @@ int libvmdk_descriptor_file_read_header(
 		 "%s: unsupported descriptor file signature.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	*line_index += 1;
 
@@ -565,7 +570,7 @@ int libvmdk_descriptor_file_read_header(
 			 function,
 			 *line_index );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( line_string_segment == NULL )
 		{
@@ -577,7 +582,7 @@ int libvmdk_descriptor_file_read_header(
 			 function,
 			 *line_index );
 
-			return( -1 );
+			goto on_error;
 		}
 		/* Ignore trailing white space
 		 */
@@ -762,7 +767,7 @@ int libvmdk_descriptor_file_read_header(
 					 "%s: unable to determine content identifier value from string.",
 					 function );
 
-					return( -1 );
+					goto on_error;
 				}
 				if( value_64bit > (uint64_t) UINT32_MAX )
 				{
@@ -773,7 +778,7 @@ int libvmdk_descriptor_file_read_header(
 					 "%s: invalid content identifier value exceeds maximum.",
 					 function );
 
-					return( -1 );
+					goto on_error;
 				}
 				descriptor_file->content_identifier = (uint32_t) value_64bit;
 			}
@@ -809,7 +814,7 @@ int libvmdk_descriptor_file_read_header(
 					 "%s: unable to determine version value from string.",
 					 function );
 
-					return( -1 );
+					goto on_error;
 				}
 				if( value_64bit > (uint64_t) INT_MAX )
 				{
@@ -820,7 +825,7 @@ int libvmdk_descriptor_file_read_header(
 					 "%s: invalid version value exceeds maximum.",
 					 function );
 
-					return( -1 );
+					goto on_error;
 				}
 				descriptor_file->version = (int) value_64bit;
 			}
@@ -856,7 +861,7 @@ int libvmdk_descriptor_file_read_header(
 					 "%s: unable to determine parent content identifier value from string.",
 					 function );
 
-					return( -1 );
+					goto on_error;
 				}
 				if( value_64bit > (uint64_t) UINT32_MAX )
 				{
@@ -867,7 +872,7 @@ int libvmdk_descriptor_file_read_header(
 					 "%s: invalid content parent identifier value exceeds maximum.",
 					 function );
 
-					return( -1 );
+					goto on_error;
 				}
 				descriptor_file->parent_content_identifier = (uint32_t) value_64bit;
 			}
@@ -1060,16 +1065,55 @@ int libvmdk_descriptor_file_read_header(
 			     "parentFileNameHint",
 			     18 ) == 0 )
 			{
+				if( descriptor_file->parent_filename != NULL )
+				{
+					memory_free(
+					 descriptor_file->parent_filename );
+
+					descriptor_file->parent_filename      = NULL;
+					descriptor_file->parent_filename_size = 0;
+				}
+				descriptor_file->parent_filename = (uint8_t *) memory_allocate(
+				                                                sizeof( uint8_t ) * ( value_length + 1 ) );
+
+				if( descriptor_file->parent_filename == NULL )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_MEMORY,
+					 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+					 "%s: unable to create parent filename.",
+					 function );
+
+					goto on_error;
+				}
+				if( memory_copy(
+				     descriptor_file->parent_filename,
+				     value,
+				     value_length ) == NULL )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_MEMORY,
+					 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+					 "%s: unable to copy parent filename.",
+					 function );
+
+					goto on_error;
+				}
+				descriptor_file->parent_filename[ value_length ] = 0;
+
+				descriptor_file->parent_filename_size = value_length + 1;
+
 #if defined( HAVE_DEBUG_OUTPUT )
 				if( libcnotify_verbose != 0 )
 				{
 					libcnotify_printf(
 				 	 "%s: parent filename\t\t\t: %s\n",
 					 function,
-					 value );
+					 descriptor_file->parent_filename );
 				}
 #endif
-/* TODO */
 			}
 		}
 		*line_index += 1;
@@ -1082,6 +1126,18 @@ int libvmdk_descriptor_file_read_header(
 	}
 #endif
 	return( 1 );
+
+on_error:
+	if( descriptor_file->parent_filename != NULL )
+	{
+		memory_free(
+		 descriptor_file->parent_filename );
+
+		descriptor_file->parent_filename = NULL;
+	}
+	descriptor_file->parent_filename_size = 0;
+
+	return( -1 );
 }
 
 /* Reads the extents from the descriptor file

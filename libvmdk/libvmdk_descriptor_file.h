@@ -54,6 +54,14 @@ struct libvmdk_descriptor_file
 	 */
 	uint32_t parent_content_identifier;
 
+	/* The parent filename
+	 */
+	uint8_t *parent_filename;
+
+	/* The parent filename size
+	 */
+	size_t parent_filename_size;
+
 	/* The disk type
 	 */
 	int disk_type;

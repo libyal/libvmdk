@@ -70,6 +70,11 @@ int mount_handle_open_input(
      int number_of_filenames,
      libcerror_error_t **error );
 
+int mount_handle_open_input_parent_handle(
+     mount_handle_t *mount_handle,
+     libvmdk_handle_t *handle,
+     libcerror_error_t **error );
+
 int mount_handle_close(
      mount_handle_t *mount_handle,
      libcerror_error_t **error );

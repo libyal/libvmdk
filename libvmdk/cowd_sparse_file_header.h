@@ -35,7 +35,7 @@ struct cowd_sparse_file_header
 {
 	/* The signature
 	 * Consists of 4 bytes
-	 * Contains: "COWD"
+	 * Contains: "KDMV"
 	 */
 	uint8_t signature[ 4 ];
 
@@ -137,9 +137,9 @@ struct cowd_sparse_file_header
 	uint8_t reserved[ 8 ];
 
 	/* Value to indicate the COWD was cleanly closed
-	 * Consists of 4 bytes
+	 * Consists of 1 byte
 	 */
-	uint8_t is_dirty[ 4 ];
+	uint8_t is_dirty;
 
 	/* Padding
 	 * Consists of 396 bytes

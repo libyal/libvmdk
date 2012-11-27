@@ -1,4 +1,4 @@
-.Dd September 20, 2012
+.Dd November 27, 2012
 .Dt vmdkinfo
 .Os libvmdk
 .Sh NAME
@@ -39,11 +39,14 @@ None
 None
 .Sh EXAMPLES
 .Bd -literal
-# vmdkinfo -a file.vmdk
-vmdkinfo 20100418 (libvmdk 20100418, libuna 20100416, libbfio 20100416)
+# vmdkinfo file.vmdk
+vmdkinfo 20121127
 
-VMware Virtual Disk information:
-.Dl        ...
+VMware Virtual Disk (VMDK) information:
+	Disk type:			Monolithic sparse
+	Media size:			8589934592 bytes
+	Content identifier:		0x505dcf0a
+	Parent content identifier:	0xffffffff
 
 .Ed
 .Sh DIAGNOSTICS

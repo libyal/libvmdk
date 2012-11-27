@@ -38,7 +38,7 @@
 #include "cowd_sparse_file_header.h"
 #include "vmdk_sparse_file_header.h"
 
-const char cowd_sparse_file_signature[ 4 ] = "COWD";
+const char cowd_sparse_file_signature[ 4 ] = "DWOC";
 const char vmdk_sparse_file_signature[ 4 ] = "KDMV";
 
 /* Initialize the extent file
@@ -461,7 +461,6 @@ int libvmdk_extent_file_read_file_header_data(
 	static char *function = "libvmdk_extent_file_read_file_header_data";
 
 #if defined( HAVE_VERBOSE_OUTPUT )
-	uint32_t value_32bit  = 0;
 	uint64_t value_64bit  = 0;
 #endif
 
@@ -582,10 +581,6 @@ int libvmdk_extent_file_read_file_header_data(
 		byte_stream_copy_to_uint32_little_endian(
 		 ( (cowd_sparse_file_header_t *) file_header_data )->number_of_grain_directory_entries,
 		 extent_file->number_of_grain_directory_entries );
-
-		byte_stream_copy_to_uint32_little_endian(
-		 ( (cowd_sparse_file_header_t *) file_header_data )->is_dirty,
-		 extent_file->is_dirty );
 	}
 	else if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
@@ -625,7 +620,7 @@ int libvmdk_extent_file_read_file_header_data(
 		 ( (vmdk_sparse_file_header_t *) file_header_data )->primary_grain_directory_sector_number,
 		 extent_file->primary_grain_directory_offset );
 
-		extent_file->is_dirty = (uint32_t) ( (vmdk_sparse_file_header_t *) file_header_data )->is_dirty;
+		extent_file->is_dirty = ( (vmdk_sparse_file_header_t *) file_header_data )->is_dirty;
 
 		byte_stream_copy_to_uint16_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header_data )->compression_method,
@@ -667,49 +662,7 @@ int libvmdk_extent_file_read_file_header_data(
 		 function,
 		 extent_file->grain_size );
 
-		if( extent_file->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
-		{
-			libcnotify_printf(
-			 "%s: grain directory sector number\t\t: %" PRIu64 "\n",
-			 function,
-			 extent_file->primary_grain_directory_offset );
-
-			libcnotify_printf(
-			 "%s: number of grain directory entries\t: %" PRIu32 "\n",
-			 function,
-			 extent_file->number_of_grain_directory_entries );
-
-			byte_stream_copy_to_uint32_little_endian(
-			 ( (cowd_sparse_file_header_t *) file_header_data )->next_free_grain,
-			 value_32bit );
-			libcnotify_printf(
-			 "%s: next free grain\t\t\t\t\t: %" PRIu32 "\n",
-			 function,
-			 value_32bit );
-/* TODO */
-
-			libcnotify_printf(
-			 "%s: reserved:\n",
-			 function );
-			libcnotify_print_data(
-			 (uint8_t *) ( (cowd_sparse_file_header_t *) file_header_data )->reserved,
-			 8,
-			 0 );
-
-			libcnotify_printf(
-			 "%s: is dirty\t\t\t\t\t: 0x%08" PRIx32 "\n",
-			 function,
-			 extent_file->is_dirty );
-
-			libcnotify_printf(
-			 "%s: padding:\n",
-			 function );
-			libcnotify_print_data(
-			 (uint8_t *) ( (vmdk_sparse_file_header_t *) file_header_data )->padding,
-			 396,
-			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
-		}
-		else if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+		if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 		{
 			libcnotify_printf(
 			 "%s: descriptor sector number\t\t\t: %" PRIu64 "\n",
@@ -730,12 +683,24 @@ int libvmdk_extent_file_read_file_header_data(
 			 "%s: secondary grain directory sector number\t: %" PRIu64 "\n",
 			 function,
 			 extent_file->secondary_grain_directory_offset );
+		}
+		libcnotify_printf(
+		 "%s: primary grain directory sector number\t: %" PRIu64 "\n",
+		 function,
+		 extent_file->primary_grain_directory_offset );
 
+		if( extent_file->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
+		{
 			libcnotify_printf(
-			 "%s: primary grain directory sector number\t: %" PRIu64 "\n",
-			 function,
-			 extent_file->primary_grain_directory_offset );
-
+			 "%s: padding:\n",
+			 function );
+			libcnotify_print_data(
+			 (uint8_t *) ( (vmdk_sparse_file_header_t *) file_header_data )->padding,
+			 433,
+			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
+		}
+		else if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+		{
 			byte_stream_copy_to_uint64_little_endian(
 			 ( (vmdk_sparse_file_header_t *) file_header_data )->metadata_number_of_sectors,
 			 value_64bit );
@@ -745,7 +710,7 @@ int libvmdk_extent_file_read_file_header_data(
 			 value_64bit );
 
 			libcnotify_printf(
-			 "%s: is dirty\t\t\t\t\t: 0x%02" PRIx32 "\n",
+			 "%s: is dirty\t\t\t\t\t: 0x%02" PRIx8 "\n",
 			 function,
 			 extent_file->is_dirty );
 
@@ -842,6 +807,7 @@ int libvmdk_extent_file_read_file_header_data(
 			return( -1 );
 		}
 	}
+/* TODO does not apply
 	if( ( extent_file->maximum_data_size % extent_file->grain_size ) != 0 )
 	{
 		libcerror_error_set(
@@ -853,6 +819,7 @@ int libvmdk_extent_file_read_file_header_data(
 
 		return( -1 );
 	}
+*/
 	if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
 		if( ( (vmdk_sparse_file_header_t *) file_header_data )->single_end_of_line_character != (uint8_t) '\n' )

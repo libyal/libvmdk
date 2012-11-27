@@ -1,4 +1,4 @@
-.Dd September 20, 2012
+.Dd November 27, 2012
 .Dt libvmdk 3
 .Os libvmdk
 .Sh NAME
@@ -45,7 +45,7 @@ Error functions
 .Ft int
 .Fn libvmdk_error_backtrace_sprint "libvmdk_error_t *error, char *string, size_t size"
 .Pp
-File functions
+Handle functions
 .Ft int
 .Fn libvmdk_handle_initialize "libvmdk_handle_t **file, libvmdk_error_t **error"
 .Ft int
@@ -54,6 +54,14 @@ File functions
 .Fn libvmdk_handle_open "libvmdk_handle_t *file, const char *filename, int flags, libvmdk_error_t **error"
 .Ft int
 .Fn libvmdk_handle_close "libvmdk_handle_t *file, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_get_disk_type "libvmdk_handle_t *handle, int *disk_type, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_get_media_size "libvmdk_handle_t *handle, size64_t *media_size, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_get_content_identifier "libvmdk_handle_t *handle, uint32_t *content_identifier, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_get_parent_content_identifier "libvmdk_handle_t *handle, uint32_t *parent_content_identifier, libvmdk_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int

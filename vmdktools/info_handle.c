@@ -341,11 +341,15 @@ int info_handle_file_fprint(
      info_handle_t *info_handle,
      libcerror_error_t **error )
 {
-	static char *function  = "vmdkinfo_file_info_fprint";
-	size64_t media_size    = 0;
-	uint16_t major_version = 0;
-	uint16_t minor_version = 0;
-	int disk_type          = 0;
+	libcstring_system_character_t *parent_filename = NULL;
+	static char *function                          = "vmdkinfo_file_info_fprint";
+	size64_t media_size                            = 0;
+	size_t parent_filename_size                    = 0;
+	uint32_t content_identifier                    = 0;
+	uint16_t major_version                         = 0;
+	uint16_t minor_version                         = 0;
+	int disk_type                                  = 0;
+	int result                                     = 0;
 
 	if( info_handle == NULL )
 	{
@@ -376,7 +380,7 @@ int info_handle_file_fprint(
 		 "%s: unable to retrieve format version.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	fprintf(
 	 info_handle->notify_stream,
@@ -397,11 +401,11 @@ int info_handle_file_fprint(
 		 "%s: unable to retrieve disk type.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	fprintf(
 	 info_handle->notify_stream,
-	 "\tDisk type:\t" );
+	 "\tDisk type:\t\t\t" );
 
 	switch( disk_type )
 	{
@@ -517,13 +521,146 @@ int info_handle_file_fprint(
 		 "%s: unable to retrieve media size.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	fprintf(
 	 info_handle->notify_stream,
-	 "\tMedia size:\t%" PRIu64 " bytes\n",
+	 "\tMedia size:\t\t\t%" PRIu64 " bytes\n",
 	 media_size );
 
+	if( libvmdk_handle_get_content_identifier(
+	     info_handle->input_handle,
+	     &content_identifier,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve content identifier.",
+		 function );
+
+		goto on_error;
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\tContent identifier:\t\t0x%08" PRIx32 "\n",
+	 content_identifier );
+
+	if( libvmdk_handle_get_parent_content_identifier(
+	     info_handle->input_handle,
+	     &content_identifier,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve parent content identifier.",
+		 function );
+
+		goto on_error;
+	}
+	fprintf(
+	 info_handle->notify_stream,
+	 "\tParent content identifier:\t0x%08" PRIx32 "\n",
+	 content_identifier );
+
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libvmdk_handle_get_utf16_parent_filename_size(
+	          info_handle->input_handle,
+	          &parent_filename_size,
+	          error );
+#else
+	result = libvmdk_handle_get_utf8_parent_filename_size(
+	          info_handle->input_handle,
+	          &parent_filename_size,
+	          error );
+#endif
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve parent filename size.",
+		 function );
+
+		goto on_error;
+	}
+	else if( result != 0 )
+	{
+		if( parent_filename_size == 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing parent filename.",
+			 function );
+
+			goto on_error;
+		}
+		if( ( parent_filename_size > (size_t) SSIZE_MAX )
+		 || ( ( sizeof( libcstring_system_character_t ) * parent_filename_size ) > (size_t) SSIZE_MAX ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+			 "%s: invalid parent filename size value exceeds maximum.",
+			 function );
+
+			goto on_error;
+		}
+		parent_filename = libcstring_system_string_allocate(
+		                   parent_filename_size );
+
+		if( parent_filename == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create parent filename string.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+		result = libvmdk_handle_get_utf16_parent_filename(
+		          info_handle->input_handle,
+		          (uint16_t *) parent_filename,
+		          parent_filename_size,
+		          error );
+#else
+		result = libvmdk_handle_get_utf8_parent_filename(
+		          info_handle->input_handle,
+		          (uint8_t *) parent_filename,
+		          parent_filename_size,
+		          error );
+#endif
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve parent filename.",
+			 function );
+
+			goto on_error;
+		}
+		fprintf(
+		 info_handle->notify_stream,
+		 "\tParent filename:\t\t%" PRIs_LIBCSTRING_SYSTEM "\n",
+		 parent_filename );
+
+		memory_free(
+		 parent_filename );
+
+		parent_filename = NULL;
+	}
 /* TODO add more info */
 
 	fprintf(
@@ -531,5 +668,13 @@ int info_handle_file_fprint(
 	 "\n" );
 
 	return( 1 );
+
+on_error:
+	if( parent_filename != NULL )
+	{
+		memory_free(
+		 parent_filename );
+	}
+	return( -1 );
 }
 

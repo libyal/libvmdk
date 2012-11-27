@@ -62,11 +62,15 @@ struct libvmdk_io_handle
 
 	/* Value to indicate one or more extent files is are dirty
 	 */
-	uint32_t is_dirty;
+	uint8_t is_dirty;
 
 	/* The compression method
 	 */
 	uint16_t compression_method;
+
+	/* The parent handle
+	 */
+	libvmdk_handle_t *parent_handle;
 
 	/* Value to indicate if abort was signalled
 	 */

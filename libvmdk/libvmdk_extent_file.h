@@ -100,7 +100,7 @@ struct libvmdk_extent_file
 
 	/* Value to indicate the extent file is dirty
 	 */
-	uint32_t is_dirty;
+	uint8_t is_dirty;
 };
 
 int libvmdk_extent_file_initialize(

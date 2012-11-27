@@ -114,7 +114,7 @@ int libvmdk_handle_initialize(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create io handle.",
+		 "%s: unable to create IO handle.",
 		 function );
 
 		goto on_error;
@@ -169,7 +169,7 @@ int libvmdk_handle_free(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free io handle.",
+			 "%s: unable to free IO handle.",
 			 function );
 
 			result = -1;
@@ -228,7 +228,7 @@ int libvmdk_handle_signal_abort(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid handle - missing io handle.",
+		 "%s: invalid handle - missing IO handle.",
 		 function );
 
 		return( -1 );
@@ -671,7 +671,7 @@ int libvmdk_handle_open_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid handle - missing io handle.",
+		 "%s: invalid handle - missing IO handle.",
 		 function );
 
 		return( -1 );
@@ -962,7 +962,7 @@ int libvmdk_handle_open_file_io_handle(
 
 		goto on_error;
 	}
-	internal_handle->io_handle->media_size = internal_handle->descriptor_file->media_size;
+	internal_handle->io_handle->media_size   = internal_handle->descriptor_file->media_size;
 
 	internal_handle->access_flags = access_flags;
 
@@ -3975,4 +3975,81 @@ int libvmdk_handle_set_basename_wide(
 	return( 1 );
 }
 #endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
+
+/* Sets the parent handle
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_set_parent_handle(
+     libvmdk_handle_t *handle,
+     libvmdk_handle_t *parent_handle,
+     libcerror_error_t **error )
+{
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	static char *function                      = "libvmdk_handle_set_parent_handle";
+	uint32_t content_identifier                = 0;
+
+	if( handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid handle.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle = (libvmdk_internal_handle_t *) handle;
+
+	if( internal_handle->descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid internal handle - missing descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid handle - missing IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( libvmdk_handle_get_content_identifier(
+	     parent_handle,
+	     &content_identifier,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve content identifier.",
+		 function );
+
+		return( -1 );
+	}
+	if( content_identifier != internal_handle->descriptor_file->parent_content_identifier )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: mismatch in content identifier.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle->io_handle->parent_handle = parent_handle;
+
+	return( 1 );
+}
 
