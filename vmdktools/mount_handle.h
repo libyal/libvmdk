@@ -26,6 +26,7 @@
 #include <file_stream.h>
 #include <types.h>
 
+#include "vmdktools_libcdata.h"
 #include "vmdktools_libcerror.h"
 #include "vmdktools_libcnotify.h"
 #include "vmdktools_libvmdk.h"
@@ -38,9 +39,9 @@ typedef struct mount_handle mount_handle_t;
 
 struct mount_handle
 {
-	/* The libvmdk input handle
+	/* The list of input handles
 	 */
-	libvmdk_handle_t *input_handle;
+	libcdata_list_t *input_handles_list;
 
 	/* The nofication output stream
 	 */

@@ -1,6 +1,7 @@
 TODO
 * add parent image support
   - bail out on read if parent is not set
+  - basename support ?
 * implement libvmdk_handle_set_maximum_number_of_open_handles
 * vmdkmount: show device files for all previous snapshots
 * vmdkinfo: print dirty status

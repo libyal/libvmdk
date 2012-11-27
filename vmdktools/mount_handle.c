@@ -24,6 +24,7 @@
 #include <types.h>
 
 #include "mount_handle.h"
+#include "vmdktools_libcdata.h"
 #include "vmdktools_libcerror.h"
 #include "vmdktools_libcnotify.h"
 #include "vmdktools_libvmdk.h"
@@ -83,15 +84,15 @@ int mount_handle_initialize(
 
 			return( -1 );
 		}
-		if( libvmdk_handle_initialize(
-		     &( ( *mount_handle )->input_handle ),
+		if( libcdata_list_initialize(
+		     &( ( *mount_handle )->input_handles_list ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to initialize input handle.",
+			 "%s: unable to initialize input handles list.",
 			 function );
 
 			goto on_error;
@@ -133,15 +134,16 @@ int mount_handle_free(
 	}
 	if( *mount_handle != NULL )
 	{
-		if( libvmdk_handle_free(
-		     &( ( *mount_handle )->input_handle ),
+		if( libcdata_list_free(
+		     &( ( *mount_handle )->input_handles_list ),
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_handle_free,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free input handle.",
+			 "%s: unable to free input handles list.",
 			 function );
 
 			result = -1;
@@ -174,6 +176,7 @@ int mount_handle_signal_abort(
 
 		return( -1 );
 	}
+/* TODO signal all the handles in the list */
 	if( mount_handle->input_handle != NULL )
 	{
 		if( libvmdk_handle_signal_abort(
@@ -202,8 +205,9 @@ int mount_handle_open_input(
      int number_of_filenames,
      libcerror_error_t **error )
 {
-	static char *function = "mount_handle_open_input";
-	int result            = 0;
+	libvmdk_handle_t *handle = NULL;
+	static char *function    = "mount_handle_open_input";
+	int result               = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -238,15 +242,29 @@ int mount_handle_open_input(
 
 		return( -1 );
 	}
+/* TODO basename support */
+	if( libvmdk_handle_initialize(
+	     &handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to initialize input handle.",
+		 function );
+
+		goto on_error;
+	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libvmdk_handle_open_wide(
-	     mount_handle->input_handle,
+	     handle,
 	     filenames[ 0 ],
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
 #else
 	if( libvmdk_handle_open(
-	     mount_handle->input_handle,
+	     handle,
 	     filenames[ 0 ],
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
@@ -259,11 +277,11 @@ int mount_handle_open_input(
 		 "%s: unable to open input handle.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	if( mount_handle_open_input_parent_handle(
 	     mount_handle,
-	     mount_handle->input_handle,
+	     handle,
 	     error ) == -1 )
 	{
 		libcerror_error_set(
@@ -273,12 +291,12 @@ int mount_handle_open_input(
 		 "%s: unable to open parent handle.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	if( number_of_filenames == 1 )
 	{
 		result = libvmdk_handle_open_extent_data_files(
-		          mount_handle->input_handle,
+		          handle,
 		          error );
 	}
 	else
@@ -294,9 +312,18 @@ int mount_handle_open_input(
 		 "%s: unable to open extent data files.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	return( 1 );
+
+on_error:
+	if( handle != NULL )
+	{
+		libvmdk_handle_free(
+		 &handle,
+		 NULL );
+	}
+	return( -1 );
 }
 
 /* Opens the parent handle
@@ -426,6 +453,20 @@ int mount_handle_open_input_parent_handle(
 
 		goto on_error;
 	}
+/* TODO basename support */
+	if( libvmdk_handle_initialize(
+	     &parent_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to initialize parent handle.",
+		 function );
+
+		goto on_error;
+	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libvmdk_handle_open_wide(
 	     parent_handle,
@@ -496,6 +537,7 @@ int mount_handle_open_input_parent_handle(
 
 		goto on_error;
 	}
+/* TODO keep parent handle reference in list */
 	return( 1 );
 
 on_error:
@@ -533,6 +575,7 @@ int mount_handle_close(
 
 		return( -1 );
 	}
+/* TODO close all the handles in the list */
 	if( libvmdk_handle_close(
 	     mount_handle->input_handle,
 	     error ) != 0 )
