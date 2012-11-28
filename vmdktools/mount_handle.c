@@ -84,15 +84,16 @@ int mount_handle_initialize(
 
 			return( -1 );
 		}
-		if( libcdata_list_initialize(
-		     &( ( *mount_handle )->input_handles_list ),
+		if( libcdata_array_initialize(
+		     &( ( *mount_handle )->input_handles_array ),
+		     0,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to initialize input handles list.",
+			 "%s: unable to initialize input handles array.",
 			 function );
 
 			goto on_error;
@@ -134,8 +135,8 @@ int mount_handle_free(
 	}
 	if( *mount_handle != NULL )
 	{
-		if( libcdata_list_free(
-		     &( ( *mount_handle )->input_handles_list ),
+		if( libcdata_array_free(
+		     &( ( *mount_handle )->input_handles_array ),
 		     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_handle_free,
 		     error ) != 1 )
 		{
@@ -143,7 +144,7 @@ int mount_handle_free(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free input handles list.",
+			 "%s: unable to free input handles array.",
 			 function );
 
 			result = -1;
@@ -163,7 +164,10 @@ int mount_handle_signal_abort(
      mount_handle_t *mount_handle,
      libcerror_error_t **error )
 {
-	static char *function = "mount_handle_signal_abort";
+	libvmdk_handle_t *input_handle = NULL;
+	static char *function          = "mount_handle_signal_abort";	
+	int input_handle_index         = 0;
+	int number_ofinput__handles    = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -176,19 +180,51 @@ int mount_handle_signal_abort(
 
 		return( -1 );
 	}
-/* TODO signal all the handles in the list */
-	if( mount_handle->input_handle != NULL )
+	if( libcdata_array_get_number_of_entries(
+	     mount_handle->input_handles_array,
+	     &number_of_input_handles,
+	     error ) != 1 )
 	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of input handles.",
+		 function );
+
+		return( -1 );
+	}
+	for( input_handle_index = number_of_input_handles - 1;
+	     input_handle_index > 0;
+	     input_handle_index-- )
+	{
+		if( libcdata_array_get_entry_by_index(
+		     mount_handle->input_handles_array,
+		     input_handle_index,
+		     (intptr_t **) &input_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve input handle: %d.",
+			 function,
+			 input_handle_index );
+
+			return( -1 );
+		}
 		if( libvmdk_handle_signal_abort(
-		     mount_handle->input_handle,
+		     input_handle,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to signal input handle to abort.",
-			 function );
+			 "%s: unable to signal input handle: %d to abort.",
+			 function,
+			 input_handle_index );
 
 			return( -1 );
 		}
@@ -205,9 +241,9 @@ int mount_handle_open_input(
      int number_of_filenames,
      libcerror_error_t **error )
 {
-	libvmdk_handle_t *handle = NULL;
-	static char *function    = "mount_handle_open_input";
-	int result               = 0;
+	libvmdk_handle_t *input_handle = NULL;
+	static char *function          = "mount_handle_open_input";
+	int result                     = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -244,7 +280,7 @@ int mount_handle_open_input(
 	}
 /* TODO basename support */
 	if( libvmdk_handle_initialize(
-	     &handle,
+	     &input_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -258,13 +294,13 @@ int mount_handle_open_input(
 	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libvmdk_handle_open_wide(
-	     handle,
+	     input_handle,
 	     filenames[ 0 ],
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
 #else
 	if( libvmdk_handle_open(
-	     handle,
+	     input_handle,
 	     filenames[ 0 ],
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
@@ -288,7 +324,7 @@ int mount_handle_open_input(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open parent handle.",
+		 "%s: unable to open parent input handle.",
 		 function );
 
 		goto on_error;
@@ -296,7 +332,7 @@ int mount_handle_open_input(
 	if( number_of_filenames == 1 )
 	{
 		result = libvmdk_handle_open_extent_data_files(
-		          handle,
+		          input_handle,
 		          error );
 	}
 	else
@@ -314,28 +350,43 @@ int mount_handle_open_input(
 
 		goto on_error;
 	}
+	if( libcdata_array_append_value(
+	     mount_handle->input_handles_array,
+	     (intptr_t *) input_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_ARRAY_FAILED,
+		 "%s: unable to append input handle to array.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
+/* TODO flush array */
 	if( handle != NULL )
 	{
 		libvmdk_handle_free(
-		 &handle,
+		 &input_handle,
 		 NULL );
 	}
 	return( -1 );
 }
 
-/* Opens the parent handle
+/* Opens the parent input handle
  * Returns 1 if successful, 0 if no parent or -1 on error
  */
 int mount_handle_open_input_parent_handle(
      mount_handle_t *mount_handle,
-     libvmdk_handle_t *handle,
+     libvmdk_handle_t *input_handle,
      libcerror_error_t **error )
 {
 	libcstring_system_character_t *parent_filename = NULL;
-	libvmdk_handle_t *parent_handle                = NULL;
+	libvmdk_handle_t *parent_input_handle          = NULL;
 	static char *function                          = "mount_handle_open_input_parent_handle";
 	size_t parent_filename_size                    = 0;
 	uint32_t parent_content_identifier             = 0;
@@ -353,7 +404,7 @@ int mount_handle_open_input_parent_handle(
 		return( -1 );
 	}
 	if( libvmdk_handle_get_parent_content_identifier(
-	     handle,
+	     input_handle,
 	     &parent_content_identifier,
 	     error ) != 1 )
 	{
@@ -372,12 +423,12 @@ int mount_handle_open_input_parent_handle(
 	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libvmdk_handle_get_utf16_parent_filename_size(
-		  handle,
+		  input_handle,
 		  &parent_filename_size,
 		  error );
 #else
 	result = libvmdk_handle_get_utf8_parent_filename_size(
-		  handle,
+		  input_handle,
 		  &parent_filename_size,
 		  error );
 #endif
@@ -431,13 +482,13 @@ int mount_handle_open_input_parent_handle(
 	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libvmdk_handle_get_utf16_parent_filename(
-		  handle,
+		  input_handle,
 		  (uint16_t *) parent_filename,
 		  parent_filename_size,
 		  error );
 #else
 	result = libvmdk_handle_get_utf8_parent_filename(
-		  handle,
+		  input_handle,
 		  (uint8_t *) parent_filename,
 		  parent_filename_size,
 		  error );
@@ -455,27 +506,27 @@ int mount_handle_open_input_parent_handle(
 	}
 /* TODO basename support */
 	if( libvmdk_handle_initialize(
-	     &parent_handle,
+	     &parent_input_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to initialize parent handle.",
+		 "%s: unable to initialize parent input handle.",
 		 function );
 
 		goto on_error;
 	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libvmdk_handle_open_wide(
-	     parent_handle,
+	     parent_input_handle,
 	     parent_filename,
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
 #else
 	if( libvmdk_handle_open(
-	     parent_handle,
+	     parent_input_handle,
 	     parent_filename,
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
@@ -485,7 +536,7 @@ int mount_handle_open_input_parent_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open parent handle: %" PRIs_LIBCSTRING_SYSTEM ".",
+		 "%s: unable to open parent input handle: %" PRIs_LIBCSTRING_SYSTEM ".",
 		 function,
 		 parent_filename );
 
@@ -505,13 +556,13 @@ int mount_handle_open_input_parent_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open parent handle.",
+		 "%s: unable to open parent input handle.",
 		 function );
 
 		return( -1 );
 	}
 	if( libvmdk_handle_open_extent_data_files(
-	     parent_handle,
+	     parent_input_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -524,27 +575,40 @@ int mount_handle_open_input_parent_handle(
 		goto on_error;
 	}
 	if( libvmdk_handle_set_parent_handle(
-	     handle,
-	     parent_handle,
+	     input_handle,
+	     parent_input_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set parent handle.",
+		 "%s: unable to set parent input handle.",
 		 function );
 
 		goto on_error;
 	}
-/* TODO keep parent handle reference in list */
+	if( libcdata_array_append_value(
+	     mount_handle->input_handles_array,
+	     (intptr_t *) parent_input_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_ARRAY_FAILED,
+		 "%s: unable to append parent input handle to array.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
 	if( parent_handle != NULL )
 	{
 		libvmdk_handle_free(
-		 &parent_handle,
+		 &parent_input_handle,
 		 NULL );
 	}
 	if( parent_filename != NULL )
@@ -562,7 +626,10 @@ int mount_handle_close(
      mount_handle_t *mount_handle,
      libcerror_error_t **error )
 {
-	static char *function = "mount_handle_close";
+	libvmdk_handle_t *input_handle = NULL;
+	static char *function          = "mount_handle_close";
+	int input_handle_index         = 0;
+	int number_ofinput__handles    = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -575,19 +642,54 @@ int mount_handle_close(
 
 		return( -1 );
 	}
-/* TODO close all the handles in the list */
-	if( libvmdk_handle_close(
-	     mount_handle->input_handle,
-	     error ) != 0 )
+	if( libcdata_array_get_number_of_entries(
+	     mount_handle->input_handles_array,
+	     &number_of_input_handles,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-		 "%s: unable to close input handle.",
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of input handles.",
 		 function );
 
 		return( -1 );
+	}
+	for( input_handle_index = number_of_input_handles - 1;
+	     input_handle_index > 0;
+	     input_handle_index-- )
+	{
+		if( libcdata_array_get_entry_by_index(
+		     mount_handle->input_handles_array,
+		     input_handle_index,
+		     (intptr_t **) &input_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve input handle: %d.",
+			 function,
+			 input_handle_index );
+
+			return( -1 );
+		}
+		if( libvmdk_handle_close(
+		     input_handle,
+		     error ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+			 "%s: unable to close input handle: %d.",
+			 function,
+			 input_handle_index );
+
+			return( -1 );
+		}
 	}
 	return( 0 );
 }
@@ -597,12 +699,14 @@ int mount_handle_close(
  */
 ssize_t mount_handle_read_buffer(
          mount_handle_t *mount_handle,
+         int input_handle_index,
          uint8_t *buffer,
          size_t size,
          libcerror_error_t **error )
 {
-	static char *function = "mount_handle_read_buffer";
-	ssize_t read_count    = 0;
+	libvmdk_handle_t *input_handle = NULL;
+	static char *function          = "mount_handle_read_buffer";
+	ssize_t read_count             = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -615,8 +719,24 @@ ssize_t mount_handle_read_buffer(
 
 		return( -1 );
 	}
+	if( libcdata_array_get_entry_by_index(
+	     mount_handle->input_handles_array,
+	     input_handle_index,
+	     (intptr_t **) &input_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve input handle: %d.",
+		 function,
+		 input_handle_index );
+
+		return( -1 );
+	}
 	read_count = libvmdk_handle_read_buffer(
-	              mount_handle->input_handle,
+	              input_handle,
 	              buffer,
 	              size,
 	              error );
@@ -627,8 +747,9 @@ ssize_t mount_handle_read_buffer(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read buffer from input handle.",
-		 function );
+		 "%s: unable to read buffer from input handle: %d.",
+		 function,
+		 input_handle_index );
 
 		return( -1 );
 	}
@@ -640,11 +761,13 @@ ssize_t mount_handle_read_buffer(
  */
 off64_t mount_handle_seek_offset(
          mount_handle_t *mount_handle,
+         int input_handle_index,
          off64_t offset,
          int whence,
          libcerror_error_t **error )
 {
-	static char *function = "mount_handle_seek_offset";
+	libvmdk_handle_t *input_handle = NULL;
+	static char *function          = "mount_handle_seek_offset";
 
 	if( mount_handle == NULL )
 	{
@@ -654,6 +777,22 @@ off64_t mount_handle_seek_offset(
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid mount handle.",
 		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_entry_by_index(
+	     mount_handle->input_handles_array,
+	     input_handle_index,
+	     (intptr_t **) &input_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve input handle: %d.",
+		 function,
+		 input_handle_index );
 
 		return( -1 );
 	}
@@ -669,8 +808,9 @@ off64_t mount_handle_seek_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek offset in input handle.",
-		 function );
+		 "%s: unable to seek offset in input handle: %d.",
+		 function,
+		 input_handle_index );
 
 		return( -1 );
 	}
@@ -682,10 +822,12 @@ off64_t mount_handle_seek_offset(
  */
 int mount_handle_get_media_size(
      mount_handle_t *mount_handle,
+     int input_handle_index,
      size64_t *size,
      libcerror_error_t **error )
 {
-	static char *function = "mount_handle_get_media_size";
+	libvmdk_handle_t *input_handle = NULL;
+	static char *function          = "mount_handle_get_media_size";
 
 	if( mount_handle == NULL )
 	{
@@ -698,6 +840,22 @@ int mount_handle_get_media_size(
 
 		return( -1 );
 	}
+	if( libcdata_array_get_entry_by_index(
+	     mount_handle->input_handles_array,
+	     input_handle_index,
+	     (intptr_t **) &input_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve input handle: %d.",
+		 function,
+		 input_handle_index );
+
+		return( -1 );
+	}
 	if( libvmdk_handle_get_media_size(
 	     mount_handle->input_handle,
 	     size,
@@ -707,8 +865,9 @@ int mount_handle_get_media_size(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve media size from input handle.",
-		 function );
+		 "%s: unable to retrieve media size from input handle: %d.",
+		 function,
+		 input_handle_index );
 
 		return( -1 );
 	}

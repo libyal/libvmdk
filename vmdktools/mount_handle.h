@@ -39,9 +39,9 @@ typedef struct mount_handle mount_handle_t;
 
 struct mount_handle
 {
-	/* The list of input handles
+	/* The input handles arry
 	 */
-	libcdata_list_t *input_handles_list;
+	libcdata_array_t *input_handles_array;
 
 	/* The nofication output stream
 	 */
@@ -73,7 +73,7 @@ int mount_handle_open_input(
 
 int mount_handle_open_input_parent_handle(
      mount_handle_t *mount_handle,
-     libvmdk_handle_t *handle,
+     libvmdk_handle_t *input_handle,
      libcerror_error_t **error );
 
 int mount_handle_close(
@@ -82,18 +82,21 @@ int mount_handle_close(
 
 ssize_t mount_handle_read_buffer(
          mount_handle_t *mount_handle,
+         int input_handle_index,
          uint8_t *buffer,
          size_t size,
          libcerror_error_t **error );
 
 off64_t mount_handle_seek_offset(
          mount_handle_t *mount_handle,
+         int input_handle_index,
          off64_t offset,
          int whence,
          libcerror_error_t **error );
 
 int mount_handle_get_media_size(
      mount_handle_t *mount_handle,
+     int input_handle_index,
      size64_t *size,
      libcerror_error_t **error );
 

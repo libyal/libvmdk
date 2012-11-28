@@ -1,9 +1,9 @@
 TODO
+* vmdkmount: show device files for all previous snapshots
 * add parent image support
   - bail out on read if parent is not set
   - basename support ?
 * implement libvmdk_handle_set_maximum_number_of_open_handles
-* vmdkmount: show device files for all previous snapshots
 * vmdkinfo: print dirty status
 * add support for parent images
 * add support for zero-grain table entry support
@@ -41,6 +41,9 @@ Deployment:
 * create msvscpp files
 * create macosx package files
 * create codegear files
+
+20121128
+* worked on parent image support
 
 20121127
 * worked on parent image support
