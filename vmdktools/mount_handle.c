@@ -27,6 +27,7 @@
 #include "vmdktools_libcdata.h"
 #include "vmdktools_libcerror.h"
 #include "vmdktools_libcnotify.h"
+#include "vmdktools_libcpath.h"
 #include "vmdktools_libvmdk.h"
 
 /* Initializes the mount handle
@@ -49,55 +50,58 @@ int mount_handle_initialize(
 
 		return( -1 );
 	}
+	if( *mount_handle != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid mount handle value already set.",
+		 function );
+
+		return( -1 );
+	}
+	*mount_handle = memory_allocate_structure(
+	                 mount_handle_t );
+
 	if( *mount_handle == NULL )
 	{
-		*mount_handle = memory_allocate_structure(
-		                 mount_handle_t );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create mount handle.",
+		 function );
 
-		if( *mount_handle == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create mount handle.",
-			 function );
+		goto on_error;
+	}
+	if( memory_set(
+	     *mount_handle,
+	     0,
+	     sizeof( mount_handle_t ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear mount handle.",
+		 function );
 
-			goto on_error;
-		}
-		if( memory_set(
-		     *mount_handle,
-		     0,
-		     sizeof( mount_handle_t ) ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear mount handle.",
-			 function );
+		goto on_error;
+	}
+	if( libcdata_array_initialize(
+	     &( ( *mount_handle )->input_handles_array ),
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to initialize input handles array.",
+		 function );
 
-			memory_free(
-			 *mount_handle );
-
-			*mount_handle = NULL;
-
-			return( -1 );
-		}
-		if( libcdata_array_initialize(
-		     &( ( *mount_handle )->input_handles_array ),
-		     0,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to initialize input handles array.",
-			 function );
-
-			goto on_error;
-		}
+		goto on_error;
 	}
 	return( 1 );
 
@@ -135,6 +139,11 @@ int mount_handle_free(
 	}
 	if( *mount_handle != NULL )
 	{
+		if( ( *mount_handle )->basename != NULL )
+		{
+			memory_free(
+			 ( *mount_handle )->basename );
+		}
 		if( libcdata_array_free(
 		     &( ( *mount_handle )->input_handles_array ),
 		     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_handle_free,
@@ -167,7 +176,7 @@ int mount_handle_signal_abort(
 	libvmdk_handle_t *input_handle = NULL;
 	static char *function          = "mount_handle_signal_abort";	
 	int input_handle_index         = 0;
-	int number_ofinput__handles    = 0;
+	int number_of_input_handles    = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -241,9 +250,13 @@ int mount_handle_open_input(
      int number_of_filenames,
      libcerror_error_t **error )
 {
-	libvmdk_handle_t *input_handle = NULL;
-	static char *function          = "mount_handle_open_input";
-	int result                     = 0;
+	libcstring_system_character_t *basename_end = NULL;
+	libvmdk_handle_t *input_handle              = NULL;
+	static char *function                       = "mount_handle_open_input";
+	size_t basename_length                      = 0;
+	size_t filename_length                      = 0;
+	int entry_index                             = 0;
+	int result                                  = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -278,7 +291,36 @@ int mount_handle_open_input(
 
 		return( -1 );
 	}
-/* TODO basename support */
+	filename_length = libcstring_narrow_string_length(
+	                   filenames[ 0 ] );
+
+	basename_end = libcstring_system_string_search_character_reverse(
+	                filenames[ 0 ],
+	                (libcstring_system_character_t) LIBCPATH_SEPARATOR,
+	                filename_length + 1 );
+
+	if( basename_end != NULL )
+	{
+		basename_length = (size_t) ( basename_end - filenames[ 0 ] ) + 1;
+	}
+	if( basename_length > 0 )
+	{
+		if( mount_handle_set_basename(
+		     mount_handle,
+		     filenames[ 0 ],
+		     basename_length,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set basename.",
+			 function );
+
+			goto on_error;
+		}
+	}
 	if( libvmdk_handle_initialize(
 	     &input_handle,
 	     error ) != 1 )
@@ -317,7 +359,7 @@ int mount_handle_open_input(
 	}
 	if( mount_handle_open_input_parent_handle(
 	     mount_handle,
-	     handle,
+	     input_handle,
 	     error ) == -1 )
 	{
 		libcerror_error_set(
@@ -350,15 +392,16 @@ int mount_handle_open_input(
 
 		goto on_error;
 	}
-	if( libcdata_array_append_value(
+	if( libcdata_array_append_entry(
 	     mount_handle->input_handles_array,
+	     &entry_index,
 	     (intptr_t *) input_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_ARRAY_FAILED,
+		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
 		 "%s: unable to append input handle to array.",
 		 function );
 
@@ -367,13 +410,17 @@ int mount_handle_open_input(
 	return( 1 );
 
 on_error:
-/* TODO flush array */
-	if( handle != NULL )
+	if( input_handle != NULL )
 	{
 		libvmdk_handle_free(
 		 &input_handle,
 		 NULL );
 	}
+	libcdata_array_empty(
+	 mount_handle->input_handles_array,
+	 (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_handle_free,
+	 NULL );
+
 	return( -1 );
 }
 
@@ -390,6 +437,7 @@ int mount_handle_open_input_parent_handle(
 	static char *function                          = "mount_handle_open_input_parent_handle";
 	size_t parent_filename_size                    = 0;
 	uint32_t parent_content_identifier             = 0;
+	int entry_index                                = 0;
 	int result                                     = 0;
 
 	if( mount_handle == NULL )
@@ -549,7 +597,7 @@ int mount_handle_open_input_parent_handle(
 
 	if( mount_handle_open_input_parent_handle(
 	     mount_handle,
-	     parent_handle,
+	     parent_input_handle,
 	     error ) == -1 )
 	{
 		libcerror_error_set(
@@ -588,15 +636,16 @@ int mount_handle_open_input_parent_handle(
 
 		goto on_error;
 	}
-	if( libcdata_array_append_value(
+	if( libcdata_array_append_entry(
 	     mount_handle->input_handles_array,
+	     &entry_index,
 	     (intptr_t *) parent_input_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_ARRAY_FAILED,
+		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
 		 "%s: unable to append parent input handle to array.",
 		 function );
 
@@ -605,7 +654,7 @@ int mount_handle_open_input_parent_handle(
 	return( 1 );
 
 on_error:
-	if( parent_handle != NULL )
+	if( parent_input_handle != NULL )
 	{
 		libvmdk_handle_free(
 		 &parent_input_handle,
@@ -629,7 +678,7 @@ int mount_handle_close(
 	libvmdk_handle_t *input_handle = NULL;
 	static char *function          = "mount_handle_close";
 	int input_handle_index         = 0;
-	int number_ofinput__handles    = 0;
+	int number_of_input_handles    = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -797,7 +846,7 @@ off64_t mount_handle_seek_offset(
 		return( -1 );
 	}
 	offset = libvmdk_handle_seek_offset(
-	          mount_handle->input_handle,
+	          input_handle,
 	          offset,
 	          whence,
 	          error );
@@ -857,7 +906,7 @@ int mount_handle_get_media_size(
 		return( -1 );
 	}
 	if( libvmdk_handle_get_media_size(
-	     mount_handle->input_handle,
+	     input_handle,
 	     size,
 	     error ) != 1 )
 	{
@@ -872,5 +921,154 @@ int mount_handle_get_media_size(
 		return( -1 );
 	}
 	return( 1 );
+}
+
+/* Retrieves the number of input handles
+ * Returns 1 if successful or -1 on error
+ */
+int mount_handle_get_number_of_input_handles(
+     mount_handle_t *mount_handle,
+     int *number_of_input_handles,
+     libcerror_error_t **error )
+{
+	static char *function = "mount_handle_get_number_of_input_handles";
+
+	if( mount_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid mount handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_number_of_entries(
+	     mount_handle->input_handles_array,
+	     number_of_input_handles,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of input handles.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Sets the basename
+ * Returns 1 if successful or -1 on error
+ */
+int mount_handle_set_basename(
+     mount_handle_t *mount_handle,
+     const libcstring_system_character_t *basename,
+     size_t basename_size,
+     libcerror_error_t **error )
+{
+	static char *function = "mount_handle_set_basename";
+
+	if( mount_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid mount handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( basename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid basename.",
+		 function );
+
+		return( -1 );
+	}
+	if( basename_size == 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing basename.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( basename_size > (size_t) SSIZE_MAX )
+	 || ( ( sizeof( libcstring_system_character_t ) * basename_size ) > (size_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid basename size value exceeds maximum.",
+		 function );
+
+		goto on_error;
+	}
+	if( mount_handle->basename != NULL )
+	{
+		memory_free(
+		 mount_handle->basename );
+
+		mount_handle->basename      = NULL;
+		mount_handle->basename_size = 0;
+	}
+	mount_handle->basename = libcstring_system_string_allocate(
+	                          basename_size );
+
+	if( mount_handle->basename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create basename string.",
+		 function );
+
+		goto on_error;
+	}
+	if( libcstring_system_string_copy(
+	     mount_handle->basename,
+	     basename,
+	     basename_size ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy basename.",
+		 function );
+
+		goto on_error;
+	}
+	mount_handle->basename[ basename_size - 1 ] = 0;
+
+	mount_handle->basename_size = basename_size;
+
+	return( 1 );
+
+on_error:
+	if( mount_handle->basename != NULL )
+	{
+		memory_free(
+		 mount_handle->basename );
+
+		mount_handle->basename = NULL;
+	}
+	mount_handle->basename_size = 0;
+
+	return( -1 );
 }
 

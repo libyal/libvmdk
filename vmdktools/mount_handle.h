@@ -39,6 +39,14 @@ typedef struct mount_handle mount_handle_t;
 
 struct mount_handle
 {
+	/* The basename
+	 */
+	libcstring_system_character_t *basename;
+
+	/* The basename size
+	 */
+	size_t basename_size;
+
 	/* The input handles arry
 	 */
 	libcdata_array_t *input_handles_array;
@@ -98,6 +106,17 @@ int mount_handle_get_media_size(
      mount_handle_t *mount_handle,
      int input_handle_index,
      size64_t *size,
+     libcerror_error_t **error );
+
+int mount_handle_get_number_of_input_handles(
+     mount_handle_t *mount_handle,
+     int *number_of_input_handles,
+     libcerror_error_t **error );
+
+int mount_handle_set_basename(
+     mount_handle_t *mount_handle,
+     const libcstring_system_character_t *basename,
+     size_t basename_size,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

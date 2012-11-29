@@ -130,8 +130,8 @@ void vmdkmount_signal_handler(
 #error Size of off_t not supported
 #endif
 
-static char *vmdkmount_fuse_path         = "/vmdk1";
-static size_t vmdkmount_fuse_path_length = 6;
+static char *vmdkmount_fuse_path_prefix         = "/vmdk";
+static size_t vmdkmount_fuse_path_prefix_length = 5;
 
 /* Opens a file
  * Returns 0 if successful or a negative errno value otherwise
@@ -174,11 +174,11 @@ int vmdkmount_fuse_open(
 	path_length = libcstring_narrow_string_length(
 	               path );
 
-	if( ( path_length != vmdkmount_fuse_path_length )
+	if( ( path_length <= vmdkmount_fuse_path_prefix_length )
 	 || ( libcstring_narrow_string_compare(
 	       path,
-	       vmdkmount_fuse_path,
-	       vmdkmount_fuse_path_length ) != 0 ) )
+	       vmdkmount_fuse_path_prefix,
+	       vmdkmount_fuse_path_prefix_length ) != 0 ) )
 	{
 		libcerror_error_set(
 		 &error,
@@ -231,7 +231,9 @@ int vmdkmount_fuse_read(
 	static char *function   = "vmdkmount_fuse_read";
 	size_t path_length      = 0;
 	ssize_t read_count      = 0;
+	int input_handle_index  = 0;
 	int result              = 0;
+	int string_index        = 0;
 
 	if( path == NULL )
 	{
@@ -275,11 +277,12 @@ int vmdkmount_fuse_read(
 	path_length = libcstring_narrow_string_length(
 	               path );
 
-	if( ( path_length != vmdkmount_fuse_path_length )
+	if( ( path_length <= vmdkmount_fuse_path_prefix_length )
+	 || ( path_length > ( vmdkmount_fuse_path_prefix_length + 3 ) )
 	 || ( libcstring_narrow_string_compare(
 	       path,
-	       vmdkmount_fuse_path,
-	       vmdkmount_fuse_path_length ) != 0 ) )
+	       vmdkmount_fuse_path_prefix,
+	       vmdkmount_fuse_path_prefix_length ) != 0 ) )
 	{
 		libcerror_error_set(
 		 &error,
@@ -292,8 +295,25 @@ int vmdkmount_fuse_read(
 
 		goto on_error;
 	}
+	string_index = vmdkmount_fuse_path_prefix_length;
+
+	input_handle_index = path[ string_index++ ] - '0';
+
+	if( string_index < (int) path_length )
+	{
+		input_handle_index *= 10;
+		input_handle_index += path[ string_index++ ] - '0';
+	}
+	if( string_index < (int) path_length )
+	{
+		input_handle_index *= 10;
+		input_handle_index += path[ string_index++ ] - '0';
+	}
+	input_handle_index -= 1;
+
 	if( mount_handle_seek_offset(
 	     vmdkmount_mount_handle,
+	     input_handle_index,
 	     (off64_t) offset,
 	     SEEK_SET,
 	     &error ) == -1 )
@@ -311,6 +331,7 @@ int vmdkmount_fuse_read(
 	}
 	read_count = mount_handle_read_buffer(
 	              vmdkmount_mount_handle,
+	              input_handle_index,
 	              (uint8_t *) buffer,
 	              size,
 	              &error );
@@ -351,10 +372,15 @@ int vmdkmount_fuse_readdir(
      off_t offset LIBCSYSTEM_ATTRIBUTE_UNUSED,
      struct fuse_file_info *file_info LIBCSYSTEM_ATTRIBUTE_UNUSED )
 {
-	libcerror_error_t *error = NULL;
-	static char *function   = "vmdkmount_fuse_readdir";
-	size_t path_length      = 0;
-	int result              = 0;
+	char vmdkmount_fuse_path[ 10 ];
+
+	libcerror_error_t *error    = NULL;
+	static char *function       = "vmdkmount_fuse_readdir";
+	size_t path_length          = 0;
+	int input_handle_index      = 0;
+	int number_of_input_handles = 0;
+	int result                  = 0;
+	int string_index            = 0;
 
 	LIBCSYSTEM_UNREFERENCED_PARAMETER( offset )
 	LIBCSYSTEM_UNREFERENCED_PARAMETER( file_info )
@@ -383,6 +409,52 @@ int vmdkmount_fuse_readdir(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
 		 "%s: unsupported path.",
+		 function );
+
+		result = -ENOENT;
+
+		goto on_error;
+	}
+	if( memory_copy(
+	     vmdkmount_fuse_path,
+	     vmdkmount_fuse_path_prefix,
+	     vmdkmount_fuse_path_prefix_length ) == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy fuse path prefix.",
+		 function );
+
+		result = -errno;
+
+		goto on_error;
+	}
+	if( mount_handle_get_number_of_input_handles(
+	     vmdkmount_mount_handle,
+	     &number_of_input_handles,
+	     &error ) != 1 )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of input handles.",
+		 function );
+
+		result = -EIO;
+
+		goto on_error;
+	}
+	if( ( number_of_input_handles < 0 )
+	 || ( number_of_input_handles > 99 ) )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported number of input handles.",
 		 function );
 
 		result = -ENOENT;
@@ -423,22 +495,40 @@ int vmdkmount_fuse_readdir(
 
 		goto on_error;
 	}
-	if( filler(
-	     buffer,
-	     &( vmdkmount_fuse_path[ 1 ] ),
-	     NULL,
-	     0 ) == 1 )
+	for( input_handle_index = 1;
+	     input_handle_index <= number_of_input_handles;
+	     input_handle_index++ )
 	{
-		libcerror_error_set(
-		 &error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set directory entry.",
-		 function );
+		string_index = vmdkmount_fuse_path_prefix_length;
 
-		result = -EIO;
+		if( input_handle_index >= 100 )
+		{
+			vmdkmount_fuse_path[ string_index++ ] = '0' + (char) ( input_handle_index / 100 );
+		}
+		if( input_handle_index >= 10 )
+		{
+			vmdkmount_fuse_path[ string_index++ ] = '0' + (char) ( input_handle_index / 10 );
+		}
+		vmdkmount_fuse_path[ string_index++ ] = '0' + (char) ( input_handle_index % 10 );
+		vmdkmount_fuse_path[ string_index++ ] = 0;
 
-		goto on_error;
+		if( filler(
+		     buffer,
+		     &( vmdkmount_fuse_path[ 1 ] ),
+		     NULL,
+		     0 ) == 1 )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set directory entry.",
+			 function );
+
+			result = -EIO;
+
+			goto on_error;
+		}
 	}
 	return( 0 );
 
@@ -464,7 +554,9 @@ int vmdkmount_fuse_getattr(
 	static char *function   = "vmdkmount_fuse_getattr";
 	size64_t media_size     = 0;
 	size_t path_length      = 0;
+	int input_handle_index  = 0;
 	int result              = -ENOENT;
+	int string_index        = 0;
 
 	if( path == NULL )
 	{
@@ -521,18 +613,36 @@ int vmdkmount_fuse_getattr(
 			result = 0;
 		}
 	}
-	else if( path_length == vmdkmount_fuse_path_length )
+	else if( ( path_length > vmdkmount_fuse_path_prefix_length )
+	      && ( path_length <= ( vmdkmount_fuse_path_prefix_length + 3 ) ) )
 	{
 		if( libcstring_narrow_string_compare(
 		     path,
-		     vmdkmount_fuse_path,
-		     vmdkmount_fuse_path_length ) == 0 )
+		     vmdkmount_fuse_path_prefix,
+		     vmdkmount_fuse_path_prefix_length ) == 0 )
 		{
+			string_index = vmdkmount_fuse_path_prefix_length;
+
+			input_handle_index = path[ string_index++ ] - '0';
+
+			if( string_index < (int) path_length )
+			{
+				input_handle_index *= 10;
+				input_handle_index += path[ string_index++ ] - '0';
+			}
+			if( string_index < (int) path_length )
+			{
+				input_handle_index *= 10;
+				input_handle_index += path[ string_index++ ] - '0';
+			}
+			input_handle_index -= 1;
+
 			stat_info->st_mode  = S_IFREG | 0444;
 			stat_info->st_nlink = 1;
 
 			if( mount_handle_get_media_size(
 			     vmdkmount_mount_handle,
+			     input_handle_index,
 			     &media_size,
 			     &error ) != 1 )
 			{

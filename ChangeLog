@@ -1,11 +1,9 @@
 TODO
-* vmdkmount: show device files for all previous snapshots
 * add parent image support
+  - basename support (+/-) parent path
   - bail out on read if parent is not set
-  - basename support ?
 * implement libvmdk_handle_set_maximum_number_of_open_handles
 * vmdkinfo: print dirty status
-* add support for parent images
 * add support for zero-grain table entry support
 * test multi segment sparse image support
 * add and test flat image support
@@ -25,22 +23,20 @@ API
 * add functions to access extents
 
 library
-* implement grain cache
-* fill offset table
-* create handle to read a set of vmdk files
 * add support for VMDK markers
-
-File format
 * complete COWD support
 
 Deployment:
-* update manuals
+* check manuals
   - update libvmdk.3
   - update vmdkinfo.1
   - add vmdkmount.1
 * create msvscpp files
 * create macosx package files
-* create codegear files
+
+20121129
+* worked on parent image support
+* updated libvmdk.3 man page
 
 20121128
 * worked on parent image support

@@ -51,51 +51,60 @@ int info_handle_initialize(
 
 		return( -1 );
 	}
+	if( *info_handle != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid info handle value already set.",
+		 function );
+
+		return( -1 );
+	}
+	*info_handle = memory_allocate_structure(
+	                info_handle_t );
+
 	if( *info_handle == NULL )
 	{
-		*info_handle = memory_allocate_structure(
-		                info_handle_t );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create info handle.",
+		 function );
 
-		if( *info_handle == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create info handle.",
-			 function );
-
-			goto on_error;
-		}
-		if( memory_set(
-		     *info_handle,
-		     0,
-		     sizeof( info_handle_t ) ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear info handle.",
-			 function );
-
-			goto on_error;
-		}
-		if( libvmdk_handle_initialize(
-		     &( ( *info_handle )->input_handle ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to initialize input handle.",
-			 function );
-
-			goto on_error;
-		}
-		( *info_handle )->notify_stream = INFO_HANDLE_NOTIFY_STREAM;
+		goto on_error;
 	}
+	if( memory_set(
+	     *info_handle,
+	     0,
+	     sizeof( info_handle_t ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear info handle.",
+		 function );
+
+		goto on_error;
+	}
+	if( libvmdk_handle_initialize(
+	     &( ( *info_handle )->input_handle ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to initialize input handle.",
+		 function );
+
+		goto on_error;
+	}
+	( *info_handle )->notify_stream = INFO_HANDLE_NOTIFY_STREAM;
+
 	return( 1 );
 
 on_error:

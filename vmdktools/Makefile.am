@@ -48,9 +48,11 @@ vmdkmount_SOURCES = \
 	mount_handle.c mount_handle.h \
 	vmdkmount.c \
 	vmdkoutput.c vmdkoutput.h \
+	vmdktools_libcdata.h \
 	vmdktools_libcerror.h \
 	vmdktools_libclocale.h \
 	vmdktools_libcnotify.h \
+	vmdktools_libcpath.h \
 	vmdktools_libcstring.h \
 	vmdktools_libcsystem.h \
 	vmdktools_libvmdk.h

@@ -1,4 +1,4 @@
-.Dd November 27, 2012
+.Dd November 29, 2012
 .Dt libvmdk 3
 .Os libvmdk
 .Sh NAME
@@ -62,6 +62,14 @@ Handle functions
 .Fn libvmdk_handle_get_content_identifier "libvmdk_handle_t *handle, uint32_t *content_identifier, libvmdk_error_t **error"
 .Ft int
 .Fn libvmdk_handle_get_parent_content_identifier "libvmdk_handle_t *handle, uint32_t *parent_content_identifier, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_get_utf8_parent_filename_size "libvmdk_handle_t *handle, size_t *utf8_string_size, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_get_utf8_parent_filename "libvmdk_handle_t *handle, uint8_t *utf8_string, size_t utf8_string_size, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_get_utf16_parent_filename_size "libvmdk_handle_t *handle, size_t *utf16_string_size, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_get_utf16_parent_filename "libvmdk_handle_t *handle, uint16_t *utf16_string, size_t utf16_string_size, libvmdk_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
