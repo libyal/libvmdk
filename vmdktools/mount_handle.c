@@ -1,7 +1,7 @@
 /* 
  * Mount handle
  *
- * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -379,7 +379,15 @@ int mount_handle_open_input(
 	}
 	else
 	{
-/* TODO */
+/* TODO add support */
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported number of filenames.",
+		 function );
+
+		goto on_error;
 	}
 	if( result != 1 )
 	{
@@ -433,9 +441,11 @@ int mount_handle_open_input_parent_handle(
      libcerror_error_t **error )
 {
 	libcstring_system_character_t *parent_filename = NULL;
+	libcstring_system_character_t *parent_path     = NULL;
 	libvmdk_handle_t *parent_input_handle          = NULL;
 	static char *function                          = "mount_handle_open_input_parent_handle";
 	size_t parent_filename_size                    = 0;
+	size_t parent_path_size                        = 0;
 	uint32_t parent_content_identifier             = 0;
 	int entry_index                                = 0;
 	int result                                     = 0;
@@ -552,7 +562,40 @@ int mount_handle_open_input_parent_handle(
 
 		goto on_error;
 	}
-/* TODO basename support */
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( libcpath_path_join_wide(
+	     &parent_path,
+	     &parent_path_size,
+	     mount_handle->basename,
+	     mount_handle->basename_size - 1,
+	     parent_filename,
+	     parent_filename_size - 1,
+	     error ) != 1 )
+#else
+	if( libcpath_path_join(
+	     &parent_path,
+	     &parent_path_size,
+	     mount_handle->basename,
+	     mount_handle->basename_size - 1,
+	     parent_filename,
+	     parent_filename_size - 1,
+	     error ) != 1 )
+#endif
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create parent path.",
+		 function );
+
+		goto on_error;
+	}
+	memory_free(
+	 parent_filename );
+
+	parent_filename = NULL;
+
 	if( libvmdk_handle_initialize(
 	     &parent_input_handle,
 	     error ) != 1 )
@@ -569,13 +612,13 @@ int mount_handle_open_input_parent_handle(
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libvmdk_handle_open_wide(
 	     parent_input_handle,
-	     parent_filename,
+	     parent_path,
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
 #else
 	if( libvmdk_handle_open(
 	     parent_input_handle,
-	     parent_filename,
+	     parent_path,
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
 #endif
@@ -586,14 +629,14 @@ int mount_handle_open_input_parent_handle(
 		 LIBCERROR_IO_ERROR_OPEN_FAILED,
 		 "%s: unable to open parent input handle: %" PRIs_LIBCSTRING_SYSTEM ".",
 		 function,
-		 parent_filename );
+		 parent_path );
 
 		goto on_error;
 	}
 	memory_free(
-	 parent_filename );
+	 parent_path );
 
-	parent_filename = NULL;
+	parent_path = NULL;
 
 	if( mount_handle_open_input_parent_handle(
 	     mount_handle,
@@ -659,6 +702,11 @@ on_error:
 		libvmdk_handle_free(
 		 &parent_input_handle,
 		 NULL );
+	}
+	if( parent_path != NULL )
+	{
+		memory_free(
+		 parent_path );
 	}
 	if( parent_filename != NULL )
 	{

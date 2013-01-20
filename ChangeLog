@@ -1,6 +1,5 @@
 TODO
 * add parent image support
-  - basename support (+/-) parent path
   - bail out on read if parent is not set
 * implement libvmdk_handle_set_maximum_number_of_open_handles
 * vmdkinfo: print dirty status
@@ -33,6 +32,9 @@ Deployment:
   - add vmdkmount.1
 * create msvscpp files
 * create macosx package files
+
+20121201
+* worked on parent image support
 
 20121129
 * worked on parent image support

@@ -1,7 +1,7 @@
 /*
  * Mounts a VMware Virtual Disk (VMDK) file
  *
- * Copyright (C) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -34,6 +34,17 @@
 
 #if defined( HAVE_STDLIB_H ) || defined( WINAPI )
 #include <stdlib.h>
+#endif
+
+#if !defined( WINAPI ) || defined( USE_CRT_FUNCTIONS )
+#if defined( TIME_WITH_SYS_TIME )
+#include <sys/time.h>
+#include <time.h>
+#elif defined( HAVE_SYS_TIME_H )
+#include <sys/time.h>
+#else
+#include <time.h>
+#endif
 #endif
 
 #if defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE )
@@ -91,7 +102,7 @@ void vmdkmount_signal_handler(
       libcsystem_signal_t signal LIBCSYSTEM_ATTRIBUTE_UNUSED )
 {
 	libcerror_error_t *error = NULL;
-	static char *function   = "vmdkmount_signal_handler";
+	static char *function    = "vmdkmount_signal_handler";
 
 	LIBCSYSTEM_UNREFERENCED_PARAMETER( signal )
 
@@ -141,9 +152,9 @@ int vmdkmount_fuse_open(
      struct fuse_file_info *file_info )
 {
 	libcerror_error_t *error = NULL;
-	static char *function   = "vmdkmount_fuse_open";
-	size_t path_length      = 0;
-	int result              = 0;
+	static char *function    = "vmdkmount_fuse_open";
+	size_t path_length       = 0;
+	int result               = 0;
 
 	if( path == NULL )
 	{
@@ -228,12 +239,12 @@ int vmdkmount_fuse_read(
      struct fuse_file_info *file_info )
 {
 	libcerror_error_t *error = NULL;
-	static char *function   = "vmdkmount_fuse_read";
-	size_t path_length      = 0;
-	ssize_t read_count      = 0;
-	int input_handle_index  = 0;
-	int result              = 0;
-	int string_index        = 0;
+	static char *function    = "vmdkmount_fuse_read";
+	size_t path_length       = 0;
+	ssize_t read_count       = 0;
+	int input_handle_index   = 0;
+	int result               = 0;
+	int string_index         = 0;
 
 	if( path == NULL )
 	{
@@ -551,12 +562,16 @@ int vmdkmount_fuse_getattr(
      struct stat *stat_info )
 {
 	libcerror_error_t *error = NULL;
-	static char *function   = "vmdkmount_fuse_getattr";
-	size64_t media_size     = 0;
-	size_t path_length      = 0;
-	int input_handle_index  = 0;
-	int result              = -ENOENT;
-	int string_index        = 0;
+	static char *function    = "vmdkmount_fuse_getattr";
+	size64_t media_size      = 0;
+	size_t path_length       = 0;
+	int input_handle_index   = 0;
+	int result               = -ENOENT;
+	int string_index         = 0;
+
+#if defined( HAVE_TIME )
+	time_t timestamp         = 0;
+#endif
 
 	if( path == NULL )
 	{
@@ -679,14 +694,19 @@ int vmdkmount_fuse_getattr(
 	}
 	if( result == 0 )
 	{
-		stat_info->st_atime = libcsystem_date_time_time(
-		                       NULL );
-
-		stat_info->st_mtime = libcsystem_date_time_time(
-		                       NULL );
-
-		stat_info->st_ctime = libcsystem_date_time_time(
-		                       NULL );
+#if defined( HAVE_TIME )
+		if( time( &timestamp ) == (time_t) -1 )
+		{
+			timestamp = 0;
+		}
+		stat_info->st_atime = timestamp;
+		stat_info->st_mtime = timestamp;
+		stat_info->st_ctime = timestamp;
+#else
+		stat_info->st_atime = 0;
+		stat_info->st_mtime = 0;
+		stat_info->st_ctime = 0;
+#endif
 
 #if defined( HAVE_GETEUID )
 		stat_info->st_uid = geteuid();

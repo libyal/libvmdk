@@ -1,7 +1,7 @@
 /*
  * Library to support the VMware Virtual Disk (VMDK) format
  *
- * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -47,6 +47,30 @@ extern "C" {
 LIBVMDK_EXTERN \
 const char *libvmdk_get_version(
              void );
+
+/* Returns the access flags for reading
+ */
+LIBVMDK_EXTERN \
+int libvmdk_get_access_flags_read(
+     void );
+
+/* Retrieves the narrow system string codepage
+ * A value of 0 represents no codepage, UTF-8 encoding is used instead
+ * Returns 1 if successful or -1 on error
+ */
+LIBVMDK_EXTERN \
+int libvmdk_get_codepage(
+     int *codepage,
+     libvmdk_error_t **error );
+
+/* Sets the narrow system string codepage
+ * A value of 0 represents no codepage, UTF-8 encoding is used instead
+ * Returns 1 if successful or -1 on error
+ */
+LIBVMDK_EXTERN \
+int libvmdk_set_codepage(
+     int codepage,
+     libvmdk_error_t **error );
 
 /* Determines if a file is a VMDK file
  * Returns 1 if true, 0 if not or -1 on error

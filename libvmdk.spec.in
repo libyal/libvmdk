@@ -69,9 +69,6 @@ rm -rf ${RPM_BUILD_ROOT}
 %{_mandir}/man1/*
 
 %changelog
-* Thu Sep 20 2012 Joachim Metz <joachim.metz@gmail.com> 20120920-1
-- Applied updates
-
-* Sat Sep 12 2009 Joachim Metz <joachim.metz@gmail.com> 20090912-1
-- Initial version based on liblnk spec file
+* @SPEC_DATE@ Joachim Metz <joachim.metz@gmail.com> @VERSION@-1
+- Auto-generated
 

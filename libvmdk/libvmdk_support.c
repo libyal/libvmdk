@@ -1,7 +1,7 @@
 /*
  * Support functions
  *
- * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -27,8 +27,11 @@
 #include "libvmdk_extent_file.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libclocale.h"
 #include "libvmdk_libcstring.h"
 #include "libvmdk_support.h"
+
+#if !defined( HAVE_LOCAL_LIBVMDK )
 
 /* Returns the library version
  */
@@ -37,6 +40,69 @@ const char *libvmdk_get_version(
 {
 	return( (const char *) LIBVMDK_VERSION_STRING );
 }
+
+/* Returns the access flags for reading
+ */
+int libvmdk_get_access_flags_read(
+     void )
+{
+	return( (int) LIBVMDK_ACCESS_FLAG_READ );
+}
+
+/* Retrieves the narrow system string codepage
+ * A value of 0 represents no codepage, UTF-8 encoding is used instead
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_get_codepage(
+     int *codepage,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_get_codepage";
+
+	if( libclocale_codepage_get(
+	     codepage,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve codepage.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Sets the narrow system string codepage
+ * A value of 0 represents no codepage, UTF-8 encoding is used instead
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_set_codepage(
+     int codepage,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_set_codepage";
+
+	if( libclocale_codepage_set(
+	     codepage,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set codepage.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+#endif /* !defined( HAVE_LOCAL_LIBVMDK ) */
+
 
 /* Determines if a file is a VMDK file
  * Returns 1 if true, 0 if not or -1 on error

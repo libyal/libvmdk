@@ -1,7 +1,7 @@
 /*
  * Support functions
  *
- * Copyright (c) 2009-2012, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -33,9 +33,28 @@
 extern "C" {
 #endif
 
+#if !defined( HAVE_LOCAL_LIBVMDK )
+
 LIBVMDK_EXTERN \
 const char *libvmdk_get_version(
              void );
+
+LIBVMDK_EXTERN \
+int libvmdk_get_access_flags_read(
+     void );
+
+LIBVMDK_EXTERN \
+int libvmdk_get_codepage(
+     int *codepage,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_set_codepage(
+     int codepage,
+     libcerror_error_t **error );
+
+#endif /* !defined( HAVE_LOCAL_LIBVMDK ) */
+
 
 LIBVMDK_EXTERN \
 int libvmdk_check_file_signature(
