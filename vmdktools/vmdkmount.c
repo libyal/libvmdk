@@ -91,7 +91,7 @@ void usage_fprint(
 
 	fprintf( stream, "\t-h:          shows this help\n" );
 	fprintf( stream, "\t-v:          verbose output to stderr\n"
-	                 "\t             vmdkmount will remain running in the foregroud\n" );
+	                 "\t             vmdkmount will remain running in the foreground\n" );
 	fprintf( stream, "\t-V:          print version\n" );
 	fprintf( stream, "\t-X:          extended options to pass to sub system\n" );
 }
