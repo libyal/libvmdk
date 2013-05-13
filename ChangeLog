@@ -1,9 +1,4 @@
 TODO
-* get grain data by grain table
-  - grain table wrap extent file table
-  - refactor grain_table_list
-  - remove unused functions from libvmdk_extent_table after refactor
-  - libvmdk_extent_file_read_grain_directory cyclic
 * add parent image support
   - bail out on read if parent is not set
 * implement libvmdk_handle_set_maximum_number_of_open_handles
@@ -36,9 +31,6 @@ Deployment:
   - update vmdkinfo.1
   - add vmdkmount.1
 * create msvscpp files
-
-20130513
-* worked on mfdata refactor
 
 20130512
 * updated dependencies

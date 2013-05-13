@@ -181,22 +181,6 @@ int libvmdk_extent_table_free(
 				result = -1;
 			}
 		}
-		if( ( *extent_table )->extent_files_stream != NULL )
-		{
-			if( libfdata_stream_free(
-			     &( ( *extent_table )->extent_files_stream ),
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free extent files stream.",
-				 function );
-
-				result = -1;
-			}
-		}
 		memory_free(
 		 *extent_table );
 
@@ -1350,33 +1334,20 @@ int libvmdk_extent_table_initialize_extents(
 
 		return( -1 );
 	}
+/* TODO RAW support ? */
 	if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT ) )
 	{
 /* TODO add write support ? */
-		result = libfdata_stream_initialize(
-		          &( extent_table->extent_files_stream ),
+		result = libfdata_list_initialize(
+		          &( extent_table->extent_files_list ),
 		          NULL,
 		          NULL,
 		          NULL,
 		          NULL,
-		          (ssize_t (*)(intptr_t *, intptr_t *, int, int, uint8_t *, size_t, uint32_t, uint8_t, libcerror_error_t **)) &libvmdk_extent_file_read_segment_data,
 		          NULL,
-		          (off64_t (*)(intptr_t *, intptr_t *, int, int, off64_t, libcerror_error_t **)) &libvmdk_extent_file_seek_segment_offset,
 		          0,
 		          error );
-
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create extent files stream.",
-			 function );
-
-			goto on_error;
-		}
 	}
 	else if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
 	      || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE ) )
@@ -1391,48 +1362,47 @@ int libvmdk_extent_table_initialize_extents(
 		          NULL,
 		          0,
 		          error );
+	}
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create extent files list.",
+		 function );
 
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create extent files list.",
-			 function );
+		goto on_error;
+	}
+	if( libfdata_list_resize(
+	     extent_table->extent_files_list,
+	     (int) number_of_extents,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+		 "%s: unable to resize extent files list.",
+		 function );
 
-			goto on_error;
-		}
-		if( libfdata_list_resize(
-		     extent_table->extent_files_list,
-		     (int) number_of_extents,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to resize extent files list.",
-			 function );
+		goto on_error;
+	}
+	result = libfcache_cache_initialize(
+	          &( ( *extent_table )->extent_files_cache ),
+	          LIBVMDK_MAXIMUM_CACHE_ENTRIES_EXTENT_FILES,
+	          error );
 
-			goto on_error;
-		}
-		result = libfcache_cache_initialize(
-			  &( ( *extent_table )->extent_files_cache ),
-			  LIBVMDK_MAXIMUM_CACHE_ENTRIES_EXTENT_FILES,
-			  error );
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create extent files cache.",
+		 function );
 
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create extent files cache.",
-			 function );
-
-			goto on_error;
-		}
+		goto on_error;
 	}
 	extent_table->disk_type         = disk_type;
 	extent_table->number_of_extents = number_of_extents;
