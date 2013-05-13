@@ -25,6 +25,8 @@
 #include <common.h>
 #include <types.h>
 
+#include "libvmdk_extent_table.h"
+#include "libvmdk_grain_data.h"
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
@@ -114,6 +116,32 @@ int libvmdk_grain_table_correct(
      const uint8_t *grain_table_data,
      size_t grain_table_data_size,
      int number_of_grain_table_entries,
+     libcerror_error_t **error );
+
+/* TODO refactor */
+
+int libvmdk_grain_table_get_extent_file_grain_group_by_offset(
+     libvmdk_grain_table_t *grain_table,
+     libbfio_pool_t *file_io_pool,
+     libvmdk_extent_table_t *extent_table,
+     off64_t offset,
+     uint32_t *extent_number,
+     off64_t *extent_file_data_offset,
+     libvmdk_extent_file_t **extent_file,
+     int *grain_groups_list_index,
+     off64_t *grain_group_data_offset,
+     libfdata_list_t **grains_list,
+     libcerror_error_t **error );
+
+int libvmdk_grain_table_get_grain_data_by_offset(
+     libvmdk_grain_table_t *grain_table,
+     uint64_t grain_index,
+     libbfio_pool_t *file_io_pool,
+     libvmdk_extent_table_t *extent_table,
+     libfcache_cache_t *grains_cache,
+     off64_t offset,
+     libvmdk_grain_data_t **grain_data,
+     off64_t *grain_data_offset,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

@@ -162,7 +162,7 @@ int libvmdk_extent_file_read_backup_grain_directory(
      libcerror_error_t **error );
 
 int libvmdk_extent_file_read_element_data(
-     libvmdk_io_handle_t *io_handle,
+     intptr_t * data_handle,
      libbfio_pool_t *file_io_pool,
      libfdata_list_element_t *element,
      libfcache_cache_t *cache,
@@ -172,6 +172,47 @@ int libvmdk_extent_file_read_element_data(
      uint32_t element_flags,
      uint8_t read_flags,
      libcerror_error_t **error );
+
+int libvmdk_extent_file_read_grain_group_element_data(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_pool_t *file_io_pool,
+     libfdata_list_element_t *element,
+     libfcache_cache_t *cache,
+     int file_io_pool_entry,
+     off64_t grain_group_data_offset,
+     size64_t grain_group_data_size,
+     uint32_t element_flags,
+     uint8_t read_flags,
+     libcerror_error_t **error );
+
+int libvmdk_extent_file_get_grain_group_by_offset(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_pool_t *file_io_pool,
+     off64_t offset,
+     int *grain_group_index,
+     off64_t *grain_group_data_offset,
+     libfdata_list_t **grains_list,
+     libcerror_error_t **error );
+
+ssize_t libvmdk_extent_file_read_segment_data(
+         intptr_t * data_handle,
+         libbfio_pool_t *file_io_pool,
+         int segment_index,
+         int segment_file_index,
+         uint8_t *segment_data,
+         size_t segment_data_size,
+         uint32_t segment_flags,
+         uint8_t read_flags,
+         libcerror_error_t **error );
+
+off64_t libvmdk_extent_file_seek_segment_offset(
+         intptr_t * data_handle,
+         libvmdk_io_handle_t *io_handle,
+         libbfio_pool_t *file_io_pool,
+         int segment_index,
+         int segment_file_index,
+         off64_t segment_offset,
+         libcerror_error_t **error );
 
 #if defined( __cplusplus )
 }

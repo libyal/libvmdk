@@ -1834,6 +1834,7 @@ int libvmdk_handle_open_read_grain_table(
 	libvmdk_extent_file_t *extent_file             = NULL;
 	libvmdk_grain_table_t *grain_table             = NULL;
 	static char *function                          = "libvmdk_handle_open_read_grain_table";
+	size64_t extent_file_size                      = 0;
 	int extent_index                               = 0;
 	int number_of_extents                          = 0;
 	int number_of_file_io_handles                  = 0;
@@ -1972,13 +1973,11 @@ int libvmdk_handle_open_read_grain_table(
 	     nternal_handle->descriptor_file->disk_type,
 	     error ) != 1 )
 	{
-	if( result != 1 )
-	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create extent files list.",
+		 "%s: unable to initialize extent table extents.",
 		 function );
 
 		goto on_error;
@@ -2067,6 +2066,22 @@ int libvmdk_handle_open_read_grain_table(
 			goto on_error;
 		}
 /* TODO get and check file size ? */
+		if( libbfio_pool_get_size(
+		     internal_handle->extent_data_file_io_pool,
+		     file_io_pool_entry,
+		     &extent_file_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve size of file IO pool entry: %d.",
+			 function,
+			 file_io_pool_entry );
+
+			goto on_error;
+		}
 		if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
 		{
 		}
@@ -2356,12 +2371,6 @@ on_error:
 		 &( internal_handle->grain_table_list ),
 		 NULL );
 	}
-	if( internal_handle->extent_files_list != NULL )
-	{
-		libfdata_list_free(
-		 &( internal_handle->extent_files_list ),
-		 NULL );
-	}
 	return( -1 );
 }
 
@@ -2495,17 +2504,6 @@ ssize_t libvmdk_handle_read_buffer(
 
 		return( -1 );
 	}
-	if( internal_handle->descriptor_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
-		 function );
-
-		return( -1 );
-	}
 	if( internal_handle->current_offset < 0 )
 	{
 		libcerror_error_set(
@@ -2513,20 +2511,6 @@ ssize_t libvmdk_handle_read_buffer(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
 		 "%s: invalid internal handle - invalid IO handle - current offset value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
-	 && ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
-	 && ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT )
-	 && ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported disk type.",
 		 function );
 
 		return( -1 );
@@ -2581,21 +2565,41 @@ ssize_t libvmdk_handle_read_buffer(
 	}
 	grain_offset = grain_index * internal_handle->io_handle->grain_size;
 
-	grain_data_offset = internal_handle->current_offset - grain_offset;
-
-	if( grain_data_offset >= (uint64_t) SSIZE_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid grain data offset value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
 	while( buffer_size > 0 )
 	{
+		if( libvmdk_grain_table_get_grain_data_by_offset(
+		     internal_handle->grain_table,
+		     grain_index,
+		     internal_handle->extent_data_file_io_pool,
+		     internal_handle->extent_table,
+		     internal_handle->grains_cache,
+		     &grain_data,
+		     &grain_data_offset,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve grain: %d data.",
+			 function,
+			 grain_index );
+
+			return( -1 );
+		}
+		if( grain_data == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing grain: %d data.",
+			 function,
+			 grain_index );
+
+			return( -1 );
+		}
+/* TODO refactor */
 		/* This function will expand element groups
 		 */
 		result = libfdata_list_get_element_value_by_index(
@@ -2619,6 +2623,7 @@ ssize_t libvmdk_handle_read_buffer(
 
 			return( -1 );
 		}
+/* TODO refactor */
 		read_size = (size_t) ( grain_data->data_size - grain_data_offset );
 
 		if( read_size > buffer_size )

@@ -62,13 +62,17 @@ struct libvmdk_extent_table
 	 */
 	uint32_t number_of_extents;
 
-	/* The extent files list
+	/* The extent files list used for sparse extent files
 	 */
 	libfdata_list_t *extent_files_list;
 
-	/* The extent files cache
+	/* The extent files cache used for sparse extent files
 	 */
 	libfcache_cache_t *extent_files_cache;
+
+	/* The extent files stream used for flat (non-sparse) extent files
+	 */
+	libfdata_stream_t *extent_files_stream;
 
 	/* Flags
 	 */
