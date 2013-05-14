@@ -1,4 +1,5 @@
 TODO
+* implement extent file current offset ?
 * implement libvmdk_extent_file_read_grain_group_element_data
 * get grain data by grain table
   - read grain data - move sparse to read_buffer e.g. qcow ?

@@ -42,6 +42,10 @@ typedef struct libvmdk_extent_table libvmdk_extent_table_t;
 
 struct libvmdk_extent_table
 {
+	/* The IO handle
+	 */
+	libvmdk_io_handle_t *io_handle;
+
 	/* The basename
 	 */
 	libcstring_system_character_t *basename;

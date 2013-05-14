@@ -831,6 +831,7 @@ int libvmdk_handle_open_file_io_handle(
 		case LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA:
 			if( libvmdk_extent_file_initialize(
 			     &extent_file,
+			     internal_handle->io_handle,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
@@ -2076,6 +2077,7 @@ int libvmdk_handle_open_read_grain_table(
 		{
 			if( libvmdk_extent_file_initialize(
 			     &extent_file,
+			     internal_handle->io_handle,
 			     error ) != 1 )
 			{
 				libcerror_error_set(

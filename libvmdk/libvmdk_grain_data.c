@@ -219,12 +219,23 @@ int libvmdk_grain_data_read_element_data(
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported grain data flags.",
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: compressed grain not supported.",
 		 function );
 
-		return( -1 );
+		goto on_error;
+	}
+	if( ( grain_data_flags & LIBVMDK_RANGE_FLAG_IS_SPARSE ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: sparse grain not supported.",
+		 function );
+
+		goto on_error;
 	}
 	if( libvmdk_grain_data_initialize(
 	     &grain_data,
@@ -251,8 +262,7 @@ int libvmdk_grain_data_read_element_data(
 
 		goto on_error;
 	}
-	if( ( grain_data_flags & LIBVMDK_RANGE_FLAG_IS_SPARSE ) != 0 )
-	{
+/* TODO move
 		if( io_handle->parent_handle == NULL )
 		{
 			if( memory_set(
@@ -322,49 +332,46 @@ int libvmdk_grain_data_read_element_data(
 				goto on_error;
 			}
 		}
-	}
-	else
-	{
-		if( libbfio_pool_seek_offset(
-		     file_io_pool,
-		     file_io_pool_entry,
-		     grain_data_offset,
-		     SEEK_SET,
-		     error ) == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_SEEK_FAILED,
-			 "%s: unable to seek grain offset: %" PRIi64 " in file IO pool entry: %d.",
-			 function,
-			 grain_data_offset,
-			 file_io_pool_entry );
-
-			goto on_error;
-		}
-		read_count = libbfio_pool_read_buffer(
-			      file_io_pool,
-			      file_io_pool_entry,
-			      grain_data->data,
-			      (size_t) grain_data_size,
-			      error );
-
-		if( read_count != (ssize_t) grain_data_size )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read grain data.",
-			 function );
-
-			goto on_error;
-		}
-/* TODO handle compressed grains
-		grain_data->data_size = (size_t) read_count;
 */
+	if( libbfio_pool_seek_offset(
+	     file_io_pool,
+	     file_io_pool_entry,
+	     grain_data_offset,
+	     SEEK_SET,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek grain offset: %" PRIi64 " in file IO pool entry: %d.",
+		 function,
+		 grain_data_offset,
+		 file_io_pool_entry );
+
+		goto on_error;
 	}
+	read_count = libbfio_pool_read_buffer(
+		      file_io_pool,
+		      file_io_pool_entry,
+		      grain_data->data,
+		      (size_t) grain_data_size,
+		      error );
+
+	if( read_count != (ssize_t) grain_data_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read grain data.",
+		 function );
+
+		goto on_error;
+	}
+/* TODO handle compressed grains
+	grain_data->data_size = (size_t) read_count;
+*/
 	if( libfdata_list_element_set_element_value(
 	     element,
 	     (intptr_t *) file_io_pool,

@@ -27,6 +27,8 @@
 #include "libvmdk_debug.h"
 #include "libvmdk_definitions.h"
 #include "libvmdk_extent_file.h"
+#include "libvmdk_grain_data.h"
+#include "libvmdk_grain_group.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcnotify.h"
@@ -48,6 +50,7 @@ const char vmdk_sparse_file_signature[ 4 ] = "KDMV";
  */
 int libvmdk_extent_file_initialize(
      libvmdk_extent_file_t **extent_file,
+     libvmdk_io_handle_t *io_handle,
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_file_initialize";
@@ -141,6 +144,8 @@ int libvmdk_extent_file_initialize(
 
 		goto on_error;
 	}
+	( *extent_file )->io_handle = io_handle;
+
 	return( 1 );
 
 on_error:
@@ -1741,7 +1746,7 @@ on_error:
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_extent_file_read_element_data(
-     intptr_t *data_handle LIBVMDK_ATTRIBUTE_UNUSED,
+     libvmdk_io_handle_t *io_handle,
      libbfio_pool_t *file_io_pool,
      libfdata_list_element_t *element,
      libfcache_cache_t *cache,
@@ -1755,14 +1760,25 @@ int libvmdk_extent_file_read_element_data(
 	libvmdk_extent_file_t *extent_file = NULL;
 	static char *function              = "libvmdk_extent_file_read";
 
-	LIBVMDK_UNREFERENCED_PARAMETER( data_handle )
 	LIBVMDK_UNREFERENCED_PARAMETER( element_offset )
 	LIBVMDK_UNREFERENCED_PARAMETER( element_size )
 	LIBVMDK_UNREFERENCED_PARAMETER( element_flags )
 	LIBVMDK_UNREFERENCED_PARAMETER( read_flags )
 
+	if( io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid IO handle.",
+		 function );
+
+		return( -1 );
+	}
 	if( libvmdk_extent_file_initialize(
 	     &extent_file,
+	     io_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1848,13 +1864,18 @@ int libvmdk_extent_file_read_grain_group_element_data(
      int file_io_pool_entry,
      off64_t grain_group_data_offset,
      size64_t grain_group_data_size,
-     uint32_t element_flags LIBVMDK_ATTRIBUTE_UNUSED,
+     uint32_t grain_group_data_flags,
      uint8_t read_flags LIBVMDK_ATTRIBUTE_UNUSED,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_extent_file_read_grain_group_element_data";
+	libfdata_list_t *grains_list = NULL;
+	uint8_t *grain_table_data    = NULL;
+	static char *function        = "libvmdk_extent_file_read_grain_group_element_data";
+	ssize_t read_count           = 0;
+	int grain_index              = 0;
+	int number_of_entries        = 0;
+	int result                   = 0;
 
-	LIBVMDK_UNREFERENCED_PARAMETER( element_flags )
 	LIBVMDK_UNREFERENCED_PARAMETER( read_flags )
 
 	if( extent_file == NULL )
@@ -1879,8 +1900,193 @@ int libvmdk_extent_file_read_grain_group_element_data(
 
 		return( -1 );
 	}
-/* TODO */
+	if( extent_file->io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid extent file - missing IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( grain_group_data_size == 0 )
+	 || ( grain_group_data_size > (size64_t) SSIZE_MAX ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid grain group data size value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
+	grain_table_data = (uint8_t *) memory_allocate(
+	                                sizeof( uint8_t ) * (size_t) grain_group_data_size );
+
+	if( grain_table_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create grain table data.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( grain_group_data_flags & LIBVMDK_RANGE_FLAG_IS_SPARSE ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 "%s: sparse grain table not supported.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: reading grain table at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+		 function,
+		 grain_group_data_offset,
+		 grain_group_data_offset );
+	}
+#endif
+	if( libbfio_pool_seek_offset(
+	     file_io_pool,
+	     file_io_pool_entry,
+	     grain_group_data_offset,
+	     SEEK_SET,
+	     error ) == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek grain table offset: %" PRIi64 ".",
+		 function,
+		 grain_group_data_offset );
+
+		goto on_error;
+	}
+	read_count = libbfio_pool_read_buffer(
+	              file_io_pool,
+	              file_io_pool_entry,
+	              grain_table_data,
+	              (size_t) grain_group_data_size,
+	              error );
+
+	if( read_count != (ssize_t) grain_group_data_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read grain table data.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: grain table data:\n",
+		 function );
+		libcnotify_print_data(
+		 grain_table_data,
+		 (size_t) grain_group_data_size,
+		 0 );
+	}
+#endif
+	if( libfdata_list_initialize(
+	     &grains_list,
+	     (intptr_t *) extent_file->io_handle,
+	     NULL,
+	     NULL,
+	     (int (*)(intptr_t *, intptr_t *, libfdata_list_element_t *, libfcache_cache_t *, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libvmdk_grain_data_read_element_data,
+	     NULL,
+	     LIBFDATA_FLAG_DATA_HANDLE_NON_MANAGED,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create grains list.",
+		 function );
+
+		goto on_error;
+	}
+/* TODO makes sure to compensate for the last grain table */
+	number_of_entries = extent_file->number_of_grain_table_entries;
+
+	if( libvmdk_grain_group_fill(
+	     grains_list,
+	     grain_index,
+	     extent_file->io_handle->grain_size,
+	     file_io_pool_entry,
+	     grain_table_data,
+	     (size_t) grain_group_data_size,
+	     number_of_entries,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to fill grain table.",
+		 function );
+
+		goto on_error;
+	}
+/* TODO what about backup range */
+/* TODO check if remainder of sector block is emtpy */
+
+	memory_free(
+	 grain_table_data );
+
+	grain_table_data = NULL;
+
+	if( libfdata_list_element_set_element_value(
+	     element,
+	     (intptr_t *) file_io_pool,
+	     cache,
+	     (intptr_t *) grains_list,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libfdata_list_free,
+	     LIBFDATA_LIST_ELEMENT_VALUE_FLAG_MANAGED,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set grains list as element value.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
+
+on_error:
+	if( grains_list != NULL )
+	{
+		libfdata_list_free(
+		 &grains_list,
+		 NULL );
+	}
+	if( grain_table_data != NULL )
+	{
+		memory_free(
+		 grain_table_data );
+	}
+	return( -1 );
 }
 
 /* Retrieves the grain group at a specific offset

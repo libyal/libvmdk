@@ -108,6 +108,8 @@ int libvmdk_extent_table_initialize(
 
 		goto on_error;
 	}
+	( *extent_table )->io_handle = io_handle;
+
 	return( 1 );
 
 on_error:
@@ -390,11 +392,31 @@ int libvmdk_extent_table_clone(
 
 		goto on_error;
 	}
+	if( libfdata_stream_clone(
+	     &( ( *destination_extent_table )->extent_files_stream ),
+	     source_extent_table->extent_files_stream,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create destination extent files stream.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
 	if( *destination_extent_table != NULL )
 	{
+		if( ( *destination_extent_table )->extent_files_cache != NULL )
+		{
+			libfcache_cache_free(
+			 &( ( *destination_extent_table )->extent_files_cache ),
+			 NULL );
+		}
 		if( ( *destination_extent_table )->extent_files_list != NULL )
 		{
 			libfdata_list_free(
@@ -1413,14 +1435,14 @@ int libvmdk_extent_table_initialize_extents(
 /* TODO add write support ? */
 		result = libfdata_stream_initialize(
 		          &( extent_table->extent_files_stream ),
-		          NULL,
+		          (intptr_t *) extent_table->io_handle,
 		          NULL,
 		          NULL,
 		          NULL,
 		          (ssize_t (*)(intptr_t *, intptr_t *, int, int, uint8_t *, size_t, uint32_t, uint8_t, libcerror_error_t **)) &libvmdk_extent_file_read_segment_data,
 		          NULL,
 		          (off64_t (*)(intptr_t *, intptr_t *, int, int, off64_t, libcerror_error_t **)) &libvmdk_extent_file_seek_segment_offset,
-		          0,
+		          LIBFDATA_FLAG_DATA_HANDLE_NON_MANAGED,
 		          error );
 
 		if( result != 1 )
@@ -1441,12 +1463,12 @@ int libvmdk_extent_table_initialize_extents(
 /* TODO add write support ? */
 		result = libfdata_list_initialize(
 		          &( extent_table->extent_files_list ),
-		          NULL,
+		          (intptr_t *) extent_table->io_handle,
 		          NULL,
 		          NULL,
 		          (int (*)(intptr_t *, intptr_t *, libfdata_list_element_t *, libfcache_cache_t *, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libvmdk_extent_file_read_element_data,
 		          NULL,
-		          0,
+		          LIBFDATA_FLAG_DATA_HANDLE_NON_MANAGED,
 		          error );
 
 		if( result != 1 )

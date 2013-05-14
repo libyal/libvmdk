@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libfcache.h"
@@ -41,6 +42,10 @@ typedef struct libvmdk_extent_file libvmdk_extent_file_t;
 
 struct libvmdk_extent_file
 {
+	/* The IO handle
+	 */
+	libvmdk_io_handle_t *io_handle;
+
 	/* The extent file type
 	 */
 	uint8_t file_type;
@@ -116,6 +121,7 @@ struct libvmdk_extent_file
 
 int libvmdk_extent_file_initialize(
      libvmdk_extent_file_t **extent_file,
+     libvmdk_io_handle_t *io_handle,
      libcerror_error_t **error );
 
 int libvmdk_extent_file_free(
@@ -166,7 +172,7 @@ int libvmdk_extent_file_read_backup_grain_directory(
      libcerror_error_t **error );
 
 int libvmdk_extent_file_read_element_data(
-     intptr_t * data_handle,
+     libvmdk_io_handle_t *io_handle,
      libbfio_pool_t *file_io_pool,
      libfdata_list_element_t *element,
      libfcache_cache_t *cache,
@@ -185,7 +191,7 @@ int libvmdk_extent_file_read_grain_group_element_data(
      int file_io_pool_entry,
      off64_t grain_group_data_offset,
      size64_t grain_group_data_size,
-     uint32_t element_flags,
+     uint32_t grain_group_data_flags,
      uint8_t read_flags,
      libcerror_error_t **error );
 

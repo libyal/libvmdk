@@ -29,6 +29,7 @@ libvmdk_la_SOURCES = \
 	libvmdk_extent_table.c libvmdk_extent_table.h \
 	libvmdk_extern.h \
 	libvmdk_grain_data.c libvmdk_grain_data.h \
+	libvmdk_grain_group.c libvmdk_grain_group.h \
 	libvmdk_grain_table.c libvmdk_grain_table.h \
 	libvmdk_handle.c libvmdk_handle.h \
 	libvmdk_io_handle.c libvmdk_io_handle.h \
