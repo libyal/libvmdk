@@ -1886,7 +1886,7 @@ int libvmdk_extent_file_read_grain_group_element_data(
 /* Retrieves the grain group at a specific offset
  * Returns 1 if successful, 0 if not or -1 on error
  */
-int libvmdk_extent_file_get_grain_group_by_offset(
+int libvmdk_extent_file_get_grain_group_at_offset(
      libvmdk_extent_file_t *extent_file,
      libbfio_pool_t *file_io_pool,
      off64_t offset,
@@ -1895,7 +1895,7 @@ int libvmdk_extent_file_get_grain_group_by_offset(
      libfdata_list_t **grains_list,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_extent_file_get_grain_group_by_offset";
+	static char *function = "libvmdk_extent_file_get_grain_group_at_offset";
 	int result            = 0;
 
 	if( extent_file == NULL )

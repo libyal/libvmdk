@@ -44,10 +44,6 @@ struct libvmdk_io_handle
 	 */
 	uint8_t file_type;
 
-	/* The format version
-	 */
-	uint32_t format_version;
-
 	/* The maximum data size
 	 */
 	size64_t maximum_data_size;

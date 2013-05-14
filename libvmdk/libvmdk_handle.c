@@ -107,6 +107,19 @@ int libvmdk_handle_initialize(
 
 		return( -1 );
 	}
+	if( libvmdk_io_handle_initialize(
+	     &( internal_handle->io_handle ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create IO handle.",
+		 function );
+
+		goto on_error;
+	}
 	if( libvmdk_extent_table_initialize(
 	     &( internal_handle->extent_table ),
 	     internal_handle->io_handle,
@@ -121,19 +134,6 @@ int libvmdk_handle_initialize(
 
 		goto on_error;
 	}
-	if( libvmdk_io_handle_initialize(
-	     &( internal_handle->io_handle ),
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create IO handle.",
-		 function );
-
-		goto on_error;
-	}
 	internal_handle->maximum_number_of_open_handles = LIBBFIO_POOL_UNLIMITED_NUMBER_OF_OPEN_HANDLES;
 
 	*handle = (libvmdk_handle_t *) internal_handle;
@@ -143,10 +143,10 @@ int libvmdk_handle_initialize(
 on_error:
 	if( internal_handle != NULL )
 	{
-		if( internal_handle->extent_table != NULL )
+		if( internal_handle->io_handle != NULL )
 		{
-			libvmdk_extent_table_free(
-			 &( internal_handle->extent_table ),
+			libvmdk_io_handle_free(
+			 &( internal_handle->io_handle ),
 			 NULL );
 		}
 		memory_free(
@@ -181,7 +181,7 @@ int libvmdk_handle_free(
 	{
 		internal_handle = (libvmdk_internal_handle_t *) *handle;
 
-		if( internal_handle->file_io_pool != NULL )
+		if( internal_handle->extent_data_file_io_pool != NULL )
 		{
 			if( libvmdk_handle_close(
 			     *handle,
@@ -1148,14 +1148,15 @@ int libvmdk_handle_open_extent_data_files(
 			extent_data_filename_start = extent_descriptor->filename;
 			extent_data_filename_size  = extent_descriptor->filename_size;
 		}
-		if( internal_handle->basename != NULL )
+/* TODO refactor to a function in extent table */
+		if( internal_handle->extent_table->basename != NULL )
 		{
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 			if( libcpath_path_join_wide(
 			     &extent_data_file_location,
 			     &extent_data_file_location_size,
-			     internal_handle->basename,
-			     internal_handle->basename_size - 1,
+			     internal_handle->extent_table->basename,
+			     internal_handle->extent_table->basename_size - 1,
 			     extent_data_filename_start,
 			     extent_data_filename_size - 1,
 			     error ) != 1 )
@@ -1163,8 +1164,8 @@ int libvmdk_handle_open_extent_data_files(
 			if( libcpath_path_join(
 			     &extent_data_file_location,
 			     &extent_data_file_location_size,
-			     internal_handle->basename,
-			     internal_handle->basename_size - 1,
+			     internal_handle->extent_table->basename,
+			     internal_handle->extent_table->basename_size - 1,
 			     extent_data_filename_start,
 			     extent_data_filename_size - 1,
 			     error ) != 1 )
@@ -1807,7 +1808,7 @@ int libvmdk_handle_close(
 		}
 	}
 	if( libvmdk_extent_table_clear(
-	     &( internal_handle->extent_table ),
+	     internal_handle->extent_table,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1879,17 +1880,6 @@ int libvmdk_handle_open_read_grain_table(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid internal handle - missing extent data file IO pool.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_handle->extent_table != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid handle - extent table value already set.",
 		 function );
 
 		return( -1 );
@@ -1969,7 +1959,7 @@ int libvmdk_handle_open_read_grain_table(
 	if( libvmdk_extent_table_initialize_extents(
 	     internal_handle->extent_table,
 	     number_of_extents,
-	     nternal_handle->descriptor_file->disk_type,
+	     internal_handle->descriptor_file->disk_type,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1995,31 +1985,6 @@ int libvmdk_handle_open_read_grain_table(
 
 		goto on_error;
 	}
-/* TODO refactor
-	if( libfdata_list_initialize(
-	     &( internal_handle->grain_table_list ),
-	     (intptr_t *) grain_table,
-	     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_grain_table_free,
-	     (int (*)(intptr_t **, intptr_t *, libcerror_error_t **)) &libvmdk_grain_table_clone,
-	     &libvmdk_grain_table_read_grain,
-	     &libvmdk_grain_table_read_offsets,
-	     LIBMFDATA_FLAG_IO_HANDLE_MANAGED,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create grain table list.",
-		 function );
-
-		libvmdk_grain_table_free(
-		 &grain_table,
-		 NULL );
-
-		goto on_error;
-	}
-*/
 	if( libfcache_cache_initialize(
 	     &( internal_handle->grains_cache ),
 	     LIBVMDK_MAXIMUM_CACHE_ENTRIES_GRAINS,
@@ -2066,10 +2031,9 @@ int libvmdk_handle_open_read_grain_table(
 
 			goto on_error;
 		}
-/* TODO get and check file size ? */
 		if( libbfio_pool_get_size(
 		     internal_handle->extent_data_file_io_pool,
-		     file_io_pool_entry,
+		     extent_index,
 		     &extent_file_size,
 		     error ) != 1 )
 		{
@@ -2079,10 +2043,11 @@ int libvmdk_handle_open_read_grain_table(
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 			 "%s: unable to retrieve size of file IO pool entry: %d.",
 			 function,
-			 file_io_pool_entry );
+			 extent_index );
 
 			goto on_error;
 		}
+/* TODO check file size ? */
 		if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
 		{
 		}
@@ -2361,7 +2326,7 @@ on_error:
 	}
 	if( internal_handle->grain_table != NULL )
 	{
-		libfdata_list_free(
+		libvmdk_grain_table_free(
 		 &( internal_handle->grain_table ),
 		 NULL );
 	}
@@ -2561,12 +2526,13 @@ ssize_t libvmdk_handle_read_buffer(
 
 	while( buffer_size > 0 )
 	{
-		if( libvmdk_grain_table_get_grain_data_by_offset(
+		if( libvmdk_grain_table_get_grain_data_at_offset(
 		     internal_handle->grain_table,
 		     grain_index,
 		     internal_handle->extent_data_file_io_pool,
 		     internal_handle->extent_table,
 		     internal_handle->grains_cache,
+		     internal_handle->current_offset,
 		     &grain_data,
 		     &grain_data_offset,
 		     error ) != 1 )
@@ -2593,29 +2559,6 @@ ssize_t libvmdk_handle_read_buffer(
 
 			return( -1 );
 		}
-/* TODO refactor
-		result = libfdata_list_get_element_value_by_index(
-			  internal_handle->grain_table_list,
-			  internal_handle->extent_data_file_io_pool,
-			  internal_handle->grains_cache,
-			  grain_index,
-			  (intptr_t **) &grain_data,
-			  0,
-			  error );
-
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve grain data: %d.",
-			 function,
-			 grain_index );
-
-			return( -1 );
-		}
-*/
 		read_size = (size_t) ( grain_data->data_size - grain_data_offset );
 
 		if( read_size > buffer_size )

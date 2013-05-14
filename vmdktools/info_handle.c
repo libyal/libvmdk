@@ -356,8 +356,6 @@ int info_handle_file_fprint(
 	size64_t media_size                            = 0;
 	size_t parent_filename_size                    = 0;
 	uint32_t content_identifier                    = 0;
-	uint16_t major_version                         = 0;
-	uint16_t minor_version                         = 0;
 	int disk_type                                  = 0;
 	int result                                     = 0;
 
@@ -375,29 +373,6 @@ int info_handle_file_fprint(
 	fprintf(
 	 info_handle->notify_stream,
 	 "VMware Virtual Disk (VMDK) information:\n" );
-
-/* TODO
-	if( libvmdk_handle_get_format_version(
-	     info_handle->input_handle,
-	     &major_version,
-	     &minor_version,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve format version.",
-		 function );
-
-		goto on_error;
-	}
-	fprintf(
-	 info_handle->notify_stream,
-	 "\tFormat:\t\t%" PRIu16 ".%" PRIu16 "\n",
-	 major_version,
-	 minor_version );
-*/
 
 	if( libvmdk_handle_get_disk_type(
 	     info_handle->input_handle,
@@ -557,10 +532,12 @@ int info_handle_file_fprint(
 	 "\tContent identifier:\t\t0x%08" PRIx32 "\n",
 	 content_identifier );
 
-	if( libvmdk_handle_get_parent_content_identifier(
-	     info_handle->input_handle,
-	     &content_identifier,
-	     error ) != 1 )
+	result = libvmdk_handle_get_parent_content_identifier(
+	          info_handle->input_handle,
+	          &content_identifier,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -571,11 +548,13 @@ int info_handle_file_fprint(
 
 		goto on_error;
 	}
-	fprintf(
-	 info_handle->notify_stream,
-	 "\tParent content identifier:\t0x%08" PRIx32 "\n",
-	 content_identifier );
-
+	else if( result != 0 )
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "\tParent content identifier:\t0x%08" PRIx32 "\n",
+		 content_identifier );
+	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libvmdk_handle_get_utf16_parent_filename_size(
 	          info_handle->input_handle,

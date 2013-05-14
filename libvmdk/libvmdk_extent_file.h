@@ -189,7 +189,7 @@ int libvmdk_extent_file_read_grain_group_element_data(
      uint8_t read_flags,
      libcerror_error_t **error );
 
-int libvmdk_extent_file_get_grain_group_by_offset(
+int libvmdk_extent_file_get_grain_group_at_offset(
      libvmdk_extent_file_t *extent_file,
      libbfio_pool_t *file_io_pool,
      off64_t offset,

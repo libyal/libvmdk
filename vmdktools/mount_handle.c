@@ -462,10 +462,12 @@ int mount_handle_open_input_parent_handle(
 
 		return( -1 );
 	}
-	if( libvmdk_handle_get_parent_content_identifier(
-	     input_handle,
-	     &parent_content_identifier,
-	     error ) != 1 )
+	result = libvmdk_handle_get_parent_content_identifier(
+	          input_handle,
+	          &parent_content_identifier,
+	          error );
+
+	if( result == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -476,7 +478,8 @@ int mount_handle_open_input_parent_handle(
 
 		goto on_error;
 	}
-	if( parent_content_identifier == 0xffffffffUL )
+	if( ( result == 0 )
+	 || ( parent_content_identifier == 0xffffffffUL ) )
 	{
 		return( 0 );
 	}

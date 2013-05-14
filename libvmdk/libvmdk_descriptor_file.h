@@ -54,6 +54,10 @@ struct libvmdk_descriptor_file
 	 */
 	uint32_t parent_content_identifier;
 
+	/* Value to indicate the parent content identifier has been set
+	 */
+	uint8_t parent_content_identifier_set;
+
 	/* The parent filename
 	 */
 	uint8_t *parent_filename;
@@ -124,6 +128,11 @@ int libvmdk_descriptor_file_get_extent_by_index(
      libvmdk_descriptor_file_t *descriptor_file,
      int extent_index,
      libvmdk_extent_descriptor_t **extent_descriptor,
+     libcerror_error_t **error );
+
+int libvmdk_descriptor_file_get_parent_content_identifier(
+     libvmdk_descriptor_file_t *descriptor_file,
+     uint32_t *parent_content_identifier,
      libcerror_error_t **error );
 
 int libvmdk_descriptor_file_get_utf8_parent_filename_size(

@@ -72,43 +72,7 @@ int libvmdk_grain_table_clone(
      libvmdk_grain_table_t *source_grain_table,
      libcerror_error_t **error );
 
-int libvmdk_grain_table_read_offsets(
-     intptr_t *io_handle,
-     libbfio_pool_t *file_io_pool,
-     libfdata_list_t *grain_table_list,
-     int element_index,
-     int number_of_elements,
-     libfcache_cache_t *cache,
-     int file_io_pool_entry,
-     off64_t element_group_offset,
-     size64_t element_group_size,
-     uint32_t element_group_flags,
-     uint8_t read_flags,
-     libcerror_error_t **error );
-
-int libvmdk_grain_table_fill(
-     libvmdk_grain_table_t *grain_table,
-     libfdata_list_t *grain_table_list,
-     int grain_index,
-     int file_io_pool_entry,
-     const uint8_t *grain_table_data,
-     size_t grain_table_data_size,
-     int number_of_grain_table_entries,
-     libcerror_error_t **error );
-
-int libvmdk_grain_table_correct(
-     libvmdk_grain_table_t *grain_table,
-     libfdata_list_t *grain_table_list,
-     int grain_index,
-     int file_io_pool_entry,
-     const uint8_t *grain_table_data,
-     size_t grain_table_data_size,
-     int number_of_grain_table_entries,
-     libcerror_error_t **error );
-
-/* TODO refactor */
-
-int libvmdk_grain_table_get_extent_file_grain_group_by_offset(
+int libvmdk_grain_table_get_extent_file_grain_group_at_offset(
      libvmdk_grain_table_t *grain_table,
      libbfio_pool_t *file_io_pool,
      libvmdk_extent_table_t *extent_table,
@@ -121,7 +85,7 @@ int libvmdk_grain_table_get_extent_file_grain_group_by_offset(
      libfdata_list_t **grains_list,
      libcerror_error_t **error );
 
-int libvmdk_grain_table_get_grain_data_by_offset(
+int libvmdk_grain_table_get_grain_data_at_offset(
      libvmdk_grain_table_t *grain_table,
      uint64_t grain_index,
      libbfio_pool_t *file_io_pool,

@@ -23,10 +23,13 @@
 #include <memory.h>
 #include <types.h>
 
+#include "libvmdk_definitions.h"
 #include "libvmdk_grain_data.h"
 #include "libvmdk_handle.h"
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libfdata.h"
+#include "libvmdk_unused.h"
 
 /* Creates grain data
  * Make sure the value grain_data is referencing, is set to NULL
@@ -200,32 +203,32 @@ int libvmdk_grain_data_read_element_data(
 
 		return( -1 );
 	}
-	if( ( element_data_size == (size64_t) 0 )
-	 || ( element_data_size > (size64_t) SSIZE_MAX ) )
+	if( ( grain_data_size == (size64_t) 0 )
+	 || ( grain_data_size > (size64_t) SSIZE_MAX ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid element data size value out of bounds.",
+		 "%s: invalid grain data size value out of bounds.",
 		 function );
 
 		return( -1 );
 	}
-	if( ( element_data_flags & LIBVMDK_RANGE_FLAG_IS_COMPRESSED ) != 0 )
+	if( ( grain_data_flags & LIBVMDK_RANGE_FLAG_IS_COMPRESSED ) != 0 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported element data flags.",
+		 "%s: unsupported grain data flags.",
 		 function );
 
 		return( -1 );
 	}
 	if( libvmdk_grain_data_initialize(
 	     &grain_data,
-	     (size_t) element_data_size,
+	     (size_t) grain_data_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -248,14 +251,14 @@ int libvmdk_grain_data_read_element_data(
 
 		goto on_error;
 	}
-	if( ( element_data_flags & LIBVMDK_RANGE_FLAG_IS_SPARSE ) != 0 )
+	if( ( grain_data_flags & LIBVMDK_RANGE_FLAG_IS_SPARSE ) != 0 )
 	{
 		if( io_handle->parent_handle == NULL )
 		{
 			if( memory_set(
 			     grain_data->data,
 			     0,
-			     (size_t) element_data_size ) == NULL )
+			     (size_t) grain_data_size ) == NULL )
 			{
 				libcerror_error_set(
 				 error,
@@ -270,7 +273,7 @@ int libvmdk_grain_data_read_element_data(
 		else
 		{
 			if( libfdata_list_element_get_element_index(
-			     list_element,
+			     element,
 			     &element_index,
 			     error ) != 1 )
 			{
@@ -283,11 +286,11 @@ int libvmdk_grain_data_read_element_data(
 
 				goto on_error;
 			}
-			element_data_offset = element_index * element_data_size;
+			grain_data_offset = element_index * grain_data_size;
 
 			if( libvmdk_handle_seek_offset(
 			     io_handle->parent_handle,
-			     element_data_offset,
+			     grain_data_offset,
 			     SEEK_SET,
 			     error ) == -1 )
 			{
@@ -297,17 +300,17 @@ int libvmdk_grain_data_read_element_data(
 				 LIBCERROR_IO_ERROR_SEEK_FAILED,
 				 "%s: unable to seek grain offset: %" PRIi64 " in parent.",
 				 function,
-				 element_data_offset );
+				 grain_data_offset );
 
 				goto on_error;
 			}
 			read_count = libvmdk_handle_read_buffer(
-				      grain_table->io_handle->parent_handle,
+				      io_handle->parent_handle,
 				      grain_data->data,
-				      (size_t) element_data_size,
+				      (size_t) grain_data_size,
 				      error );
 
-			if( read_count != (ssize_t) element_data_size )
+			if( read_count != (ssize_t) grain_data_size )
 			{
 				libcerror_error_set(
 				 error,
@@ -325,7 +328,7 @@ int libvmdk_grain_data_read_element_data(
 		if( libbfio_pool_seek_offset(
 		     file_io_pool,
 		     file_io_pool_entry,
-		     element_data_offset,
+		     grain_data_offset,
 		     SEEK_SET,
 		     error ) == -1 )
 		{
@@ -335,7 +338,7 @@ int libvmdk_grain_data_read_element_data(
 			 LIBCERROR_IO_ERROR_SEEK_FAILED,
 			 "%s: unable to seek grain offset: %" PRIi64 " in file IO pool entry: %d.",
 			 function,
-			 element_data_offset,
+			 grain_data_offset,
 			 file_io_pool_entry );
 
 			goto on_error;
@@ -344,10 +347,10 @@ int libvmdk_grain_data_read_element_data(
 			      file_io_pool,
 			      file_io_pool_entry,
 			      grain_data->data,
-			      (size_t) element_data_size,
+			      (size_t) grain_data_size,
 			      error );
 
-		if( read_count != (ssize_t) element_data_size )
+		if( read_count != (ssize_t) grain_data_size )
 		{
 			libcerror_error_set(
 			 error,
@@ -363,7 +366,8 @@ int libvmdk_grain_data_read_element_data(
 */
 	}
 	if( libfdata_list_element_set_element_value(
-	     list_element,
+	     element,
+	     (intptr_t *) file_io_pool,
 	     cache,
 	     (intptr_t *) grain_data,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_grain_data_free,

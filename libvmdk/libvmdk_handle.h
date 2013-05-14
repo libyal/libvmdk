@@ -59,9 +59,9 @@ struct libvmdk_internal_handle
 	 */
 	libvmdk_descriptor_file_t *descriptor_file;
 
-	/* The extent file table
+	/* The extent (file) table
 	 */
-	libfdata_list_t *extent_table;
+	libvmdk_extent_table_t *extent_table;
 
 	/* The grain table
 	 */

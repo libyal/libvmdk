@@ -144,63 +144,117 @@ int libvmdk_extent_table_free(
 	}
 	if( *extent_table != NULL )
 	{
-		if( ( *extent_table )->basename != NULL )
+		if( libvmdk_extent_table_clear(
+		     *extent_table,
+		     error ) != 1 )
 		{
-			memory_free(
-			 ( *extent_table )->basename );
-		}
-		if( ( *extent_table )->extent_files_list != NULL )
-		{
-			if( libfdata_list_free(
-			     &( ( *extent_table )->extent_files_list ),
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free extent files list.",
-				 function );
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to clear extent table.",
+			 function );
 
-				result = -1;
-			}
-		}
-		if( ( *extent_table )->extent_files_cache != NULL )
-		{
-			if( libfcache_cache_free(
-			     &( ( *extent_table )->extent_files_cache ),
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free extent files cache.",
-				 function );
-
-				result = -1;
-			}
-		}
-		if( ( *extent_table )->extent_files_stream != NULL )
-		{
-			if( libfdata_stream_free(
-			     &( ( *extent_table )->extent_files_stream ),
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free extent files stream.",
-				 function );
-
-				result = -1;
-			}
+			result = -1;
 		}
 		memory_free(
 		 *extent_table );
 
 		*extent_table = NULL;
+	}
+	return( result );
+}
+
+/* Clears an extent table
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_table_clear(
+     libvmdk_extent_table_t *extent_table,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_extent_table_clear";
+	int result            = 1;
+
+	if( extent_table == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent table.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_table->basename != NULL )
+	{
+		memory_free(
+		 extent_table->basename );
+
+		extent_table->basename      = NULL;
+		extent_table->basename_size = 0;
+	}
+	if( extent_table->extent_files_list != NULL )
+	{
+		if( libfdata_list_free(
+		     &( extent_table->extent_files_list ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free extent files list.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( extent_table->extent_files_cache != NULL )
+	{
+		if( libfcache_cache_free(
+		     &( extent_table->extent_files_cache ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free extent files cache.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( extent_table->extent_files_stream != NULL )
+	{
+		if( libfdata_stream_free(
+		     &( extent_table->extent_files_stream ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free extent files stream.",
+			 function );
+
+			result = -1;
+		}
+	}
+	if( memory_set(
+	     extent_table,
+	     0,
+	     sizeof( libvmdk_extent_table_t ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to extent table.",
+		 function );
+
+		result = -1;
 	}
 	return( result );
 }

@@ -126,11 +126,6 @@ int libvmdk_io_handle_free(
 	}
 	if( *io_handle != NULL )
 	{
-		if( io_handle->basename != NULL )
-		{
-			memory_free(
-			 ( *io_handle )->basename );
-		}
 		memory_free(
 		 *io_handle );
 
@@ -158,14 +153,6 @@ int libvmdk_io_handle_clear(
 		 function );
 
 		return( -1 );
-	}
-	if( io_handle->basename != NULL )
-	{
-		memory_free(
-		 io_handle->basename );
-
-		io_handle->basename      = NULL;
-		io_handle->basename_size = 0;
 	}
 	if( memory_set(
 	     io_handle,

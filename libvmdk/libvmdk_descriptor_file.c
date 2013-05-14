@@ -876,7 +876,8 @@ int libvmdk_descriptor_file_read_header(
 
 					goto on_error;
 				}
-				descriptor_file->parent_content_identifier = (uint32_t) value_64bit;
+				descriptor_file->parent_content_identifier     = (uint32_t) value_64bit;
+				descriptor_file->parent_content_identifier_set = 1;
 			}
 		}
 		else if( value_identifier_length == 10 )
@@ -1915,6 +1916,47 @@ int libvmdk_descriptor_file_get_extent_by_index(
 
 		return( -1 );
 	}
+	return( 1 );
+}
+
+/* Retrieves the parent content identifier
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libvmdk_descriptor_file_get_parent_content_identifier(
+     libvmdk_descriptor_file_t *descriptor_file,
+     uint32_t *parent_content_identifier,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_descriptor_file_get_parent_content_identifier";
+
+	if( descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( parent_content_identifier == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid parent content identifier.",
+		 function );
+
+		return( -1 );
+	}
+	if( descriptor_file->parent_content_identifier_set == 0 )
+	{
+		return( 0 );
+	}
+	*parent_content_identifier = descriptor_file->parent_content_identifier;
+
 	return( 1 );
 }
 

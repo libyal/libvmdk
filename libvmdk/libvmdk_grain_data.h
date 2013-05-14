@@ -27,6 +27,7 @@
 
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libfdata.h"
 
 #if defined( __cplusplus )
 extern "C" {
