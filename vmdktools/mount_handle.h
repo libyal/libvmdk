@@ -1,4 +1,4 @@
-/* 
+/*
  * Mount handle
  *
  * Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
@@ -29,6 +29,7 @@
 #include "vmdktools_libcdata.h"
 #include "vmdktools_libcerror.h"
 #include "vmdktools_libcnotify.h"
+#include "vmdktools_libcstring.h"
 #include "vmdktools_libvmdk.h"
 
 #if defined( __cplusplus )

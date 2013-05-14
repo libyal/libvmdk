@@ -9,12 +9,12 @@
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -28,6 +28,7 @@
 #include "libvmdk_descriptor_file.h"
 #include "libvmdk_extent_descriptor.h"
 #include "libvmdk_extent_file.h"
+#include "libvmdk_extent_table.h"
 #include "libvmdk_handle.h"
 #include "libvmdk_grain_data.h"
 #include "libvmdk_grain_table.h"
@@ -38,12 +39,12 @@
 #include "libvmdk_libcnotify.h"
 #include "libvmdk_libcpath.h"
 #include "libvmdk_libcstring.h"
-#include "libvmdk_libmfcache.h"
-#include "libvmdk_libmfdata.h"
+#include "libvmdk_libfcache.h"
+#include "libvmdk_libfdata.h"
 #include "libvmdk_libuna.h"
 
-/* Initialize a handle
- * Make sure the value handle is pointing to is set to NULL
+/* Creates a handle
+ * Make sure the value handle is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_initialize(
@@ -106,6 +107,20 @@ int libvmdk_handle_initialize(
 
 		return( -1 );
 	}
+	if( libvmdk_extent_table_initialize(
+	     &( internal_handle->extent_table ),
+	     internal_handle->io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create extent table.",
+		 function );
+
+		goto on_error;
+	}
 	if( libvmdk_io_handle_initialize(
 	     &( internal_handle->io_handle ),
 	     error ) != 1 )
@@ -128,13 +143,19 @@ int libvmdk_handle_initialize(
 on_error:
 	if( internal_handle != NULL )
 	{
+		if( internal_handle->extent_table != NULL )
+		{
+			libvmdk_extent_table_free(
+			 &( internal_handle->extent_table ),
+			 NULL );
+		}
 		memory_free(
 		 internal_handle );
 	}
 	return( -1 );
 }
 
-/* Frees the handle
+/* Frees a handle
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_free(
@@ -159,7 +180,24 @@ int libvmdk_handle_free(
 	if( *handle != NULL )
 	{
 		internal_handle = (libvmdk_internal_handle_t *) *handle;
-		*handle         = NULL;
+
+		if( internal_handle->file_io_pool != NULL )
+		{
+			if( libvmdk_handle_close(
+			     *handle,
+			     error ) != 0 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+				 "%s: unable to close handle.",
+				 function );
+
+				result = -1;
+			}
+		}
+		*handle = NULL;
 
 		if( libvmdk_io_handle_free(
 		     &( internal_handle->io_handle ),
@@ -173,25 +211,6 @@ int libvmdk_handle_free(
 			 function );
 
 			result = -1;
-		}
-		if( internal_handle->extent_data_file_io_pool_created_in_library != 0 )
-		{
-			if( internal_handle->extent_data_file_io_pool != NULL )
-			{
-				if( libbfio_pool_free(
-				     &( internal_handle->extent_data_file_io_pool ),
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-					 "%s: unable to extent data free file IO pool.",
-					 function );
-
-					result = -1;
-				}
-			}
 		}
 		memory_free(
 		 internal_handle );
@@ -315,8 +334,8 @@ int libvmdk_handle_open(
 	}
 	if( basename_length > 0 )
 	{
-		if( libvmdk_handle_set_basename(
-		     internal_handle,
+		if( libvmdk_extent_table_set_basename(
+		     internal_handle->extent_table,
 		     filename,
 		     basename_length,
 		     error ) != 1 )
@@ -325,7 +344,7 @@ int libvmdk_handle_open(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set basename.",
+			 "%s: unable to set basename in extent table.",
 			 function );
 
 			goto on_error;
@@ -508,8 +527,8 @@ int libvmdk_handle_open_wide(
 	}
 	if( basename_length > 0 )
 	{
-		if( libvmdk_handle_set_basename_wide(
-		     internal_handle,
+		if( libvmdk_extent_table_set_basename_wide(
+		     internal_handle->extent_table,
 		     filename,
 		     basename_length,
 		     error ) != 1 )
@@ -518,7 +537,7 @@ int libvmdk_handle_open_wide(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set basename.",
+			 "%s: unable to set basename in extent table.",
 			 function );
 
 			goto on_error;
@@ -1720,9 +1739,25 @@ int libvmdk_handle_close(
 			 "%s: unable to close all files.",
 			 function );
 
-			return( -1 );
+			result = -1;
 		}
+		if( libbfio_pool_free(
+		     &( internal_handle->extent_data_file_io_pool ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to extent data free file IO pool.",
+			 function );
+
+			result = -1;
+		}
+		internal_handle->extent_data_file_io_pool_created_in_library = 0;
 	}
+	internal_handle->extent_data_file_io_pool = NULL;
+
 	if( internal_handle->descriptor_file != NULL )
 	{
 		if( libvmdk_descriptor_file_free(
@@ -1741,7 +1776,7 @@ int libvmdk_handle_close(
 	}
 	if( internal_handle->grain_table_list != NULL )
 	{
-		if( libmfdata_list_free(
+		if( libfdata_list_free(
 		     &( internal_handle->grain_table_list ),
 		     error ) != 1 )
 		{
@@ -1757,7 +1792,7 @@ int libvmdk_handle_close(
 	}
 	if( internal_handle->grain_table_cache != NULL )
 	{
-		if( libmfcache_cache_free(
+		if( libfcache_cache_free(
 		     &( internal_handle->grain_table_cache ),
 		     error ) != 1 )
 		{
@@ -1771,21 +1806,18 @@ int libvmdk_handle_close(
 			result = -1;
 		}
 	}
-	if( internal_handle->extent_files_list != NULL )
+	if( libvmdk_extent_table_clear(
+	     &( internal_handle->extent_table ),
+	     error ) != 1 )
 	{
-		if( libmfdata_file_list_free(
-		     &( internal_handle->extent_files_list ),
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free extent files list.",
-			 function );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to clear extent table.",
+		 function );
 
-			result = -1;
-		}
+		result = -1;
 	}
 	return( result );
 }
@@ -1802,8 +1834,8 @@ int libvmdk_handle_open_read_grain_table(
 	libvmdk_extent_file_t *extent_file             = NULL;
 	libvmdk_grain_table_t *grain_table             = NULL;
 	static char *function                          = "libvmdk_handle_open_read_grain_table";
+	size64_t extent_file_size                      = 0;
 	int extent_index                               = 0;
-	int extent_type                                = 0;
 	int number_of_extents                          = 0;
 	int number_of_file_io_handles                  = 0;
 	int result                                     = 0;
@@ -1852,13 +1884,13 @@ int libvmdk_handle_open_read_grain_table(
 
 		return( -1 );
 	}
-	if( internal_handle->extent_files_list != NULL )
+	if( internal_handle->extent_table != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid handle - extent file list value already set.",
+		 "%s: invalid handle - extent table value already set.",
 		 function );
 
 		return( -1 );
@@ -1935,63 +1967,17 @@ int libvmdk_handle_open_read_grain_table(
 
 		goto on_error;
 	}
-	if( ( internal_handle->descriptor_file->disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
-	 || ( internal_handle->descriptor_file->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT ) )
-	{
-/* TODO RAW support ? */
-		result = libmfdata_file_list_initialize(
-		          &( internal_handle->extent_files_list ),
-		          NULL,
-		          NULL,
-		          NULL,
-		          NULL,
-		          0,
-		          error );
-	}
-	else if( ( internal_handle->descriptor_file->disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
-	      || ( internal_handle->descriptor_file->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE ) )
-	{
-		result = libmfdata_file_list_initialize(
-		          &( internal_handle->extent_files_list ),
-		          NULL,
-		          NULL,
-		          NULL,
-		          &libvmdk_extent_file_read,
-		          0,
-		          error );
-	}
-	else
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported disk type.",
-		 function );
-
-		return( -1 );
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create extent files list.",
-		 function );
-
-		goto on_error;
-	}
-	if( libmfdata_file_list_resize(
-	     internal_handle->extent_files_list,
+	if( libvmdk_extent_table_initialize_extents(
+	     internal_handle->extent_table,
 	     number_of_extents,
+	     nternal_handle->descriptor_file->disk_type,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_RESIZE_FAILED,
-		 "%s: unable to resize extent files list.",
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to initialize extent table extents.",
 		 function );
 
 		goto on_error;
@@ -2010,7 +1996,7 @@ int libvmdk_handle_open_read_grain_table(
 
 		goto on_error;
 	}
-	if( libmfdata_list_initialize(
+	if( libfdata_list_initialize(
 	     &( internal_handle->grain_table_list ),
 	     (intptr_t *) grain_table,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_grain_table_free,
@@ -2033,7 +2019,7 @@ int libvmdk_handle_open_read_grain_table(
 
 		goto on_error;
 	}
-	if( libmfcache_cache_initialize(
+	if( libfcache_cache_initialize(
 	     &( internal_handle->grain_table_cache ),
 	     8,
 	     error ) != 1 )
@@ -2079,66 +2065,33 @@ int libvmdk_handle_open_read_grain_table(
 
 			goto on_error;
 		}
-		if( extent_index == 0 )
-		{
-			if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
-			{
-				if( ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
-				 && ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT ) )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-					 "%s: extent type not supported for disk type.",
-					 function );
-
-					goto on_error;
-				}
-			}
-			else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
-			{
-				if( ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
-				 && ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE ) )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-					 "%s: extent type not supported for disk type.",
-					 function );
-
-					goto on_error;
-				}
-			}
-			else
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-				 "%s: unsupported extent type.",
-				 function );
-
-				goto on_error;
-			}
-			extent_type = extent_descriptor->type;
-		}
-		else if( extent_type != extent_descriptor->type )
+/* TODO get and check file size ? */
+		if( libbfio_pool_get_size(
+		     internal_handle->extent_data_file_io_pool,
+		     file_io_pool_entry,
+		     &extent_file_size,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-			 "%s: mixed extent types not supported.",
-			 function );
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve size of file IO pool entry: %d.",
+			 function,
+			 file_io_pool_entry );
 
 			goto on_error;
 		}
-/* TODO */
-		if( libmfdata_file_list_set_file_by_index(
-		     internal_handle->extent_files_list,
-		     extent_index,
+		if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
+		{
+		}
+		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+		{
+		}
+		if( libvmdk_extent_table_set_extent_by_extent_descriptor(
+		     internal_handle->extent_table,
+		     extent_descriptor,
+		     (uint32_t) extent_index,
 		     extent_index,
 		     error ) != 1 )
 		{
@@ -2146,17 +2099,13 @@ int libvmdk_handle_open_read_grain_table(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set extent data file: %d in list.",
+			 "%s: unable to set extent: %d in table.",
 			 function,
 			 extent_index );
 
 			goto on_error;
 		}
-		if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
-		{
-/* TODO */
-		}
-		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+		if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
 		{
 			if( libvmdk_extent_file_initialize(
 			     &extent_file,
@@ -2412,20 +2361,14 @@ on_error:
 	}
 	if( internal_handle->grain_table_cache != NULL )
 	{
-		libmfcache_cache_free(
+		libfcache_cache_free(
 		 &( internal_handle->grain_table_cache ),
 		 NULL );
 	}
 	if( internal_handle->grain_table_list != NULL )
 	{
-		libmfdata_list_free(
+		libfdata_list_free(
 		 &( internal_handle->grain_table_list ),
-		 NULL );
-	}
-	if( internal_handle->extent_files_list != NULL )
-	{
-		libmfdata_file_list_free(
-		 &( internal_handle->extent_files_list ),
 		 NULL );
 	}
 	return( -1 );
@@ -2561,38 +2504,13 @@ ssize_t libvmdk_handle_read_buffer(
 
 		return( -1 );
 	}
-	if( internal_handle->descriptor_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_handle->io_handle->current_offset < 0 )
+	if( internal_handle->current_offset < 0 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
 		 "%s: invalid internal handle - invalid IO handle - current offset value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
-	 && ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
-	 && ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT )
-	 && ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported disk type.",
 		 function );
 
 		return( -1 );
@@ -2619,7 +2537,7 @@ ssize_t libvmdk_handle_read_buffer(
 
 		return( -1 );
 	}
-	if( (size64_t) internal_handle->io_handle->current_offset >= internal_handle->io_handle->media_size )
+	if( (size64_t) internal_handle->current_offset >= internal_handle->io_handle->media_size )
 	{
 		return( 0 );
 	}
@@ -2629,10 +2547,10 @@ ssize_t libvmdk_handle_read_buffer(
 		libcnotify_printf(
 		 "%s: requested offset\t\t\t: 0x%08" PRIx64 "\n",
 		 function,
-		 internal_handle->io_handle->current_offset );
+		 internal_handle->current_offset );
 	}
 #endif
-	grain_index = internal_handle->io_handle->current_offset / internal_handle->io_handle->grain_size;
+	grain_index = internal_handle->current_offset / internal_handle->io_handle->grain_size;
 
 	if( grain_index >= (uint64_t) INT_MAX )
 	{
@@ -2647,24 +2565,44 @@ ssize_t libvmdk_handle_read_buffer(
 	}
 	grain_offset = grain_index * internal_handle->io_handle->grain_size;
 
-	grain_data_offset = internal_handle->io_handle->current_offset - grain_offset;
-
-	if( grain_data_offset >= (uint64_t) SSIZE_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid grain data offset value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
 	while( buffer_size > 0 )
 	{
+		if( libvmdk_grain_table_get_grain_data_by_offset(
+		     internal_handle->grain_table,
+		     grain_index,
+		     internal_handle->extent_data_file_io_pool,
+		     internal_handle->extent_table,
+		     internal_handle->grains_cache,
+		     &grain_data,
+		     &grain_data_offset,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve grain: %d data.",
+			 function,
+			 grain_index );
+
+			return( -1 );
+		}
+		if( grain_data == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing grain: %d data.",
+			 function,
+			 grain_index );
+
+			return( -1 );
+		}
+/* TODO refactor */
 		/* This function will expand element groups
 		 */
-		result = libmfdata_list_get_element_value_by_index(
+		result = libfdata_list_get_element_value_by_index(
 			  internal_handle->grain_table_list,
 			  internal_handle->extent_data_file_io_pool,
 			  internal_handle->grain_table_cache,
@@ -2685,6 +2623,7 @@ ssize_t libvmdk_handle_read_buffer(
 
 			return( -1 );
 		}
+/* TODO refactor */
 		read_size = (size_t) ( grain_data->data_size - grain_data_offset );
 
 		if( read_size > buffer_size )
@@ -2716,9 +2655,9 @@ ssize_t libvmdk_handle_read_buffer(
 		grain_data        = NULL;
 		grain_data_offset = 0;
 
-		internal_handle->io_handle->current_offset += (off64_t) read_size;
+		internal_handle->current_offset += (off64_t) read_size;
 
-		if( (size64_t) internal_handle->io_handle->current_offset >= internal_handle->io_handle->media_size )
+		if( (size64_t) internal_handle->current_offset >= internal_handle->io_handle->media_size )
 		{
 			break;
 		}
@@ -2947,7 +2886,7 @@ off64_t libvmdk_handle_seek_offset(
 	}
 	if( whence == SEEK_CUR )
 	{
-		offset += internal_handle->io_handle->current_offset;
+		offset += internal_handle->current_offset;
 	}
 	else if( whence == SEEK_END )
 	{
@@ -2964,7 +2903,7 @@ off64_t libvmdk_handle_seek_offset(
 
 		return( -1 );
 	}
-	internal_handle->io_handle->current_offset = offset;
+	internal_handle->current_offset = offset;
 
 	return( offset );
 }
@@ -3015,966 +2954,10 @@ int libvmdk_handle_get_offset(
 
 		return( -1 );
 	}
-	*offset = internal_handle->io_handle->current_offset;
+	*offset = internal_handle->current_offset;
 
 	return( 1 );
 }
-
-/* Retrieves the size of the basename
- * Returns 1 if successful, 0 if value not present or -1 on error
- */
-int libvmdk_handle_get_basename_size(
-     libvmdk_internal_handle_t *internal_handle,
-     size_t *basename_size,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_handle_get_basename_size";
-
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	int result            = 0;
-#endif
-
-	if( internal_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid internal handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( basename_size == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid basename size.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_handle->basename == NULL )
-	{
-		return( 0 );
-	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf8_string_size_from_utf32(
-		          (libuna_utf32_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf8_string_size_from_utf16(
-		          (libuna_utf16_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_byte_stream_size_from_utf32(
-		          (libuna_utf32_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          libclocale_codepage,
-		          basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_byte_stream_size_from_utf16(
-		          (libuna_utf16_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          libclocale_codepage,
-		          basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine basename size.",
-		 function );
-
-		return( -1 );
-	}
-#else
-	*basename_size = internal_handle->basename_size;
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-
-	return( 1 );
-}
-
-/* Retrieves the basename
- * Returns 1 if successful, 0 if value not present or -1 on error
- */
-int libvmdk_handle_get_basename(
-     libvmdk_internal_handle_t *internal_handle,
-     char *basename,
-     size_t basename_size,
-     libcerror_error_t **error )
-{
-	static char *function       = "libvmdk_handle_get_basename";
-	size_t narrow_basename_size = 0;
-
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	int result                  = 0;
-#endif
-
-	if( internal_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid internal handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( basename == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid basename.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_handle->basename == NULL )
-	{
-		return( 0 );
-	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf8_string_size_from_utf32(
-		          (libuna_utf32_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          &narrow_basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf8_string_size_from_utf16(
-		          (libuna_utf16_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          &narrow_basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_byte_stream_size_from_utf32(
-		          (libuna_utf32_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          libclocale_codepage,
-		          &narrow_basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_byte_stream_size_from_utf16(
-		          (libuna_utf16_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          libclocale_codepage,
-		          &narrow_basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine narrow basename size.",
-		 function );
-
-		return( -1 );
-	}
-#else
-	narrow_basename_size = internal_handle->basename_size;
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-
-	if( basename_size < narrow_basename_size )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: basename too small.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf8_string_copy_from_utf32(
-		          (libuna_utf8_character_t *) basename,
-		          basename_size,
-		          (libuna_utf32_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf8_string_copy_from_utf16(
-		          (libuna_utf8_character_t *) basename,
-		          basename_size,
-		          (libuna_utf16_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_byte_stream_copy_from_utf32(
-		          (uint8_t *) basename,
-		          basename_size,
-		          libclocale_codepage,
-		          (libuna_utf32_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_byte_stream_copy_from_utf16(
-		          (uint8_t *) basename,
-		          basename_size,
-		          libclocale_codepage,
-		          (libuna_utf16_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to set basename.",
-		 function );
-
-		return( -1 );
-	}
-#else
-	if( libcstring_system_string_copy(
-	     basename,
-	     internal_handle->basename,
-	     internal_handle->basename_size ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to set basename.",
-		 function );
-
-		return( -1 );
-	}
-	basename[ internal_handle->basename_size - 1 ] = 0;
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-
-	return( 1 );
-}
-
-/* Sets the basename
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_handle_set_basename(
-     libvmdk_internal_handle_t *internal_handle,
-     const char *basename,
-     size_t basename_length,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_handle_set_basename";
-
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	int result            = 0;
-#endif
-
-	if( internal_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid internal handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( basename == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid basename.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_handle->basename != NULL )
-	{
-		memory_free(
-		 internal_handle->basename );
-
-		internal_handle->basename      = NULL;
-		internal_handle->basename_size = 0;
-	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_size_from_utf8(
-		          (libuna_utf8_character_t *) basename,
-		          basename_length + 1,
-		          &( internal_handle->basename_size ),
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_size_from_utf8(
-		          (libuna_utf8_character_t *) basename,
-		          basename_length + 1,
-		          &( internal_handle->basename_size ),
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_size_from_byte_stream(
-		          (uint8_t *) basename,
-		          basename_length + 1,
-		          libclocale_codepage,
-		          &( internal_handle->basename_size ),
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_size_from_byte_stream(
-		          (uint8_t *) basename,
-		          basename_length + 1,
-		          libclocale_codepage,
-		          &( internal_handle->basename_size ),
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine basename size.",
-		 function );
-
-		return( -1 );
-	}
-#else
-	internal_handle->basename_size = basename_length + 1;
-#endif
-	internal_handle->basename = libcstring_system_string_allocate(
-	                             internal_handle->basename_size );
-
-	if( internal_handle->basename == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create basename.",
-		 function );
-
-		internal_handle->basename_size = 0;
-
-		return( -1 );
-	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_copy_from_utf8(
-		          (libuna_utf32_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          (libuna_utf8_character_t *) basename,
-		          basename_length + 1,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_copy_from_utf8(
-		          (libuna_utf16_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          (libuna_utf8_character_t *) basename,
-		          basename_length + 1,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_copy_from_byte_stream(
-		          (libuna_utf32_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          (uint8_t *) basename,
-		          basename_length + 1,
-		          libclocale_codepage,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_copy_from_byte_stream(
-		          (libuna_utf16_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          (uint8_t *) basename,
-		          basename_length + 1,
-		          libclocale_codepage,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to set basename.",
-		 function );
-
-		memory_free(
-		 internal_handle->basename );
-
-		internal_handle->basename      = NULL;
-		internal_handle->basename_size = 0;
-
-		return( -1 );
-	}
-#else
-	if( libcstring_system_string_copy(
-	     internal_handle->basename,
-	     basename,
-	     basename_length ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to set basename.",
-		 function );
-
-		memory_free(
-		 internal_handle->basename );
-
-		internal_handle->basename      = NULL;
-		internal_handle->basename_size = 0;
-
-		return( -1 );
-	}
-	internal_handle->basename[ basename_length ] = 0;
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-
-	return( 1 );
-}
-
-#if defined( HAVE_WIDE_CHARACTER_TYPE )
-/* Retrieves the size of the basename
- * Returns 1 if successful, 0 if value not present or -1 on error
- */
-int libvmdk_handle_get_basename_size_wide(
-     libvmdk_internal_handle_t *internal_handle,
-     size_t *basename_size,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_handle_get_basename_size_wide";
-
-#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	int result            = 0;
-#endif
-
-	if( internal_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid internal handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( basename_size == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid basename size.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_handle->basename == NULL )
-	{
-		return( 0 );
-	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	*basename_size = internal_handle->basename_size;
-#else
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_size_from_utf8(
-		          (libuna_utf8_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_size_from_utf8(
-		          (libuna_utf8_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_size_from_byte_stream(
-		          (uint8_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          libclocale_codepage,
-		          basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_size_from_byte_stream(
-		          (uint8_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          libclocale_codepage,
-		          basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine basename size.",
-		 function );
-
-		return( -1 );
-	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-	return( 1 );
-}
-
-/* Retrieves the basename
- * Returns 1 if successful, 0 if value not present or -1 on error
- */
-int libvmdk_handle_get_basename_wide(
-     libvmdk_internal_handle_t *internal_handle,
-     wchar_t *basename,
-     size_t basename_size,
-     libcerror_error_t **error )
-{
-	static char *function     = "libvmdk_handle_get_basename_wide";
-	size_t wide_basename_size = 0;
-
-#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	int result                = 0;
-#endif
-
-	if( internal_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid internal handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( basename == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid basename.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_handle->basename == NULL )
-	{
-		return( 0 );
-	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	wide_basename_size = internal_handle->basename_size;
-#else
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_size_from_utf8(
-		          (libuna_utf8_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          &wide_basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_size_from_utf8(
-		          (libuna_utf8_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          &wide_basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_size_from_byte_stream(
-		          (uint8_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          libclocale_codepage,
-		          &wide_basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_size_from_byte_stream(
-		          (uint8_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          libclocale_codepage,
-		          &wide_basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine basename size.",
-		 function );
-
-		return( -1 );
-	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-	if( basename_size < wide_basename_size )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: basename too small.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libcstring_system_string_copy(
-	     basename,
-	     internal_handle->basename,
-	     internal_handle->basename_size ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to set basename.",
-		 function );
-
-		return( -1 );
-	}
-	basename[ internal_handle->basename_size - 1 ] = 0;
-#else
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_copy_from_utf8(
-		          (libuna_utf32_character_t *) basename,
-		          basename_size,
-		          (libuna_utf8_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_copy_from_utf8(
-		          (libuna_utf16_character_t *) basename,
-		          basename_size,
-		          (libuna_utf8_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_copy_from_byte_stream(
-		          (libuna_utf32_character_t *) basename,
-		          basename_size,
-		          (uint8_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          libclocale_codepage,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_copy_from_byte_stream(
-		          (libuna_utf16_character_t *) basename,
-		          basename_size,
-		          (uint8_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          libclocale_codepage,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to set basename.",
-		 function );
-
-		return( -1 );
-	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-	return( 1 );
-}
-
-/* Sets the basename
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_handle_set_basename_wide(
-     libvmdk_internal_handle_t *internal_handle,
-     const wchar_t *basename,
-     size_t basename_length,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_handle_set_basename_wide";
-
-#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	int result            = 0;
-#endif
-
-	if( internal_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid internal handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( basename == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid basename.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_handle->basename != NULL )
-	{
-		memory_free(
-		 internal_handle->basename );
-
-		internal_handle->basename      = NULL;
-		internal_handle->basename_size = 0;
-	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	internal_handle->basename_size = basename_length + 1;
-#else
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf8_string_size_from_utf32(
-		          (libuna_utf32_character_t *) basename,
-		          basename_length + 1,
-		          &( internal_handle->basename_size ),
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf8_string_size_from_utf16(
-		          (libuna_utf16_character_t *) basename,
-		          basename_length + 1,
-		          &( internal_handle->basename_size ),
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_byte_stream_size_from_utf32(
-		          (libuna_utf32_character_t *) basename,
-		          basename_length + 1,
-		          libclocale_codepage,
-		          &( internal_handle->basename_size ),
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_byte_stream_size_from_utf16(
-		          (libuna_utf16_character_t *) basename,
-		          basename_length + 1,
-		          libclocale_codepage,
-		          &( internal_handle->basename_size ),
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine basename size.",
-		 function );
-
-		return( -1 );
-	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-	internal_handle->basename = libcstring_system_string_allocate(
-	                             internal_handle->basename_size );
-
-	if( internal_handle->basename == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create basename.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libcstring_system_string_copy(
-	     internal_handle->basename,
-	     basename,
-	     basename_length ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to set basename.",
-		 function );
-
-		memory_free(
-		 internal_handle->basename );
-
-		internal_handle->basename      = NULL;
-		internal_handle->basename_size = 0;
-
-		return( -1 );
-	}
-	internal_handle->basename[ basename_length ] = 0;
-#else
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf8_string_copy_from_utf32(
-		          (libuna_utf8_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          (libuna_utf32_character_t *) basename,
-		          basename_length + 1,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf8_string_copy_from_utf16(
-		          (libuna_utf8_character_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          (libuna_utf16_character_t *) basename,
-		          basename_length + 1,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_byte_stream_copy_from_utf32(
-		          (uint8_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          libclocale_codepage,
-		          (libuna_utf32_character_t *) basename,
-		          basename_length + 1,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_byte_stream_copy_from_utf16(
-		          (uint8_t *) internal_handle->basename,
-		          internal_handle->basename_size,
-		          libclocale_codepage,
-		          (libuna_utf16_character_t *) basename,
-		          basename_length + 1,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to set basename.",
-		 function );
-
-		memory_free(
-		 internal_handle->basename );
-
-		internal_handle->basename      = NULL;
-		internal_handle->basename_size = 0;
-
-		return( -1 );
-	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-	return( 1 );
-}
-#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 /* Sets the parent handle
  * Returns 1 if successful or -1 on error
@@ -4032,7 +3015,7 @@ int libvmdk_handle_set_parent_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve content identifier.",
+		 "%s: unable to retrieve content identifier from parent handle.",
 		 function );
 
 		return( -1 );

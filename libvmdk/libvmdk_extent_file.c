@@ -31,8 +31,8 @@
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcnotify.h"
 #include "libvmdk_libcstring.h"
-#include "libvmdk_libmfcache.h"
-#include "libvmdk_libmfdata.h"
+#include "libvmdk_libfcache.h"
+#include "libvmdk_libfdata.h"
 #include "libvmdk_unused.h"
 
 #include "cowd_sparse_file_header.h"
@@ -41,7 +41,8 @@
 const char cowd_sparse_file_signature[ 4 ] = "DWOC";
 const char vmdk_sparse_file_signature[ 4 ] = "KDMV";
 
-/* Initialize the extent file
+/* Creates an extent file
+ * Make sure the value extent_file is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_extent_file_initialize(
@@ -98,6 +99,45 @@ int libvmdk_extent_file_initialize(
 		 "%s: unable to clear extent file.",
 		 function );
 
+		memory_free(
+		 *extent_file );
+
+		*extent_file = NULL;
+
+		return( -1 );
+	}
+	if( libfdata_list_initialize(
+	     &( ( *extent_file )->grain_groups_list ),
+	     (intptr_t *) *extent_file,
+	     NULL,
+	     NULL,
+	     (int (*)(intptr_t *, intptr_t *, libfdata_list_element_t *, libfcache_cache_t *, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libvmdk_extent_file_read_grain_group_element_data,
+	     NULL,
+	     LIBFDATA_FLAG_DATA_HANDLE_NON_MANAGED,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create grain groups list.",
+		 function );
+
+		goto on_error;
+	}
+/* TODO set mapped offset in grain_groups_list ? */
+	if( libfcache_cache_initialize(
+	     &( ( *extent_file )->grain_groups_cache ),
+	     LIBVMDK_MAXIMUM_CACHE_ENTRIES_GRAIN_GROUPS,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create grain groups cache.",
+		 function );
+
 		goto on_error;
 	}
 	return( 1 );
@@ -105,6 +145,12 @@ int libvmdk_extent_file_initialize(
 on_error:
 	if( *extent_file != NULL )
 	{
+		if( ( *extent_file )->grain_groups_list != NULL )
+		{
+			libfdata_list_free(
+			 &( ( *extent_file )->grain_groups_list ),
+			 NULL );
+		}
 		memory_free(
 		 *extent_file );
 
@@ -113,7 +159,7 @@ on_error:
 	return( -1 );
 }
 
-/* Frees the extent file including elements
+/* Frees an extent file
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_extent_file_free(
@@ -121,6 +167,7 @@ int libvmdk_extent_file_free(
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_file_free";
+	int result            = 1;
 
 	if( extent_file == NULL )
 	{
@@ -135,16 +182,42 @@ int libvmdk_extent_file_free(
 	}
 	if( *extent_file != NULL )
 	{
+		if( libfdata_list_free(
+		     &( ( *extent_file )->grain_groups_list ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free grain groups list.",
+			 function );
+
+			result = -1;
+		}
+		if( libfcache_cache_free(
+		     &( ( *extent_file )->grain_groups_cache ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free grain groups cache.",
+			 function );
+
+			result = -1;
+		}
 		memory_free(
 		 *extent_file );
 
 		*extent_file = NULL;
 	}
-	return( 1 );
+	return( result );
 }
 
 /* Reads the file header from the extent file using the file IO handle
- * Returns 1 if successful, or -1 on errror
+ * Returns 1 if successful, or -1 on error
  */
 int libvmdk_extent_file_read_file_header_file_io_handle(
      libvmdk_extent_file_t *extent_file,
@@ -295,7 +368,7 @@ on_error:
 }
 
 /* Reads the file header from the extent file using the file IO pool entry
- * Returns 1 if successful, or -1 on errror
+ * Returns 1 if successful, or -1 on error
  */
 int libvmdk_extent_file_read_file_header(
      libvmdk_extent_file_t *extent_file,
@@ -450,7 +523,7 @@ on_error:
 }
 
 /* Reads the file header from the extent file
- * Returns 1 if successful, or -1 on errror
+ * Returns 1 if successful, or -1 on error
  */
 int libvmdk_extent_file_read_file_header_data(
      libvmdk_extent_file_t *extent_file,
@@ -925,7 +998,7 @@ int libvmdk_extent_file_read_file_header_data(
 
 		return( -1 );
 	}
-#if SIZEOF_SIZE_T < 8
+#if SIZEOF_SIZE_T <= 4
 	if( (size_t) extent_file->number_of_grain_table_entries > (size_t) ( SSIZE_MAX / 4 ) )
 	{
 		libcerror_error_set(
@@ -973,7 +1046,7 @@ int libvmdk_extent_file_read_file_header_data(
 }
 
 /* Reads the descriptor data from the extent file
- * Returns 1 if successful, 0 if no descriptor data, or -1 on errror
+ * Returns 1 if successful, 0 if no descriptor data, or -1 on error
  */
 int libvmdk_extent_file_read_descriptor_data_file_io_handle(
      libvmdk_extent_file_t *extent_file,
@@ -1084,7 +1157,7 @@ int libvmdk_extent_file_read_grain_directory(
      int file_io_pool_entry,
      off64_t file_offset,
      libvmdk_grain_table_t *grain_table,
-     libmfdata_list_t *grain_table_list,
+     libfdata_list_t *grains_list,
      libcerror_error_t **error )
 {
 	uint8_t *grain_directory_data        = NULL;
@@ -1300,7 +1373,7 @@ int libvmdk_extent_file_read_backup_grain_directory(
      int file_io_pool_entry,
      off64_t file_offset,
      libvmdk_grain_table_t *grain_table,
-     libmfdata_list_t *grain_table_list,
+     libfdata_list_t *grains_list,
      libcerror_error_t **error )
 {
 	uint8_t *grain_directory_data        = NULL;
@@ -1547,20 +1620,25 @@ on_error:
  * Callback function for the extent files list
  * Returns 1 if successful or -1 on error
  */
-int libvmdk_extent_file_read(
-     intptr_t *io_handle LIBVMDK_ATTRIBUTE_UNUSED,
+int libvmdk_extent_file_read_element_data(
+     intptr_t *data_handle LIBVMDK_ATTRIBUTE_UNUSED,
      libbfio_pool_t *file_io_pool,
+     libfdata_list_element_t *element,
+     libfcache_cache_t *cache,
      int file_io_pool_entry,
-     libmfdata_file_t *file,
-     libmfcache_cache_t *cache,
+     off64_t element_offset LIBVMDK_ATTRIBUTE_UNUSED,
+     size64_t extent_file_size LIBVMDK_ATTRIBUTE_UNUSED,
+     uint32_t element_flags LIBVMDK_ATTRIBUTE_UNUSED,
      uint8_t read_flags LIBVMDK_ATTRIBUTE_UNUSED,
      libcerror_error_t **error )
 {
 	libvmdk_extent_file_t *extent_file = NULL;
 	static char *function              = "libvmdk_extent_file_read";
-	size64_t extent_file_size          = 0;
 
-	LIBVMDK_UNREFERENCED_PARAMETER( io_handle )
+	LIBVMDK_UNREFERENCED_PARAMETER( data_handle )
+	LIBVMDK_UNREFERENCED_PARAMETER( element_offset )
+	LIBVMDK_UNREFERENCED_PARAMETER( element_size )
+	LIBVMDK_UNREFERENCED_PARAMETER( element_flags )
 	LIBVMDK_UNREFERENCED_PARAMETER( read_flags )
 
 	if( libvmdk_extent_file_initialize(
@@ -1573,22 +1651,6 @@ int libvmdk_extent_file_read(
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
 		 "%s: unable to create extent file.",
 		 function );
-
-		goto on_error;
-	}
-	if( libbfio_pool_get_size(
-	     file_io_pool,
-	     file_io_pool_entry,
-	     &extent_file_size,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve size of file IO pool entry: %d.",
-		 function,
-		 file_io_pool_entry );
 
 		goto on_error;
 	}
@@ -1608,20 +1670,20 @@ int libvmdk_extent_file_read(
 
 		goto on_error;
 	}
-/* TODO */
-	if( libmfdata_file_set_file_value(
-	     file,
+	if( libfdata_list_element_set_element_value(
+	     element,
+	     (intptr_t *) file_io_pool,
 	     cache,
 	     (intptr_t *) extent_file,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_file_free,
-	     LIBMFDATA_FILE_VALUE_FLAG_MANAGED,
+	     LIBFDATA_LIST_ELEMENT_VALUE_FLAG_MANAGED,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set extent file as file value.",
+		 "%s: unable to set extent file as element value.",
 		 function );
 
 		goto on_error;
@@ -1636,5 +1698,186 @@ on_error:
 		 NULL );
 	}
 	return( -1 );
+}
+
+/* Reads a grain group
+ * Callback function for the grain groups list
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_file_read_grain_group_element_data(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_pool_t *file_io_pool,
+     libfdata_list_element_t *element,
+     libfcache_cache_t *cache,
+     int file_io_pool_entry,
+     off64_t grain_group_data_offset,
+     size64_t grain_group_data_size,
+     uint32_t element_flags LIBVMDK_ATTRIBUTE_UNUSED,
+     uint8_t read_flags LIBVMDK_ATTRIBUTE_UNUSED,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_extent_file_read_grain_group_element_data";
+
+	LIBVMDK_UNREFERENCED_PARAMETER( element_flags )
+	LIBVMDK_UNREFERENCED_PARAMETER( read_flags )
+
+	if( extent_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent file.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_file->grain_groups_list == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid extent file - missing grain groups list.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO */
+	return( 1 );
+}
+
+/* Retrieves the grain group at a specific offset
+ * Returns 1 if successful, 0 if not or -1 on error
+ */
+int libvmdk_extent_file_get_grain_group_by_offset(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_pool_t *file_io_pool,
+     off64_t offset,
+     int *grain_group_index,
+     off64_t *grain_group_data_offset,
+     libfdata_list_t **grains_list,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_extent_file_get_grain_group_by_offset";
+	int result            = 0;
+
+	if( extent_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent file.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfdata_list_get_element_value_at_offset(
+		  extent_file->grain_groups_list,
+		  (intptr_t *) file_io_pool,
+		  extent_file->grain_groups_cache,
+		  offset,
+		  grain_group_index,
+		  grain_group_data_offset,
+		  (intptr_t **) grains_list,
+		  0,
+		  error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve grains list at offset: %" PRIi64 ".",
+		 function,
+		 offset );
+
+		return( -1 );
+	}
+	return( result );
+}
+
+/* Reads segment data into a buffer
+ * Callback function for the segments stream
+ * Returns the number of bytes read or -1 on error
+ */
+ssize_t libvmdk_extent_file_read_segment_data(
+         intptr_t *data_handle LIBVMDK_ATTRIBUTE_UNUSED,
+         libbfio_pool_t *file_io_pool,
+         int segment_index LIBVMDK_ATTRIBUTE_UNUSED,
+         int segment_file_index,
+         uint8_t *segment_data,
+         size_t segment_data_size,
+         uint32_t segment_flags LIBVMDK_ATTRIBUTE_UNUSED,
+         uint8_t read_flags LIBVMDK_ATTRIBUTE_UNUSED,
+         libcerror_error_t **error )
+{
+	static char *function = "libvmdk_extent_file_read_segment_data";
+	ssize_t read_count    = 0;
+
+	LIBVMDK_UNREFERENCED_PARAMETER( data_handle )
+	LIBVMDK_UNREFERENCED_PARAMETER( segment_index )
+	LIBVMDK_UNREFERENCED_PARAMETER( segment_flags )
+	LIBVMDK_UNREFERENCED_PARAMETER( read_flags )
+
+	read_count = libbfio_pool_read_buffer(
+	              file_io_pool,
+	              segment_file_index,
+	              segment_data,
+	              segment_data_size,
+	              error );
+
+	if( read_count == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read segment data.",
+		 function );
+
+		return( -1 );
+	}
+	return( read_count );
+}
+
+/* Seeks a certain segment offset
+ * Callback function for the segments stream
+ * Returns the offset or -1 on error
+ */
+off64_t libvmdk_extent_file_seek_segment_offset(
+         intptr_t *data_handle LIBVMDK_ATTRIBUTE_UNUSED,
+         libbfio_pool_t *file_io_pool,
+         int segment_index LIBVMDK_ATTRIBUTE_UNUSED,
+         int segment_file_index,
+         off64_t segment_offset,
+         libcerror_error_t **error )
+{
+	static char *function = "libvmdk_extent_file_seek_segment_offset";
+
+	LIBVMDK_UNREFERENCED_PARAMETER( data_handle )
+	LIBVMDK_UNREFERENCED_PARAMETER( segment_index )
+
+	segment_offset = libbfio_pool_seek_offset(
+	                  file_io_pool,
+	                  segment_file_index,
+	                  segment_offset,
+	                  SEEK_SET,
+	                  error );
+
+	if( segment_offset == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to seek segment offset.",
+		 function );
+
+		return( -1 );
+	}
+	return( segment_offset );
 }
 

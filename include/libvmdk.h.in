@@ -1,5 +1,5 @@
 /*
- * Library to support the VMware Virtual Disk (VMDK) format
+ * Library to access the VMware Virtual Disk (VMDK) format
  *
  * Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -9,12 +9,12 @@
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -138,7 +138,7 @@ int libvmdk_notify_stream_close(
  * Error functions
  * ------------------------------------------------------------------------- */
 
-/* Frees the error including elements
+/* Frees an error
  */
 LIBVMDK_EXTERN \
 void libvmdk_error_free(
@@ -182,8 +182,8 @@ int libvmdk_error_backtrace_sprint(
  * File functions
  * ------------------------------------------------------------------------- */
 
-/* Initializes a handle
- * Make sure the value file is pointing to is set to NULL
+/* Creates a handle
+ * Make sure the value handle is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
 LIBVMDK_EXTERN \
@@ -191,7 +191,7 @@ int libvmdk_handle_initialize(
      libvmdk_handle_t **handle,
      libvmdk_error_t **error );
 
-/* Frees the handle
+/* Frees a handle
  * Returns 1 if successful or -1 on error
  */
 LIBVMDK_EXTERN \
@@ -379,8 +379,6 @@ int libvmdk_handle_get_parent_content_identifier(
      libvmdk_handle_t *handle,
      uint32_t *parent_content_identifier,
      libvmdk_error_t **error );
-
-/* TODO add functions below to manual */
 
 /* Retrieves the size of the UTF-8 encoded parent filename
  * The returned size includes the end of string character

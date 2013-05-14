@@ -12,9 +12,9 @@ AM_CPPFLAGS = \
 	@LIBCFILE_CPPFLAGS@ \
 	@LIBCPATH_CPPFLAGS@ \
 	@LIBBFIO_CPPFLAGS@ \
-	@LIBFVALUE_CPPFLAGS@ \
-	@LIBMFCACHE_CPPFLAGS@ \
-	@LIBMFDATA_CPPFLAGS@
+	@LIBFCACHE_CPPFLAGS@ \
+	@LIBFDATA_CPPFLAGS@ \
+	@LIBFVALUE_CPPFLAGS@
 
 lib_LTLIBRARIES = libvmdk.la
 
@@ -26,6 +26,7 @@ libvmdk_la_SOURCES = \
 	libvmdk_error.c libvmdk_error.h \
 	libvmdk_extent_descriptor.c libvmdk_extent_descriptor.h \
 	libvmdk_extent_file.c libvmdk_extent_file.h \
+	libvmdk_extent_table.c libvmdk_extent_table.h \
 	libvmdk_extern.h \
 	libvmdk_grain_data.c libvmdk_grain_data.h \
 	libvmdk_grain_table.c libvmdk_grain_table.h \
@@ -39,9 +40,9 @@ libvmdk_la_SOURCES = \
 	libvmdk_libcpath.h \
 	libvmdk_libcsplit.h \
 	libvmdk_libcstring.h \
+	libvmdk_libfcache.h \
+	libvmdk_libfdata.h \
 	libvmdk_libfvalue.h \
-	libvmdk_libmfcache.h \
-	libvmdk_libmfdata.h \
 	libvmdk_libuna.h \
 	libvmdk_metadata.c libvmdk_metadata.h \
 	libvmdk_notify.c libvmdk_notify.h \
@@ -62,9 +63,9 @@ libvmdk_la_LIBADD = \
 	@LIBCFILE_LIBADD@ \
 	@LIBCPATH_LIBADD@ \
 	@LIBBFIO_LIBADD@ \
-	@LIBFVALUE_LIBADD@ \
-	@LIBMFCACHE_LIBADD@ \
-	@LIBMFDATA_LIBADD@
+	@LIBFCACHE_LIBADD@ \
+	@LIBFDATA_LIBADD@ \
+	@LIBFVALUE_LIBADD@
 
 libvmdk_la_LDFLAGS = -no-undefined -version-info 1:0:0
 
@@ -79,6 +80,6 @@ distclean: clean
 	/bin/rm -f Makefile
 
 splint:
-	@echo "Running splint on libvmdk ..." 
-	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(libvmdk_la_SOURCES) 
+	@echo "Running splint on libvmdk ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(libvmdk_la_SOURCES)
 

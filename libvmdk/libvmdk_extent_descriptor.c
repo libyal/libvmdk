@@ -30,7 +30,8 @@
 #include "libvmdk_libcsplit.h"
 #include "libvmdk_libfvalue.h"
 
-/* Initialize the extent descriptor
+/* Creates an extent descriptor
+ * Make sure the value extent_descriptor is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_extent_descriptor_initialize(
@@ -102,7 +103,7 @@ on_error:
 	return( -1 );
 }
 
-/* Frees the extent descriptor including elements
+/* Frees an extent descriptor
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_extent_descriptor_free(
@@ -138,7 +139,7 @@ int libvmdk_extent_descriptor_free(
 }
 
 /* Reads the descriptor header from an extent value string
- * Returns the number of bytes read if successful, or -1 on errror
+ * Returns the number of bytes read if successful, or -1 on error
  */
 int libvmdk_extent_descriptor_read(
      libvmdk_extent_descriptor_t *extent_descriptor,

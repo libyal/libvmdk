@@ -9,12 +9,12 @@
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -36,10 +36,6 @@ typedef struct libvmdk_io_handle libvmdk_io_handle_t;
 
 struct libvmdk_io_handle
 {
-	/* The current (storage media) offset
-	 */
-	off64_t current_offset;
-
 	/* The (storage) media size
 	 */
 	size64_t media_size;
@@ -83,6 +79,10 @@ int libvmdk_io_handle_initialize(
 
 int libvmdk_io_handle_free(
      libvmdk_io_handle_t **io_handle,
+     libcerror_error_t **error );
+
+int libvmdk_io_handle_clear(
+     libvmdk_io_handle_t *io_handle,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

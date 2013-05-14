@@ -1,4 +1,4 @@
-/* 
+/*
  * Mount handle
  *
  * Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
@@ -30,7 +30,8 @@
 #include "vmdktools_libcpath.h"
 #include "vmdktools_libvmdk.h"
 
-/* Initializes the mount handle
+/* Creates a mount handle
+ * Make sure the value moutn_handle is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
 int mount_handle_initialize(
@@ -116,7 +117,7 @@ on_error:
 	return( -1 );
 }
 
-/* Frees the mount handle and its elements
+/* Frees a mount handle
  * Returns 1 if successful or -1 on error
  */
 int mount_handle_free(
@@ -291,7 +292,7 @@ int mount_handle_open_input(
 
 		return( -1 );
 	}
-	filename_length = libcstring_narrow_string_length(
+	filename_length = libcstring_system_string_length(
 	                   filenames[ 0 ] );
 
 	basename_end = libcstring_system_string_search_character_reverse(
@@ -791,7 +792,7 @@ int mount_handle_close(
 	return( 0 );
 }
 
-/* Read a buffer from the input handle
+/* Read a buffer from a specific input handle
  * Returns the number of bytes read if successful or -1 on error
  */
 ssize_t mount_handle_read_buffer(
@@ -853,7 +854,7 @@ ssize_t mount_handle_read_buffer(
 	return( read_count );
 }
 
-/* Seeks a specific offset from the input handle
+/* Seeks a specific offset in a specific input handle
  * Returns the offset if successful or -1 on error
  */
 off64_t mount_handle_seek_offset(
@@ -914,7 +915,7 @@ off64_t mount_handle_seek_offset(
 	return( offset );
 }
 
-/* Retrieves the media size of the input handle
+/* Retrieves the media size of a specific input handle
  * Returns 1 if successful or -1 on error
  */
 int mount_handle_get_media_size(

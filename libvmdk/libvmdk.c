@@ -1,5 +1,5 @@
 /*
- * Library to support the VMware Virtual Disk (VMDK) format
+ * Library to access the VMware Virtual Disk (VMDK) format
  *
  * Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
  *

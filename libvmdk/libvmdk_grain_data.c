@@ -26,7 +26,8 @@
 #include "libvmdk_grain_data.h"
 #include "libvmdk_libcerror.h"
 
-/* Initialize the grain data
+/* Creates grain data
+ * Make sure the value grain_data is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_grain_data_initialize(
@@ -128,7 +129,7 @@ on_error:
 	return( -1 );
 }
 
-/* Frees the grain data including elements
+/* Frees grain data
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_grain_data_free(

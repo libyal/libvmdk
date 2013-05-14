@@ -9,12 +9,12 @@
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -33,12 +33,14 @@
 #include "libvmdk_libcsplit.h"
 #include "libvmdk_libcstring.h"
 #include "libvmdk_libfvalue.h"
+#include "libvmdk_libuna.h"
 
 const char vmdk_descriptor_file_signature[ 21 ]                       = "# Disk DescriptorFile";
 const char vmdk_descriptor_file_extent_section_signature[ 20 ]        = "# Extent description";
 const char vmdk_descriptor_file_disk_database_section_signature[ 20 ] = "# The Disk Data Base";
 
-/* Creates the descriptor file
+/* Creates a descriptor file
+ * Make sure the value descriptor_file is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_descriptor_file_initialize(
@@ -124,7 +126,7 @@ on_error:
 	return( -1 );
 }
 
-/* Frees the descriptor file
+/* Frees a descriptor file
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_descriptor_file_free(
@@ -1910,6 +1912,190 @@ int libvmdk_descriptor_file_get_extent_by_index(
 		 "%s: unable to retrieve entry: %d from extents array.",
 		 function,
 		 extent_index );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the size of the UTF-8 encoded parent filename
+ * The returned size includes the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libvmdk_descriptor_file_get_utf8_parent_filename_size(
+     libvmdk_descriptor_file_t *descriptor_file,
+     size_t *utf8_string_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_descriptor_file_get_utf8_parent_filename_size";
+
+	if( descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( descriptor_file->parent_filename == NULL )
+	 || ( descriptor_file->parent_filename_size == 0 ) )
+	{
+		return( 0 );
+	}
+	if( libuna_utf8_string_size_from_utf8_stream(
+	     descriptor_file->parent_filename,
+	     descriptor_file->parent_filename_size,
+	     utf8_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 string size.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the UTF-8 encoded parent filename
+ * The size should include the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libvmdk_descriptor_file_get_utf8_parent_filename(
+     libvmdk_descriptor_file_t *descriptor_file,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_descriptor_file_get_utf8_parent_filename";
+
+	if( descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( descriptor_file->parent_filename == NULL )
+	 || ( descriptor_file->parent_filename_size == 0 ) )
+	{
+		return( 0 );
+	}
+	if( libuna_utf8_string_copy_from_utf8_stream(
+	     utf8_string,
+	     utf8_string_size,
+	     descriptor_file->parent_filename,
+	     descriptor_file->parent_filename_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy parent filename to UTF-8 string.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the size of the UTF-16 encoded parent filename
+ * The returned size includes the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libvmdk_descriptor_file_get_utf16_parent_filename_size(
+     libvmdk_descriptor_file_t *descriptor_file,
+     size_t *utf16_string_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_descriptor_file_get_utf16_parent_filename_size";
+
+	if( descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( descriptor_file->parent_filename == NULL )
+	 || ( descriptor_file->parent_filename_size == 0 ) )
+	{
+		return( 0 );
+	}
+	if( libuna_utf16_string_size_from_utf8_stream(
+	     descriptor_file->parent_filename,
+	     descriptor_file->parent_filename_size,
+	     utf16_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 string size.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves the UTF-16 encoded parent filename
+ * The size should include the end of string character
+ * Returns 1 if successful, 0 if not available or -1 on error
+ */
+int libvmdk_descriptor_file_get_utf16_parent_filename(
+     libvmdk_descriptor_file_t *descriptor_file,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_descriptor_file_get_utf16_parent_filename";
+
+	if( descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( descriptor_file->parent_filename == NULL )
+	 || ( descriptor_file->parent_filename_size == 0 ) )
+	{
+		return( 0 );
+	}
+	if( libuna_utf16_string_copy_from_utf8_stream(
+	     utf16_string,
+	     utf16_string_size,
+	     descriptor_file->parent_filename,
+	     descriptor_file->parent_filename_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy parent filename to UTF-16 string.",
+		 function );
 
 		return( -1 );
 	}

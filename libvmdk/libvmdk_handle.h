@@ -9,12 +9,12 @@
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -26,12 +26,13 @@
 #include <types.h>
 
 #include "libvmdk_descriptor_file.h"
+#include "libvmdk_extent_table.h"
 #include "libvmdk_extern.h"
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
-#include "libvmdk_libmfcache.h"
-#include "libvmdk_libmfdata.h"
+#include "libvmdk_libfcache.h"
+#include "libvmdk_libfdata.h"
 
 #if defined( _MSC_VER ) || defined( __BORLANDC__ ) || defined( __MINGW32_VERSION ) || defined( __MINGW64_VERSION_MAJOR )
 
@@ -49,29 +50,25 @@ typedef struct libvmdk_internal_handle libvmdk_internal_handle_t;
 
 struct libvmdk_internal_handle
 {
+	/* The current (storage media) offset
+	 */
+	off64_t current_offset;
+
 	/* The descriptor file
 	 */
 	libvmdk_descriptor_file_t *descriptor_file;
 
-	/* The basename
+	/* The extent file table
 	 */
-	libcstring_system_character_t *basename;
-
-	/* The basename size
-	 */
-	size_t basename_size;
-
-	/* The extent files list
-	 */
-	libmfdata_file_list_t *extent_files_list;
+	libfdata_list_t *extent_table;
 
 	/* The grain table (data) list
 	 */
-	libmfdata_list_t *grain_table_list;
+	libfdata_list_t *grain_table_list;
 
 	/* The grain table cache
 	 */
-	libmfcache_cache_t *grain_table_cache;
+	libfcache_cache_t *grain_table_cache;
 
 	/* The io handle
 	 */
@@ -205,42 +202,6 @@ int libvmdk_handle_get_offset(
      libvmdk_handle_t *handle,
      off64_t *offset,
      libcerror_error_t **error );
-
-int libvmdk_handle_get_basename_size(
-     libvmdk_internal_handle_t *internal_handle,
-     size_t *basename_size,
-     libcerror_error_t **error );
-
-int libvmdk_handle_get_basename(
-     libvmdk_internal_handle_t *internal_handle,
-     char *basename,
-     size_t basename_size,
-     libcerror_error_t **error );
-
-int libvmdk_handle_set_basename(
-     libvmdk_internal_handle_t *internal_handle,
-     const char *basename,
-     size_t basename_length,
-     libcerror_error_t **error );
-
-#if defined( HAVE_WIDE_CHARACTER_TYPE )
-int libvmdk_handle_get_basename_size_wide(
-     libvmdk_internal_handle_t *internal_handle,
-     size_t *basename_size,
-     libcerror_error_t **error );
-
-int libvmdk_handle_get_basename_wide(
-     libvmdk_internal_handle_t *internal_handle,
-     wchar_t *basename,
-     size_t basename_size,
-     libcerror_error_t **error );
-
-int libvmdk_handle_set_basename_wide(
-     libvmdk_internal_handle_t *internal_handle,
-     const wchar_t *basename,
-     size_t basename_length,
-     libcerror_error_t **error );
-#endif
 
 LIBVMDK_EXTERN \
 int libvmdk_handle_set_maximum_number_of_open_handles(

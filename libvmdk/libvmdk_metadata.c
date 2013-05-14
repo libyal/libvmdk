@@ -9,12 +9,12 @@
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -25,7 +25,6 @@
 #include "libvmdk_descriptor_file.h"
 #include "libvmdk_handle.h"
 #include "libvmdk_libcerror.h"
-#include "libvmdk_libuna.h"
 #include "libvmdk_types.h"
 
 /* Retrieves the disk type
@@ -257,25 +256,8 @@ int libvmdk_handle_get_utf8_parent_filename_size(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-	if( internal_handle->descriptor_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( internal_handle->descriptor_file->parent_filename == NULL )
-	 || ( internal_handle->descriptor_file->parent_filename_size == 0 ) )
-	{
-		return( 0 );
-	}
-	if( libuna_utf8_string_size_from_utf8_stream(
-	     internal_handle->descriptor_file->parent_filename,
-	     internal_handle->descriptor_file->parent_filename_size,
+	if( libvmdk_descriptor_file_get_utf8_parent_filename_size(
+	     internal_handle->descriptor_file,
 	     utf8_string_size,
 	     error ) != 1 )
 	{
@@ -283,7 +265,7 @@ int libvmdk_handle_get_utf8_parent_filename_size(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve UTF-8 string size.",
+		 "%s: unable to retrieve UTF-8 parent filename size.",
 		 function );
 
 		return( -1 );
@@ -317,34 +299,17 @@ int libvmdk_handle_get_utf8_parent_filename(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-	if( internal_handle->descriptor_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( internal_handle->descriptor_file->parent_filename == NULL )
-	 || ( internal_handle->descriptor_file->parent_filename_size == 0 ) )
-	{
-		return( 0 );
-	}
-	if( libuna_utf8_string_copy_from_utf8_stream(
+	if( libvmdk_descriptor_file_get_utf8_parent_filename(
+	     internal_handle->descriptor_file,
 	     utf8_string,
 	     utf8_string_size,
-	     internal_handle->descriptor_file->parent_filename,
-	     internal_handle->descriptor_file->parent_filename_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-		 "%s: unable to copy parent filename to UTF-8 string.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 parent filename.",
 		 function );
 
 		return( -1 );
@@ -377,25 +342,8 @@ int libvmdk_handle_get_utf16_parent_filename_size(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-	if( internal_handle->descriptor_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( internal_handle->descriptor_file->parent_filename == NULL )
-	 || ( internal_handle->descriptor_file->parent_filename_size == 0 ) )
-	{
-		return( 0 );
-	}
-	if( libuna_utf16_string_size_from_utf8_stream(
-	     internal_handle->descriptor_file->parent_filename,
-	     internal_handle->descriptor_file->parent_filename_size,
+	if( libvmdk_descriptor_file_get_utf16_parent_filename_size(
+	     internal_handle->descriptor_file,
 	     utf16_string_size,
 	     error ) != 1 )
 	{
@@ -403,7 +351,7 @@ int libvmdk_handle_get_utf16_parent_filename_size(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve UTF-16 string size.",
+		 "%s: unable to retrieve UTF-16 parent filename size.",
 		 function );
 
 		return( -1 );
@@ -437,34 +385,17 @@ int libvmdk_handle_get_utf16_parent_filename(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-	if( internal_handle->descriptor_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( internal_handle->descriptor_file->parent_filename == NULL )
-	 || ( internal_handle->descriptor_file->parent_filename_size == 0 ) )
-	{
-		return( 0 );
-	}
-	if( libuna_utf16_string_copy_from_utf8_stream(
+	if( libvmdk_descriptor_file_get_utf16_parent_filename(
+	     internal_handle->descriptor_file,
 	     utf16_string,
 	     utf16_string_size,
-	     internal_handle->descriptor_file->parent_filename,
-	     internal_handle->descriptor_file->parent_filename_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-		 "%s: unable to copy parent filename to UTF-16 string.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 parent filename.",
 		 function );
 
 		return( -1 );

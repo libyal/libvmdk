@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libvmdk],
- [20130120],
+ [20130513],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -87,11 +87,11 @@ AX_LIBBFIO_CHECK_ENABLE
 dnl Check for enabling libfvalue for file value support
 AX_LIBFVALUE_CHECK_ENABLE
 
-dnl Check for enabling libmfcache for multi-file value cache support
-AX_LIBMFCACHE_CHECK_ENABLE
+dnl Check for enabling libfcache for file value cache support
+AX_LIBFCACHE_CHECK_ENABLE
 
-dnl Check for enabling libmfdata for multi-file data types support
-AX_LIBMFDATA_CHECK_ENABLE
+dnl Check for enabling libfdata for file and memory data block support
+AX_LIBFDATA_CHECK_ENABLE
 
 dnl Check for library function support
 AX_LIBVMDK_CHECK_LOCAL
@@ -118,6 +118,9 @@ AX_COMMON_CHECK_ENABLE_VERBOSE_OUTPUT
 dnl Check if libvmdk should be build with debug output
 AX_COMMON_CHECK_ENABLE_DEBUG_OUTPUT
 
+dnl Check if libvmdk python bindings (pyvmdk) should be build
+AX_PYTHON_CHECK_ENABLE
+
 dnl Check if DLL support is needed in vmdktools
 AS_IF(
  [test x"$enable_shared" = xyes && test "x$ac_cv_enable_static_executables" = xno],
@@ -132,7 +135,7 @@ AS_IF(
 
 dnl Check if requires and build requires should be set in spec file
 AS_IF(
- [test "x$ac_cv_libcstring" = xyes || test "x$ac_cv_libcerror" = xyes || test "x$ac_cv_libcdata" = xyes ||  test "x$ac_cv_libclocale" = xyes || test "x$ac_cv_libcnotify" = xyes || test "x$ac_cv_libcsplit" = xyes || test "x$ac_cv_libuna" = xyes || test "x$ac_cv_libcfile" = xyes || test "x$ac_cv_libcpath" = xyes || test "x$ac_cv_libbfio" = xyes || test "x$ac_cv_libfvalue" = xyes || test "x$ac_cv_libmfcache" = xyes || test "x$ac_cv_libmfdata" = xyes],
+ [test "x$ac_cv_libcstring" = xyes || test "x$ac_cv_libcerror" = xyes || test "x$ac_cv_libcdata" = xyes ||  test "x$ac_cv_libclocale" = xyes || test "x$ac_cv_libcnotify" = xyes || test "x$ac_cv_libcsplit" = xyes || test "x$ac_cv_libuna" = xyes || test "x$ac_cv_libcfile" = xyes || test "x$ac_cv_libcpath" = xyes || test "x$ac_cv_libbfio" = xyes || test "x$ac_cv_libfcache" = xyes || test "x$ac_cv_libfdata" = xyes || test "x$ac_cv_libfvalue" = xyes],
  [AC_SUBST(
   [libvmdk_spec_requires],
   [Requires:])
@@ -158,6 +161,11 @@ AC_SUBST(
  [SPEC_DATE],
  [`date +"%a %b %e %Y" 2> /dev/null`])
 
+dnl Set the current working directory for PackageMaker files
+AC_SUBST(
+ [PWD],
+ [`pwd`])
+
 dnl Have configure make the Makefiles
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_FILES([include/Makefile])
@@ -172,16 +180,19 @@ AC_CONFIG_FILES([libuna/Makefile])
 AC_CONFIG_FILES([libcfile/Makefile])
 AC_CONFIG_FILES([libcpath/Makefile])
 AC_CONFIG_FILES([libbfio/Makefile])
+AC_CONFIG_FILES([libfcache/Makefile])
+AC_CONFIG_FILES([libfdata/Makefile])
 AC_CONFIG_FILES([libfvalue/Makefile])
-AC_CONFIG_FILES([libmfcache/Makefile])
-AC_CONFIG_FILES([libmfdata/Makefile])
 AC_CONFIG_FILES([libvmdk/Makefile])
 AC_CONFIG_FILES([libcsystem/Makefile])
 AC_CONFIG_FILES([vmdktools/Makefile])
+AC_CONFIG_FILES([pyvmdk/Makefile])
 AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([po/Makevars])
 AC_CONFIG_FILES([manuals/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([macosx/Makefile])
+AC_CONFIG_FILES([msvscpp/Makefile])
 dnl Have configure make the include files
 AC_CONFIG_FILES([include/libvmdk.h])
 AC_CONFIG_FILES([include/libvmdk/definitions.h])
@@ -193,6 +204,13 @@ AC_CONFIG_FILES([common/types.h])
 AC_CONFIG_FILES([dpkg/changelog])
 AC_CONFIG_FILES([dpkg/copyright])
 AC_CONFIG_FILES([libvmdk/libvmdk.rc])
+AC_CONFIG_FILES([macosx/libvmdk.pmdoc/01bin.xml])
+AC_CONFIG_FILES([macosx/libvmdk.pmdoc/02include.xml])
+AC_CONFIG_FILES([macosx/libvmdk.pmdoc/03lib.xml])
+AC_CONFIG_FILES([macosx/libvmdk.pmdoc/04share.xml])
+AC_CONFIG_FILES([macosx/libvmdk.pmdoc/05python.xml])
+AC_CONFIG_FILES([macosx/libvmdk.pmdoc/index.xml])
+AC_CONFIG_FILES([macosx/Introduction.rtf])
 AC_CONFIG_FILES([libvmdk.pc])
 AC_CONFIG_FILES([libvmdk.spec])
 dnl Have configure write its configuration
@@ -213,15 +231,16 @@ Building:
    libcfile support:                          $ac_cv_libcfile
    libcpath support:                          $ac_cv_libcpath
    libbfio support:                           $ac_cv_libbfio
+   libfcache support:                         $ac_cv_libfcache
+   libfdata support:                          $ac_cv_libfdata
    libfvalue support:                         $ac_cv_libfvalue
-   libmfcache support:                        $ac_cv_libmfcache
-   libmfdata support:                         $ac_cv_libmfdata
    libcsystem support:                        $ac_cv_libcsystem
    FUSE support:                              $ac_cv_libfuse
 
 Features:
    Wide character type support:               $ac_cv_enable_wide_character_type
    vmdktools are build as static executables: $ac_cv_enable_static_executables
+   Python (pyvmdk) support:                   $ac_cv_enable_python
    Verbose output:                            $ac_cv_enable_verbose_output
    Debug output:                              $ac_cv_enable_debug_output
 ]);

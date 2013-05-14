@@ -35,7 +35,7 @@ vmdkinfo_SOURCES = \
 	vmdktools_libcsystem.h \
 	vmdktools_libvmdk.h
 
-vmdkinfo_LDADD  = \
+vmdkinfo_LDADD = \
 	@LIBCSYSTEM_LIBADD@ \
 	../libvmdk/libvmdk.la \
 	@LIBCNOTIFY_LIBADD@ \
@@ -57,12 +57,13 @@ vmdkmount_SOURCES = \
 	vmdktools_libcsystem.h \
 	vmdktools_libvmdk.h
 
-vmdkmount_LDADD  = \
+vmdkmount_LDADD = \
 	@LIBFUSE_LIBADD@ \
 	@LIBCSYSTEM_LIBADD@ \
 	../libvmdk/libvmdk.la \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
 	@LIBCSTRING_LIBADD@ \
 	@LIBINTL@
@@ -74,8 +75,8 @@ distclean: clean
 	/bin/rm -f Makefile
 
 splint:
-	@echo "Running splint on vmdkinfo ..." 
-	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(vmdkinfo_SOURCES) 
-	@echo "Running splint on vmdkmount ..." 
-	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(vmdkmount_SOURCES) 
+	@echo "Running splint on vmdkinfo ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(vmdkinfo_SOURCES)
+	@echo "Running splint on vmdkmount ..."
+	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(vmdkmount_SOURCES)
 

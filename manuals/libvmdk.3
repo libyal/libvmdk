@@ -1,9 +1,9 @@
-.Dd January 20, 2013
+.Dd May 12, 2013
 .Dt libvmdk 3
 .Os libvmdk
 .Sh NAME
 .Nm libvmdk.h
-.Nd Library to support the VMware Virtual Disk (VMDK) format
+.Nd Library to access the VMware Virtual Disk (VMDK) format
 .Sh LIBRARY
 .Lb libvmdk
 .Sh SYNOPSIS
@@ -60,6 +60,16 @@ Handle functions
 .Fn libvmdk_handle_open "libvmdk_handle_t *file, const char *filename, int flags, libvmdk_error_t **error"
 .Ft int
 .Fn libvmdk_handle_close "libvmdk_handle_t *file, libvmdk_error_t **error"
+.Pp
+Available when compiled with wide character string support:
+.Ft int
+.Fn libvmdk_handle_open_wide "libvmdk_handle_t *file, const wchar_t *filename, int flags, libvmdk_error_t **error"
+.Pp
+Available when compiled with libbfio support:
+.Ft int
+.Fn libvmdk_handle_open_file_io_handle "libvmdk_handle_t *file, libbfio_handle_t *file_io_handle, int flags, libvmdk_error_t **error"
+.Pp
+Metadata functions
 .Ft int
 .Fn libvmdk_handle_get_disk_type "libvmdk_handle_t *handle, int *disk_type, libvmdk_error_t **error"
 .Ft int
@@ -76,14 +86,6 @@ Handle functions
 .Fn libvmdk_handle_get_utf16_parent_filename_size "libvmdk_handle_t *handle, size_t *utf16_string_size, libvmdk_error_t **error"
 .Ft int
 .Fn libvmdk_handle_get_utf16_parent_filename "libvmdk_handle_t *handle, uint16_t *utf16_string, size_t utf16_string_size, libvmdk_error_t **error"
-.Pp
-Available when compiled with wide character string support:
-.Ft int
-.Fn libvmdk_handle_open_wide "libvmdk_handle_t *file, const wchar_t *filename, int flags, libvmdk_error_t **error"
-.Pp
-Available when compiled with libbfio support:
-.Ft int
-.Fn libvmdk_handle_open_file_io_handle "libvmdk_handle_t *file, libbfio_handle_t *file_io_handle, int flags, libvmdk_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libvmdk_get_version

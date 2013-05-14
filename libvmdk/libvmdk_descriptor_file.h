@@ -9,12 +9,12 @@
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -124,6 +124,28 @@ int libvmdk_descriptor_file_get_extent_by_index(
      libvmdk_descriptor_file_t *descriptor_file,
      int extent_index,
      libvmdk_extent_descriptor_t **extent_descriptor,
+     libcerror_error_t **error );
+
+int libvmdk_descriptor_file_get_utf8_parent_filename_size(
+     libvmdk_descriptor_file_t *descriptor_file,
+     size_t *utf8_string_size,
+     libcerror_error_t **error );
+
+int libvmdk_descriptor_file_get_utf8_parent_filename(
+     libvmdk_descriptor_file_t *descriptor_file,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error );
+
+int libvmdk_descriptor_file_get_utf16_parent_filename_size(
+     libvmdk_descriptor_file_t *descriptor_file,
+     size_t *utf16_string_size,
+     libcerror_error_t **error );
+
+int libvmdk_descriptor_file_get_utf16_parent_filename(
+     libvmdk_descriptor_file_t *descriptor_file,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

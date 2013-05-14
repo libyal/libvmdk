@@ -10,8 +10,8 @@ Package: libvmdk
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Library to support the VMware Virtual Disk (VMDK) format
- libvmdk is a library to support the VMware Virtual Disk (VMDK) format.
+Description: Library to access the VMware Virtual Disk (VMDK) format
+ libvmdk is a library to access the VMware Virtual Disk (VMDK) format.
 
 Package: libvmdk-dev
 Section: libdevel

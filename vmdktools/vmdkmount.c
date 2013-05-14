@@ -9,12 +9,12 @@
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- * 
+ *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public License
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -306,7 +306,7 @@ int vmdkmount_fuse_read(
 
 		goto on_error;
 	}
-	string_index = vmdkmount_fuse_path_prefix_length;
+	string_index = (int) vmdkmount_fuse_path_prefix_length;
 
 	input_handle_index = path[ string_index++ ] - '0';
 
@@ -426,7 +426,7 @@ int vmdkmount_fuse_readdir(
 
 		goto on_error;
 	}
-	if( memory_copy(
+	if( libcstring_narrow_string_copy(
 	     vmdkmount_fuse_path,
 	     vmdkmount_fuse_path_prefix,
 	     vmdkmount_fuse_path_prefix_length ) == NULL )
@@ -435,7 +435,7 @@ int vmdkmount_fuse_readdir(
 		 &error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy fuse path prefix.",
+		 "%s: unable to copy path prefix.",
 		 function );
 
 		result = -errno;
@@ -999,7 +999,7 @@ int main( int argc, char * const argv[] )
 	                         &vmdkmount_fuse_operations,
 	                         sizeof( struct fuse_operations ),
 	                         vmdkmount_mount_handle );
-	               
+	
 	if( vmdkmount_fuse_handle == NULL )
 	{
 		fprintf(
