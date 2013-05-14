@@ -90,6 +90,10 @@ struct libvmdk_internal_handle
 	/* The maximum number of open handles in the pool
 	 */
 	int maximum_number_of_open_handles;
+
+	/* The parent handle
+	 */
+	libvmdk_handle_t *parent_handle;
 };
 
 LIBVMDK_EXTERN \

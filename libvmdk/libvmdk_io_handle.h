@@ -60,10 +60,6 @@ struct libvmdk_io_handle
 	 */
 	uint16_t compression_method;
 
-	/* The parent handle
-	 */
-	libvmdk_handle_t *parent_handle;
-
 	/* Value to indicate if abort was signalled
 	 */
 	int abort;

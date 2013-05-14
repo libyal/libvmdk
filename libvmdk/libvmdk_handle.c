@@ -2434,11 +2434,12 @@ ssize_t libvmdk_handle_read_buffer(
 	libvmdk_grain_data_t *grain_data           = NULL;
 	libvmdk_internal_handle_t *internal_handle = NULL;
 	static char *function                      = "libvmdk_handle_read_buffer";
-	off64_t grain_offset                       = 0;
 	size_t buffer_offset                       = 0;
 	size_t read_size                           = 0;
+	ssize_t read_count                         = 0;
 	uint64_t grain_index                       = 0;
 	uint64_t grain_data_offset                 = 0;
+	int grain_is_sparse                        = 0;
 	int result                                 = 0;
 
 	if( handle == NULL )
@@ -2498,6 +2499,10 @@ ssize_t libvmdk_handle_read_buffer(
 
 		return( -1 );
 	}
+	if( buffer_size == 0 )
+	{
+		return( 0 );
+	}
 	if( (size64_t) internal_handle->current_offset >= internal_handle->io_handle->media_size )
 	{
 		return( 0 );
@@ -2511,85 +2516,173 @@ ssize_t libvmdk_handle_read_buffer(
 		 internal_handle->current_offset );
 	}
 #endif
-	grain_index = internal_handle->current_offset / internal_handle->io_handle->grain_size;
-
-	if( grain_index >= (uint64_t) INT_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid grain index value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-	grain_offset = grain_index * internal_handle->io_handle->grain_size;
+	grain_index       = internal_handle->current_offset / internal_handle->io_handle->grain_size;
+	grain_data_offset = internal_handle->current_offset % internal_handle->io_handle->grain_size;
 
 	while( buffer_size > 0 )
 	{
-		if( libvmdk_grain_table_get_grain_data_at_offset(
-		     internal_handle->grain_table,
-		     grain_index,
-		     internal_handle->extent_data_file_io_pool,
-		     internal_handle->extent_table,
-		     internal_handle->grains_cache,
-		     internal_handle->current_offset,
-		     &grain_data,
-		     &grain_data_offset,
-		     error ) != 1 )
+		grain_is_sparse = libvmdk_grain_table_grain_is_sparse_at_offset(
+		                   internal_handle->grain_table,
+		                   grain_index,
+		                   internal_handle->extent_data_file_io_pool,
+		                   internal_handle->extent_table,
+		                   internal_handle->current_offset,
+		                   error );
+
+		if( grain_is_sparse == -1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve grain: %d data.",
+			 "%s: unable to determine if the grain: %" PRIu64 " is sparse.",
 			 function,
 			 grain_index );
 
 			return( -1 );
 		}
-		if( grain_data == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing grain: %d data.",
-			 function,
-			 grain_index );
-
-			return( -1 );
-		}
-		read_size = (size_t) ( grain_data->data_size - grain_data_offset );
+		read_size = internal_handle->io_handle->grain_size - grain_data_offset;
 
 		if( read_size > buffer_size )
 		{
 			read_size = buffer_size;
 		}
-		if( read_size == 0 )
+		if( (size64_t) ( internal_handle->current_offset + read_size ) > internal_handle->io_handle->media_size )
 		{
-			break;
+			read_size = (size_t) ( internal_handle->io_handle->media_size - internal_handle->current_offset );
 		}
-		if( memory_copy(
-		     &( ( (uint8_t *) buffer )[ buffer_offset ] ),
-		     &( ( grain_data->data )[ grain_data_offset ] ),
-		     read_size ) == NULL )
+		if( grain_is_sparse != 0 )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-			 "%s: unable to copy grain data to buffer.",
-			 function );
+			if( internal_handle->parent_handle == NULL )
+			{
+				if( memory_set(
+				     &( ( (uint8_t *) buffer )[ buffer_offset ] ),
+				     0,
+				     read_size ) == NULL )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_MEMORY,
+					 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+					 "%s: unable to fill buffer with sparse grain.",
+					 function );
 
-			return( -1 );
+					return( -1 );
+				}
+			}
+			else
+			{
+/* TODO do we need grain offset or current offset ? */
+				if( libvmdk_handle_seek_offset(
+				     internal_handle->parent_handle,
+				     internal_handle->current_offset,
+				     SEEK_SET,
+				     error ) == -1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_SEEK_FAILED,
+					 "%s: unable to seek grain offset: %" PRIi64 " in parent.",
+					 function,
+					 internal_handle->current_offset );
+
+					return( -1 );
+				}
+				read_count = libvmdk_handle_read_buffer(
+					      internal_handle->parent_handle,
+				              &( ( (uint8_t *) buffer )[ buffer_offset ] ),
+					      read_size,
+					      error );
+
+				if( read_count != (ssize_t) read_size )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read grain data from parent.",
+					 function );
+
+					return( -1 );
+				}
+			}
+		}
+		else
+		{
+			if( libvmdk_grain_table_get_grain_data_at_offset(
+			     internal_handle->grain_table,
+			     grain_index,
+			     internal_handle->extent_data_file_io_pool,
+			     internal_handle->extent_table,
+			     internal_handle->grains_cache,
+			     internal_handle->current_offset,
+			     &grain_data,
+			     &grain_data_offset,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve grain: %d data.",
+				 function,
+				 grain_index );
+
+				return( -1 );
+			}
+			if( grain_data == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+				 "%s: missing grain: %d data.",
+				 function,
+				 grain_index );
+
+				return( -1 );
+			}
+			if( grain_data_offset > grain_data->data_size )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: grain data offset value out of bounds.",
+				 function );
+
+				return( -1 );
+			}
+			if( read_size > ( grain_data->data_size - grain_data_offset ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: read size value out of bounds.",
+				 function );
+
+				return( -1 );
+			}
+			if( memory_copy(
+			     &( ( (uint8_t *) buffer )[ buffer_offset ] ),
+			     &( ( grain_data->data )[ grain_data_offset ] ),
+			     read_size ) == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_MEMORY,
+				 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+				 "%s: unable to copy grain data to buffer.",
+				 function );
+
+				return( -1 );
+			}
 		}
 		buffer_offset    += read_size;
 		buffer_size      -= read_size;
 		grain_index      += 1;
-		grain_offset     += internal_handle->io_handle->grain_size;
-		grain_data        = NULL;
 		grain_data_offset = 0;
 
 		internal_handle->current_offset += (off64_t) read_size;
@@ -2932,17 +3025,6 @@ int libvmdk_handle_set_parent_handle(
 
 		return( -1 );
 	}
-	if( internal_handle->io_handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid handle - missing IO handle.",
-		 function );
-
-		return( -1 );
-	}
 	if( libvmdk_handle_get_content_identifier(
 	     parent_handle,
 	     &content_identifier,
@@ -2968,7 +3050,7 @@ int libvmdk_handle_set_parent_handle(
 
 		return( -1 );
 	}
-	internal_handle->io_handle->parent_handle = parent_handle;
+	internal_handle->parent_handle = parent_handle;
 
 	return( 1 );
 }

@@ -2089,6 +2089,64 @@ on_error:
 	return( -1 );
 }
 
+/* Determines if the grain group at a specific offset is sparse
+ * Returns 1 if the grain is sparse, 0 if not or -1 on error
+ */
+int libvmdk_extent_file_grain_group_is_sparse_at_offset(
+     libvmdk_extent_file_t *extent_file,
+     off64_t offset,
+     int *grain_group_index,
+     off64_t *grain_group_data_offset,
+     libcerror_error_t **error )
+{
+	static char *function      = "libvmdk_extent_file_grain_group_is_sparse_at_offset";
+	off64_t grain_group_offset = 0;
+	size64_t grain_group_size  = 0;
+	uint32_t grain_group_flags = 0;
+	int grain_group_file_index = 0;
+	int result                 = 0;
+
+	if( extent_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent file.",
+		 function );
+
+		return( -1 );
+	}
+	result = libfdata_list_get_element_at_offset(
+		  extent_file->grain_groups_list,
+		  offset,
+		  grain_group_index,
+		  grain_group_data_offset,
+		  &grain_group_file_index,
+		  &grain_group_offset,
+		  &grain_group_size,
+		  &grain_group_flags,
+		  error );
+
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve grains group element at offset: %" PRIi64 ".",
+		 function,
+		 offset );
+
+		return( -1 );
+	}
+	if( ( grain_group_flags & LIBVMDK_RANGE_FLAG_IS_SPARSE ) != 0 )
+	{
+		return( 1 );
+	}
+	return( 0 );
+}
+
 /* Retrieves the grain group at a specific offset
  * Returns 1 if successful, 0 if not or -1 on error
  */

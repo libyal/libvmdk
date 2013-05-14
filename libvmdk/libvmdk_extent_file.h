@@ -195,6 +195,13 @@ int libvmdk_extent_file_read_grain_group_element_data(
      uint8_t read_flags,
      libcerror_error_t **error );
 
+int libvmdk_extent_file_grain_group_is_sparse_at_offset(
+     libvmdk_extent_file_t *extent_file,
+     off64_t offset,
+     int *grain_group_index,
+     off64_t *grain_group_data_offset,
+     libcerror_error_t **error );
+
 int libvmdk_extent_file_get_grain_group_at_offset(
      libvmdk_extent_file_t *extent_file,
      libbfio_pool_t *file_io_pool,

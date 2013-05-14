@@ -72,17 +72,12 @@ int libvmdk_grain_table_clone(
      libvmdk_grain_table_t *source_grain_table,
      libcerror_error_t **error );
 
-int libvmdk_grain_table_get_extent_file_grain_group_at_offset(
+int libvmdk_grain_table_grain_is_sparse_for_offset(
      libvmdk_grain_table_t *grain_table,
+     uint64_t grain_index,
      libbfio_pool_t *file_io_pool,
      libvmdk_extent_table_t *extent_table,
      off64_t offset,
-     uint32_t *extent_number,
-     off64_t *extent_file_data_offset,
-     libvmdk_extent_file_t **extent_file,
-     int *grain_groups_list_index,
-     off64_t *grain_group_data_offset,
-     libfdata_list_t **grains_list,
      libcerror_error_t **error );
 
 int libvmdk_grain_table_get_grain_data_at_offset(
