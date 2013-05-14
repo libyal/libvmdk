@@ -1774,33 +1774,33 @@ int libvmdk_handle_close(
 			result = -1;
 		}
 	}
-	if( internal_handle->grain_table_list != NULL )
+	if( internal_handle->grain_table != NULL )
 	{
-		if( libfdata_list_free(
-		     &( internal_handle->grain_table_list ),
+		if( libvmdk_grain_table_free(
+		     &( internal_handle->grain_table ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free grain table list.",
+			 "%s: unable to free grain table.",
 			 function );
 
 			result = -1;
 		}
 	}
-	if( internal_handle->grain_table_cache != NULL )
+	if( internal_handle->grains_cache != NULL )
 	{
 		if( libfcache_cache_free(
-		     &( internal_handle->grain_table_cache ),
+		     &( internal_handle->grains_cache ),
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free grain table cache.",
+			 "%s: unable to free grains cache.",
 			 function );
 
 			result = -1;
@@ -1832,7 +1832,6 @@ int libvmdk_handle_open_read_grain_table(
 	libbfio_handle_t *file_io_handle               = NULL;
 	libvmdk_extent_descriptor_t *extent_descriptor = NULL;
 	libvmdk_extent_file_t *extent_file             = NULL;
-	libvmdk_grain_table_t *grain_table             = NULL;
 	static char *function                          = "libvmdk_handle_open_read_grain_table";
 	size64_t extent_file_size                      = 0;
 	int extent_index                               = 0;
@@ -1895,24 +1894,24 @@ int libvmdk_handle_open_read_grain_table(
 
 		return( -1 );
 	}
-	if( internal_handle->grain_table_list != NULL )
+	if( internal_handle->grain_table != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid handle - grain table list already set.",
+		 "%s: invalid handle - grain table already set.",
 		 function );
 
 		return( -1 );
 	}
-	if( internal_handle->grain_table_cache != NULL )
+	if( internal_handle->grains_cache != NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid handle - grain table cache already set.",
+		 "%s: invalid handle - grains cache already set.",
 		 function );
 
 		return( -1 );
@@ -1983,7 +1982,7 @@ int libvmdk_handle_open_read_grain_table(
 		goto on_error;
 	}
 	if( libvmdk_grain_table_initialize(
-	     &grain_table,
+	     &( internal_handle->grain_table ),
 	     internal_handle->io_handle,
 	     error ) != 1 )
 	{
@@ -1996,6 +1995,7 @@ int libvmdk_handle_open_read_grain_table(
 
 		goto on_error;
 	}
+/* TODO refactor
 	if( libfdata_list_initialize(
 	     &( internal_handle->grain_table_list ),
 	     (intptr_t *) grain_table,
@@ -2019,16 +2019,17 @@ int libvmdk_handle_open_read_grain_table(
 
 		goto on_error;
 	}
+*/
 	if( libfcache_cache_initialize(
-	     &( internal_handle->grain_table_cache ),
-	     8,
+	     &( internal_handle->grains_cache ),
+	     LIBVMDK_MAXIMUM_CACHE_ENTRIES_GRAINS,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create grain table cache.",
+		 "%s: unable to create grains cache.",
 		 function );
 
 		goto on_error;
@@ -2093,6 +2094,7 @@ int libvmdk_handle_open_read_grain_table(
 		     extent_descriptor,
 		     (uint32_t) extent_index,
 		     extent_index,
+		     extent_file_size,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -2204,8 +2206,6 @@ int libvmdk_handle_open_read_grain_table(
 					     internal_handle->extent_data_file_io_pool,
 					     extent_index,
 					     extent_file->primary_grain_directory_offset,
-					     grain_table,
-					     internal_handle->grain_table_list,
 					     error ) != 1 )
 					{
 						libcerror_error_set(
@@ -2233,8 +2233,6 @@ int libvmdk_handle_open_read_grain_table(
 					     internal_handle->extent_data_file_io_pool,
 					     extent_index,
 					     extent_file->secondary_grain_directory_offset,
-					     grain_table,
-					     internal_handle->grain_table_list,
 					     error ) != 1 )
 					{
 						libcerror_error_set(
@@ -2276,8 +2274,6 @@ int libvmdk_handle_open_read_grain_table(
 					     internal_handle->extent_data_file_io_pool,
 					     extent_index,
 					     extent_file->secondary_grain_directory_offset,
-					     grain_table,
-					     internal_handle->grain_table_list,
 					     error ) != 1 )
 					{
 						libcerror_error_set(
@@ -2305,8 +2301,6 @@ int libvmdk_handle_open_read_grain_table(
 					     internal_handle->extent_data_file_io_pool,
 					     extent_index,
 					     extent_file->primary_grain_directory_offset,
-					     grain_table,
-					     internal_handle->grain_table_list,
 					     error ) != 1 )
 					{
 						libcerror_error_set(
@@ -2359,16 +2353,16 @@ on_error:
 		 &extent_file,
 		 NULL );
 	}
-	if( internal_handle->grain_table_cache != NULL )
+	if( internal_handle->grains_cache != NULL )
 	{
 		libfcache_cache_free(
-		 &( internal_handle->grain_table_cache ),
+		 &( internal_handle->grains_cache ),
 		 NULL );
 	}
-	if( internal_handle->grain_table_list != NULL )
+	if( internal_handle->grain_table != NULL )
 	{
 		libfdata_list_free(
-		 &( internal_handle->grain_table_list ),
+		 &( internal_handle->grain_table ),
 		 NULL );
 	}
 	return( -1 );
@@ -2599,13 +2593,11 @@ ssize_t libvmdk_handle_read_buffer(
 
 			return( -1 );
 		}
-/* TODO refactor */
-		/* This function will expand element groups
-		 */
+/* TODO refactor
 		result = libfdata_list_get_element_value_by_index(
 			  internal_handle->grain_table_list,
 			  internal_handle->extent_data_file_io_pool,
-			  internal_handle->grain_table_cache,
+			  internal_handle->grains_cache,
 			  grain_index,
 			  (intptr_t **) &grain_data,
 			  0,
@@ -2623,7 +2615,7 @@ ssize_t libvmdk_handle_read_buffer(
 
 			return( -1 );
 		}
-/* TODO refactor */
+*/
 		read_size = (size_t) ( grain_data->data_size - grain_data_offset );
 
 		if( read_size > buffer_size )

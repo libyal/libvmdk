@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libvmdk_io_handle.h"
 #include "libvmdk_libcerror.h"
 
 #if defined( __cplusplus )
@@ -51,6 +52,18 @@ int libvmdk_grain_data_initialize(
 
 int libvmdk_grain_data_free(
      libvmdk_grain_data_t **grain_data,
+     libcerror_error_t **error );
+
+int libvmdk_grain_data_read_element_data(
+     libvmdk_io_handle_t *io_handle,
+     libbfio_pool_t *file_io_pool,
+     libfdata_list_element_t *element,
+     libfcache_cache_t *cache,
+     int file_io_pool_entry,
+     off64_t grain_data_offset,
+     size64_t grain_data_size,
+     uint32_t grain_data_flags,
+     uint8_t read_flags,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

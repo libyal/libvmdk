@@ -1325,6 +1325,9 @@ int libvmdk_extent_table_initialize_extents(
      int disk_type,
      libcerror_error_t **error )
 {
+	static char *function = "libvmdk_extent_table_initialize_extents";
+	int result            = 0;
+
 	if( extent_table == NULL )
 	{
 		libcerror_error_set(
@@ -1418,7 +1421,7 @@ int libvmdk_extent_table_initialize_extents(
 			goto on_error;
 		}
 		result = libfcache_cache_initialize(
-			  &( ( *extent_table )->extent_files_cache ),
+			  &( extent_table->extent_files_cache ),
 			  LIBVMDK_MAXIMUM_CACHE_ENTRIES_EXTENT_FILES,
 			  error );
 
@@ -1863,6 +1866,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
      libvmdk_extent_descriptor_t *extent_descriptor,
      uint32_t extent_number,
      int file_io_pool_entry,
+     size64_t extent_file_size,
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_table_set_extent_by_extent_descriptor";
@@ -1913,7 +1917,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 
 		return( -1 );
 	}
-	if( extent_index == 0 )
+	if( extent_number == 0 )
 	{
 		if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
 		{

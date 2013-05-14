@@ -72,18 +72,6 @@ int libvmdk_grain_table_clone(
      libvmdk_grain_table_t *source_grain_table,
      libcerror_error_t **error );
 
-int libvmdk_grain_table_read_grain(
-     intptr_t *io_handle,
-     libbfio_pool_t *file_io_pool,
-     libfdata_list_element_t *list_element,
-     libfcache_cache_t *cache,
-     int file_io_pool_entry,
-     off64_t element_data_offset,
-     size64_t element_data_size,
-     uint32_t element_data_flags,
-     uint8_t read_flags,
-     libcerror_error_t **error );
-
 int libvmdk_grain_table_read_offsets(
      intptr_t *io_handle,
      libbfio_pool_t *file_io_pool,

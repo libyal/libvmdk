@@ -25,7 +25,6 @@
 #include <common.h>
 #include <types.h>
 
-#include "libvmdk_grain_table.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libfcache.h"
@@ -109,6 +108,10 @@ struct libvmdk_extent_file
 	/* The grain groups cache
 	 */
 	libfcache_cache_t *grain_groups_cache;
+
+	/* The (current) grain groups index
+	 */
+	int grain_groups_index;
 };
 
 int libvmdk_extent_file_initialize(
@@ -117,6 +120,11 @@ int libvmdk_extent_file_initialize(
 
 int libvmdk_extent_file_free(
      libvmdk_extent_file_t **extent_file,
+     libcerror_error_t **error );
+
+int libvmdk_extent_file_check_for_empty_block(
+     const uint8_t *data,
+     size_t data_size,
      libcerror_error_t **error );
 
 int libvmdk_extent_file_read_file_header_file_io_handle(
@@ -148,8 +156,6 @@ int libvmdk_extent_file_read_grain_directory(
      libbfio_pool_t *file_io_pool,
      int file_io_pool_entry,
      off64_t file_offset,
-     libvmdk_grain_table_t *grain_table,
-     libfdata_list_t *grains_list,
      libcerror_error_t **error );
 
 int libvmdk_extent_file_read_backup_grain_directory(
@@ -157,8 +163,6 @@ int libvmdk_extent_file_read_backup_grain_directory(
      libbfio_pool_t *file_io_pool,
      int file_io_pool_entry,
      off64_t file_offset,
-     libvmdk_grain_table_t *grain_table,
-     libfdata_list_t *grains_list,
      libcerror_error_t **error );
 
 int libvmdk_extent_file_read_element_data(
@@ -206,8 +210,7 @@ ssize_t libvmdk_extent_file_read_segment_data(
          libcerror_error_t **error );
 
 off64_t libvmdk_extent_file_seek_segment_offset(
-         intptr_t * data_handle,
-         libvmdk_io_handle_t *io_handle,
+         intptr_t *data_handle,
          libbfio_pool_t *file_io_pool,
          int segment_index,
          int segment_file_index,

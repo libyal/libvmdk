@@ -28,6 +28,7 @@
 #include "libvmdk_descriptor_file.h"
 #include "libvmdk_extent_table.h"
 #include "libvmdk_extern.h"
+#include "libvmdk_grain_table.h"
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
@@ -62,13 +63,13 @@ struct libvmdk_internal_handle
 	 */
 	libfdata_list_t *extent_table;
 
-	/* The grain table (data) list
+	/* The grain table
 	 */
-	libfdata_list_t *grain_table_list;
+	libvmdk_grain_table_t *grain_table;
 
-	/* The grain table cache
+	/* The grains cache
 	 */
-	libfcache_cache_t *grain_table_cache;
+	libfcache_cache_t *grains_cache;
 
 	/* The io handle
 	 */

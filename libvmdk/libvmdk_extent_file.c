@@ -33,6 +33,7 @@
 #include "libvmdk_libcstring.h"
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
+#include "libvmdk_types.h"
 #include "libvmdk_unused.h"
 
 #include "cowd_sparse_file_header.h"
@@ -214,6 +215,99 @@ int libvmdk_extent_file_free(
 		*extent_file = NULL;
 	}
 	return( result );
+}
+
+/* Checks if a buffer containing the chunk data is filled with same value bytes (empty-block)
+ * Returns 1 if a pattern was found, 0 if not or -1 on error
+ */
+int libvmdk_extent_file_check_for_empty_block(
+     const uint8_t *data,
+     size_t data_size,
+     libcerror_error_t **error )
+{
+	libvmdk_aligned_t *aligned_data_index = NULL;
+	libvmdk_aligned_t *aligned_data_start = NULL;
+	uint8_t *data_index                   = NULL;
+	uint8_t *data_start                   = NULL;
+	static char *function                 = "libvmdk_extent_file_check_for_empty_block";
+
+	if( data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid data.",
+		 function );
+
+		return( -1 );
+	}
+	if( data_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid data size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	data_start = (uint8_t *) data;
+	data_index = (uint8_t *) data + 1;
+	data_size -= 1;
+
+	/* Only optimize for data larger than the alignment
+	 */
+	if( data_size > ( 2 * sizeof( libvmdk_aligned_t ) ) )
+	{
+		/* Align the data start
+		 */
+		while( ( (intptr_t) data_start % sizeof( libvmdk_aligned_t ) ) != 0 )
+		{
+			if( *data_start != *data_index )
+			{
+				return( 0 );
+			}
+			data_start += 1;
+			data_index += 1;
+			data_size  -= 1;
+		}
+		/* Align the data index
+		 */
+		while( ( (intptr_t) data_index % sizeof( libvmdk_aligned_t ) ) != 0 )
+		{
+			if( *data_start != *data_index )
+			{
+				return( 0 );
+			}
+			data_index += 1;
+			data_size  -= 1;
+		}
+		aligned_data_start = (libvmdk_aligned_t *) data_start;
+		aligned_data_index = (libvmdk_aligned_t *) data_index;
+
+		while( data_size > sizeof( libvmdk_aligned_t ) )
+		{
+			if( *aligned_data_start != *aligned_data_index )
+			{
+				return( 0 );
+			}
+			aligned_data_index += 1;
+			data_size          -= sizeof( libvmdk_aligned_t );
+		}
+		data_index = (uint8_t *) aligned_data_index;
+	}
+	while( data_size != 0 )
+	{
+		if( *data_start != *data_index )
+		{
+			return( 0 );
+		}
+		data_index += 1;
+		data_size  -= 1;
+	}
+	return( 1 );
 }
 
 /* Reads the file header from the extent file using the file IO handle
@@ -1156,8 +1250,6 @@ int libvmdk_extent_file_read_grain_directory(
      libbfio_pool_t *file_io_pool,
      int file_io_pool_entry,
      off64_t file_offset,
-     libvmdk_grain_table_t *grain_table,
-     libfdata_list_t *grains_list,
      libcerror_error_t **error )
 {
 	uint8_t *grain_directory_data        = NULL;
@@ -1166,11 +1258,17 @@ int libvmdk_extent_file_read_grain_directory(
 	off64_t grain_table_offset           = 0;
 	size64_t grain_data_size             = 0;
 	size64_t grain_directory_size        = 0;
+	size64_t storage_media_size          = 0;
 	size64_t total_grain_data_size       = 0;
 	ssize_t read_count                   = 0;
 	uint32_t grain_directory_entry_index = 0;
 	uint32_t range_flags                 = 0;
+	int element_index                    = 0;
 	int number_of_grain_table_entries    = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	int result                           = 0;
+#endif
 
 	if( extent_file == NULL )
 	{
@@ -1273,8 +1371,6 @@ int libvmdk_extent_file_read_grain_directory(
 			grain_table_offset *= 512;
 			range_flags         = 0;
 		}
-		grain_table->previous_last_grain_offset_filled = grain_table->last_grain_offset_filled;
-
 		number_of_grain_table_entries = (int) extent_file->number_of_grain_table_entries;
 		grain_data_size               = number_of_grain_table_entries * extent_file->grain_size;
 
@@ -1322,32 +1418,60 @@ int libvmdk_extent_file_read_grain_directory(
 			 "\n" );
 		}
 #endif
-		if( libmfdata_list_append_group(
-		     grain_table_list,
-		     &( grain_table->last_grain_offset_filled ),
-		     number_of_grain_table_entries,
+		storage_media_size = (size64_t) extent_file->grain_size * number_of_grain_table_entries;
+
+		if( libfdata_list_append_element_with_mapped_size(
+		     extent_file->grain_groups_list,
+		     &element_index,
 		     file_io_pool_entry,
 		     grain_table_offset,
 		     (size64_t) extent_file->grain_table_size,
 		     range_flags,
+		     storage_media_size,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to append grain offset group.",
+			 "%s: unable to append element with mapped size to grain groups list.",
 			 function );
 
 			goto on_error;
 		}
-		grain_table->last_grain_offset_filled += number_of_grain_table_entries;
-
 		total_grain_data_size += grain_data_size;
 		grain_directory_entry += sizeof( uint32_t );
 	}
-/* TODO check if remainder of sector block is emtpy */
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		if( total_grain_data_size < extent_file->grain_directory_size )
+		{
+			result = libvmdk_extent_file_check_for_empty_block(
+				  grain_directory_entry,
+				  extent_file->grain_directory_size - total_grain_data_size,
+			          error );
 
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to determine if remainder of grain directory is empty.",
+				 function );
+
+				goto on_error;
+			}
+			else if( result == 0 )
+			{
+				libcnotify_printf(
+				 "%s: remainder of grain directory not empty.",
+				 function );
+			}
+		}
+	}
+#endif
 	memory_free(
 	 grain_directory_data );
 
@@ -1372,26 +1496,27 @@ int libvmdk_extent_file_read_backup_grain_directory(
      libbfio_pool_t *file_io_pool,
      int file_io_pool_entry,
      off64_t file_offset,
-     libvmdk_grain_table_t *grain_table,
-     libfdata_list_t *grains_list,
      libcerror_error_t **error )
 {
 	uint8_t *grain_directory_data        = NULL;
 	uint8_t *grain_directory_entry       = NULL;
 	static char *function                = "libvmdk_extent_file_read_backup_grain_directory";
 	off64_t grain_table_offset           = 0;
-	off64_t group_offset                 = 0;
+	off64_t grain_group_offset           = 0;
 	size64_t grain_data_size             = 0;
 	size64_t grain_directory_size        = 0;
-	size64_t group_size                  = 0;
+	size64_t grain_group_size            = 0;
 	size64_t total_grain_data_size       = 0;
 	ssize_t read_count                   = 0;
 	uint32_t grain_directory_entry_index = 0;
-	uint32_t group_flags                 = 0;
+	uint32_t grain_group_range_flags     = 0;
 	uint32_t range_flags                 = 0;
-	int group_number_of_entries          = 0;
-	int group_file_io_pool_entry         = 0;
+	int grain_group_file_io_pool_entry   = 0;
 	int number_of_grain_table_entries    = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	int result                           = 0;
+#endif
 
 	if( extent_file == NULL )
 	{
@@ -1541,65 +1666,60 @@ int libvmdk_extent_file_read_backup_grain_directory(
 			 "\n" );
 		}
 #endif
-		if( libmfdata_list_get_group_by_index(
-		     grain_table_list,
-		     grain_table->last_grain_offset_compared,
-		     &group_number_of_entries,
-		     &group_file_io_pool_entry,
-		     &group_offset,
-		     &group_size,
-		     &group_flags,
+		if( libfdata_list_get_element_by_index(
+		     extent_file->grain_groups_list,
+		     grain_directory_entry_index,
+		     &grain_group_file_io_pool_entry,
+		     &grain_group_offset,
+		     &grain_group_size,
+		     &grain_group_range_flags,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve grain offset group: %d - %d.",
+			 "%s: unable to retrieve element: %d from chunk groups list.",
 			 function,
-			 grain_table->last_grain_offset_compared,
-			 grain_table->last_grain_offset_compared + (int) extent_file->number_of_grain_table_entries );
+			 grain_directory_entry_index );
 
 			goto on_error;
 		}
-		if( group_number_of_entries != number_of_grain_table_entries )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_INPUT,
-			 LIBCERROR_INPUT_ERROR_VALUE_MISMATCH,
-			 "%s: mismatch between number of grain table entries in grain directory and backup.",
-			 function );
-
-			goto on_error;
-		}
-		if( libmfdata_list_set_backup_data_range_by_index(
-		     grain_table_list,
-		     grain_table->last_grain_offset_compared,
-		     file_io_pool_entry,
-		     grain_table_offset,
-		     (size64_t) extent_file->grain_directory_size,
-		     range_flags,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set backup data range of grain offset group: %d - %d.",
-			 function,
-			 grain_table->last_grain_offset_compared,
-			 grain_table->last_grain_offset_compared + number_of_grain_table_entries );
-
-			goto on_error;
-		}
-		grain_table->last_grain_offset_compared += number_of_grain_table_entries;
+/* TODO compare grain directory entry with back up ? */
 
 		total_grain_data_size += grain_data_size;
 		grain_directory_entry += sizeof( uint32_t );
 	}
-/* TODO check if remainder of sector block is emtpy */
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		if( total_grain_data_size < extent_file->grain_directory_size )
+		{
+			result = libvmdk_extent_file_check_for_empty_block(
+				  grain_directory_entry,
+				  extent_file->grain_directory_size - total_grain_data_size,
+			          error );
 
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to determine if remainder of grain directory is empty.",
+				 function );
+
+				goto on_error;
+			}
+			else if( result == 0 )
+			{
+				libcnotify_printf(
+				 "%s: remainder of grain directory not empty.",
+				 function );
+			}
+		}
+	}
+#endif
 	memory_free(
 	 grain_directory_data );
 
@@ -1667,6 +1787,22 @@ int libvmdk_extent_file_read_element_data(
 		 "%s: unable to read extent file header from file IO pool entry: %d.",
 		 function,
 		 file_io_pool_entry );
+
+		goto on_error;
+	}
+	if( libvmdk_extent_file_read_grain_directory(
+	     extent_file,
+	     file_io_pool,
+	     file_io_pool_entry,
+	     extent_file->primary_grain_directory_offset,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read primary grain directory.",
+		 function );
 
 		goto on_error;
 	}

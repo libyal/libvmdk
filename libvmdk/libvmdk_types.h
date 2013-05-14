@@ -39,9 +39,14 @@ typedef struct libvhdi_handle {}	libvhdi_handle_t;
 #else
 typedef intptr_t libvhdi_handle_t;
 
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
-#endif
+#endif /* defined( HAVE_LOCAL_LIBVMDK ) */
+
+/* The largest primary (or scalar) available
+ * supported by a single load and store instruction
+ */
+typedef unsigned long int libvmdk_aligned_t;
 
 #endif
 

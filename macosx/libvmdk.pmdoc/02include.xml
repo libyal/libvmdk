@@ -5,7 +5,7 @@
 	<description/>
 	<post-install type="none"/>
 	<requireAuthorization/>
-	<installFrom>/usr/local/google/home/jbmetz/Projects/libvmdk/macosx/tmp/include</installFrom>
+	<installFrom>/home/lordyesta/Projects/libvmdk/macosx/tmp/include</installFrom>
 	<installTo mod="true">/usr</installTo>
 	<flags>
 		<followSymbolicLinks/>
