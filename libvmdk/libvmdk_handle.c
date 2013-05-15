@@ -2145,141 +2145,29 @@ int libvmdk_handle_open_read_grain_table(
 			{
 				internal_handle->io_handle->is_dirty = 1;
 			}
-			if( ( extent_file->flags & LIBVMDK_FLAG_USE_SECONDARY_GRAIN_DIRECTORY ) == 0 )
+#if defined( HAVE_VERBOSE_OUTPUT )
+			if( libcnotify_verbose != 0 )
 			{
-				if( extent_file->primary_grain_directory_offset == 0 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-					 "%s: missing primary grain directory offset.",
-					 function );
-
-					goto on_error;
-				}
-				if( extent_file->primary_grain_directory_offset > 0 )
-				{
-#if defined( HAVE_VERBOSE_OUTPUT )
-					if( libcnotify_verbose != 0 )
-					{
-						libcnotify_printf(
-						 "Reading extent file: %d primary grain directory:\n",
-						 extent_index );
-					}
-#endif
-					if( libvmdk_extent_file_read_grain_directory(
-					     extent_file,
-					     internal_handle->extent_data_file_io_pool,
-					     extent_index,
-					     extent_file->primary_grain_directory_offset,
-					     error ) != 1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_IO,
-						 LIBCERROR_IO_ERROR_READ_FAILED,
-						 "%s: unable to read primary grain directory.",
-						 function );
-
-						goto on_error;
-					}
-				}
-				if( extent_file->secondary_grain_directory_offset > 0 )
-				{
-#if defined( HAVE_VERBOSE_OUTPUT )
-					if( libcnotify_verbose != 0 )
-					{
-						libcnotify_printf(
-						 "Reading extent file: %d secondary grain directory:\n",
-						 extent_index );
-					}
-#endif
-					if( libvmdk_extent_file_read_backup_grain_directory(
-					     extent_file,
-					     internal_handle->extent_data_file_io_pool,
-					     extent_index,
-					     extent_file->secondary_grain_directory_offset,
-					     error ) != 1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_IO,
-						 LIBCERROR_IO_ERROR_READ_FAILED,
-						 "%s: unable to read secondary backup grain directory.",
-						 function );
-
-						goto on_error;
-					}
-				}
+				libcnotify_printf(
+				 "Reading extent file: %d grain directories:\n",
+				 extent_index );
 			}
-			else
+#endif
+			if( libvmdk_extent_file_read_grain_directories(
+			     extent_file,
+			     internal_handle->extent_data_file_io_pool,
+			     extent_index,
+			     error ) != 1 )
 			{
-				if( extent_file->secondary_grain_directory_offset == 0 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-					 "%s: missing secondary grain directory offset.",
-					 function );
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read extent file: %d header.",
+				 function,
+				 extent_index );
 
-					goto on_error;
-				}
-				if( extent_file->secondary_grain_directory_offset > 0 )
-				{
-#if defined( HAVE_VERBOSE_OUTPUT )
-					if( libcnotify_verbose != 0 )
-					{
-						libcnotify_printf(
-						 "Reading extent file: %d secondary grain directory:\n",
-						 extent_index );
-					}
-#endif
-					if( libvmdk_extent_file_read_grain_directory(
-					     extent_file,
-					     internal_handle->extent_data_file_io_pool,
-					     extent_index,
-					     extent_file->secondary_grain_directory_offset,
-					     error ) != 1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_IO,
-						 LIBCERROR_IO_ERROR_READ_FAILED,
-						 "%s: unable to read secondary grain directory.",
-						 function );
-
-						goto on_error;
-					}
-				}
-				if( extent_file->primary_grain_directory_offset > 0 )
-				{
-#if defined( HAVE_VERBOSE_OUTPUT )
-					if( libcnotify_verbose != 0 )
-					{
-						libcnotify_printf(
-						 "Reading extent file: %d primary grain directory:\n",
-						 extent_index );
-					}
-#endif
-					if( libvmdk_extent_file_read_backup_grain_directory(
-					     extent_file,
-					     internal_handle->extent_data_file_io_pool,
-					     extent_index,
-					     extent_file->primary_grain_directory_offset,
-					     error ) != 1 )
-					{
-						libcerror_error_set(
-						 error,
-						 LIBCERROR_ERROR_DOMAIN_IO,
-						 LIBCERROR_IO_ERROR_READ_FAILED,
-						 "%s: unable to read primary backup grain directory.",
-						 function );
-
-						goto on_error;
-					}
-				}
+				goto on_error;
 			}
 			if( libvmdk_extent_file_free(
 			     &extent_file,

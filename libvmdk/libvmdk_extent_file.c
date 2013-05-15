@@ -1,7 +1,7 @@
 /*
  * Extent file functions
  *
- * Copyright (c) 2009-2012 Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2013 Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -1247,6 +1247,175 @@ int libvmdk_extent_file_read_descriptor_data_file_io_handle(
 	return( 1 );
 }
 
+/* Reads the grain directories
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_file_read_grain_directories(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_extent_file_read_grain_directories";
+
+	if( extent_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent file.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( extent_file->flags & LIBVMDK_FLAG_USE_SECONDARY_GRAIN_DIRECTORY ) == 0 )
+	{
+		if( extent_file->primary_grain_directory_offset == 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing primary grain directory offset.",
+			 function );
+
+			return( -1 );
+		}
+		if( extent_file->primary_grain_directory_offset > 0 )
+		{
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: reading primary grain directory at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+				 function,
+				 extent_file->primary_grain_directory_offset,
+				 extent_file->primary_grain_directory_offset );
+			}
+#endif
+			if( libvmdk_extent_file_read_grain_directory(
+			     extent_file,
+			     file_io_pool,
+			     file_io_pool_entry,
+			     extent_file->primary_grain_directory_offset,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read primary grain directory.",
+				 function );
+
+				return( -1 );
+			}
+		}
+		if( extent_file->secondary_grain_directory_offset > 0 )
+		{
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: reading secondary grain directory at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+				 function,
+				 extent_file->secondary_grain_directory_offset,
+				 extent_file->secondary_grain_directory_offset );
+			}
+#endif
+			if( libvmdk_extent_file_read_backup_grain_directory(
+			     extent_file,
+			     file_io_pool,
+			     file_io_pool_entry,
+			     extent_file->secondary_grain_directory_offset,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read secondary backup grain directory.",
+				 function );
+
+				return( -1 );
+			}
+		}
+	}
+	else
+	{
+		if( extent_file->secondary_grain_directory_offset == 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing secondary grain directory offset.",
+			 function );
+
+			return( -1 );
+		}
+		if( extent_file->secondary_grain_directory_offset > 0 )
+		{
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: reading secondary grain directory at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+				 function,
+				 extent_file->secondary_grain_directory_offset,
+				 extent_file->secondary_grain_directory_offset );
+			}
+#endif
+			if( libvmdk_extent_file_read_grain_directory(
+			     extent_file,
+			     file_io_pool,
+			     file_io_pool_entry,
+			     extent_file->secondary_grain_directory_offset,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read secondary grain directory.",
+				 function );
+
+				return( -1 );
+			}
+		}
+		if( extent_file->primary_grain_directory_offset > 0 )
+		{
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: reading primary grain directory at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+				 function,
+				 extent_file->primary_grain_directory_offset,
+				 extent_file->primary_grain_directory_offset );
+			}
+#endif
+			if( libvmdk_extent_file_read_backup_grain_directory(
+			     extent_file,
+			     file_io_pool,
+			     file_io_pool_entry,
+			     extent_file->primary_grain_directory_offset,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read primary backup grain directory.",
+				 function );
+
+				return( -1 );
+			}
+		}
+	}
+	return( 1 );
+}
+
 /* Reads the grain directory
  * Returns 1 if successful or -1 on error
  */
@@ -1419,6 +1588,11 @@ int libvmdk_extent_file_read_grain_directory(
 			 grain_directory_entry_index,
 			 range_flags );
 
+			if( ( range_flags & LIBVMDK_RANGE_FLAG_IS_SPARSE ) != 0 )
+			{
+				libcnotify_printf(
+				 "\tIs sparse.\n" );
+			}
 			libcnotify_printf(
 			 "\n" );
 		}
@@ -1667,6 +1841,11 @@ int libvmdk_extent_file_read_backup_grain_directory(
 			 grain_directory_entry_index,
 			 range_flags );
 
+			if( ( range_flags & LIBVMDK_RANGE_FLAG_IS_SPARSE ) != 0 )
+			{
+				libcnotify_printf(
+				 "\tIs sparse.\n" );
+			}
 			libcnotify_printf(
 			 "\n" );
 		}

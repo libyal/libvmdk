@@ -1,7 +1,7 @@
 /*
  * Extent file functions
  *
- * Copyright (c) 2009-2012 Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2013 Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -155,6 +155,12 @@ int libvmdk_extent_file_read_descriptor_data_file_io_handle(
      libbfio_handle_t *file_io_handle,
      uint8_t *descriptor_data,
      size_t descriptor_data_size,
+     libcerror_error_t **error );
+
+int libvmdk_extent_file_read_grain_directories(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
      libcerror_error_t **error );
 
 int libvmdk_extent_file_read_grain_directory(

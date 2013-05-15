@@ -1,23 +1,20 @@
 TODO
+* complete and test flat extent file support
 * change extent_number from uint32_t to int in extent_table
 * implement extent file current offset ?
 * implement libvmdk_extent_file_read_grain_group_element_data
 * get grain data by grain table
-  - read grain data - move sparse to read_buffer e.g. qcow ?
-  - grain table wrap extent file table
-  - refactor grain_table_list
   - remove unused functions from libvmdk_extent_table after refactor
-  - move sparse check out of libvmdk_grain_data_read_element_data ?
 * add parent image support
   - bail out on read if parent is not set
 * implement libvmdk_handle_set_maximum_number_of_open_handles
-* vmdkinfo: print dirty status
 * add support for zero-grain table entry support
 * test multi segment sparse image support
-* add and test flat image support
 * build grain table
 * descriptor file: put disk data base in fvalue table ?
-* vmdkinfo: add byte size string support
+* vmdkinfo:
+  - print dirty status
+  - add byte size string support
 
 * code clean up:
   - support and locale functions
@@ -41,6 +38,9 @@ Deployment:
   - update vmdkinfo.1
   - add vmdkmount.1
 * create msvscpp files
+
+20130515
+* worked on mfdata refactor
 
 20130514
 * worked on mfdata refactor

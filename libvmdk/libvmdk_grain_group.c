@@ -298,19 +298,6 @@ int libvmdk_grain_group_fill(
 		 grain_group_entry,
 		 grain_data_offset );
 
-#if defined( HAVE_VERBOSE_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: grain: %d data sector number: %" PRIi64 " (offset: 0x%08" PRIx64 " and size: %" PRIu32 ") file IO pool entry: %d\n",
-			 function,
-			 grain_index,
-			 grain_data_offset,
-			 grain_data_offset * 512,
-			 grain_size,
-			 file_io_pool_entry );
-		}
-#endif
 		if( grain_data_offset == 0 )
 		{
 			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
@@ -320,6 +307,49 @@ int libvmdk_grain_group_fill(
 			grain_data_offset *= 512;
 			range_flags        = 0;
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: grain table entry: %03" PRIu32 " sector number\t\t: %" PRIi64 "\n",
+			 function,
+			 grain_group_entry_index,
+			 grain_data_offset );
+
+			libcnotify_printf(
+			 "%s: grain table entry: %03" PRIu32 " offset\t\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
+			 function,
+			 grain_group_entry_index,
+			 grain_data_offset * 512,
+			 grain_data_offset * 512 );
+
+			libcnotify_printf(
+			 "%s: grain table entry: %03" PRIu32 " size\t\t\t: %" PRIu64 "\n",
+			 function,
+			 grain_group_entry_index,
+			 grain_size );
+
+			libcnotify_printf(
+			 "%s: grain table entry: %03" PRIu32 " file IO pool entry\t: %d\n",
+			 function,
+			 grain_group_entry_index,
+			 file_io_pool_entry );
+
+			libcnotify_printf(
+			 "%s: grain table entry: %03" PRIu32 " range flags\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 grain_group_entry_index,
+			 range_flags );
+
+			if( ( range_flags & LIBVMDK_RANGE_FLAG_IS_SPARSE ) != 0 )
+			{
+				libcnotify_printf(
+				 "\tIs sparse.\n" );
+			}
+			libcnotify_printf(
+			 "\n" );
+		}
+#endif
 		if( libfdata_list_append_element(
 		     grains_list,
 		     &element_index,
@@ -431,19 +461,6 @@ int libvmdk_grain_group_correct(
 		 grain_group_entry,
 		 grain_data_offset );
 
-#if defined( HAVE_VERBOSE_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: grain: %d data sector number: %" PRIi64 " (offset: 0x%08" PRIx64 " and size: %" PRIu32 ") file IO pool entry: %d\n",
-			 function,
-			 grain_index,
-			 grain_data_offset,
-			 grain_data_offset * 512,
-			 grain_size,
-			 file_io_pool_entry );
-		}
-#endif
 		if( grain_data_offset == 0 )
 		{
 			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
@@ -453,6 +470,49 @@ int libvmdk_grain_group_correct(
 			grain_data_offset *= 512;
 			range_flags        = 0;
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: grain table entry: %03" PRIu32 " sector number\t\t: %" PRIi64 "\n",
+			 function,
+			 grain_group_entry_index,
+			 grain_data_offset );
+
+			libcnotify_printf(
+			 "%s: grain table entry: %03" PRIu32 " offset\t\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
+			 function,
+			 grain_group_entry_index,
+			 grain_data_offset * 512,
+			 grain_data_offset * 512 );
+
+			libcnotify_printf(
+			 "%s: grain table entry: %03" PRIu32 " size\t\t\t: %" PRIu64 "\n",
+			 function,
+			 grain_group_entry_index,
+			 grain_size );
+
+			libcnotify_printf(
+			 "%s: grain table entry: %03" PRIu32 " file IO pool entry\t\t: %d\n",
+			 function,
+			 grain_group_entry_index,
+			 file_io_pool_entry );
+
+			libcnotify_printf(
+			 "%s: grain table entry: %03" PRIu32 " range flags\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 grain_group_entry_index,
+			 range_flags );
+
+			if( ( range_flags & LIBVMDK_RANGE_FLAG_IS_SPARSE ) != 0 )
+			{
+				libcnotify_printf(
+				 "\tIs sparse.\n" );
+			}
+			libcnotify_printf(
+			 "\n" );
+		}
+#endif
 /* TODO */
 		grain_group_entry += sizeof( uint32_t );
 
