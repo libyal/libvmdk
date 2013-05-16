@@ -249,7 +249,7 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
 	libvmdk_extent_file_t *extent_file          = NULL;
 	libfdata_list_t *grains_list                = NULL;
 	libfdata_list_element_t *grain_list_element = NULL;
-	static char *function                       = "llibvmdk_grain_table_grain_is_sparse_at_offset";
+	static char *function                       = "libvmdk_grain_table_grain_is_sparse_at_offset";
 	off64_t extent_file_data_offset             = 0;
 	off64_t grain_data_offset                   = 0;
 	off64_t grain_group_data_offset             = 0;

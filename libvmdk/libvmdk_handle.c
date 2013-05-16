@@ -2109,7 +2109,8 @@ int libvmdk_handle_open_read_grain_table(
 
 				goto on_error;
 			}
-			if( extent_file->file_type != LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+			if( ( extent_file->file_type != LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
+			 && ( extent_file->file_type != LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -2159,6 +2160,22 @@ int libvmdk_handle_open_read_grain_table(
 				 LIBCERROR_ERROR_DOMAIN_IO,
 				 LIBCERROR_IO_ERROR_READ_FAILED,
 				 "%s: unable to read extent file: %d header.",
+				 function,
+				 extent_index );
+
+				goto on_error;
+			}
+			if( libvmdk_extent_table_set_extent_storage_media_size_by_index(
+			     internal_handle->extent_table,
+			     extent_index,
+			     extent_file->storage_media_size,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+				 "%s: unable to set mapped range of element: %d in extent table.",
 				 function,
 				 extent_index );
 

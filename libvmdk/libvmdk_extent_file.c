@@ -41,7 +41,7 @@
 #include "cowd_sparse_file_header.h"
 #include "vmdk_sparse_file_header.h"
 
-const char cowd_sparse_file_signature[ 4 ] = "DWOC";
+const char cowd_sparse_file_signature[ 4 ] = "COWD";
 const char vmdk_sparse_file_signature[ 4 ] = "KDMV";
 
 /* Creates an extent file
@@ -1269,80 +1269,20 @@ int libvmdk_extent_file_read_grain_directories(
 
 		return( -1 );
 	}
-	if( ( extent_file->flags & LIBVMDK_FLAG_USE_SECONDARY_GRAIN_DIRECTORY ) == 0 )
+	if( ( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+	 && ( ( extent_file->flags & LIBVMDK_FLAG_USE_SECONDARY_GRAIN_DIRECTORY ) != 0 ) )
 	{
-		if( extent_file->primary_grain_directory_offset == 0 )
+		if( extent_file->secondary_grain_directory_offset < 0 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing primary grain directory offset.",
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid secondary grain directory offset value out of bounds.",
 			 function );
 
 			return( -1 );
 		}
-		if( extent_file->primary_grain_directory_offset > 0 )
-		{
-#if defined( HAVE_DEBUG_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				libcnotify_printf(
-				 "%s: reading primary grain directory at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
-				 function,
-				 extent_file->primary_grain_directory_offset,
-				 extent_file->primary_grain_directory_offset );
-			}
-#endif
-			if( libvmdk_extent_file_read_grain_directory(
-			     extent_file,
-			     file_io_pool,
-			     file_io_pool_entry,
-			     extent_file->primary_grain_directory_offset,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read primary grain directory.",
-				 function );
-
-				return( -1 );
-			}
-		}
-		if( extent_file->secondary_grain_directory_offset > 0 )
-		{
-#if defined( HAVE_DEBUG_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				libcnotify_printf(
-				 "%s: reading secondary grain directory at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
-				 function,
-				 extent_file->secondary_grain_directory_offset,
-				 extent_file->secondary_grain_directory_offset );
-			}
-#endif
-			if( libvmdk_extent_file_read_backup_grain_directory(
-			     extent_file,
-			     file_io_pool,
-			     file_io_pool_entry,
-			     extent_file->secondary_grain_directory_offset,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read secondary backup grain directory.",
-				 function );
-
-				return( -1 );
-			}
-		}
-	}
-	else
-	{
 		if( extent_file->secondary_grain_directory_offset == 0 )
 		{
 			libcerror_error_set(
@@ -1354,34 +1294,31 @@ int libvmdk_extent_file_read_grain_directories(
 
 			return( -1 );
 		}
-		if( extent_file->secondary_grain_directory_offset > 0 )
-		{
 #if defined( HAVE_DEBUG_OUTPUT )
-			if( libcnotify_verbose != 0 )
-			{
-				libcnotify_printf(
-				 "%s: reading secondary grain directory at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
-				 function,
-				 extent_file->secondary_grain_directory_offset,
-				 extent_file->secondary_grain_directory_offset );
-			}
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: reading secondary grain directory at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+			 function,
+			 extent_file->secondary_grain_directory_offset,
+			 extent_file->secondary_grain_directory_offset );
+		}
 #endif
-			if( libvmdk_extent_file_read_grain_directory(
-			     extent_file,
-			     file_io_pool,
-			     file_io_pool_entry,
-			     extent_file->secondary_grain_directory_offset,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read secondary grain directory.",
-				 function );
+		if( libvmdk_extent_file_read_grain_directory(
+		     extent_file,
+		     file_io_pool,
+		     file_io_pool_entry,
+		     extent_file->secondary_grain_directory_offset,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read secondary grain directory.",
+			 function );
 
-				return( -1 );
-			}
+			return( -1 );
 		}
 		if( extent_file->primary_grain_directory_offset > 0 )
 		{
@@ -1407,6 +1344,86 @@ int libvmdk_extent_file_read_grain_directories(
 				 LIBCERROR_ERROR_DOMAIN_IO,
 				 LIBCERROR_IO_ERROR_READ_FAILED,
 				 "%s: unable to read primary backup grain directory.",
+				 function );
+
+				return( -1 );
+			}
+		}
+	}
+	else
+	{
+		if( extent_file->primary_grain_directory_offset < 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid primary grain directory offset value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
+		if( extent_file->primary_grain_directory_offset == 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing primary grain directory offset.",
+			 function );
+
+			return( -1 );
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: reading primary grain directory at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+			 function,
+			 extent_file->primary_grain_directory_offset,
+			 extent_file->primary_grain_directory_offset );
+		}
+#endif
+		if( libvmdk_extent_file_read_grain_directory(
+		     extent_file,
+		     file_io_pool,
+		     file_io_pool_entry,
+		     extent_file->primary_grain_directory_offset,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read primary grain directory.",
+			 function );
+
+			return( -1 );
+		}
+		if( extent_file->secondary_grain_directory_offset > 0 )
+		{
+#if defined( HAVE_DEBUG_OUTPUT )
+			if( libcnotify_verbose != 0 )
+			{
+				libcnotify_printf(
+				 "%s: reading secondary grain directory at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+				 function,
+				 extent_file->secondary_grain_directory_offset,
+				 extent_file->secondary_grain_directory_offset );
+			}
+#endif
+			if( libvmdk_extent_file_read_backup_grain_directory(
+			     extent_file,
+			     file_io_pool,
+			     file_io_pool_entry,
+			     extent_file->secondary_grain_directory_offset,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read secondary backup grain directory.",
 				 function );
 
 				return( -1 );
@@ -1557,33 +1574,33 @@ int libvmdk_extent_file_read_grain_directory(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: grain directory entry: %03" PRIu32 " sector number\t\t: %" PRIi64 "\n",
+			 "%s: grain directory entry: %05" PRIu32 " sector number\t\t: %" PRIi64 "\n",
 			 function,
 			 grain_directory_entry_index,
 			 grain_table_offset );
 
 			libcnotify_printf(
-			 "%s: grain directory entry: %03" PRIu32 " offset\t\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
+			 "%s: grain directory entry: %05" PRIu32 " offset\t\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
 			 function,
 			 grain_directory_entry_index,
 			 grain_table_offset * 512,
 			 grain_table_offset * 512 );
 
 			libcnotify_printf(
-			 "%s: grain directory entry: %03" PRIu32 " size\t\t\t: %" PRIu64 " (%d)\n",
+			 "%s: grain directory entry: %05" PRIu32 " size\t\t\t: %" PRIu64 " (%d)\n",
 			 function,
 			 grain_directory_entry_index,
 			 grain_data_size,
 			 number_of_grain_table_entries );
 
 			libcnotify_printf(
-			 "%s: grain directory entry: %03" PRIu32 " file IO pool entry\t\t: %d\n",
+			 "%s: grain directory entry: %05" PRIu32 " file IO pool entry\t: %d\n",
 			 function,
 			 grain_directory_entry_index,
 			 file_io_pool_entry );
 
 			libcnotify_printf(
-			 "%s: grain directory entry: %03" PRIu32 " range flags\t\t: 0x%08" PRIx64 "\n",
+			 "%s: grain directory entry: %05" PRIu32 " range flags\t\t: 0x%08" PRIx64 "\n",
 			 function,
 			 grain_directory_entry_index,
 			 range_flags );
@@ -1618,8 +1635,9 @@ int libvmdk_extent_file_read_grain_directory(
 
 			goto on_error;
 		}
-		total_grain_data_size += grain_data_size;
-		grain_directory_entry += sizeof( uint32_t );
+		total_grain_data_size           += grain_data_size;
+		grain_directory_entry           += sizeof( uint32_t );
+		extent_file->storage_media_size += storage_media_size;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -1810,33 +1828,33 @@ int libvmdk_extent_file_read_backup_grain_directory(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: grain directory entry: %03" PRIu32 " sector number\t: %" PRIi64 "\n",
+			 "%s: grain directory entry: %05" PRIu32 " sector number\t: %" PRIi64 "\n",
 			 function,
 			 grain_directory_entry_index,
 			 grain_table_offset );
 
 			libcnotify_printf(
-			 "%s: grain directory entry: %03" PRIu32 " offset\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
+			 "%s: grain directory entry: %05" PRIu32 " offset\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
 			 function,
 			 grain_directory_entry_index,
 			 grain_table_offset * 512,
 			 grain_table_offset * 512 );
 
 			libcnotify_printf(
-			 "%s: grain directory entry: %03" PRIu32 " size\t\t: %" PRIu64 " (%d)\n",
+			 "%s: grain directory entry: %05" PRIu32 " size\t\t: %" PRIu64 " (%d)\n",
 			 function,
 			 grain_directory_entry_index,
 			 grain_data_size,
 			 number_of_grain_table_entries );
 
 			libcnotify_printf(
-			 "%s: grain directory entry: %03" PRIu32 " file IO pool entry\t: %d\n",
+			 "%s: grain directory entry: %05" PRIu32 " file IO pool entry\t: %d\n",
 			 function,
 			 grain_directory_entry_index,
 			 file_io_pool_entry );
 
 			libcnotify_printf(
-			 "%s: grain directory entry: %03" PRIu32 " range flags\t\t: 0x%08" PRIx64 "\n",
+			 "%s: grain directory entry: %05" PRIu32 " range flags\t\t: 0x%08" PRIx64 "\n",
 			 function,
 			 grain_directory_entry_index,
 			 range_flags );

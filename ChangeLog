@@ -41,6 +41,7 @@ Deployment:
 20130516
 * worked on mfdata refactor
 * added support for flat extent files
+* worked on COWD extent file support
 
 20130515
 * worked on mfdata refactor

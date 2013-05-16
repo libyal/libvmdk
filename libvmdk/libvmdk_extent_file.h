@@ -117,6 +117,10 @@ struct libvmdk_extent_file
 	/* The (current) grain groups index
 	 */
 	int grain_groups_index;
+
+	/* The storage media size (in the extent file)
+	 */
+	size64_t storage_media_size;
 };
 
 int libvmdk_extent_file_initialize(
