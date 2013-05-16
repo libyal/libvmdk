@@ -1397,7 +1397,7 @@ int libvmdk_extent_table_set_basename_wide(
  */
 int libvmdk_extent_table_initialize_extents(
      libvmdk_extent_table_t *extent_table,
-     uint32_t number_of_extents,
+     int number_of_extents,
      int disk_type,
      libcerror_error_t **error )
 {
@@ -1418,7 +1418,12 @@ int libvmdk_extent_table_initialize_extents(
 	if( ( disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
-	 && ( disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE ) )
+	 && ( disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT )
+	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
+	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED ) 
+	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_SPARSE )
+	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -1430,7 +1435,10 @@ int libvmdk_extent_table_initialize_extents(
 		return( -1 );
 	}
 	if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
-	 || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT ) )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED ) )
 	{
 /* TODO add write support ? */
 		result = libfdata_stream_initialize(
@@ -1456,9 +1464,25 @@ int libvmdk_extent_table_initialize_extents(
 
 			goto on_error;
 		}
+		if( libfdata_stream_resize(
+		     extent_table->extent_files_stream,
+		     number_of_extents,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_RESIZE_FAILED,
+			 "%s: unable to resize extents file stream.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	else if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
-	      || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE ) )
+	      || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	      || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE )
+	      || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN ) )
 	{
 /* TODO add write support ? */
 		result = libfdata_list_initialize(
@@ -1484,13 +1508,13 @@ int libvmdk_extent_table_initialize_extents(
 		}
 		if( libfdata_list_resize(
 		     extent_table->extent_files_list,
-		     (int) number_of_extents,
+		     number_of_extents,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 LIBCERROR_RUNTIME_ERROR_RESIZE_FAILED,
 			 "%s: unable to resize extent files list.",
 			 function );
 
@@ -1533,7 +1557,7 @@ on_error:
  */
 int libvmdk_extent_table_get_number_of_extents(
      libvmdk_extent_table_t *extent_table,
-     uint32_t *number_of_extents,
+     int *number_of_extents,
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_table_get_number_of_extents";
@@ -1570,7 +1594,7 @@ int libvmdk_extent_table_get_number_of_extents(
  */
 int libvmdk_extent_table_get_extent_by_index(
      libvmdk_extent_table_t *extent_table,
-     uint32_t extent_number,
+     int extent_index,
      int *file_io_pool_entry,
      size64_t *extent_file_size,
      libcerror_error_t **error )
@@ -1590,22 +1614,9 @@ int libvmdk_extent_table_get_extent_by_index(
 
 		return( -1 );
 	}
-#if SIZEOF_INT <= 4
-	if( extent_number > (uint32_t) INT_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid extent number value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-#endif
 	if( libfdata_list_get_element_by_index(
 	     extent_table->extent_files_list,
-	     (int) extent_number,
+	     extent_index,
 	     file_io_pool_entry,
 	     &element_offset,
 	     extent_file_size,
@@ -1616,9 +1627,9 @@ int libvmdk_extent_table_get_extent_by_index(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve element: %" PRIu32 " from extent files list.",
+		 "%s: unable to retrieve element: %d from extent files list.",
 		 function,
-		 extent_number );
+		 extent_index );
 
 		return( -1 );
 	}
@@ -1635,12 +1646,12 @@ int libvmdk_extent_table_get_extent_at_offset(
      size64_t *extent_file_size,
      libcerror_error_t **error )
 {
-	static char *function            = "libvmdk_extent_table_get_extent_at_offset";
-	off64_t element_offset           = 0;
+	static char *function           = "libvmdk_extent_table_get_extent_at_offset";
+	off64_t element_offset          = 0;
 	off64_t extent_file_data_offset = 0;
-	uint32_t element_flags           = 0;
-	int result                       = 0;
-	int extent_number               = 0;
+	uint32_t element_flags          = 0;
+	int extent_index                = 0;
+	int result                      = 0;
 
 	if( extent_table == NULL )
 	{
@@ -1656,7 +1667,7 @@ int libvmdk_extent_table_get_extent_at_offset(
 	result = libfdata_list_get_element_at_offset(
 	          extent_table->extent_files_list,
 	          offset,
-	          &extent_number,
+	          &extent_index,
 	          &extent_file_data_offset,
 	          file_io_pool_entry,
 	          &element_offset,
@@ -1684,7 +1695,7 @@ int libvmdk_extent_table_get_extent_at_offset(
  */
 int libvmdk_extent_table_set_extent_storage_media_size_by_index(
      libvmdk_extent_table_t *extent_table,
-     uint32_t extent_number,
+     int extent_index,
      size64_t storage_media_size,
      libcerror_error_t **error )
 {
@@ -1701,22 +1712,9 @@ int libvmdk_extent_table_set_extent_storage_media_size_by_index(
 
 		return( -1 );
 	}
-#if SIZEOF_INT <= 4
-	if( extent_number > (uint32_t) INT_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid extent number value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-#endif
 	if( libfdata_list_set_mapped_size_by_index(
 	     extent_table->extent_files_list,
-	     (int) extent_number,
+	     extent_index,
 	     storage_media_size,
 	     error ) != 1 )
 	{
@@ -1724,9 +1722,9 @@ int libvmdk_extent_table_set_extent_storage_media_size_by_index(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-		 "%s: unable to set mapped size of element: %" PRIu32 " in extent files list.",
+		 "%s: unable to set mapped size of element: %d in extent files list.",
 		 function,
-		 extent_number );
+		 extent_index );
 
 		return( -1 );
 	}
@@ -1738,7 +1736,7 @@ int libvmdk_extent_table_set_extent_storage_media_size_by_index(
  */
 int libvmdk_extent_table_get_extent_file_by_index(
      libvmdk_extent_table_t *extent_table,
-     uint32_t extent_number,
+     int extent_index,
      libbfio_pool_t *file_io_pool,
      libvmdk_extent_file_t **extent_file,
      libcerror_error_t **error )
@@ -1756,24 +1754,11 @@ int libvmdk_extent_table_get_extent_file_by_index(
 
 		return( -1 );
 	}
-#if SIZEOF_INT <= 4
-	if( extent_number > (uint32_t) INT_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid extent number value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-#endif
 	if( libfdata_list_get_element_value_by_index(
 	     extent_table->extent_files_list,
 	     (intptr_t *) file_io_pool,
 	     extent_table->extent_files_cache,
-	     (int) extent_number,
+	     extent_index,
 	     (intptr_t **) extent_file,
 	     0,
 	     error ) != 1 )
@@ -1782,9 +1767,9 @@ int libvmdk_extent_table_get_extent_file_by_index(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve element value: %" PRIu32 " from extent files list.",
+		 "%s: unable to retrieve element value: %d from extent files list.",
 		 function,
-		 extent_number );
+		 extent_index );
 
 		return( -1 );
 	}
@@ -1798,14 +1783,13 @@ int libvmdk_extent_table_get_extent_file_at_offset(
      libvmdk_extent_table_t *extent_table,
      off64_t offset,
      libbfio_pool_t *file_io_pool,
-     uint32_t *extent_number,
+     int *extent_index,
      off64_t *extent_file_data_offset,
      libvmdk_extent_file_t **extent_file,
      libcerror_error_t **error )
 {
-	static char *function        = "libvmdk_extent_table_get_extent_file_at_offset";
-	int result                   = 0;
-	int extent_files_list_index = 0;
+	static char *function = "libvmdk_extent_table_get_extent_file_at_offset";
+	int result            = 0;
 
 	if( extent_table == NULL )
 	{
@@ -1818,23 +1802,12 @@ int libvmdk_extent_table_get_extent_file_at_offset(
 
 		return( -1 );
 	}
-	if( extent_number == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid extent number.",
-		 function );
-
-		return( -1 );
-	}
 	result = libfdata_list_get_element_value_at_offset(
 	          extent_table->extent_files_list,
 	          (intptr_t *) file_io_pool,
 	          extent_table->extent_files_cache,
 	          offset,
-	          &extent_files_list_index,
+	          extent_index,
 	          extent_file_data_offset,
 	          (intptr_t **) extent_file,
 	          0,
@@ -1852,26 +1825,6 @@ int libvmdk_extent_table_get_extent_file_at_offset(
 
 		return( -1 );
 	}
-	else if( result != 0 )
-	{
-#if SIZEOF_INT <= 4
-		if( extent_files_list_index < 0 )
-#else
-		if( ( extent_files_list_index < 0 )
-		 || ( extent_files_list_index > (int) UINT32_MAX ) )
-#endif
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid extent files list index value out of bounds.",
-			 function );
-
-			return( -1 );
-		}
-		*extent_number = (uint32_t) extent_files_list_index;
-	}
 	return( result );
 }
 
@@ -1881,7 +1834,7 @@ int libvmdk_extent_table_get_extent_file_at_offset(
 int libvmdk_extent_table_set_extent_file_by_index(
      libvmdk_extent_table_t *extent_table,
      libbfio_pool_t *file_io_pool,
-     uint32_t extent_number,
+     int extent_index,
      libvmdk_extent_file_t *extent_file,
      libcerror_error_t **error )
 {
@@ -1898,24 +1851,11 @@ int libvmdk_extent_table_set_extent_file_by_index(
 
 		return( -1 );
 	}
-#if SIZEOF_INT <= 4
-	if( extent_number > (uint32_t) INT_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid extent number value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-#endif
 	if( libfdata_list_set_element_value_by_index(
 	     extent_table->extent_files_list,
 	     (intptr_t *) file_io_pool,
 	     extent_table->extent_files_cache,
-	     (int) extent_number,
+	     extent_index,
 	     (intptr_t *) extent_file,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_file_free,
 	     LIBFDATA_LIST_ELEMENT_VALUE_FLAG_MANAGED,
@@ -1925,9 +1865,9 @@ int libvmdk_extent_table_set_extent_file_by_index(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set element value: %" PRIu32 " extent files list.",
+		 "%s: unable to set element value: %d extent files list.",
 		 function,
-		 extent_number );
+		 extent_index );
 
 		return( -1 );
 	}
@@ -1940,7 +1880,7 @@ int libvmdk_extent_table_set_extent_file_by_index(
 int libvmdk_extent_table_set_extent_by_extent_descriptor(
      libvmdk_extent_table_t *extent_table,
      libvmdk_extent_descriptor_t *extent_descriptor,
-     uint32_t extent_number,
+     int extent_index,
      int file_io_pool_entry,
      size64_t extent_file_size,
      libcerror_error_t **error )
@@ -1969,31 +1909,19 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 
 		return( -1 );
 	}
-#if SIZEOF_INT <= 4
-	if( extent_number > (uint32_t) INT_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid extent number value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( extent_number > extent_table->number_of_extents )
+	if( ( extent_index < 0 )
+	 || ( extent_index > extent_table->number_of_extents ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid extent number value out of bounds.",
+		 "%s: invalid extent index value out of bounds.",
 		 function );
 
 		return( -1 );
 	}
-	if( extent_number == 0 )
+	if( extent_index == 0 )
 	{
 		if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
 		{
@@ -2014,6 +1942,37 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 		{
 			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+				 "%s: extent type not supported for disk type.",
+				 function );
+
+				return( -1 );
+			}
+		}
+		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_FLAT )
+		{
+			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT )
+			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
+			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+				 "%s: extent type not supported for disk type.",
+				 function );
+
+				return( -1 );
+			}
+		}
+		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE )
+		{
+			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_SPARSE )
+			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -2049,24 +2008,51 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 
 		return( -1 );
 	}
-	if( libfdata_list_set_element_by_index(
-	     extent_table->extent_files_list,
-	     (int) extent_number,
-	     file_io_pool_entry,
-	     0,
-	     extent_file_size,
-	     0,
-	     error ) != 1 )
+	if( ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
+	 || ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_FLAT ) )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set element: %" PRIu32 " in extent files list.",
-		 function,
-		 extent_number );
+		if( libfdata_stream_set_segment_by_index(
+		     extent_table->extent_files_stream,
+		     extent_index,
+		     file_io_pool_entry,
+		     0,
+		     extent_file_size,
+		     0,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set segment: %d in extent files stream.",
+			 function,
+			 extent_index );
 
-		return( -1 );
+			return( -1 );
+		}
+	}
+	else if( ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+	      || ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE ) )
+	{
+		if( libfdata_list_set_element_by_index(
+		     extent_table->extent_files_list,
+		     extent_index,
+		     file_io_pool_entry,
+		     0,
+		     extent_file_size,
+		     0,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set element: %d in extent files list.",
+			 function,
+			 extent_index );
+
+			return( -1 );
+		}
 	}
 	return( 1 );
 }

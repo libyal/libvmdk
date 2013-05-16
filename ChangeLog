@@ -1,6 +1,5 @@
 TODO
 * complete and test flat extent file support
-* change extent_number from uint32_t to int in extent_table
 * implement extent file current offset ?
 * implement libvmdk_extent_file_read_grain_group_element_data
 * get grain data by grain table
@@ -31,13 +30,17 @@ API
 library
 * add support for VMDK markers
 * complete COWD support
+* support compressed extent files
 
 Deployment:
 * check manuals
   - update libvmdk.3
   - update vmdkinfo.1
   - add vmdkmount.1
-* create msvscpp files
+
+20130516
+* worked on mfdata refactor
+* added support for flat extent files
 
 20130515
 * worked on mfdata refactor

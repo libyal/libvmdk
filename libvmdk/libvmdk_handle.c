@@ -2049,16 +2049,10 @@ int libvmdk_handle_open_read_grain_table(
 			goto on_error;
 		}
 /* TODO check file size ? */
-		if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
-		{
-		}
-		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
-		{
-		}
 		if( libvmdk_extent_table_set_extent_by_extent_descriptor(
 		     internal_handle->extent_table,
 		     extent_descriptor,
-		     (uint32_t) extent_index,
+		     extent_index,
 		     extent_index,
 		     extent_file_size,
 		     error ) != 1 )
@@ -2073,7 +2067,8 @@ int libvmdk_handle_open_read_grain_table(
 
 			goto on_error;
 		}
-		if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+		if( ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+		 || ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE ) )
 		{
 			if( libvmdk_extent_file_initialize(
 			     &extent_file,
@@ -2183,7 +2178,8 @@ int libvmdk_handle_open_read_grain_table(
 				goto on_error;
 			}
 		}
-		else
+		else if( ( extent_descriptor->type != LIBVMDK_EXTENT_TYPE_FLAT )
+		      && ( extent_descriptor->type != LIBVMDK_EXTENT_TYPE_VMFS_FLAT ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -2395,193 +2391,243 @@ ssize_t libvmdk_handle_read_buffer(
 	{
 		return( 0 );
 	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
+	if( internal_handle->extent_table->extent_files_stream != NULL )
 	{
-		libcnotify_printf(
-		 "%s: requested offset\t\t\t: 0x%08" PRIx64 "\n",
-		 function,
-		 internal_handle->current_offset );
-	}
-#endif
-	grain_index       = internal_handle->current_offset / internal_handle->io_handle->grain_size;
-	grain_data_offset = internal_handle->current_offset % internal_handle->io_handle->grain_size;
-
-	while( buffer_size > 0 )
-	{
-		grain_is_sparse = libvmdk_grain_table_grain_is_sparse_at_offset(
-		                   internal_handle->grain_table,
-		                   grain_index,
-		                   internal_handle->extent_data_file_io_pool,
-		                   internal_handle->extent_table,
-		                   internal_handle->current_offset,
-		                   error );
-
-		if( grain_is_sparse == -1 )
+		if( libfdata_stream_seek_offset(
+		     internal_handle->extent_table->extent_files_stream,
+		     internal_handle->current_offset,
+		     SEEK_SET,
+		     error ) == -1 )
 		{
 			libcerror_error_set(
 			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to determine if the grain: %" PRIu64 " is sparse.",
-			 function,
-			 grain_index );
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to seek offset in extent files stream.",
+			 function );
 
 			return( -1 );
 		}
-		read_size = internal_handle->io_handle->grain_size - grain_data_offset;
+		read_size = buffer_size;
 
-		if( read_size > buffer_size )
-		{
-			read_size = buffer_size;
-		}
 		if( (size64_t) ( internal_handle->current_offset + read_size ) > internal_handle->io_handle->media_size )
 		{
 			read_size = (size_t) ( internal_handle->io_handle->media_size - internal_handle->current_offset );
 		}
-		if( grain_is_sparse != 0 )
+		read_count = libfdata_stream_read_buffer(
+		              internal_handle->extent_table->extent_files_stream,
+			      (intptr_t *) internal_handle->extent_data_file_io_pool,
+			      (uint8_t *) buffer,
+			      read_size,
+			      0,
+			      error );
+
+		if( read_count != (ssize_t) read_size )
 		{
-			if( internal_handle->parent_handle == NULL )
-			{
-				if( memory_set(
-				     &( ( (uint8_t *) buffer )[ buffer_offset ] ),
-				     0,
-				     read_size ) == NULL )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_MEMORY,
-					 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-					 "%s: unable to fill buffer with sparse grain.",
-					 function );
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read buffer from extent files stream.",
+			 function );
 
-					return( -1 );
-				}
-			}
-			else
-			{
-/* TODO do we need grain offset or current offset ? */
-				if( libvmdk_handle_seek_offset(
-				     internal_handle->parent_handle,
-				     internal_handle->current_offset,
-				     SEEK_SET,
-				     error ) == -1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_IO,
-					 LIBCERROR_IO_ERROR_SEEK_FAILED,
-					 "%s: unable to seek grain offset: %" PRIi64 " in parent.",
-					 function,
-					 internal_handle->current_offset );
-
-					return( -1 );
-				}
-				read_count = libvmdk_handle_read_buffer(
-					      internal_handle->parent_handle,
-				              &( ( (uint8_t *) buffer )[ buffer_offset ] ),
-					      read_size,
-					      error );
-
-				if( read_count != (ssize_t) read_size )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_IO,
-					 LIBCERROR_IO_ERROR_READ_FAILED,
-					 "%s: unable to read grain data from parent.",
-					 function );
-
-					return( -1 );
-				}
-			}
+			return( -1 );
 		}
-		else
+		buffer_offset = read_size;
+
+		internal_handle->current_offset += (off64_t) read_size;
+	}
+	else
+	{
+/* TODO refactor to separate function */
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
 		{
-			if( libvmdk_grain_table_get_grain_data_at_offset(
-			     internal_handle->grain_table,
-			     grain_index,
-			     internal_handle->extent_data_file_io_pool,
-			     internal_handle->extent_table,
-			     internal_handle->grains_cache,
-			     internal_handle->current_offset,
-			     &grain_data,
-			     &grain_data_offset,
-			     error ) != 1 )
+			libcnotify_printf(
+			 "%s: requested offset\t\t\t: 0x%08" PRIx64 "\n",
+			 function,
+			 internal_handle->current_offset );
+		}
+#endif
+		grain_index       = internal_handle->current_offset / internal_handle->io_handle->grain_size;
+		grain_data_offset = internal_handle->current_offset % internal_handle->io_handle->grain_size;
+
+		while( buffer_size > 0 )
+		{
+			grain_is_sparse = libvmdk_grain_table_grain_is_sparse_at_offset(
+					   internal_handle->grain_table,
+					   grain_index,
+					   internal_handle->extent_data_file_io_pool,
+					   internal_handle->extent_table,
+					   internal_handle->current_offset,
+					   error );
+
+			if( grain_is_sparse == -1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve grain: %d data.",
+				 "%s: unable to determine if the grain: %" PRIu64 " is sparse.",
 				 function,
 				 grain_index );
 
 				return( -1 );
 			}
-			if( grain_data == NULL )
+			read_size = internal_handle->io_handle->grain_size - grain_data_offset;
+
+			if( read_size > buffer_size )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-				 "%s: missing grain: %d data.",
-				 function,
-				 grain_index );
-
-				return( -1 );
+				read_size = buffer_size;
 			}
-			if( grain_data_offset > grain_data->data_size )
+			if( (size64_t) ( internal_handle->current_offset + read_size ) > internal_handle->io_handle->media_size )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-				 "%s: grain data offset value out of bounds.",
-				 function );
-
-				return( -1 );
+				read_size = (size_t) ( internal_handle->io_handle->media_size - internal_handle->current_offset );
 			}
-			if( read_size > ( grain_data->data_size - grain_data_offset ) )
+			if( grain_is_sparse != 0 )
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-				 "%s: read size value out of bounds.",
-				 function );
+				if( internal_handle->parent_handle == NULL )
+				{
+					if( memory_set(
+					     &( ( (uint8_t *) buffer )[ buffer_offset ] ),
+					     0,
+					     read_size ) == NULL )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_MEMORY,
+						 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+						 "%s: unable to fill buffer with sparse grain.",
+						 function );
 
-				return( -1 );
+						return( -1 );
+					}
+				}
+				else
+				{
+/* TODO do we need grain offset or current offset ? */
+					if( libvmdk_handle_seek_offset(
+					     internal_handle->parent_handle,
+					     internal_handle->current_offset,
+					     SEEK_SET,
+					     error ) == -1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_IO,
+						 LIBCERROR_IO_ERROR_SEEK_FAILED,
+						 "%s: unable to seek grain offset: %" PRIi64 " in parent.",
+						 function,
+						 internal_handle->current_offset );
+
+						return( -1 );
+					}
+					read_count = libvmdk_handle_read_buffer(
+						      internal_handle->parent_handle,
+						      &( ( (uint8_t *) buffer )[ buffer_offset ] ),
+						      read_size,
+						      error );
+
+					if( read_count != (ssize_t) read_size )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_IO,
+						 LIBCERROR_IO_ERROR_READ_FAILED,
+						 "%s: unable to read grain data from parent.",
+						 function );
+
+						return( -1 );
+					}
+				}
 			}
-			if( memory_copy(
-			     &( ( (uint8_t *) buffer )[ buffer_offset ] ),
-			     &( ( grain_data->data )[ grain_data_offset ] ),
-			     read_size ) == NULL )
+			else
 			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_MEMORY,
-				 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-				 "%s: unable to copy grain data to buffer.",
-				 function );
+				if( libvmdk_grain_table_get_grain_data_at_offset(
+				     internal_handle->grain_table,
+				     grain_index,
+				     internal_handle->extent_data_file_io_pool,
+				     internal_handle->extent_table,
+				     internal_handle->grains_cache,
+				     internal_handle->current_offset,
+				     &grain_data,
+				     &grain_data_offset,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve grain: %d data.",
+					 function,
+					 grain_index );
 
-				return( -1 );
+					return( -1 );
+				}
+				if( grain_data == NULL )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+					 "%s: missing grain: %d data.",
+					 function,
+					 grain_index );
+
+					return( -1 );
+				}
+				if( grain_data_offset > grain_data->data_size )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+					 "%s: grain data offset value out of bounds.",
+					 function );
+
+					return( -1 );
+				}
+				if( read_size > ( grain_data->data_size - grain_data_offset ) )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+					 "%s: read size value out of bounds.",
+					 function );
+
+					return( -1 );
+				}
+				if( memory_copy(
+				     &( ( (uint8_t *) buffer )[ buffer_offset ] ),
+				     &( ( grain_data->data )[ grain_data_offset ] ),
+				     read_size ) == NULL )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_MEMORY,
+					 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+					 "%s: unable to copy grain data to buffer.",
+					 function );
+
+					return( -1 );
+				}
 			}
-		}
-		buffer_offset    += read_size;
-		buffer_size      -= read_size;
-		grain_index      += 1;
-		grain_data_offset = 0;
+			buffer_offset    += read_size;
+			buffer_size      -= read_size;
+			grain_index      += 1;
+			grain_data_offset = 0;
 
-		internal_handle->current_offset += (off64_t) read_size;
+			internal_handle->current_offset += (off64_t) read_size;
 
-		if( (size64_t) internal_handle->current_offset >= internal_handle->io_handle->media_size )
-		{
-			break;
-		}
-		if( internal_handle->io_handle->abort != 0 )
-		{
-			break;
+			if( (size64_t) internal_handle->current_offset >= internal_handle->io_handle->media_size )
+			{
+				break;
+			}
+			if( internal_handle->io_handle->abort != 0 )
+			{
+				break;
+			}
 		}
 	}
 	return( (ssize_t) buffer_offset );

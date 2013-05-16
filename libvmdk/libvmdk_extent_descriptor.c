@@ -519,7 +519,7 @@ int libvmdk_extent_descriptor_read(
 		    "VMFS",
 		    4 ) == 0 ) )
 	{
-		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS;
+		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS_FLAT;
 	}
 	else if( ( value_string_segment_size == 5 )
 	      && ( libcstring_narrow_string_compare(

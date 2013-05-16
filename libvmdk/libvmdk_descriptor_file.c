@@ -896,7 +896,17 @@ int libvmdk_descriptor_file_read_header(
 					 value );
 				}
 #endif
-				if( value_length == 6 )
+				if( value_length == 4 )
+				{
+					if( libcstring_narrow_string_compare(
+					     value,
+					     "vmfs",
+					     4 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_FLAT;
+					}
+				}
+				else if( value_length == 6 )
 				{
 					if( libcstring_narrow_string_compare(
 					     value,
@@ -937,7 +947,7 @@ int libvmdk_descriptor_file_read_header(
 					          "vmfsThin",
 					          8 ) == 0 )
 					{
-						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_THIN;
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN;
 					}
 				}
 				else if( value_length == 10 )
@@ -1005,7 +1015,7 @@ int libvmdk_descriptor_file_read_header(
 					          "vmfsPreallocated",
 					          16 ) == 0 )
 					{
-						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_FLAT;
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED;
 					}
 					else if( libcstring_narrow_string_compare(
 					          value,

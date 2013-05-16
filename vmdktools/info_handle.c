@@ -448,10 +448,16 @@ int info_handle_file_fprint(
 			 "VMFS flat" );
 			break;
 
+		case LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED:
+			fprintf(
+			 info_handle->notify_stream,
+			 "VMFS flat (pre-allocated)" );
+			break;
+
 		case LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED:
 			fprintf(
 			 info_handle->notify_stream,
-			 "VMFS flat zeroed" );
+			 "VMFS flat (zeroed)" );
 			break;
 
 		case LIBVMDK_DISK_TYPE_VMFS_RAW:
@@ -478,10 +484,10 @@ int info_handle_file_fprint(
 			 "VMFS sparse" );
 			break;
 
-		case LIBVMDK_DISK_TYPE_VMFS_THIN:
+		case LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN:
 			fprintf(
 			 info_handle->notify_stream,
-			 "VMFS thin" );
+			 "VMFS sparse (thin)" );
 			break;
 
 		default:

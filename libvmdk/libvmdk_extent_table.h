@@ -64,7 +64,7 @@ struct libvmdk_extent_table
 
 	/* The number of extents
 	 */
-	uint32_t number_of_extents;
+	int number_of_extents;
 
 	/* The extent files list used for sparse extent files
 	 */
@@ -139,18 +139,18 @@ int libvmdk_extent_table_set_basename_wide(
 
 int libvmdk_extent_table_initialize_extents(
      libvmdk_extent_table_t *extent_table,
-     uint32_t number_of_extents,
+     int number_of_extents,
      int disk_type,
      libcerror_error_t **error );
 
 int libvmdk_extent_table_get_number_of_extents(
      libvmdk_extent_table_t *extent_table,
-     uint32_t *number_of_extents,
+     int *number_of_extents,
      libcerror_error_t **error );
 
 int libvmdk_extent_table_get_extent_by_index(
      libvmdk_extent_table_t *extent_table,
-     uint32_t extent_number,
+     int extent_index,
      int *file_io_pool_entry,
      size64_t *extent_file_size,
      libcerror_error_t **error );
@@ -164,13 +164,13 @@ int libvmdk_extent_table_get_extent_at_offset(
 
 int libvmdk_extent_table_set_extent_storage_media_size_by_index(
      libvmdk_extent_table_t *extent_table,
-     uint32_t extent_number,
+     int extent_index,
      size64_t storage_media_size,
      libcerror_error_t **error );
 
 int libvmdk_extent_table_get_extent_file_by_index(
      libvmdk_extent_table_t *extent_table,
-     uint32_t extent_number,
+     int extent_index,
      libbfio_pool_t *file_io_pool,
      libvmdk_extent_file_t **extent_file,
      libcerror_error_t **error );
@@ -179,7 +179,7 @@ int libvmdk_extent_table_get_extent_file_at_offset(
      libvmdk_extent_table_t *extent_table,
      off64_t offset,
      libbfio_pool_t *file_io_pool,
-     uint32_t *extent_number,
+     int *extent_index,
      off64_t *extent_file_data_offset,
      libvmdk_extent_file_t **extent_file,
      libcerror_error_t **error );
@@ -187,14 +187,14 @@ int libvmdk_extent_table_get_extent_file_at_offset(
 int libvmdk_extent_table_set_extent_file_by_index(
      libvmdk_extent_table_t *extent_table,
      libbfio_pool_t *file_io_pool,
-     uint32_t extent_number,
+     int extent_index,
      libvmdk_extent_file_t *extent_file,
      libcerror_error_t **error );
 
 int libvmdk_extent_table_set_extent_by_extent_descriptor(
      libvmdk_extent_table_t *extent_table,
      libvmdk_extent_descriptor_t *extent_descriptor,
-     uint32_t extent_number,
+     int extent_index,
      int file_io_pool_entry,
      size64_t extent_file_size,
      libcerror_error_t **error );
