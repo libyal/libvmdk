@@ -29,6 +29,7 @@
 #include "libvmdk_libcnotify.h"
 #include "libvmdk_libcsplit.h"
 #include "libvmdk_libfvalue.h"
+#include "libvmdk_libuna.h"
 
 /* Creates an extent descriptor
  * Make sure the value extent_descriptor is referencing, is set to NULL
@@ -235,55 +236,53 @@ int libvmdk_extent_descriptor_read(
 			break;
 		}
 	}
-	if( value_string_index == value_string_size )
+	if( value_string_index >= value_string_size )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid value string missing filename value.",
-		 function );
-
-		goto on_error;
+		/* No filename was found in the extent descriptor
+		 */
+		value_string_length = value_string_index - 1;
+		value_string_size   = 0;
 	}
-	value_string_length = value_string_index - 1;
-
-	value_string[ value_string_length ] = 0;
-
-	value_string_index++;
-
-	filename = &( value_string[ value_string_index ] );
-
-	/* Look for the end of the filename
-	 */
-	for( filename_length = value_string_size - 1;
-	     filename_length > value_string_index;
-	     filename_length-- )
+	else
 	{
-		if( ( value_string[ filename_length ] == '"' )
-		 || ( value_string[ filename_length ] == '\'' ) )
+		value_string_length = value_string_index - 1;
+
+		value_string[ value_string_length ] = 0;
+
+		value_string_index++;
+
+		filename = &( value_string[ value_string_index ] );
+
+		/* Look for the end of the filename
+		 */
+		for( filename_length = value_string_size - 1;
+		     filename_length > value_string_index;
+		     filename_length-- )
 		{
-			break;
+			if( ( value_string[ filename_length ] == '"' )
+			 || ( value_string[ filename_length ] == '\'' ) )
+			{
+				break;
+			}
 		}
+		if( filename_length <= value_string_index )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: invalid value string missing filename value.",
+			 function );
+
+			goto on_error;
+		}
+		filename_length -= value_string_index;
+
+		filename[ filename_length ] = 0;
+
+		value_string_index += filename_length + 2;
+		value_string_size  -= value_string_index;
 	}
-	if( filename_length <= value_string_index )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid value string missing filename value.",
-		 function );
-
-		goto on_error;
-	}
-	filename_length -= value_string_index;
-
-	filename[ filename_length ] = 0;
-
-	value_string_index += filename_length + 2;
-	value_string_size  -= value_string_index;
-
 	if( libcsplit_narrow_string_split(
 	     value_string,
 	     value_string_length + 1,
@@ -585,51 +584,126 @@ int libvmdk_extent_descriptor_read(
 
 		goto on_error;
 	}
-	/* The extent value: 3 contains the filename
-	 */
+	if( ( filename_length == 0 )
+	 && ( extent_descriptor->type != LIBVMDK_EXTENT_TYPE_ZERO ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing value string segment: 3 filename.",
+		 function );
+
+		goto on_error;
+	}
+	if( filename_length > 0 )
+	{
+		/* The extent value: 3 contains the filename
+		 */
 #if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-		 "%s: filename\t\t\t\t: %s\n",
-		 function,
-		 filename );
-	}
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: filename\t\t\t\t: %s\n",
+			 function,
+			 filename );
+		}
 #endif
-	extent_descriptor->filename_size = filename_length + 1;
+		extent_descriptor->filename_size = filename_length + 1;
 
-	extent_descriptor->filename = libcstring_narrow_string_allocate(
-	                               extent_descriptor->filename_size );
+		extent_descriptor->filename = libcstring_system_string_allocate(
+		                               extent_descriptor->filename_size );
 
-	if( extent_descriptor->filename == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create filename.",
-		 function );
+		if( extent_descriptor->filename == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create filename.",
+			 function );
 
-		goto on_error;
+			goto on_error;
+		}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+/* TODO convert string to UTF16 */
+#else
+		if( memory_copy(
+		     extent_descriptor->filename,
+		     filename,
+		     filename_length ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+			 "%s: unable to copy filename.",
+			 function );
+
+			goto on_error;
+		}
+		extent_descriptor->filename[ filename_length ] = 0;
+#endif
 	}
-	if( memory_copy(
-	     extent_descriptor->filename,
-	     filename,
-	     filename_length ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy filename.",
-		 function );
-
-		goto on_error;
-	}
-	extent_descriptor->filename[ filename_length ] = 0;
-
 	if( value_string_size > 0 )
 	{
+		if( libcsplit_narrow_string_split(
+		     &( value_string[ value_string_index ] ),
+		     value_string_size,
+		     ' ',
+		     &values,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to get values from string.",
+			 function );
+
+			goto on_error;
+		}
+		if( libcsplit_narrow_split_string_get_number_of_segments(
+		     values,
+		     &number_of_values,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to retrieve number of values.",
+			 function );
+
+			goto on_error;
+		}
+		if( libcsplit_narrow_split_string_get_segment_by_index(
+		     values,
+		     0,
+		     &value_string_segment,
+		     &value_string_segment_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve value: 0.",
+			 function );
+
+			goto on_error;
+		}
+		if( value_string_segment == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing value string segment: 4.",
+			 function );
+
+			goto on_error;
+		}
 		/* The extent value: 4 contains the offset
 		 */
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -638,12 +712,12 @@ int libvmdk_extent_descriptor_read(
 			libcnotify_printf(
 			 "%s: offset\t\t\t\t\t: %s\n",
 			 function,
-			 &( value_string[ value_string_index ] ) );
+			 value_string_segment );
 		}
 #endif
 		if( libfvalue_utf8_string_copy_to_integer(
-		     (uint8_t *) &( value_string[ value_string_index ] ),
-		     value_string_size,
+		     value_string_segment,
+		     value_string_segment_size,
 		     &value_64bit,
 		     64,
 		     LIBFVALUE_INTEGER_FORMAT_TYPE_DECIMAL_UNSIGNED,
@@ -670,6 +744,93 @@ int libvmdk_extent_descriptor_read(
 			goto on_error;
 		}
 		extent_descriptor->offset = (off64_t) value_64bit;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			if( number_of_values > 1 )
+			{
+				if( libcsplit_narrow_split_string_get_segment_by_index(
+				     values,
+				     1,
+				     &value_string_segment,
+				     &value_string_segment_size,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve value: 1.",
+					 function );
+
+					goto on_error;
+				}
+				if( value_string_segment == NULL )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+					 "%s: missing value string segment: 5.",
+					 function );
+
+					goto on_error;
+				}
+				libcnotify_printf(
+				 "%s: string segment 5\t\t\t: %s\n",
+				 function,
+				 value_string_segment );
+			}
+			if( number_of_values > 2 )
+			{
+				if( libcsplit_narrow_split_string_get_segment_by_index(
+				     values,
+				     2,
+				     &value_string_segment,
+				     &value_string_segment_size,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to retrieve value: 1.",
+					 function );
+
+					goto on_error;
+				}
+				if( value_string_segment == NULL )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+					 "%s: missing value string segment: 6.",
+					 function );
+
+					goto on_error;
+				}
+				libcnotify_printf(
+				 "%s: string segment 6\t\t\t: %s\n",
+				 function,
+				 value_string_segment );
+			}
+		}
+#endif
+		if( libcsplit_narrow_split_string_free(
+		     &values,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free values.",
+			 function );
+
+			goto on_error;
+		}
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )

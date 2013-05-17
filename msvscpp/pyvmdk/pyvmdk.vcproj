@@ -189,11 +189,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\pyvmdk\pyvmdk_file.c"
+				RelativePath="..\..\pyvmdk\pyvmdk_file_object_io_handle.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\pyvmdk\pyvmdk_file_object_io_handle.c"
+				RelativePath="..\..\pyvmdk\pyvmdk_handle.c"
 				>
 			</File>
 		</Filter>
@@ -207,11 +207,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\pyvmdk\pyvmdk_file.h"
+				RelativePath="..\..\pyvmdk\pyvmdk_file_object_io_handle.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\pyvmdk\pyvmdk_file_object_io_handle.h"
+				RelativePath="..\..\pyvmdk\pyvmdk_handle.h"
 				>
 			</File>
 			<File

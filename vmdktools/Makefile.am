@@ -60,6 +60,8 @@ vmdkmount_SOURCES = \
 vmdkmount_LDADD = \
 	@LIBFUSE_LIBADD@ \
 	@LIBCSYSTEM_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCSPLIT_LIBADD@ \
 	../libvmdk/libvmdk.la \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \

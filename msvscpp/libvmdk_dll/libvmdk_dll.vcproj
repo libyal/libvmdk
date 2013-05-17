@@ -172,19 +172,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libvmdk\libvmdk_cluster_block.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libvmdk\libvmdk_cluster_table.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libvmdk\libvmdk_compression.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\libvmdk\libvmdk_debug.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_descriptor_file.c"
 				>
 			</File>
 			<File
@@ -192,11 +184,31 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libvmdk\libvmdk_file.c"
+				RelativePath="..\..\libvmdk\libvmdk_extent_descriptor.c"
 				>
 			</File>
 			<File
-				RelativePath="..\..\libvmdk\libvmdk_i18n.c"
+				RelativePath="..\..\libvmdk\libvmdk_extent_file.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_extent_table.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_grain_data.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_grain_group.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_grain_table.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_handle.c"
 				>
 			</File>
 			<File
@@ -222,19 +234,7 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\libvmdk\libvmdk_cluster_block.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libvmdk\libvmdk_cluster_table.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libvmdk\libvmdk_codepage.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libvmdk\libvmdk_compression.h"
+				RelativePath="..\..\libvmdk\cowd_sparse_file_header.h"
 				>
 			</File>
 			<File
@@ -246,7 +246,23 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libvmdk\libvmdk_descriptor_file.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libvmdk\libvmdk_error.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_extent_descriptor.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_extent_file.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_extent_table.h"
 				>
 			</File>
 			<File
@@ -254,11 +270,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libvmdk\libvmdk_file.h"
+				RelativePath="..\..\libvmdk\libvmdk_grain_data.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\libvmdk\libvmdk_i18n.h"
+				RelativePath="..\..\libvmdk\libvmdk_grain_group.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_grain_table.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_handle.h"
 				>
 			</File>
 			<File
@@ -270,7 +294,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libvmdk\libvmdk_libcaes.h"
+				RelativePath="..\..\libvmdk\libvmdk_libcdata.h"
 				>
 			</File>
 			<File
@@ -283,6 +307,14 @@
 			</File>
 			<File
 				RelativePath="..\..\libvmdk\libvmdk_libcnotify.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_libcpath.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_libcsplit.h"
 				>
 			</File>
 			<File
@@ -326,7 +358,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libvmdk\vmdk_file_header.h"
+				RelativePath="..\..\libvmdk\vmdk_sparse_file_header.h"
 				>
 			</File>
 		</Filter>

@@ -1111,115 +1111,118 @@ int libvmdk_handle_open_extent_data_files(
 
 			goto on_error;
 		}
-		if( ( extent_descriptor->filename == NULL )
-		 || ( extent_descriptor->filename_size == 0 ) )
+		if( extent_descriptor->type != LIBVMDK_EXTENT_TYPE_ZERO )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: invalid extent descriptor: %d - missing filename.",
-			 function,
-			 extent_index );
-
-			goto on_error;
-		}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-		extent_data_filename_start = libcstring_wide_string_search_character_reverse(
-		                              extent_descriptor->filename,
-		                              (wint_t) LIBCPATH_SEPARATOR,
-		                              extent_descriptor->filename_size );
-#else
-		extent_data_filename_start = libcstring_narrow_string_search_character_reverse(
-		                              extent_descriptor->filename,
-		                              (int) LIBCPATH_SEPARATOR,
-		                              extent_descriptor->filename_size );
-#endif
-		if( extent_data_filename_start != NULL )
-		{
-			/* Ignore the path separator itself
-			 */
-			extent_data_filename_start++;
-
-/* TODO does this work for UTF-16 ? */
-			extent_data_filename_size = (size_t) ( extent_data_filename_start - extent_descriptor->filename );
-		}
-		else
-		{
-			extent_data_filename_start = extent_descriptor->filename;
-			extent_data_filename_size  = extent_descriptor->filename_size;
-		}
-/* TODO refactor to a function in extent table */
-		if( internal_handle->extent_table->basename != NULL )
-		{
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-			if( libcpath_path_join_wide(
-			     &extent_data_file_location,
-			     &extent_data_file_location_size,
-			     internal_handle->extent_table->basename,
-			     internal_handle->extent_table->basename_size - 1,
-			     extent_data_filename_start,
-			     extent_data_filename_size - 1,
-			     error ) != 1 )
-#else
-			if( libcpath_path_join(
-			     &extent_data_file_location,
-			     &extent_data_file_location_size,
-			     internal_handle->extent_table->basename,
-			     internal_handle->extent_table->basename_size - 1,
-			     extent_data_filename_start,
-			     extent_data_filename_size - 1,
-			     error ) != 1 )
-#endif
+			if( ( extent_descriptor->filename == NULL )
+			 || ( extent_descriptor->filename_size == 0 ) )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create extent data file location.",
-				 function );
+				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+				 "%s: invalid extent descriptor: %d - missing filename.",
+				 function,
+				 extent_index );
 
 				goto on_error;
 			}
-		}
-		else
-		{
-			extent_data_file_location      = extent_data_filename_start;
-			extent_data_file_location_size = extent_data_filename_size;
-		}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-		result = libvmdk_handle_open_extent_data_file_wide(
-			  internal_handle,
-			  extent_index,
-			  extent_data_file_location,
-			  error );
+			extent_data_filename_start = libcstring_wide_string_search_character_reverse(
+			                              extent_descriptor->filename,
+			                              (wint_t) LIBCPATH_SEPARATOR,
+			                              extent_descriptor->filename_size );
 #else
-		result = libvmdk_handle_open_extent_data_file(
-			  internal_handle,
-			  extent_index,
-			  extent_data_file_location,
-			  error );
+			extent_data_filename_start = libcstring_narrow_string_search_character_reverse(
+			                              extent_descriptor->filename,
+			                              (int) LIBCPATH_SEPARATOR,
+			                              extent_descriptor->filename_size );
 #endif
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_OPEN_FAILED,
-			 "%s: unable to open extent data file: %" PRIs_LIBCSTRING_SYSTEM ".",
-			 function,
-			 extent_data_file_location );
+			if( extent_data_filename_start != NULL )
+			{
+				/* Ignore the path separator itself
+				 */
+				extent_data_filename_start++;
 
-			goto on_error;
+/* TODO does this work for UTF-16 ? */
+				extent_data_filename_size = (size_t) ( extent_data_filename_start - extent_descriptor->filename );
+			}
+			else
+			{
+				extent_data_filename_start = extent_descriptor->filename;
+				extent_data_filename_size  = extent_descriptor->filename_size;
+			}
+/* TODO refactor to a function in extent table */
+			if( internal_handle->extent_table->basename != NULL )
+			{
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+				if( libcpath_path_join_wide(
+				     &extent_data_file_location,
+				     &extent_data_file_location_size,
+				     internal_handle->extent_table->basename,
+				     internal_handle->extent_table->basename_size - 1,
+				     extent_data_filename_start,
+				     extent_data_filename_size - 1,
+				     error ) != 1 )
+#else
+				if( libcpath_path_join(
+				     &extent_data_file_location,
+				     &extent_data_file_location_size,
+				     internal_handle->extent_table->basename,
+				     internal_handle->extent_table->basename_size - 1,
+				     extent_data_filename_start,
+				     extent_data_filename_size - 1,
+				     error ) != 1 )
+#endif
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create extent data file location.",
+					 function );
+
+					goto on_error;
+				}
+			}
+			else
+			{
+				extent_data_file_location      = extent_data_filename_start;
+				extent_data_file_location_size = extent_data_filename_size;
+			}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+			result = libvmdk_handle_open_extent_data_file_wide(
+				  internal_handle,
+				  extent_index,
+				  extent_data_file_location,
+				  error );
+#else
+			result = libvmdk_handle_open_extent_data_file(
+				  internal_handle,
+				  extent_index,
+				  extent_data_file_location,
+				  error );
+#endif
+			if( result != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_OPEN_FAILED,
+				 "%s: unable to open extent data file: %" PRIs_LIBCSTRING_SYSTEM ".",
+				 function,
+				 extent_data_file_location );
+
+				goto on_error;
+			}
+			if( ( extent_data_file_location != NULL )
+			 && ( extent_data_file_location != extent_data_filename_start ) )
+			{
+				memory_free(
+				 extent_data_file_location );
+			}
+			extent_data_filename_start = NULL;
+			extent_data_file_location  = NULL;
 		}
-		if( ( extent_data_file_location != NULL )
-		 && ( extent_data_file_location != extent_data_filename_start ) )
-		{
-			memory_free(
-			 extent_data_file_location );
-		}
-		extent_data_filename_start = NULL;
-		extent_data_file_location  = NULL;
 	}
 	if( libvmdk_handle_open_read_grain_table(
 	     internal_handle,
@@ -2085,7 +2088,7 @@ int libvmdk_handle_open_read_grain_table(
 
 				goto on_error;
 			}
-#if defined( HAVE_VERBOSE_OUTPUT )
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(
@@ -2141,7 +2144,7 @@ int libvmdk_handle_open_read_grain_table(
 			{
 				internal_handle->io_handle->is_dirty = 1;
 			}
-#if defined( HAVE_VERBOSE_OUTPUT )
+#if defined( HAVE_DEBUG_OUTPUT )
 			if( libcnotify_verbose != 0 )
 			{
 				libcnotify_printf(

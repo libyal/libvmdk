@@ -632,7 +632,7 @@ int libvmdk_extent_file_read_file_header_data(
 {
 	static char *function = "libvmdk_extent_file_read_file_header_data";
 
-#if defined( HAVE_VERBOSE_OUTPUT )
+#if defined( HAVE_DEBUG_OUTPUT )
 	uint64_t value_64bit  = 0;
 #endif
 
@@ -798,7 +798,7 @@ int libvmdk_extent_file_read_file_header_data(
 		 ( (vmdk_sparse_file_header_t *) file_header_data )->compression_method,
 		 extent_file->compression_method );
 	}
-#if defined( HAVE_VERBOSE_OUTPUT )
+#if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
 		libcnotify_printf(

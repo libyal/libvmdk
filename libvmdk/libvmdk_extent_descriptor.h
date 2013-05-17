@@ -27,6 +27,7 @@
 
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcsplit.h"
+#include "libvmdk_libcstring.h"
 
 #if defined( __cplusplus )
 extern "C" {
@@ -38,7 +39,7 @@ struct libvmdk_extent_descriptor
 {
 	/* The filename
 	 */
-	char *filename;
+	libcstring_system_character_t *filename;
 
 	/* The filename size
 	 */

@@ -832,6 +832,25 @@ int libvmdk_descriptor_file_read_header(
 				descriptor_file->version = (int) value_64bit;
 			}
 		}
+		else if( value_identifier_length == 8 )
+		{
+			if( libcstring_narrow_string_compare(
+			     value_identifier,
+			     "encoding",
+			     8 ) == 0 )
+			{
+#if defined( HAVE_DEBUG_OUTPUT )
+				if( libcnotify_verbose != 0 )
+				{
+					libcnotify_printf(
+				 	 "%s: encoding\t\t\t\t: %s\n",
+					 function,
+					 value );
+				}
+#endif
+			}
+/* TODO convert from string default */
+		}
 		else if( value_identifier_length == 9 )
 		{
 			if( libcstring_narrow_string_compare(
@@ -1129,6 +1148,17 @@ int libvmdk_descriptor_file_read_header(
 #endif
 			}
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		else if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: value: %d\t\t\t\t: %s = %s\n",
+			 function,
+			 *line_index,
+			 value_identifier,
+			 value );
+		}
+#endif
 		*line_index += 1;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )

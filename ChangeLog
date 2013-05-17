@@ -1,4 +1,10 @@
 TODO
+* don't open extents files for partitionedDevice or fullDevice ?
+  - have tools complian that these are not supported
+* extent file add windows support (encoding)
+  - add codepage functions + tests
+  - libvmdk_extent_descriptor.c:629
+  - libvmdk_descriptor_file.c:852
 * complete and test flat extent file support
 * implement extent file current offset ?
 * implement libvmdk_extent_file_read_grain_group_element_data
@@ -38,10 +44,25 @@ Deployment:
   - update vmdkinfo.1
   - add vmdkmount.1
 
+* Test images
+  - vmdk flat
+  - vmdk flat split
+  - Monolithic sparse (done)
+  - 2GB extent sparse (done)
+  - cowd sparse
+  - cowd sparse split
+  - compressed?
+
+20130517
+* changes for extent descriptor parsing
+  - added support for extent descriptor with additional values
+  - added support for ZERO extent descriptor
+
 20130516
 * worked on mfdata refactor
 * added support for flat extent files
 * worked on COWD extent file support
+* changes for deployment
 
 20130515
 * worked on mfdata refactor
