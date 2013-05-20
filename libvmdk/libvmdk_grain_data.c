@@ -188,7 +188,6 @@ int libvmdk_grain_data_read_element_data(
 	libvmdk_grain_data_t *grain_data = NULL;
 	static char *function            = "libvmdk_grain_data_read_element_data";
 	ssize_t read_count               = 0;
-	int element_index                = 0;
 
 	LIBVMDK_UNREFERENCED_PARAMETER( read_flags )
 

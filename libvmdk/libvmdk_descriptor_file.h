@@ -46,6 +46,10 @@ struct libvmdk_descriptor_file
 	 */
 	int version;
 
+	/* The encoding
+	 */
+	int encoding;
+
 	/* The content identifier
 	 */
 	uint32_t content_identifier;

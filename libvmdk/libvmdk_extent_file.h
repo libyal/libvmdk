@@ -35,8 +35,8 @@
 extern "C" {
 #endif
 
-extern const char cowd_sparse_file_signature[ 4 ];
-extern const char vmdk_sparse_file_signature[ 4 ];
+extern const char *cowd_sparse_file_signature;
+extern const char *vmdk_sparse_file_signature;
 
 typedef struct libvmdk_extent_file libvmdk_extent_file_t;
 

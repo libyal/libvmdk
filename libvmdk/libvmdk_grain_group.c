@@ -231,7 +231,6 @@ int libvmdk_grain_group_fill(
 	uint32_t range_flags             = 0;
 	int element_index                = 0;
 	int grain_group_entry_index      = 0;
-	int result                       = 0;
 
 	if( grains_list == NULL )
 	{
@@ -394,7 +393,6 @@ int libvmdk_grain_group_correct(
 	off64_t grain_data_offset        = 0;
 	uint32_t range_flags             = 0;
 	int grain_group_entry_index      = 0;
-	int result                       = 0;
 
 	if( grains_list == NULL )
 	{

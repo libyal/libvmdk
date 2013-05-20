@@ -1021,7 +1021,6 @@ int libvmdk_handle_open_extent_data_files(
 	libcstring_system_character_t *extent_data_file_location  = NULL;
 	libcstring_system_character_t *extent_data_filename_start = NULL;
 	libvmdk_extent_descriptor_t *extent_descriptor            = NULL;
-	libvmdk_extent_file_t *extent_file                        = NULL;
 	libvmdk_internal_handle_t *internal_handle                = NULL;
 	static char *function                                     = "libvmdk_handle_open_extent_data_files";
 	size_t extent_data_file_location_size                     = 0;
@@ -1834,7 +1833,6 @@ int libvmdk_handle_open_read_grain_table(
      libvmdk_internal_handle_t *internal_handle,
      libcerror_error_t **error )
 {
-	libbfio_handle_t *file_io_handle               = NULL;
 	libvmdk_extent_descriptor_t *extent_descriptor = NULL;
 	libvmdk_extent_file_t *extent_file             = NULL;
 	static char *function                          = "libvmdk_handle_open_read_grain_table";
@@ -1842,7 +1840,6 @@ int libvmdk_handle_open_read_grain_table(
 	int extent_index                               = 0;
 	int number_of_extents                          = 0;
 	int number_of_file_io_handles                  = 0;
-	int result                                     = 0;
 
 	if( internal_handle == NULL )
 	{
@@ -2342,9 +2339,8 @@ ssize_t libvmdk_handle_read_buffer(
 	size_t read_size                           = 0;
 	ssize_t read_count                         = 0;
 	uint64_t grain_index                       = 0;
-	uint64_t grain_data_offset                 = 0;
+	off64_t grain_data_offset                  = 0;
 	int grain_is_sparse                        = 0;
-	int result                                 = 0;
 
 	if( handle == NULL )
 	{
@@ -2380,6 +2376,32 @@ ssize_t libvmdk_handle_read_buffer(
 		 function );
 
 		return( -1 );
+	}
+	if( internal_handle->descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid internal handle - missing descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( internal_handle->descriptor_file->parent_content_identifier_set != 0 )
+	 && ( internal_handle->descriptor_file->parent_content_identifier != 0xffffffffUL ) )
+	{
+		if( internal_handle->parent_handle == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: invalid internal handle - missing parent handle.",
+			 function );
+
+			return( -1 );
+		}
 	}
 	if( buffer == NULL )
 	{
@@ -2470,7 +2492,7 @@ ssize_t libvmdk_handle_read_buffer(
 		}
 #endif
 		grain_index       = internal_handle->current_offset / internal_handle->io_handle->grain_size;
-		grain_data_offset = internal_handle->current_offset % internal_handle->io_handle->grain_size;
+		grain_data_offset = (off64_t) ( internal_handle->current_offset % internal_handle->io_handle->grain_size );
 
 		while( buffer_size > 0 )
 		{
@@ -2494,7 +2516,7 @@ ssize_t libvmdk_handle_read_buffer(
 
 				return( -1 );
 			}
-			read_size = internal_handle->io_handle->grain_size - grain_data_offset;
+			read_size = (size_t) ( internal_handle->io_handle->grain_size - grain_data_offset );
 
 			if( read_size > buffer_size )
 			{
@@ -2596,7 +2618,7 @@ ssize_t libvmdk_handle_read_buffer(
 
 					return( -1 );
 				}
-				if( grain_data_offset > grain_data->data_size )
+				if( (size64_t) grain_data_offset > grain_data->data_size )
 				{
 					libcerror_error_set(
 					 error,
@@ -2607,7 +2629,7 @@ ssize_t libvmdk_handle_read_buffer(
 
 					return( -1 );
 				}
-				if( read_size > ( grain_data->data_size - grain_data_offset ) )
+				if( read_size > (size_t) ( grain_data->data_size - grain_data_offset ) )
 				{
 					libcerror_error_set(
 					 error,

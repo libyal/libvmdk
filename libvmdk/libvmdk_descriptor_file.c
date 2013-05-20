@@ -29,6 +29,7 @@
 #include "libvmdk_extent_descriptor.h"
 #include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libclocale.h"
 #include "libvmdk_libcnotify.h"
 #include "libvmdk_libcsplit.h"
 #include "libvmdk_libcstring.h"
@@ -848,8 +849,23 @@ int libvmdk_descriptor_file_read_header(
 					 value );
 				}
 #endif
+				if( libclocale_codepage_copy_from_string(
+				     &( descriptor_file->encoding ),
+				     value,
+				     value_length,
+				     LIBCLOCALE_CODEPAGE_FEATURE_FLAG_HAVE_WINDOWS,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+					 "%s: unable to determine codepage value from string.",
+					 function );
+
+					goto on_error;
+				}
 			}
-/* TODO convert from string default */
 		}
 		else if( value_identifier_length == 9 )
 		{
@@ -1024,13 +1040,6 @@ int libvmdk_descriptor_file_read_header(
 					}
 					else if( libcstring_narrow_string_compare(
 					          value,
-					          "partitionedDevice",
-					          16 ) == 0 )
-					{
-						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_DEVICE_PARITIONED;
-					}
-					else if( libcstring_narrow_string_compare(
-					          value,
 					          "vmfsPreallocated",
 					          16 ) == 0 )
 					{
@@ -1042,6 +1051,16 @@ int libvmdk_descriptor_file_read_header(
 					          16 ) == 0 )
 					{
 						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_RDM;
+					}
+				}
+				else if( value_length == 17 )
+				{
+					if( libcstring_narrow_string_compare(
+					     value,
+					     "partitionedDevice",
+					     17 ) == 0 )
+					{
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_DEVICE_PARITIONED;
 					}
 				}
 				else if( value_length == 18 )
@@ -1451,6 +1470,7 @@ int libvmdk_descriptor_file_read_extents(
 		     extent_descriptor,
 		     &( line_string_segment[ line_string_segment_index ] ),
 		     line_string_segment_size - line_string_segment_index,
+		     descriptor_file->encoding,
 		     error ) != 1 )
 		{
 			libcerror_error_set(

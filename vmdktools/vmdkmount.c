@@ -916,15 +916,25 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	if( mount_handle_open_input(
-	     vmdkmount_mount_handle,
-	     source_filenames,
-	     number_of_source_filenames,
-	     &error ) != 1 )
+	result = mount_handle_open_input(
+	          vmdkmount_mount_handle,
+	          source_filenames,
+	          number_of_source_filenames,
+	          &error );
+
+	if( result == -1 )
 	{
 		fprintf(
 		 stderr,
 		 "Unable to open source file(s).\n" );
+
+		goto on_error;
+	}
+	else if( result == 0 )
+	{
+		fprintf(
+		 stderr,
+		 "Unsupported disk type.\n" );
 
 		goto on_error;
 	}

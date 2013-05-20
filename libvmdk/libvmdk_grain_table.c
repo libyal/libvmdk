@@ -45,8 +45,7 @@ int libvmdk_grain_table_initialize(
      libvmdk_io_handle_t *io_handle,
      libcerror_error_t **error )
 {
-	static char *function    = "libvmdk_grain_table_initialize";
-	size_t grain_offset_size = 0;
+	static char *function = "libvmdk_grain_table_initialize";
 
 	if( grain_table == NULL )
 	{
@@ -246,21 +245,20 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
      off64_t offset,
      libcerror_error_t **error )
 {
-	libvmdk_extent_file_t *extent_file          = NULL;
-	libfdata_list_t *grains_list                = NULL;
-	libfdata_list_element_t *grain_list_element = NULL;
-	static char *function                       = "libvmdk_grain_table_grain_is_sparse_at_offset";
-	off64_t extent_file_data_offset             = 0;
-	off64_t grain_data_offset                   = 0;
-	off64_t grain_group_data_offset             = 0;
-	off64_t grain_offset                        = 0;
-	size64_t grain_size                         = 0;
-	uint32_t extent_number                      = 0;
-	uint32_t grain_flags                        = 0;
-	int grain_file_index                        = 0;
-	int grain_groups_list_index                 = 0;
-	int grains_list_index                       = 0;
-	int result                                  = 0;
+	libvmdk_extent_file_t *extent_file = NULL;
+	libfdata_list_t *grains_list       = NULL;
+	static char *function              = "libvmdk_grain_table_grain_is_sparse_at_offset";
+	off64_t extent_file_data_offset    = 0;
+	off64_t grain_data_offset          = 0;
+	off64_t grain_group_data_offset    = 0;
+	off64_t grain_offset               = 0;
+	size64_t grain_size                = 0;
+	uint32_t grain_flags               = 0;
+	int extent_number                  = 0;
+	int grain_file_index               = 0;
+	int grain_groups_list_index        = 0;
+	int grains_list_index              = 0;
+	int result                         = 0;
 
 	if( grain_table == NULL )
 	{
@@ -307,7 +305,7 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve grain group from extent file: %" PRIu32 " at offset: %" PRIi64 ".",
+		 "%s: unable to retrieve grain group from extent file: %d at offset: %" PRIi64 ".",
 		 function,
 		 extent_number,
 		 extent_file_data_offset );
@@ -333,7 +331,7 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve grain group from extent file: %" PRIu32 " at offset: %" PRIi64 ".",
+		 "%s: unable to retrieve grain group from extent file: %d at offset: %" PRIi64 ".",
 		 function,
 		 extent_number,
 		 extent_file_data_offset );
@@ -357,7 +355,7 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve grain: %" PRIu64 " from grain group: %d in extent file: %" PRIu32 " at offset: %" PRIi64 ".",
+		 "%s: unable to retrieve grain: %" PRIu64 " from grain group: %d in extent file: %d at offset: %" PRIi64 ".",
 		 function,
 		 grain_index,
 		 grain_groups_list_index,
@@ -390,13 +388,9 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 	libvmdk_extent_file_t *extent_file = NULL;
 	libfdata_list_t *grains_list       = NULL;
 	static char *function              = "libvmdk_grain_table_get_grain_data_at_offset";
-	off64_t grain_offset               = 0;
 	off64_t grain_group_data_offset    = 0;
 	off64_t extent_file_data_offset    = 0;
-	size_t grain_data_size             = 0;
-	uint64_t start_sector              = 0;
-	uint64_t number_of_sectors         = 0;
-	uint32_t extent_number             = 0;
+	int extent_number                  = 0;
 	int grain_groups_list_index        = 0;
 	int grains_list_index              = 0;
 	int result                         = 0;
@@ -448,7 +442,7 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve grain group from extent file: %" PRIu32 " at offset: %" PRIi64 ".",
+		 "%s: unable to retrieve grain group from extent file: %d at offset: %" PRIi64 ".",
 		 function,
 		 extent_number,
 		 extent_file_data_offset );
@@ -472,7 +466,7 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve grain: %" PRIu64 " data from grain group: %d in extent file: %" PRIu32 " at offset: %" PRIi64 ".",
+		 "%s: unable to retrieve grain: %" PRIu64 " data from grain group: %d in extent file: %d at offset: %" PRIi64 ".",
 		 function,
 		 grain_index,
 		 grain_groups_list_index,

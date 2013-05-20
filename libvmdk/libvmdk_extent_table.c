@@ -45,7 +45,6 @@ int libvmdk_extent_table_initialize(
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_table_initialize";
-	int result            = 0;
 
 	if( extent_table == NULL )
 	{

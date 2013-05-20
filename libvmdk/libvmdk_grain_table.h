@@ -72,7 +72,7 @@ int libvmdk_grain_table_clone(
      libvmdk_grain_table_t *source_grain_table,
      libcerror_error_t **error );
 
-int libvmdk_grain_table_grain_is_sparse_for_offset(
+int libvmdk_grain_table_grain_is_sparse_at_offset(
      libvmdk_grain_table_t *grain_table,
      uint64_t grain_index,
      libbfio_pool_t *file_io_pool,

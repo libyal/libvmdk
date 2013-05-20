@@ -41,8 +41,8 @@
 #include "cowd_sparse_file_header.h"
 #include "vmdk_sparse_file_header.h"
 
-const char cowd_sparse_file_signature[ 4 ] = "COWD";
-const char vmdk_sparse_file_signature[ 4 ] = "KDMV";
+const char *cowd_sparse_file_signature = "COWD";
+const char *vmdk_sparse_file_signature = "KDMV";
 
 /* Creates an extent file
  * Make sure the value extent_file is referencing, is set to NULL
@@ -1064,8 +1064,7 @@ int libvmdk_extent_file_read_file_header_data(
 	}
 	else if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
-		extent_file->number_of_grain_directory_entries = extent_file->maximum_data_size
-		                                               / ( extent_file->number_of_grain_table_entries * extent_file->grain_size );
+		extent_file->number_of_grain_directory_entries = (uint32_t) ( extent_file->maximum_data_size / ( (size64_t) extent_file->number_of_grain_table_entries * extent_file->grain_size ) );
 
 		if( ( extent_file->maximum_data_size % ( extent_file->number_of_grain_table_entries * extent_file->grain_size ) ) != 0 )
 		{
@@ -1448,7 +1447,6 @@ int libvmdk_extent_file_read_grain_directory(
 	static char *function                = "libvmdk_extent_file_read_grain_directory";
 	off64_t grain_table_offset           = 0;
 	size64_t grain_data_size             = 0;
-	size64_t grain_directory_size        = 0;
 	size64_t storage_media_size          = 0;
 	size64_t total_grain_data_size       = 0;
 	ssize_t read_count                   = 0;
@@ -1568,7 +1566,7 @@ int libvmdk_extent_file_read_grain_directory(
 		if( ( total_grain_data_size + grain_data_size ) > extent_file->maximum_data_size )
 		{
 			grain_data_size               = extent_file->maximum_data_size - total_grain_data_size;
-			number_of_grain_table_entries = grain_data_size / extent_file->grain_size;
+			number_of_grain_table_entries = (int)( grain_data_size / extent_file->grain_size );
 		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -1701,7 +1699,6 @@ int libvmdk_extent_file_read_backup_grain_directory(
 	off64_t grain_table_offset           = 0;
 	off64_t grain_group_offset           = 0;
 	size64_t grain_data_size             = 0;
-	size64_t grain_directory_size        = 0;
 	size64_t grain_group_size            = 0;
 	size64_t total_grain_data_size       = 0;
 	ssize_t read_count                   = 0;
@@ -1822,7 +1819,7 @@ int libvmdk_extent_file_read_backup_grain_directory(
 		if( ( total_grain_data_size + grain_data_size ) > extent_file->maximum_data_size )
 		{
 			grain_data_size               = extent_file->maximum_data_size - total_grain_data_size;
-			number_of_grain_table_entries = grain_data_size / extent_file->grain_size;
+			number_of_grain_table_entries = (int) ( grain_data_size / extent_file->grain_size );
 		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -1958,7 +1955,7 @@ int libvmdk_extent_file_read_element_data(
 	static char *function              = "libvmdk_extent_file_read";
 
 	LIBVMDK_UNREFERENCED_PARAMETER( element_offset )
-	LIBVMDK_UNREFERENCED_PARAMETER( element_size )
+	LIBVMDK_UNREFERENCED_PARAMETER( element_file_size )
 	LIBVMDK_UNREFERENCED_PARAMETER( element_flags )
 	LIBVMDK_UNREFERENCED_PARAMETER( read_flags )
 

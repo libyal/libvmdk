@@ -146,6 +146,7 @@ int libvmdk_extent_descriptor_read(
      libvmdk_extent_descriptor_t *extent_descriptor,
      char *value_string,
      size_t value_string_size,
+     int encoding,
      libcerror_error_t **error )
 {
 	libcsplit_narrow_split_string_t *values = NULL;
@@ -158,6 +159,7 @@ int libvmdk_extent_descriptor_read(
 	size_t value_string_segment_size        = 0;
 	uint64_t value_64bit                    = 0;
 	int number_of_values                    = 0;
+	int result                              = 0;
 
 	if( extent_descriptor == NULL )
 	{
@@ -609,8 +611,51 @@ int libvmdk_extent_descriptor_read(
 			 filename );
 		}
 #endif
-		extent_descriptor->filename_size = filename_length + 1;
+		if( encoding != 0 )
+		{
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+			result = libuna_utf16_string_size_from_byte_stream(
+			          (uint8_t *) filename,
+			          filename_length + 1,
+			          encoding,
+			          &( extent_descriptor->filename_size ),
+			          error );
+#else
+			result = libuna_utf8_string_size_from_byte_stream(
+			          (uint8_t *) filename,
+			          filename_length + 1,
+			          encoding,
+			          &( extent_descriptor->filename_size ),
+			          error );
+#endif
+		}
+		else
+		{
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+			result = libuna_utf16_string_size_from_utf8_stream(
+			          (uint8_t *) filename,
+			          filename_length + 1,
+			          &( extent_descriptor->filename_size ),
+			          error );
+#else
+			result = libuna_utf8_string_size_from_utf8_stream(
+			          (uint8_t *) filename,
+			          filename_length + 1,
+			          &( extent_descriptor->filename_size ),
+			          error );
+#endif
+		}
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to determine extent filename size.",
+			 function );
 
+			goto on_error;
+		}
 		extent_descriptor->filename = libcstring_system_string_allocate(
 		                               extent_descriptor->filename_size );
 
@@ -625,25 +670,55 @@ int libvmdk_extent_descriptor_read(
 
 			goto on_error;
 		}
+		if( encoding != 0 )
+		{
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-/* TODO convert string to UTF16 */
+			result = libuna_utf16_string_copy_from_byte_stream(
+			          extent_descriptor->filename,
+			          extent_descriptor->filename_size,
+			          (uint8_t *) filename,
+			          filename_length + 1,
+			          encoding,
+			          error );
 #else
-		if( memory_copy(
-		     extent_descriptor->filename,
-		     filename,
-		     filename_length ) == NULL )
+			result = libuna_utf8_string_copy_from_byte_stream(
+			          extent_descriptor->filename,
+			          extent_descriptor->filename_size,
+			          (uint8_t *) filename,
+			          filename_length + 1,
+			          encoding,
+			          error );
+#endif
+		}
+		else
+		{
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+			result = libuna_utf16_string_copy_from_utf8_stream(
+			          extent_descriptor->filename,
+			          extent_descriptor->filename_size,
+			          (uint8_t *) filename,
+			          filename_length + 1,
+			          error );
+#else
+			result = libuna_utf8_string_copy_from_utf8_stream(
+			          extent_descriptor->filename,
+			          extent_descriptor->filename_size,
+			          (uint8_t *) filename,
+			          filename_length + 1,
+			          error );
+#endif
+		}
+		if( result != 1 )
 		{
 			libcerror_error_set(
 			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-			 "%s: unable to copy filename.",
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+			 "%s: unable to copy extent filename.",
 			 function );
 
 			goto on_error;
 		}
-		extent_descriptor->filename[ filename_length ] = 0;
-#endif
 	}
 	if( value_string_size > 0 )
 	{

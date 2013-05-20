@@ -273,27 +273,6 @@ int info_handle_open_input(
 
 		return( -1 );
 	}
-	if( number_of_filenames == 1 )
-	{
-		result = libvmdk_handle_open_extent_data_files(
-		          info_handle->input_handle,
-		          error );
-	}
-	else
-	{
-/* TODO */
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open extent data files.",
-		 function );
-
-		return( -1 );
-	}
 	return( 1 );
 }
 

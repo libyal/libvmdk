@@ -243,7 +243,7 @@ int mount_handle_signal_abort(
 }
 
 /* Opens the input of the mount handle
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if disk type is not supported or -1 on error
  */
 int mount_handle_open_input(
      mount_handle_t *mount_handle,
@@ -256,6 +256,8 @@ int mount_handle_open_input(
 	static char *function                       = "mount_handle_open_input";
 	size_t basename_length                      = 0;
 	size_t filename_length                      = 0;
+	uint32_t parent_content_identifier          = 0;
+	int disk_type                               = 0;
 	int entry_index                             = 0;
 	int result                                  = 0;
 
@@ -358,65 +360,151 @@ int mount_handle_open_input(
 
 		goto on_error;
 	}
-	if( mount_handle_open_input_parent_handle(
-	     mount_handle,
+	if( libvmdk_handle_get_disk_type(
 	     input_handle,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open parent input handle.",
-		 function );
-
-		goto on_error;
-	}
-	if( number_of_filenames == 1 )
-	{
-		result = libvmdk_handle_open_extent_data_files(
-		          input_handle,
-		          error );
-	}
-	else
-	{
-/* TODO add support */
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported number of filenames.",
-		 function );
-
-		goto on_error;
-	}
-	if( result != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open extent data files.",
-		 function );
-
-		goto on_error;
-	}
-	if( libcdata_array_append_entry(
-	     mount_handle->input_handles_array,
-	     &entry_index,
-	     (intptr_t *) input_handle,
+	     &disk_type,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-		 "%s: unable to append input handle to array.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve disk type.",
 		 function );
 
 		goto on_error;
 	}
-	return( 1 );
+	if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN ) )
+	{
+		result = libvmdk_handle_get_parent_content_identifier(
+			  input_handle,
+			  &parent_content_identifier,
+			  error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve parent content identifier.",
+			 function );
+
+			goto on_error;
+		}
+		else if( ( result != 0 )
+		      && ( parent_content_identifier != 0xffffffffUL ) )
+		{
+			result = mount_handle_open_input_parent_handle(
+			          mount_handle,
+			          input_handle,
+			          error );
+
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_OPEN_FAILED,
+				 "%s: unable to open parent input handle.",
+				 function );
+
+				goto on_error;
+			}
+		}
+		else
+		{
+			result = 1;
+		}
+	}
+	else
+	{
+		/* Unsupported disk type
+		 */
+		result = 0;
+	}
+	if( result != 0 )
+	{
+/* TODO add support for passing extent data files ? */
+		if( number_of_filenames != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported number of filenames.",
+			 function );
+
+			goto on_error;
+		}
+		result = libvmdk_handle_open_extent_data_files(
+			  input_handle,
+			  error );
+
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_OPEN_FAILED,
+			 "%s: unable to open extent data files.",
+			 function );
+
+			goto on_error;
+		}
+		if( libcdata_array_append_entry(
+		     mount_handle->input_handles_array,
+		     &entry_index,
+		     (intptr_t *) input_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append input handle to array.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	else
+	{
+		if( libvmdk_handle_close(
+		     input_handle,
+		     error ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+			 "%s: unable to close input handle.",
+			 function );
+
+			goto on_error;
+		}
+		if( libvmdk_handle_free(
+		     &input_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free input handle.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	return( result );
 
 on_error:
 	if( input_handle != NULL )
@@ -448,6 +536,7 @@ int mount_handle_open_input_parent_handle(
 	size_t parent_filename_size                    = 0;
 	size_t parent_path_size                        = 0;
 	uint32_t parent_content_identifier             = 0;
+	int disk_type                                  = 0;
 	int entry_index                                = 0;
 	int result                                     = 0;
 
@@ -461,27 +550,6 @@ int mount_handle_open_input_parent_handle(
 		 function );
 
 		return( -1 );
-	}
-	result = libvmdk_handle_get_parent_content_identifier(
-	          input_handle,
-	          &parent_content_identifier,
-	          error );
-
-	if( result == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve parent content identifier.",
-		 function );
-
-		goto on_error;
-	}
-	if( ( result == 0 )
-	 || ( parent_content_identifier == 0xffffffffUL ) )
-	{
-		return( 0 );
 	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libvmdk_handle_get_utf16_parent_filename_size(
@@ -642,63 +710,151 @@ int mount_handle_open_input_parent_handle(
 
 	parent_path = NULL;
 
-	if( mount_handle_open_input_parent_handle(
-	     mount_handle,
+	if( libvmdk_handle_get_disk_type(
 	     parent_input_handle,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open parent input handle.",
-		 function );
-
-		return( -1 );
-	}
-	if( libvmdk_handle_open_extent_data_files(
-	     parent_input_handle,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_OPEN_FAILED,
-		 "%s: unable to open parent extent data files.",
-		 function );
-
-		goto on_error;
-	}
-	if( libvmdk_handle_set_parent_handle(
-	     input_handle,
-	     parent_input_handle,
+	     &disk_type,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set parent input handle.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve disk type.",
 		 function );
 
 		goto on_error;
 	}
-	if( libcdata_array_append_entry(
-	     mount_handle->input_handles_array,
-	     &entry_index,
-	     (intptr_t *) parent_input_handle,
-	     error ) != 1 )
+	if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN ) )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-		 "%s: unable to append parent input handle to array.",
-		 function );
+		result = libvmdk_handle_get_parent_content_identifier(
+			  input_handle,
+			  &parent_content_identifier,
+			  error );
 
-		goto on_error;
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve parent content identifier.",
+			 function );
+
+			goto on_error;
+		}
+		else if( ( result != 0 )
+		      && ( parent_content_identifier != 0xffffffffUL ) )
+		{
+			result = mount_handle_open_input_parent_handle(
+				  mount_handle,
+				  parent_input_handle,
+				  error );
+
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_OPEN_FAILED,
+				 "%s: unable to open parent input handle.",
+				 function );
+
+				goto on_error;
+			}
+		}
+		else
+		{
+			result = 1;
+		}
 	}
-	return( 1 );
+	else
+	{
+		/* Unsupported disk type
+		 */
+		result = 0;
+	}
+	if( result != 0 )
+	{
+		if( libvmdk_handle_open_extent_data_files(
+		     parent_input_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_OPEN_FAILED,
+			 "%s: unable to open parent extent data files.",
+			 function );
+
+			goto on_error;
+		}
+		if( libvmdk_handle_set_parent_handle(
+		     input_handle,
+		     parent_input_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set parent input handle.",
+			 function );
+
+			goto on_error;
+		}
+		if( libcdata_array_append_entry(
+		     mount_handle->input_handles_array,
+		     &entry_index,
+		     (intptr_t *) parent_input_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+			 "%s: unable to append parent input handle to array.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	else
+	{
+		if( libvmdk_handle_close(
+		     parent_input_handle,
+		     error ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+			 "%s: unable to close parent input handle.",
+			 function );
+
+			goto on_error;
+		}
+		if( libvmdk_handle_free(
+		     &parent_input_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free parent input handle.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	return( result );
 
 on_error:
 	if( parent_input_handle != NULL )

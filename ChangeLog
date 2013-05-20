@@ -1,17 +1,13 @@
 TODO
-* don't open extents files for partitionedDevice or fullDevice ?
-  - have tools complian that these are not supported
+* handle ZERO extents?
 * extent file add windows support (encoding)
   - add codepage functions + tests
   - libvmdk_extent_descriptor.c:629
   - libvmdk_descriptor_file.c:852
-* complete and test flat extent file support
 * implement extent file current offset ?
 * implement libvmdk_extent_file_read_grain_group_element_data
 * get grain data by grain table
   - remove unused functions from libvmdk_extent_table after refactor
-* add parent image support
-  - bail out on read if parent is not set
 * implement libvmdk_handle_set_maximum_number_of_open_handles
 * add support for zero-grain table entry support
 * test multi segment sparse image support
@@ -38,6 +34,18 @@ library
 * complete COWD support
 * support compressed extent files
 
+Tools:
+* vmdkinfo:
+  - add flag to have test to check if all the extent files are there?
+  - same for all the parent extent files?
+
+Tests:
+* add open close
+* add read
+* add seek
+* add integrity tests
+* add pyvmdk
+
 Deployment:
 * check manuals
   - update libvmdk.3
@@ -52,6 +60,9 @@ Deployment:
   - cowd sparse
   - cowd sparse split
   - compressed?
+
+20130520
+* changes for deployment
 
 20130517
 * changes for extent descriptor parsing

@@ -74,6 +74,7 @@ int libvmdk_extent_descriptor_read(
      libvmdk_extent_descriptor_t *extent_descriptor,
      char *value_string,
      size_t value_string_size,
+     int encoding,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )
