@@ -36,7 +36,7 @@
 extern "C" {
 #endif
 
-extern const char vmdk_descriptor_file_signature[ 21 ];
+extern const char *vmdk_descriptor_file_signature;
 
 typedef struct libvmdk_descriptor_file libvmdk_descriptor_file_t;
 

@@ -1955,7 +1955,7 @@ int libvmdk_extent_file_read_element_data(
 	static char *function              = "libvmdk_extent_file_read";
 
 	LIBVMDK_UNREFERENCED_PARAMETER( element_offset )
-	LIBVMDK_UNREFERENCED_PARAMETER( element_file_size )
+	LIBVMDK_UNREFERENCED_PARAMETER( extent_file_size )
 	LIBVMDK_UNREFERENCED_PARAMETER( element_flags )
 	LIBVMDK_UNREFERENCED_PARAMETER( read_flags )
 

@@ -36,9 +36,9 @@
 #include "libvmdk_libfvalue.h"
 #include "libvmdk_libuna.h"
 
-const char vmdk_descriptor_file_signature[ 21 ]                       = "# Disk DescriptorFile";
-const char vmdk_descriptor_file_extent_section_signature[ 20 ]        = "# Extent description";
-const char vmdk_descriptor_file_disk_database_section_signature[ 20 ] = "# The Disk Data Base";
+const char *vmdk_descriptor_file_signature                       = "# Disk DescriptorFile";
+const char *vmdk_descriptor_file_extent_section_signature        = "# Extent description";
+const char *vmdk_descriptor_file_disk_database_section_signature = "# The Disk Data Base";
 
 /* Creates a descriptor file
  * Make sure the value descriptor_file is referencing, is set to NULL
@@ -1216,7 +1216,6 @@ int libvmdk_descriptor_file_read_extents(
 	char *line_string_segment                      = NULL;
 	static char *function                          = "libvmdk_descriptor_file_read_extents";
 	size_t line_string_segment_index               = 0;
-	size_t line_string_segment_length              = 0;
 	size_t line_string_segment_size                = 0;
 	int entry_index                                = 0;
 
@@ -1539,7 +1538,6 @@ int libvmdk_descriptor_file_read_disk_database(
 	size_t line_string_segment_size  = 0;
 	size_t value_identifier_length   = 0;
 	size_t value_length              = 0;
-	uint64_t value_64bit             = 0;
 
 	if( descriptor_file == NULL )
 	{

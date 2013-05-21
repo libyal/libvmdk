@@ -791,7 +791,7 @@ int libvmdk_extent_descriptor_read(
 		}
 #endif
 		if( libfvalue_utf8_string_copy_to_integer(
-		     value_string_segment,
+		     (uint8_t *) value_string_segment,
 		     value_string_segment_size,
 		     &value_64bit,
 		     64,
