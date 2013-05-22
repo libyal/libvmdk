@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# VMware Virtual Disk (VMDK) format library seek offset testing script
+# Library seek testing script
 #
 # Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
 #
@@ -24,15 +24,6 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-INPUT="input";
-TMP="tmp";
-
-LS="ls";
-TR="tr";
-WC="wc";
-
-VMDK_TEST_SEEK="vmdk_test_seek";
-
 test_seek()
 { 
 	echo "Testing seek offset of input:" $*;
@@ -46,6 +37,13 @@ test_seek()
 	return ${RESULT};
 }
 
+VMDK_TEST_SEEK="vmdk_test_seek";
+
+if ! test -x ${VMDK_TEST_SEEK};
+then
+	VMDK_TEST_SEEK="vmdk_test_seek.exe";
+fi
+
 if ! test -x ${VMDK_TEST_SEEK};
 then
 	echo "Missing executable: ${VMDK_TEST_SEEK}";
@@ -53,29 +51,45 @@ then
 	exit ${EXIT_FAILURE};
 fi
 
-if ! test -d ${INPUT};
+if ! test -d "input";
 then
-	echo "No input directory found, to test seek create input directory and place test files in directory.";
+	echo "No input directory found.";
 
 	exit ${EXIT_IGNORE};
 fi
 
-RESULT=`${LS} ${INPUT}/*.[iI][mM][gG] | ${TR} ' ' '\n' | ${WC} -l`;
+OLDIFS=${IFS};
+IFS="
+";
+
+RESULT=`ls input/* | tr ' ' '\n' | wc -l`;
 
 if test ${RESULT} -eq 0;
 then
-	echo "No files found in input directory, to test seek place test files in directory.";
+	echo "No files or directories found in the input directory.";
 
-	exit ${EXIT_IGNORE};
+	EXIT_RESULT=${EXIT_IGNORE};
+else
+	for TESTDIR in input/*;
+	do
+		if [ -d "${TESTDIR}" ];
+		then
+			DIRNAME=`basename ${TESTDIR}`;
+
+			for TESTFILE in ${TESTDIR}/*;
+			do
+				if ! test_seek "${TESTFILE}";
+				then
+					exit ${EXIT_FAILURE};
+				fi
+			done
+		fi
+	done
+
+	EXIT_RESULT=${EXIT_SUCCESS};
 fi
 
-for VMDK_FILE in `${LS} ${INPUT}/*.[iI][mM][gG] | ${TR} ' ' '\n'`;
-do
-	if ! test_seek ${VMDK_FILE};
-	then
-		exit ${EXIT_FAILURE};
-	fi
-done
+IFS=${OLDIFS};
 
-exit ${EXIT_SUCCESS};
+exit ${EXIT_RESULT};
 

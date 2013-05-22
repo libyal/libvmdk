@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Library read testing script
+# Python-bindings open close testing script
 #
 # Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
 #
@@ -24,30 +24,11 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-test_read()
-{ 
-	echo "Testing read of input:" $*;
+PYTHON="/usr/bin/python";
 
-	./${VMDK_TEST_READ} $*;
-
-	RESULT=$?;
-
-	echo "";
-
-	return ${RESULT};
-}
-
-VMDK_TEST_READ="vmdk_test_read";
-
-if ! test -x ${VMDK_TEST_SEEK};
+if ! test -x ${PYTHON};
 then
-	VMDK_TEST_READ="vmdk_test_read.exe";
-
-fi
-
-if ! test -x ${VMDK_TEST_READ};
-then
-	echo "Missing executable: ${VMDK_TEST_READ}";
+	echo "Missing executable: ${PYTHON}";
 
 	exit ${EXIT_FAILURE};
 fi
@@ -79,7 +60,7 @@ else
 
 			for TESTFILE in ${TESTDIR}/*;
 			do
-				if ! test_read "${TESTFILE}";
+				if ! PYTHONPATH=../pyvmdk/.libs/ ${PYTHON} pyvmdk_test_open_close.py ${TESTFILE};
 				then
 					exit ${EXIT_FAILURE};
 				fi
