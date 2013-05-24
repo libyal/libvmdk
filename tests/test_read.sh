@@ -24,6 +24,22 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
+list_contains()
+{
+	LIST=$1;
+	SEARCH=$2;
+
+	for LINE in $LIST;
+	do
+		if test $LINE = $SEARCH;
+		then
+			return ${EXIT_SUCCESS};
+		fi
+	done
+
+	return ${EXIT_FAILURE};
+}
+
 test_read()
 { 
 	echo "Testing read of input:" $*;
@@ -71,19 +87,34 @@ then
 
 	EXIT_RESULT=${EXIT_IGNORE};
 else
+	IGNORELIST="";
+
+	if test -f "input/.libvmdk/ignore";
+	then
+		IGNORELIST=`cat input/.libvmdk/ignore | sed '/^#/d'`;
+	fi
 	for TESTDIR in input/*;
 	do
-		if [ -d "${TESTDIR}" ];
+		if test -d "${TESTDIR}";
 		then
 			DIRNAME=`basename ${TESTDIR}`;
 
-			for TESTFILE in ${TESTDIR}/*;
-			do
-				if ! test_read "${TESTFILE}";
+			if ! list_contains "${IGNORELIST}" "${DIRNAME}";
+			then
+				if test -f "input/.libvmdk/${DIRNAME}/files";
 				then
-					exit ${EXIT_FAILURE};
+					TESTFILES=`cat input/.libvmdk/${DIRNAME}/files | sed "s?^?${TESTDIR}/?"`;
+				else
+					TESTFILES=`ls ${TESTDIR}/*`;
 				fi
-			done
+				for TESTFILE in ${TESTFILES};
+				do
+					if ! test_read "${TESTFILE}";
+					then
+						exit ${EXIT_FAILURE};
+					fi
+				done
+			fi
 		fi
 	done
 
