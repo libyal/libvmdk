@@ -642,6 +642,16 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
+	if( libvmdk_handle_open_extent_data_files(
+	     handle,
+	     &error ) != 1 )
+	{
+		fprintf(
+		 stderr,
+		 "Unable to open extent data files.\n" );
+
+		goto on_error;
+	}
 	if( libvmdk_handle_get_media_size(
 	     handle,
 	     &media_size,

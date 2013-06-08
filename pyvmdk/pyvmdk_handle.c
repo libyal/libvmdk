@@ -67,7 +67,7 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 	{ "open_file_object",
 	  (PyCFunction) pyvmdk_handle_open_file_object,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "open(file_object, mode='r') -> None\n"
+	  "open_file_object(file_object, mode='r') -> None\n"
 	  "\n"
 	  "Opens a VMDK image handle using a file-like object of the descriptor file." },
 
@@ -131,12 +131,12 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 
 	/* Functions to access the handle values */
 
-	{ "get_size",
-	  (PyCFunction) pyvmdk_handle_get_size,
+	{ "get_media_size",
+	  (PyCFunction) pyvmdk_handle_get_media_size,
 	  METH_NOARGS,
-	  "get_size() -> Long\n"
+	  "get_media_size() -> Long\n"
 	  "\n"
-	  "Retrieves the size of the data." },
+	  "Retrieves the size of the media data." },
 
 	/* Sentinel */
 	{ NULL, NULL, 0, NULL }
@@ -145,9 +145,9 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 PyGetSetDef pyvmdk_handle_object_get_set_definitions[] = {
 
 	{ "size",
-	  (getter) pyvmdk_handle_get_size,
+	  (getter) pyvmdk_handle_get_media_size,
 	  (setter) 0,
-	  "The size.",
+	  "The media size.",
 	  NULL },
 
 	/* Sentinel */
@@ -319,7 +319,7 @@ PyObject *pyvmdk_handle_new_open(
 /* Creates a new handle object and opens it
  * Returns a Python object if successful or NULL on error
  */
-PyObject *pyvmdk_handle_new_open_handle_object(
+PyObject *pyvmdk_handle_new_open_file_object(
            PyObject *self PYVMDK_ATTRIBUTE_UNUSED,
            PyObject *arguments,
            PyObject *keywords )
@@ -330,7 +330,7 @@ PyObject *pyvmdk_handle_new_open_handle_object(
 
 	pyvmdk_handle = pyvmdk_handle_new();
 
-	pyvmdk_handle_open_handle_object(
+	pyvmdk_handle_open_file_object(
 	 (pyvmdk_handle_t *) pyvmdk_handle,
 	 arguments,
 	 keywords );
@@ -1213,7 +1213,7 @@ PyObject *pyvmdk_handle_get_size(
 	}
 	Py_BEGIN_ALLOW_THREADS
 
-	result = libvmdk_handle_get_size(
+	result = libvmdk_handle_get_media_size(
 	          pyvmdk_handle->handle,
 	          &size,
 	          &error );

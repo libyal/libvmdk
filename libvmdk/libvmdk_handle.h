@@ -186,12 +186,28 @@ ssize_t libvmdk_handle_read_buffer(
          size_t buffer_size,
          libcerror_error_t **error );
 
+LIBVMDK_EXTERN \
+ssize_t libvmdk_handle_read_random(
+         libvmdk_handle_t *handle,
+         void *buffer,
+         size_t buffer_size,
+         off64_t offset,
+         libcerror_error_t **error );
+
 #ifdef TODO
 LIBVMDK_EXTERN \
 ssize_t libvmdk_handle_write_buffer(
          libvmdk_handle_t *handle,
          const void *buffer,
          size_t buffer_size,
+         libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+ssize_t libvmdk_handle_write_random(
+         libvmdk_handle_t *handle,
+         const void *buffer,
+         size_t buffer_size,
+         off64_t offset,
          libcerror_error_t **error );
 #endif
 

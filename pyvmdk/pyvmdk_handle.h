@@ -104,7 +104,7 @@ PyObject *pyvmdk_handle_get_offset(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments );
 
-PyObject *pyvmdk_handle_get_size(
+PyObject *pyvmdk_handle_get_media_size(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments );
 
