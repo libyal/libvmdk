@@ -1420,7 +1420,7 @@ int libvmdk_extent_table_initialize_extents(
 	 && ( disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
-	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED ) 
+	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_SPARSE )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN ) )
 	{

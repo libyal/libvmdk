@@ -28,19 +28,16 @@
  */
 #if defined( HAVE_LOCAL_LIBFDATA )
 
-#include <libfdata_buffer.h>
-#include <libfdata_buffer_reference.h>
 #include <libfdata_definitions.h>
 #include <libfdata_list.h>
 #include <libfdata_list_element.h>
-#include <libfdata_reference.h>
 #include <libfdata_stream.h>
 #include <libfdata_tree.h>
 #include <libfdata_tree_node.h>
 #include <libfdata_types.h>
 #include <libfdata_vector.h>
 
-#elif defined( HAVE_LIBFDATA_H )
+#else
 
 /* If libtool DLL support is enabled set LIBFDATA_DLL_IMPORT
  * before including libfdata.h
@@ -51,8 +48,6 @@
 
 #include <libfdata.h>
 
-#else
-#error Missing libfdata.h
 #endif
 
 #endif

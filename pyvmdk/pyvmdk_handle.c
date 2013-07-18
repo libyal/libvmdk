@@ -1186,17 +1186,17 @@ PyObject *pyvmdk_handle_get_offset(
 #endif
 }
 
-/* Retrieves the size
+/* Retrieves the media size
  * Returns a Python object if successful or NULL on error
  */
-PyObject *pyvmdk_handle_get_size(
+PyObject *pyvmdk_handle_get_media_size(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments PYVMDK_ATTRIBUTE_UNUSED )
 {
 	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
 
 	libcerror_error_t *error = NULL;
-	static char *function    = "pyvmdk_handle_get_size";
+	static char *function    = "pyvmdk_handle_get_media_size";
 	size64_t size            = 0;
 	int result               = 0;
 

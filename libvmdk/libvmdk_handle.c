@@ -1762,6 +1762,19 @@ int libvmdk_handle_close(
 	}
 	internal_handle->extent_data_file_io_pool = NULL;
 
+	if( libvmdk_io_handle_clear(
+	     internal_handle->io_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+		 "%s: unable to clear IO handle.",
+		 function );
+
+		result = -1;
+	}
 	if( internal_handle->descriptor_file != NULL )
 	{
 		if( libvmdk_descriptor_file_free(

@@ -134,7 +134,7 @@ int libvmdk_io_handle_free(
 	return( 1 );
 }
 
-/* Clears an IO handle
+/* Clears the IO handle
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_io_handle_clear(
