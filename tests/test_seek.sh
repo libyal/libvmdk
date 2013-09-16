@@ -44,9 +44,14 @@ test_seek()
 { 
 	echo "Testing seek offset of input:" $*;
 
-	./${VMDK_TEST_SEEK} $*;
+	rm -rf tmp;
+	mkdir tmp;
+
+	${TEST_RUNNER} ./${VMDK_TEST_SEEK} $*;
 
 	RESULT=$?;
+
+	rm -rf tmp;
 
 	echo "";
 
@@ -63,6 +68,20 @@ fi
 if ! test -x ${VMDK_TEST_SEEK};
 then
 	echo "Missing executable: ${VMDK_TEST_SEEK}";
+
+	exit ${EXIT_FAILURE};
+fi
+
+TEST_RUNNER="tests/test_runner.sh";
+
+if ! test -x ${TEST_RUNNER};
+then
+	TEST_RUNNER="./test_runner.sh";
+fi
+
+if ! test -x ${TEST_RUNNER};
+then
+	echo "Missing test runner: ${TEST_RUNNER}";
 
 	exit ${EXIT_FAILURE};
 fi

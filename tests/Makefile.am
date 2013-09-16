@@ -14,6 +14,7 @@ TESTS = \
 	test_open_close.sh \
 	test_seek.sh \
 	test_read.sh \
+	test_vmdkinfo.sh \
 	$(TESTS_PYVMDK)
 
 check_SCRIPTS = \
@@ -21,7 +22,9 @@ check_SCRIPTS = \
 	test_open_close.sh \
 	test_pyvmdk_open_close.sh \
 	test_read.sh \
-	test_seek.sh
+	test_runner.sh \
+	test_seek.sh \
+	test_vmdkinfo.sh
 
 EXTRA_DIST = \
 	$(check_SCRIPTS)

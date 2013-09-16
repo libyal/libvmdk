@@ -297,14 +297,14 @@ int libvmdk_grain_group_fill(
 		 grain_group_entry,
 		 grain_data_offset );
 
-		if( grain_data_offset == 0 )
-		{
-			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
-		}
-		else
+		if( grain_data_offset != 0 )
 		{
 			grain_data_offset *= 512;
 			range_flags        = 0;
+		}
+		else
+		{
+			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
 		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -390,9 +390,12 @@ int libvmdk_grain_group_correct(
 {
 	const uint8_t *grain_group_entry = NULL;
 	static char *function            = "libvmdk_grain_group_correct";
+	int grain_group_entry_index      = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
 	off64_t grain_data_offset        = 0;
 	uint32_t range_flags             = 0;
-	int grain_group_entry_index      = 0;
+#endif
 
 	if( grains_list == NULL )
 	{
@@ -455,19 +458,21 @@ int libvmdk_grain_group_correct(
 	     grain_group_entry_index < number_of_grain_group_entries;
 	     grain_group_entry_index++ )
 	{
+#if defined( HAVE_DEBUG_OUTPUT )
 		byte_stream_copy_to_uint32_little_endian(
 		 grain_group_entry,
 		 grain_data_offset );
 
-		if( grain_data_offset == 0 )
-		{
-			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
-		}
-		else
+		if( grain_data_offset != 0 )
 		{
 			grain_data_offset *= 512;
 			range_flags        = 0;
 		}
+		else
+		{
+			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
+		}
+#endif
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{

@@ -1,4 +1,5 @@
 TODO
+* update msvscpp files
 * handle ZERO extents?
 * extent file add windows support (encoding)
   - add codepage functions + tests
@@ -60,6 +61,11 @@ Deployment:
   - cowd sparse
   - cowd sparse split
   - compressed?
+
+20130916
+* updated dependencies
+* worked on libcthreads build support
+* code clean up
 
 20130831
 * updated dependencies

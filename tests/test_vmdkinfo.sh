@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Library read testing script
+# vmdkinfo tool testing script
 #
 # Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
 #
@@ -40,35 +40,53 @@ list_contains()
 	return ${EXIT_FAILURE};
 }
 
-test_read()
+test_info()
 { 
-	echo "Testing read of input:" $*;
+	DIRNAME=$1;
+	INPUT_FILE=$2;
+	BASENAME=`basename ${INPUT_FILE}`;
 
 	rm -rf tmp;
 	mkdir tmp;
 
-	${TEST_RUNNER} ./${VMDK_TEST_READ} $*;
+	${TEST_RUNNER} ${VMDKINFO} ${INPUT_FILE} | sed '1,2d' > tmp/${BASENAME}.log;
 
 	RESULT=$?;
 
+	if test -f "input/.vmdkinfo/${DIRNAME}/${BASENAME}.log.gz";
+	then
+		zdiff "input/.vmdkinfo/${DIRNAME}/${BASENAME}.log.gz" "tmp/${BASENAME}.log";
+
+		RESULT=$?;
+	else
+		mv "tmp/${BASENAME}.log" "input/.vmdkinfo/${DIRNAME}";
+
+		gzip "input/.vmdkinfo/${DIRNAME}/${BASENAME}.log";
+	fi
+
 	rm -rf tmp;
 
-	echo "";
+	echo -n "Testing vmdkinfo of input: ${INPUT_FILE} ";
 
+	if test ${RESULT} -ne ${EXIT_SUCCESS};
+	then
+		echo " (FAIL)";
+	else
+		echo " (PASS)";
+	fi
 	return ${RESULT};
 }
 
-VMDK_TEST_READ="vmdk_test_read";
+VMDKINFO="../vmdktools/vmdkinfo";
 
-if ! test -x ${VMDK_TEST_SEEK};
+if ! test -x ${VMDKINFO};
 then
-	VMDK_TEST_READ="vmdk_test_read.exe";
-
+	VMDKINFO="../vmdktools/vmdkinfo.exe";
 fi
 
-if ! test -x ${VMDK_TEST_READ};
+if ! test -x ${VMDKINFO};
 then
-	echo "Missing executable: ${VMDK_TEST_READ}";
+	echo "Missing executable: ${VMDKINFO}";
 
 	exit ${EXIT_FAILURE};
 fi
@@ -108,9 +126,13 @@ then
 else
 	IGNORELIST="";
 
-	if test -f "input/.libvmdk/ignore";
+	if ! test -d "input/.vmdkinfo";
 	then
-		IGNORELIST=`cat input/.libvmdk/ignore | sed '/^#/d'`;
+		mkdir "input/.vmdkinfo";
+	fi
+	if test -f "input/.vmdkinfo/ignore";
+	then
+		IGNORELIST=`cat input/.vmdkinfo/ignore | sed '/^#/d'`;
 	fi
 	for TESTDIR in input/*;
 	do
@@ -120,15 +142,19 @@ else
 
 			if ! list_contains "${IGNORELIST}" "${DIRNAME}";
 			then
-				if test -f "input/.libvmdk/${DIRNAME}/files";
+				if ! test -d "input/.vmdkinfo/${DIRNAME}";
 				then
-					TESTFILES=`cat input/.libvmdk/${DIRNAME}/files | sed "s?^?${TESTDIR}/?"`;
+					mkdir "input/.vmdkinfo/${DIRNAME}";
+				fi
+				if test -f "input/.vmdkinfo/${DIRNAME}/files";
+				then
+					TESTFILES=`cat input/.vmdkinfo/${DIRNAME}/files | sed "s?^?${TESTDIR}/?"`;
 				else
 					TESTFILES=`ls ${TESTDIR}/*`;
 				fi
 				for TESTFILE in ${TESTFILES};
 				do
-					if ! test_read "${TESTFILE}";
+					if ! test_info "${DIRNAME}" "${TESTFILE}";
 					then
 						exit ${EXIT_FAILURE};
 					fi

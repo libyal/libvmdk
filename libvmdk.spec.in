@@ -7,8 +7,8 @@ License: LGPL
 Source: %{name}-%{version}.tar.gz
 URL: http://code.google.com/p/libvmdk/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-@libvmdk_spec_requires@ @ax_libbfio_spec_requires@ @ax_libcdata_spec_requires@ @ax_libcerror_spec_requires@ @ax_libcfile_spec_requires@ @ax_libclocale_spec_requires@ @ax_libcnotify_spec_requires@ @ax_libcpath_spec_requires@ @ax_libcsplit_spec_requires@ @ax_libcstring_spec_requires@ @ax_libfcache_spec_requires@ @ax_libfdata_spec_requires@ @ax_libfvalue_spec_requires@ @ax_libuna_spec_requires@
-@libvmdk_spec_build_requires@ @ax_libbfio_spec_build_requires@ @ax_libcdata_spec_build_requires@ @ax_libcerror_spec_build_requires@ @ax_libcfile_spec_build_requires@ @ax_libclocale_spec_build_requires@ @ax_libcnotify_spec_build_requires@ @ax_libcpath_spec_build_requires@ @ax_libcsplit_spec_build_requires@ @ax_libcstring_spec_build_requires@ @ax_libfcache_spec_build_requires@ @ax_libfdata_spec_build_requires@ @ax_libfvalue_spec_build_requires@ @ax_libuna_spec_build_requires@
+@libvmdk_spec_requires@ @ax_libbfio_spec_requires@ @ax_libcdata_spec_requires@ @ax_libcerror_spec_requires@ @ax_libcfile_spec_requires@ @ax_libclocale_spec_requires@ @ax_libcnotify_spec_requires@ @ax_libcpath_spec_requires@ @ax_libcsplit_spec_requires@ @ax_libcstring_spec_requires@ @ax_libcthreads_spec_requires@ @ax_libfcache_spec_requires@ @ax_libfdata_spec_requires@ @ax_libfvalue_spec_requires@ @ax_libuna_spec_requires@
+@libvmdk_spec_build_requires@ @ax_libbfio_spec_build_requires@ @ax_libcdata_spec_build_requires@ @ax_libcerror_spec_build_requires@ @ax_libcfile_spec_build_requires@ @ax_libclocale_spec_build_requires@ @ax_libcnotify_spec_build_requires@ @ax_libcpath_spec_build_requires@ @ax_libcsplit_spec_build_requires@ @ax_libcstring_spec_build_requires@ @ax_libcthreads_spec_build_requires@ @ax_libfcache_spec_build_requires@ @ax_libfdata_spec_build_requires@ @ax_libfvalue_spec_build_requires@ @ax_libuna_spec_build_requires@
 
 %description
 libvmdk is a library to access the VMware Virtual Disk (VMDK) format

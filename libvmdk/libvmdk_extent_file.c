@@ -1551,14 +1551,14 @@ int libvmdk_extent_file_read_grain_directory(
 		 grain_directory_entry,
 		 grain_table_offset );
 
-		if( grain_table_offset == 0 )
-		{
-			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
-		}
-		else
+		if( grain_table_offset != 0 )
 		{
 			grain_table_offset *= 512;
 			range_flags         = 0;
+		}
+		else
+		{
+			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
 		}
 		number_of_grain_table_entries = (int) extent_file->number_of_grain_table_entries;
 		grain_data_size               = number_of_grain_table_entries * extent_file->grain_size;
@@ -1696,7 +1696,6 @@ int libvmdk_extent_file_read_backup_grain_directory(
 	uint8_t *grain_directory_data        = NULL;
 	uint8_t *grain_directory_entry       = NULL;
 	static char *function                = "libvmdk_extent_file_read_backup_grain_directory";
-	off64_t grain_table_offset           = 0;
 	off64_t grain_group_offset           = 0;
 	size64_t grain_data_size             = 0;
 	size64_t grain_group_size            = 0;
@@ -1704,11 +1703,12 @@ int libvmdk_extent_file_read_backup_grain_directory(
 	ssize_t read_count                   = 0;
 	uint32_t grain_directory_entry_index = 0;
 	uint32_t grain_group_range_flags     = 0;
-	uint32_t range_flags                 = 0;
 	int grain_group_file_io_pool_entry   = 0;
 	int number_of_grain_table_entries    = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
+	off64_t grain_table_offset           = 0;
+	uint32_t range_flags                 = 0;
 	int result                           = 0;
 #endif
 
@@ -1800,26 +1800,31 @@ int libvmdk_extent_file_read_backup_grain_directory(
 	     grain_directory_entry_index < extent_file->number_of_grain_directory_entries;
 	     grain_directory_entry_index++ )
 	{
+#if defined( HAVE_DEBUG_OUTPUT )
 		byte_stream_copy_to_uint32_little_endian(
 		 grain_directory_entry,
 		 grain_table_offset );
 
-		if( grain_table_offset == 0 )
-		{
-			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
-		}
-		else
+		if( grain_table_offset != 0 )
 		{
 			grain_table_offset *= 512;
 			range_flags         = 0;
 		}
+		else
+		{
+			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
+		}
+#endif
 		number_of_grain_table_entries = (int) extent_file->number_of_grain_table_entries;
 		grain_data_size               = number_of_grain_table_entries * extent_file->grain_size;
 
 		if( ( total_grain_data_size + grain_data_size ) > extent_file->maximum_data_size )
 		{
-			grain_data_size               = extent_file->maximum_data_size - total_grain_data_size;
+			grain_data_size = extent_file->maximum_data_size - total_grain_data_size;
+
+#if defined( HAVE_DEBUG_OUTPUT )
 			number_of_grain_table_entries = (int) ( grain_data_size / extent_file->grain_size );
+#endif
 		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
