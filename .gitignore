@@ -1,6 +1,6 @@
 # Files to ignore by git
 #
-# Version: 20130831
+# Version: 20130922
 
 # Generic auto-generated build files
 *~
@@ -100,7 +100,10 @@ stamp-h1
 /include/libvmdk/features.h
 /include/libvmdk/types.h
 /libvmdk/libvmdk.rc
-/libvmdk/libvmdk.h
+/libvmdk/libvmdk_definitions.h
+/pyvmdk/setup.py
+/tests/input
+/tests/tmp
 /tests/vmdk_test_open_close
 /tests/vmdk_test_read
 /tests/vmdk_test_seek

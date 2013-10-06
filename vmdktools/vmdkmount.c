@@ -57,7 +57,9 @@
 #include <osxfuse/fuse.h>
 #endif
 
-#endif /* defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE ) */
+#elif defined( HAVE_LIBDOKAN )
+#include <dokan.h>
+#endif
 
 #include "mount_handle.h"
 #include "vmdkoutput.h"
@@ -771,7 +773,1016 @@ on_error:
 	return;
 }
 
-#endif /* defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE ) */
+#elif defined( HAVE_LIBDOKAN )
+
+static wchar_t *vmdkmount_dokan_path_prefix      = L"\\VMDK";
+static size_t vmdkmount_dokan_path_prefix_length = 5;
+
+/* Opens a file or directory
+ * Returns 0 if successful or a negative error code otherwise
+ */
+int __stdcall vmdkmount_dokan_CreateFile(
+               const wchar_t *path,
+               DWORD desired_access,
+               DWORD share_mode LIBCSYSTEM_ATTRIBUTE_UNUSED,
+               DWORD creation_disposition,
+               DWORD attribute_flags LIBCSYSTEM_ATTRIBUTE_UNUSED,
+               DOKAN_FILE_INFO *file_info )
+{
+	libcerror_error_t *error = NULL;
+	static char *function    = "vmdkmount_dokan_CreateFile";
+	size_t path_length       = 0;
+	int result               = 0;
+
+	LIBCSYSTEM_UNREFERENCED_PARAMETER( share_mode )
+	LIBCSYSTEM_UNREFERENCED_PARAMETER( attribute_flags )
+
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		result = -ERROR_BAD_ARGUMENTS;
+
+		goto on_error;
+	}
+	if( ( desired_access & GENERIC_WRITE ) != 0 )
+	{
+		return( -ERROR_WRITE_PROTECT );
+	}
+	/* Ignore the share_mode
+	 */
+	if( creation_disposition == CREATE_NEW )
+	{
+		return( -ERROR_FILE_EXISTS );
+	}
+	else if( creation_disposition == CREATE_ALWAYS )
+	{
+		return( -ERROR_ALREADY_EXISTS );
+	}
+	else if( creation_disposition == OPEN_ALWAYS )
+	{
+		return( -ERROR_FILE_NOT_FOUND );
+	}
+	else if( creation_disposition == TRUNCATE_EXISTING )
+	{
+		return( -ERROR_FILE_NOT_FOUND );
+	}
+	else if( creation_disposition != OPEN_EXISTING )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid creation disposition.",
+		 function );
+
+		result = -ERROR_BAD_ARGUMENTS;
+
+		goto on_error;
+	}
+	if( file_info == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file info.",
+		 function );
+
+		result = -ERROR_BAD_ARGUMENTS;
+
+		goto on_error;
+	}
+	path_length = libcstring_wide_string_length(
+	               path );
+
+	if( path_length == 1 )
+	{
+		if( path[ 0 ] != (wchar_t) '\\' )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported path: %ls.",
+			 function,
+			 path );
+
+			result = -ERROR_FILE_NOT_FOUND;
+
+			goto on_error;
+		}
+	}
+	else
+	{
+		if( ( path_length <= vmdkmount_dokan_path_prefix_length )
+		 || ( path_length > ( vmdkmount_dokan_path_prefix_length + 3 ) )
+		 || ( libcstring_wide_string_compare(
+		       path,
+		       vmdkmount_dokan_path_prefix,
+		       vmdkmount_dokan_path_prefix_length ) != 0 ) )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported path: %ls.",
+			 function,
+			 path );
+
+			result = -ERROR_FILE_NOT_FOUND;
+
+			goto on_error;
+		}
+	}
+	return( 0 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcnotify_print_error_backtrace(
+		 error );
+		libcerror_error_free(
+		 &error );
+	}
+	return( result );
+}
+
+/* Opens a directory
+ * Returns 0 if successful or a negative error code otherwise
+ */
+int __stdcall vmdkmount_dokan_OpenDirectory(
+               const wchar_t *path,
+               DOKAN_FILE_INFO *file_info LIBCSYSTEM_ATTRIBUTE_UNUSED )
+{
+	libcerror_error_t *error = NULL;
+	static char *function    = "vmdkmount_dokan_OpenDirectory";
+	size_t path_length       = 0;
+	int result               = 0;
+
+	LIBCSYSTEM_UNREFERENCED_PARAMETER( file_info )
+
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		result = -ERROR_BAD_ARGUMENTS;
+
+		goto on_error;
+	}
+	path_length = libcstring_wide_string_length(
+	               path );
+
+	if( ( path_length != 1 )
+	 || ( path[ 0 ] != (wchar_t) '\\' ) )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported path: %ls.",
+		 function,
+		 path );
+
+		result = -ERROR_FILE_NOT_FOUND;
+
+		goto on_error;
+	}
+	return( 0 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcnotify_print_error_backtrace(
+		 error );
+		libcerror_error_free(
+		 &error );
+	}
+	return( result );
+}
+
+/* Closes a file or direcotry
+ * Returns 0 if successful or a negative error code otherwise
+ */
+int __stdcall vmdkmount_dokan_CloseFile(
+               const wchar_t *path,
+               DOKAN_FILE_INFO *file_info LIBCSYSTEM_ATTRIBUTE_UNUSED )
+{
+	libcerror_error_t *error = NULL;
+	static char *function    = "vmdkmount_dokan_CloseFile";
+	int result               = 0;
+
+	LIBCSYSTEM_UNREFERENCED_PARAMETER( file_info )
+
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		result = -ERROR_BAD_ARGUMENTS;
+
+		goto on_error;
+	}
+	return( 0 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcnotify_print_error_backtrace(
+		 error );
+		libcerror_error_free(
+		 &error );
+	}
+	return( result );
+}
+
+/* Reads a buffer of data at the specified offset
+ * Returns 0 if successful or a negative error code otherwise
+ */
+int __stdcall vmdkmount_dokan_ReadFile(
+               const wchar_t *path,
+               void *buffer,
+               DWORD number_of_bytes_to_read,
+               DWORD *number_of_bytes_read,
+               LONGLONG offset,
+               DOKAN_FILE_INFO *file_info LIBCSYSTEM_ATTRIBUTE_UNUSED )
+{
+	libcerror_error_t *error = NULL;
+	static char *function    = "vmdkmount_dokan_ReadFile";
+	size_t path_length       = 0;
+	ssize_t read_count       = 0;
+	int input_handle_index   = 0;
+	int result               = 0;
+	int string_index         = 0;
+
+	LIBCSYSTEM_UNREFERENCED_PARAMETER( file_info )
+
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		result = -ERROR_BAD_ARGUMENTS;
+
+		goto on_error;
+	}
+	if( number_of_bytes_to_read > (DWORD) INT32_MAX )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid number of bytes to read value exceeds maximum.",
+		 function );
+
+		result = -ERROR_BAD_ARGUMENTS;
+
+		goto on_error;
+	}
+	if( number_of_bytes_read == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid number of bytes read.",
+		 function );
+
+		result = -ERROR_BAD_ARGUMENTS;
+
+		goto on_error;
+	}
+	path_length = libcstring_wide_string_length(
+	               path );
+
+	if( ( path_length <= vmdkmount_dokan_path_prefix_length )
+         || ( path_length > ( vmdkmount_dokan_path_prefix_length + 3 ) )
+	 || ( libcstring_wide_string_compare(
+	       path,
+	       vmdkmount_dokan_path_prefix,
+	       vmdkmount_dokan_path_prefix_length ) != 0 ) )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported path: %ls.",
+		 function,
+		 path );
+
+		result = -ERROR_FILE_NOT_FOUND;
+
+		goto on_error;
+	}
+	string_index = (int) vmdkmount_dokan_path_prefix_length;
+
+	input_handle_index = path[ string_index++ ] - (wchar_t) '0';
+
+	if( string_index < (int) path_length )
+	{
+		input_handle_index *= 10;
+		input_handle_index += path[ string_index++ ] - (wchar_t) '0';
+	}
+	if( string_index < (int) path_length )
+	{
+		input_handle_index *= 10;
+		input_handle_index += path[ string_index++ ] - (wchar_t) '0';
+	}
+	input_handle_index -= 1;
+
+	if( mount_handle_seek_offset(
+	     vmdkmount_mount_handle,
+	     input_handle_index,
+	     (off64_t) offset,
+	     SEEK_SET,
+	     &error ) == -1 )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek offset in mount handle.",
+		 function );
+
+		result = -ERROR_SEEK_ON_DEVICE;
+
+		goto on_error;
+	}
+	read_count = mount_handle_read_buffer(
+		      vmdkmount_mount_handle,
+		      input_handle_index,
+		      (uint8_t *) buffer,
+		      (size_t) number_of_bytes_to_read,
+		      &error );
+
+	if( read_count == -1 )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read from mount handle.",
+		 function );
+
+		result = -ERROR_READ_FAULT;
+
+		goto on_error;
+	}
+	if( read_count > (size_t) INT32_MAX )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid read count value exceeds maximum.",
+		 function );
+
+		result = -ERROR_READ_FAULT;
+
+		goto on_error;
+	}
+	/* Dokan does not require the read function to return ERROR_HANDLE_EOF
+	 */
+	*number_of_bytes_read = (DWORD) read_count;
+
+	return( 0 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcnotify_print_error_backtrace(
+		 error );
+		libcerror_error_free(
+		 &error );
+	}
+	return( result );
+}
+
+/* Reads a directory
+ * Returns 0 if successful or a negative error code otherwise
+ */
+int __stdcall vmdkmount_dokan_FindFiles(
+               const wchar_t *path,
+               PFillFindData fill_find_data,
+               DOKAN_FILE_INFO *file_info )
+{
+	WIN32_FIND_DATAW find_data;
+
+	wchar_t vmdkmount_dokan_path[ 10 ];
+
+	libcerror_error_t *error    = NULL;
+	static char *function       = "vmdkmount_dokan_FindFiles";
+	size64_t media_size         = 0;
+	size_t path_length          = 0;
+	int input_handle_index      = 0;
+	int number_of_input_handles = 0;
+	int result                  = 0;
+	int string_index            = 0;
+
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		result = -ERROR_BAD_ARGUMENTS;
+
+		goto on_error;
+	}
+	path_length = libcstring_wide_string_length(
+	               path );
+
+	if( ( path_length != 1 )
+	 || ( path[ 0 ] != (wchar_t) '\\' ) )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported path: %ls.",
+		 function,
+		 path );
+
+		result = -ERROR_FILE_NOT_FOUND;
+
+		goto on_error;
+	}
+	if( libcstring_wide_string_copy(
+	     vmdkmount_dokan_path,
+	     vmdkmount_dokan_path_prefix,
+	     vmdkmount_dokan_path_prefix_length ) == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy path prefix.",
+		 function );
+
+		result = -ERROR_GEN_FAILURE;
+
+		goto on_error;
+	}
+	if( mount_handle_get_number_of_input_handles(
+	     vmdkmount_mount_handle,
+	     &number_of_input_handles,
+	     &error ) != 1 )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of input handles.",
+		 function );
+
+		result = -ERROR_GEN_FAILURE;
+
+		goto on_error;
+	}
+	if( ( number_of_input_handles < 0 )
+	 || ( number_of_input_handles > 99 ) )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+		 "%s: unsupported number of input handles.",
+		 function );
+
+		result = -ERROR_GEN_FAILURE;
+
+		goto on_error;
+	}
+	if( memory_set(
+	     &find_data,
+	     0,
+	     sizeof( WIN32_FIND_DATAW ) ) == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear find data.",
+		 function );
+
+		result = -ERROR_GEN_FAILURE;
+
+		goto on_error;
+	}
+	if( libcstring_wide_string_copy(
+	     find_data.cFileName,
+	     L".",
+	     1 ) == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy filename.",
+		 function );
+
+		result = -ERROR_GEN_FAILURE;
+
+		goto on_error;
+	}
+	if( libcstring_wide_string_copy(
+	     find_data.cAlternateFileName,
+	     L".",
+	     1 ) == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy alternate filename.",
+		 function );
+
+		result = -ERROR_GEN_FAILURE;
+
+		goto on_error;
+	}
+	find_data.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
+/* TODO set timestamps
+	find_data.ftCreationTime   = { 0, 0 };
+	find_data.ftLastAccessTime = { 0, 0 };
+	find_data.ftLastWriteTime  = { 0, 0 };
+*/
+
+	if( fill_find_data(
+	     &find_data,
+	     file_info ) != 0 )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set directory entry.",
+		 function );
+
+		result = -ERROR_GEN_FAILURE;
+
+		goto on_error;
+	}
+	if( memory_set(
+	     &find_data,
+	     0,
+	     sizeof( WIN32_FIND_DATAW ) ) == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear find data.",
+		 function );
+
+		result = -ERROR_GEN_FAILURE;
+
+		goto on_error;
+	}
+	if( libcstring_wide_string_copy(
+	     find_data.cFileName,
+	     L"..",
+	     2 ) == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy filename.",
+		 function );
+
+		result = -ERROR_GEN_FAILURE;
+
+		goto on_error;
+	}
+	if( libcstring_wide_string_copy(
+	     find_data.cAlternateFileName,
+	     L"..",
+	     2 ) == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy alternate filename.",
+		 function );
+
+		result = -ERROR_GEN_FAILURE;
+
+		goto on_error;
+	}
+	find_data.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
+/* TODO set timestamps
+	find_data.ftCreationTime   = { 0, 0 };
+	find_data.ftLastAccessTime = { 0, 0 };
+	find_data.ftLastWriteTime  = { 0, 0 };
+*/
+
+	if( fill_find_data(
+	     &find_data,
+	     file_info ) != 0 )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set directory entry.",
+		 function );
+
+		result = -ERROR_GEN_FAILURE;
+
+		goto on_error;
+	}
+	for( input_handle_index = 1;
+	     input_handle_index <= number_of_input_handles;
+	     input_handle_index++ )
+	{
+		string_index = (int) vmdkmount_dokan_path_prefix_length;
+
+		if( input_handle_index >= 100 )
+		{
+			vmdkmount_dokan_path[ string_index++ ] = (wchar_t) ( '0' + ( input_handle_index / 100 ) );
+		}
+		if( input_handle_index >= 10 )
+		{
+			vmdkmount_dokan_path[ string_index++ ] = (wchar_t) ( '0' + ( input_handle_index / 10 ) );
+		}
+		vmdkmount_dokan_path[ string_index++ ] = (wchar_t) ( '0' + ( input_handle_index % 10 ) );
+		vmdkmount_dokan_path[ string_index++ ] = 0;
+
+		if( mount_handle_get_media_size(
+		     vmdkmount_mount_handle,
+		     input_handle_index - 1,
+		     &media_size,
+		     &error ) != 1 )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve media size.",
+			 function );
+
+			result = -ERROR_GEN_FAILURE;
+
+			goto on_error;
+		}
+		if( memory_set(
+		     &find_data,
+		     0,
+		     sizeof( WIN32_FIND_DATAW ) ) == NULL )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+			 "%s: unable to clear find data.",
+			 function );
+
+			result = -ERROR_GEN_FAILURE;
+
+			goto on_error;
+		}
+		if( libcstring_wide_string_copy(
+		     find_data.cFileName,
+		     &( vmdkmount_dokan_path[ 1 ] ),
+		     string_index - 2 ) == NULL )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+			 "%s: unable to copy filename.",
+			 function );
+
+			result = -ERROR_GEN_FAILURE;
+
+			goto on_error;
+		}
+		if( libcstring_wide_string_copy(
+		     find_data.cAlternateFileName,
+		     &( vmdkmount_dokan_path[ 1 ] ),
+		     string_index - 2 ) == NULL )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+			 "%s: unable to copy alternate filename.",
+			 function );
+
+			result = -ERROR_GEN_FAILURE;
+
+			goto on_error;
+		}
+		find_data.dwFileAttributes = FILE_ATTRIBUTE_READONLY;
+/* TODO set timestamps
+		find_data.ftCreationTime   = { 0, 0 };
+		find_data.ftLastAccessTime = { 0, 0 };
+		find_data.ftLastWriteTime  = { 0, 0 };
+*/
+		find_data.nFileSizeHigh    = (DWORD) ( media_size >> 32 );
+		find_data.nFileSizeLow     = (DWORD) ( media_size & 0xffffffffUL );
+
+		if( fill_find_data(
+		     &find_data,
+		     file_info ) != 0 )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set directory entry.",
+			 function );
+
+			result = -ERROR_GEN_FAILURE;
+
+			goto on_error;
+		}
+	}
+	return( 0 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcnotify_print_error_backtrace(
+		 error );
+		libcerror_error_free(
+		 &error );
+	}
+	return( result );
+}
+
+int __stdcall vmdkmount_dokan_GetFileInformation(
+               const wchar_t *path,
+               BY_HANDLE_FILE_INFORMATION *file_information,
+               DOKAN_FILE_INFO *file_info )
+{
+	libcerror_error_t *error = NULL;
+	static char *function    = "vmdkmount_dokan_GetFileInformation";
+	size64_t media_size      = 0;
+	size_t path_length       = 0;
+	int input_handle_index   = 0;
+	int result               = 0;
+	int string_index         = 0;
+
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		result = -ERROR_BAD_ARGUMENTS;
+
+		goto on_error;
+	}
+	if( file_info == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file info.",
+		 function );
+
+		result = -ERROR_BAD_ARGUMENTS;
+
+		goto on_error;
+	}
+	path_length = libcstring_wide_string_length(
+	               path );
+
+	if( path_length == 1 )
+	{
+		if( path[ 0 ] != (wchar_t) '\\' )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported path: %ls.",
+			 function,
+			 path );
+
+			result = -ERROR_FILE_NOT_FOUND;
+
+			goto on_error;
+		}
+		file_information->dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
+/* TODO set timestamps
+		file_information->ftCreationTime   = { 0, 0 };
+		file_information->ftLastAccessTime = { 0, 0 };
+		file_information->ftLastWriteTime  = { 0, 0 };
+*/
+	}
+	else
+	{
+		if( ( path_length <= vmdkmount_dokan_path_prefix_length )
+		 || ( path_length > ( vmdkmount_dokan_path_prefix_length + 3 ) )
+		 || ( libcstring_wide_string_compare(
+		       path,
+		       vmdkmount_dokan_path_prefix,
+		       vmdkmount_dokan_path_prefix_length ) != 0 ) )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported path: %ls.",
+			 function,
+			 path );
+
+			result = -ERROR_FILE_NOT_FOUND;
+
+			goto on_error;
+		}
+		string_index = (int) vmdkmount_dokan_path_prefix_length;
+
+		input_handle_index = path[ string_index++ ] - (wchar_t) '0';
+
+		if( string_index < (int) path_length )
+		{
+			input_handle_index *= 10;
+			input_handle_index += path[ string_index++ ] - (wchar_t) '0';
+		}
+		if( string_index < (int) path_length )
+		{
+			input_handle_index *= 10;
+			input_handle_index += path[ string_index++ ] - (wchar_t) '0';
+		}
+		input_handle_index -= 1;
+
+		if( mount_handle_get_media_size(
+		     vmdkmount_mount_handle,
+		     input_handle_index,
+		     &media_size,
+		     &error ) != 1 )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve media size.",
+			 function );
+
+			result = -ERROR_GEN_FAILURE;
+
+			goto on_error;
+		}
+		file_information->dwFileAttributes = FILE_ATTRIBUTE_READONLY;
+/* TODO set timestamps
+		file_information->ftCreationTime   = { 0, 0 };
+		file_information->ftLastAccessTime = { 0, 0 };
+		file_information->ftLastWriteTime  = { 0, 0 };
+*/
+		file_information->nFileSizeHigh    = (DWORD) ( media_size >> 32 );
+		file_information->nFileSizeLow     = (DWORD) ( media_size & 0xffffffffUL );
+	}
+	return( 0 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcnotify_print_error_backtrace(
+		 error );
+		libcerror_error_free(
+		 &error );
+	}
+	return( result );
+}
+
+/* Retrieves the volume information
+ * Returns 0 if successful or a negative error code otherwise
+ */
+int __stdcall vmdkmount_dokan_GetVolumeInformation(
+               wchar_t *volume_name,
+               DWORD volume_name_size,
+               DWORD *volume_serial_number,
+               DWORD *maximum_filename_length,
+               DWORD *file_system_flags,
+               wchar_t *file_system_name,
+               DWORD file_system_name_size,
+               DOKAN_FILE_INFO *file_info LIBCSYSTEM_ATTRIBUTE_UNUSED )
+{
+	libcerror_error_t *error = NULL;
+	static char *function    = "vmdkmount_dokan_GetVolumeInformation";
+	int result               = 0;
+
+	LIBCSYSTEM_UNREFERENCED_PARAMETER( file_info )
+
+	if( ( volume_name != NULL )
+	 && ( volume_name_size > (DWORD) ( sizeof( wchar_t ) * 5 ) ) )
+	{
+		/* Using wcsncpy seems to cause strange behavior here
+		 */
+		if( memory_copy(
+		     volume_name,
+		     L"VMDK",
+		     sizeof( wchar_t ) * 5 ) == NULL )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+			 "%s: unable to copy volume name.",
+			 function );
+
+			result = -ERROR_GEN_FAILURE;
+
+			goto on_error;
+		}
+	}
+	if( volume_serial_number != NULL )
+	{
+		/* If this value contains 0 it can crash the system is this an issue in Dokan?
+		 */
+		*volume_serial_number = 0x19831116;
+	}
+	if( maximum_filename_length != NULL )
+	{
+		*maximum_filename_length = 256;
+	}
+	if( file_system_flags != NULL )
+	{
+		*file_system_flags = FILE_CASE_SENSITIVE_SEARCH
+		                   | FILE_CASE_PRESERVED_NAMES
+		                   | FILE_UNICODE_ON_DISK
+		                   | FILE_READ_ONLY_VOLUME;
+	}
+	if( ( file_system_name != NULL )
+	 && ( file_system_name_size > (DWORD) ( sizeof( wchar_t ) * 6 ) ) )
+	{
+		/* Using wcsncpy seems to cause strange behavior here
+		 */
+		if( memory_copy(
+		     file_system_name,
+		     L"Dokan",
+		     sizeof( wchar_t ) * 6 ) == NULL )
+		{
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+			 "%s: unable to copy file system name.",
+			 function );
+
+			result = -ERROR_GEN_FAILURE;
+
+			goto on_error;
+		}
+	}
+	return( 0 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcnotify_print_error_backtrace(
+		 error );
+		libcerror_error_free(
+		 &error );
+	}
+	return( result );
+}
+
+/* Unmount the image
+ * Returns 0 if successful or a negative error code otherwise
+ */
+int __stdcall vmdkmount_dokan_Unmount(
+               DOKAN_FILE_INFO *file_info LIBCSYSTEM_ATTRIBUTE_UNUSED )
+{
+	static char *function = "vmdkmount_dokan_Unmount";
+
+	LIBCSYSTEM_UNREFERENCED_PARAMETER( file_info )
+
+	return( 0 );
+}
+
+#endif
+
 
 /* The main program
  */
@@ -797,6 +1808,10 @@ int main( int argc, char * const argv[] )
 	struct fuse_args vmdkmount_fuse_arguments               = FUSE_ARGS_INIT(0, NULL);
 	struct fuse_chan *vmdkmount_fuse_channel                = NULL;
 	struct fuse *vmdkmount_fuse_handle                      = NULL;
+
+#elif defined( HAVE_LIBDOKAN )
+	DOKAN_OPERATIONS vmdkmount_dokan_operations;
+	DOKAN_OPTIONS vmdkmount_dokan_options;
 #endif
 
 	libcnotify_stream_set(
@@ -1047,6 +2062,125 @@ int main( int argc, char * const argv[] )
 	fuse_opt_free_args(
 	 &vmdkmount_fuse_arguments );
 
+	return( EXIT_SUCCESS );
+
+#elif defined( HAVE_LIBDOKAN )
+	if( memory_set(
+	     &vmdkmount_dokan_operations,
+	     0,
+	     sizeof( DOKAN_OPERATIONS ) ) == NULL )
+	{
+		fprintf(
+		 stderr,
+		 "Unable to clear dokan operations.\n" );
+
+		goto on_error;
+	}
+	if( memory_set(
+	     &vmdkmount_dokan_options,
+	     0,
+	     sizeof( DOKAN_OPTIONS ) ) == NULL )
+	{
+		fprintf(
+		 stderr,
+		 "Unable to clear dokan options.\n" );
+
+		goto on_error;
+	}
+	vmdkmount_dokan_options.Version     = 600;
+	vmdkmount_dokan_options.ThreadCount = 0;
+	vmdkmount_dokan_options.MountPoint  = mount_point;
+
+	if( verbose != 0 )
+	{
+		vmdkmount_dokan_options.Options |= DOKAN_OPTION_STDERR;
+#if defined( HAVE_DEBUG_OUTPUT )
+		vmdkmount_dokan_options.Options |= DOKAN_OPTION_DEBUG;
+#endif
+	}
+/* This will only affect the drive properties
+	vmdkmount_dokan_options.Options |= DOKAN_OPTION_REMOVABLE;
+*/
+	vmdkmount_dokan_options.Options |= DOKAN_OPTION_KEEP_ALIVE;
+
+	vmdkmount_dokan_operations.CreateFile           = &vmdkmount_dokan_CreateFile;
+	vmdkmount_dokan_operations.OpenDirectory        = &vmdkmount_dokan_OpenDirectory;
+	vmdkmount_dokan_operations.CreateDirectory      = NULL;
+	vmdkmount_dokan_operations.Cleanup              = NULL;
+	vmdkmount_dokan_operations.CloseFile            = &vmdkmount_dokan_CloseFile;
+	vmdkmount_dokan_operations.ReadFile             = &vmdkmount_dokan_ReadFile;
+	vmdkmount_dokan_operations.WriteFile            = NULL;
+	vmdkmount_dokan_operations.FlushFileBuffers     = NULL;
+	vmdkmount_dokan_operations.GetFileInformation   = &vmdkmount_dokan_GetFileInformation;
+	vmdkmount_dokan_operations.FindFiles            = &vmdkmount_dokan_FindFiles;
+	vmdkmount_dokan_operations.FindFilesWithPattern = NULL;
+	vmdkmount_dokan_operations.SetFileAttributes    = NULL;
+	vmdkmount_dokan_operations.SetFileTime          = NULL;
+	vmdkmount_dokan_operations.DeleteFile           = NULL;
+	vmdkmount_dokan_operations.DeleteDirectory      = NULL;
+	vmdkmount_dokan_operations.MoveFile             = NULL;
+	vmdkmount_dokan_operations.SetEndOfFile         = NULL;
+	vmdkmount_dokan_operations.SetAllocationSize    = NULL;
+	vmdkmount_dokan_operations.LockFile             = NULL;
+	vmdkmount_dokan_operations.UnlockFile           = NULL;
+	vmdkmount_dokan_operations.GetFileSecurity      = NULL;
+	vmdkmount_dokan_operations.SetFileSecurity      = NULL;
+	vmdkmount_dokan_operations.GetDiskFreeSpace     = NULL;
+	vmdkmount_dokan_operations.GetVolumeInformation = &vmdkmount_dokan_GetVolumeInformation;
+	vmdkmount_dokan_operations.Unmount              = &vmdkmount_dokan_Unmount;
+
+	result = DokanMain(
+	          &vmdkmount_dokan_options,
+	          &vmdkmount_dokan_operations );
+
+	switch( result )
+	{
+		case DOKAN_SUCCESS:
+			break;
+
+		case DOKAN_ERROR:
+			fprintf(
+			 stderr,
+			 "Unable to run dokan main: generic error\n" );
+			break;
+
+		case DOKAN_DRIVE_LETTER_ERROR:
+			fprintf(
+			 stderr,
+			 "Unable to run dokan main: bad drive letter\n" );
+			break;
+
+		case DOKAN_DRIVER_INSTALL_ERROR:
+			fprintf(
+			 stderr,
+			 "Unable to run dokan main: unable to load driver\n" );
+			break;
+
+		case DOKAN_START_ERROR:
+			fprintf(
+			 stderr,
+			 "Unable to run dokan main: driver error\n" );
+			break;
+
+		case DOKAN_MOUNT_ERROR:
+			fprintf(
+			 stderr,
+			 "Unable to run dokan main: unable to assign drive letter\n" );
+			break;
+
+		case DOKAN_MOUNT_POINT_ERROR:
+			fprintf(
+			 stderr,
+			 "Unable to run dokan main: mount point error\n" );
+			break;
+
+		default:
+			fprintf(
+			 stderr,
+			 "Unable to run dokan main: unknown error: %d\n",
+			 result );
+			break;
+	}
 	return( EXIT_SUCCESS );
 #else
 	fprintf(

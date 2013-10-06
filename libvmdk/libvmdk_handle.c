@@ -2257,11 +2257,13 @@ int libvmdk_handle_open_read_signature(
      uint8_t *file_type,
      libcerror_error_t **error )
 {
-	uint8_t signature[ 32 ];
-
-	static char *function = "libvmdk_handle_open_read_signature";
-	ssize_t read_count    = 0;
-	int result            = 0;
+	libcsplit_narrow_split_string_t *lines = NULL;
+	uint8_t *signature                     = NULL;
+	static char *function                  = "libvmdk_handle_open_read_signature";
+	ssize_t read_count                     = 0;
+	int line_index                         = 0;
+	int number_of_lines                    = 0;
+	int result                             = 0;
 
 	if( file_type == NULL )
 	{
@@ -2273,6 +2275,34 @@ int libvmdk_handle_open_read_signature(
 		 function );
 
 		return( -1 );
+	}
+	signature = (uint8_t *) memory_allocate(
+	                         sizeof( uint8_t ) * 2048 );
+
+	if( signature == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create signature.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_set(
+	     signature,
+	     0,
+	     sizeof( uint8_t ) * 2048 ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear signature.",
+		 function );
+
+		goto on_error;
 	}
 	if( libbfio_handle_seek_offset(
 	     file_io_handle,
@@ -2287,7 +2317,7 @@ int libvmdk_handle_open_read_signature(
 		 "%s: unable to seek offset: 0.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	read_count = libbfio_handle_read_buffer(
 	              file_io_handle,
@@ -2304,7 +2334,7 @@ int libvmdk_handle_open_read_signature(
 		 "%s: unable to read signature.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	if( memory_compare(
 	     signature,
@@ -2322,18 +2352,105 @@ int libvmdk_handle_open_read_signature(
 		*file_type = LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA;
 		result     = 1;
 	}
-	else if( memory_compare(
-	          signature,
-	          vmdk_descriptor_file_signature,
-	          21 ) == 0 )
+	else if( signature[ 0 ] == '#' )
 	{
-		if( signature[ 21 ] == (uint8_t) '\n' )
+		read_count = libbfio_handle_read_buffer(
+		              file_io_handle,
+		              &( signature[ 32 ] ),
+		              2048 - 32,
+		              error );
+
+		if( read_count == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read signature.",
+			 function );
+
+			goto on_error;
+		}
+		if( libcsplit_narrow_string_split(
+		     signature,
+		     32 + read_count,
+		     '\n',
+		     &lines,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to split file data into lines.",
+			 function );
+
+			goto on_error;
+		}
+		if( libcsplit_narrow_split_string_get_number_of_segments(
+		     lines,
+		     &number_of_lines,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to retrieve number of lines.",
+			 function );
+
+			goto on_error;
+		}
+		result = libvmdk_descriptor_file_read_signature(
+			  lines,
+			  number_of_lines,
+			  &line_index,
+		          error );
+
+		if( result == -1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_READ_FAILED,
+			 "%s: unable to read descriptor file.",
+			 function );
+
+			goto on_error;
+		}
+		else if( result != 0 )
 		{
 			*file_type = LIBVMDK_FILE_TYPE_DESCRIPTOR_FILE;
-			result     = 1;
+		}
+		if( libcsplit_narrow_split_string_free(
+		     &lines,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free lines.",
+			 function );
+
+			goto on_error;
 		}
 	}
 	return( result );
+
+on_error:
+	if( lines != NULL )
+	{
+		libcsplit_narrow_split_string_free(
+		 &lines,
+		 NULL );
+	}
+	if( signature != NULL )
+	{
+		memory_free(
+		 signature );
+	}
+	return( -1 );
 }
 
 /* Reads (media) data from the last current into a buffer

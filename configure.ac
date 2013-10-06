@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libvmdk],
- [20130916],
+ [20131004],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -215,6 +215,7 @@ AC_CONFIG_FILES([macosx/libvmdk.pmdoc/04share.xml])
 AC_CONFIG_FILES([macosx/libvmdk.pmdoc/05python.xml])
 AC_CONFIG_FILES([macosx/libvmdk.pmdoc/index.xml])
 AC_CONFIG_FILES([macosx/Introduction.rtf])
+AC_CONFIG_FILES([pyvmdk/setup.py])
 AC_CONFIG_FILES([libvmdk.pc])
 AC_CONFIG_FILES([libvmdk.spec])
 dnl Have configure write its configuration

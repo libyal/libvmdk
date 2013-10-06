@@ -358,6 +358,21 @@ int libvmdk_descriptor_file_read_string(
 
 		goto on_error;
 	}
+	if( libvmdk_descriptor_file_read_signature(
+	     lines,
+	     number_of_lines,
+	     &line_index,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read descriptor file signature.",
+		 function );
+
+		goto on_error;
+	}
 	if( libvmdk_descriptor_file_read_header(
 	     descriptor_file,
 	     lines,
@@ -431,6 +446,139 @@ on_error:
 	return( -1 );
 }
 
+/* Reads the signature from the descriptor file
+ * Returns the 1 if succesful, 0 if no signature was found or -1 on error
+ */
+int libvmdk_descriptor_file_read_signature(
+     libcsplit_narrow_split_string_t *lines,
+     int number_of_lines,
+     int *line_index,
+     libcerror_error_t **error )
+{
+	char *line_string_segment        = NULL;
+	static char *function            = "libvmdk_descriptor_file_read_signature";
+	size_t line_string_segment_index = 0;
+	size_t line_string_segment_size  = 0;
+	int result                       = 0;
+
+	if( line_index == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid line index.",
+		 function );
+
+		return( -1 );
+	}
+	if( number_of_lines <= 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of lines value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	*line_index = 0;
+
+	while( *line_index < number_of_lines )
+	{
+		if( libcsplit_narrow_split_string_get_segment_by_index(
+		     lines,
+		     *line_index,
+		     &line_string_segment,
+		     &line_string_segment_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve line: %d.",
+			 function,
+			 *line_index );
+
+			return( -1 );
+		}
+		if( line_string_segment == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing line string segment: %d.",
+			 function,
+			 *line_index );
+
+			return( -1 );
+		}
+		/* Ignore trailing white space
+		 */
+		line_string_segment_index = line_string_segment_size - 2;
+
+		while( line_string_segment_index > 0 )
+		{
+			if( ( line_string_segment[ line_string_segment_index ] != '\t' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\n' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\f' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\v' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\r' )
+			 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
+			{
+				break;
+			}
+			line_string_segment_index--;
+			line_string_segment_size--;
+		}
+		/* Ignore leading white space
+		 */
+		line_string_segment_index = 0;
+
+		while( line_string_segment_index < line_string_segment_size )
+		{
+			if( ( line_string_segment[ line_string_segment_index ] != '\t' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\n' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\f' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\v' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\r' )
+			 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
+			{
+				break;
+			}
+			line_string_segment_index++;
+			line_string_segment_size--;
+		}
+		/* Only allow comment or empty lines
+		 */
+		if( line_string_segment_size > 1 )
+		{
+			if( line_string_segment[ line_string_segment_index ] == '#' )
+			{
+				if( ( line_string_segment_size == 22 )
+				 && ( libcstring_narrow_string_compare(
+				       &( line_string_segment[ line_string_segment_index ] ),
+				       vmdk_descriptor_file_signature,
+				       21 ) == 0 ) )
+				{
+					result = 1;
+
+					break;
+				}
+			}
+			else if( line_string_segment[ line_string_segment_index ] != 0 )
+			{
+				break;
+			}
+		}
+		*line_index += 1;
+	}
+	return( result );
+}
+
 /* Reads the header from the descriptor file
  * Returns the 1 if succesful or -1 on error
  */
@@ -450,6 +598,7 @@ int libvmdk_descriptor_file_read_header(
 	size_t value_identifier_length   = 0;
 	size_t value_length              = 0;
 	uint64_t value_64bit             = 0;
+	int result                       = 0;
 
 	if( descriptor_file == NULL )
 	{
@@ -473,89 +622,29 @@ int libvmdk_descriptor_file_read_header(
 
 		return( -1 );
 	}
-	*line_index = 0;
-
-	if( libcsplit_narrow_split_string_get_segment_by_index(
-	     lines,
-	     *line_index,
-	     &line_string_segment,
-	     &line_string_segment_size,
-	     error ) != 1 )
+	if( number_of_lines <= 0 )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve line: %d.",
-		 function,
-		 *line_index );
-
-		goto on_error;
-	}
-	if( line_string_segment == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing line string segment: %d.",
-		 function,
-		 *line_index );
-
-		goto on_error;
-	}
-	/* Ignore trailing white space
-	 */
-	line_string_segment_index = line_string_segment_size - 2;
-
-	while( line_string_segment_index > 0 )
-	{
-		if( ( line_string_segment[ line_string_segment_index ] != '\t' )
-		 && ( line_string_segment[ line_string_segment_index ] != '\n' )
-		 && ( line_string_segment[ line_string_segment_index ] != '\f' )
-		 && ( line_string_segment[ line_string_segment_index ] != '\v' )
-		 && ( line_string_segment[ line_string_segment_index ] != '\r' )
-		 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
-		{
-			break;
-		}
-		line_string_segment_index--;
-		line_string_segment_size--;
-	}
-	/* Ignore leading white space
-	 */
-	line_string_segment_index = 0;
-
-	while( line_string_segment_index < line_string_segment_size )
-	{
-		if( ( line_string_segment[ line_string_segment_index ] != '\t' )
-		 && ( line_string_segment[ line_string_segment_index ] != '\n' )
-		 && ( line_string_segment[ line_string_segment_index ] != '\f' )
-		 && ( line_string_segment[ line_string_segment_index ] != '\v' )
-		 && ( line_string_segment[ line_string_segment_index ] != '\r' )
-		 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
-		{
-			break;
-		}
-		line_string_segment_index++;
-	}
-	if( ( ( line_string_segment_size - line_string_segment_index ) != 22 )
-	 || ( libcstring_narrow_string_compare(
-	       &( line_string_segment[ line_string_segment_index ] ),
-	       vmdk_descriptor_file_signature,
-	       21 ) != 0 ) )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported descriptor file signature.",
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of lines value out of bounds.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
-	*line_index += 1;
+	if( ( *line_index < 0 )
+	 || ( *line_index >= number_of_lines ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid line index value out of bounds.",
+		 function );
 
+		return( -1 );
+	}
 	while( *line_index < number_of_lines )
 	{
 		if( libcsplit_narrow_split_string_get_segment_by_index(
@@ -849,12 +938,21 @@ int libvmdk_descriptor_file_read_header(
 					 value );
 				}
 #endif
-				if( libclocale_codepage_copy_from_string(
-				     &( descriptor_file->encoding ),
-				     value,
-				     value_length,
-				     LIBCLOCALE_CODEPAGE_FEATURE_FLAG_HAVE_WINDOWS,
-				     error ) != 1 )
+				if( ( value_length == 5 )
+				 && ( value[ 0 ] == 'U' )
+				 && ( value[ 1 ] == 'T' )
+				 && ( value[ 2 ] == 'F' )
+				 && ( value[ 3 ] == '-' )
+				 && ( value[ 4 ] == '8' ) )
+				{
+					descriptor_file->encoding = 0;
+				}
+				else if( libclocale_codepage_copy_from_string(
+				          &( descriptor_file->encoding ),
+				          value,
+				          value_length,
+				          LIBCLOCALE_CODEPAGE_FEATURE_FLAG_HAVE_WINDOWS,
+				          error ) != 1 )
 				{
 					libcerror_error_set(
 					 error,
