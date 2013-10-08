@@ -598,7 +598,6 @@ int libvmdk_descriptor_file_read_header(
 	size_t value_identifier_length   = 0;
 	size_t value_length              = 0;
 	uint64_t value_64bit             = 0;
-	int result                       = 0;
 
 	if( descriptor_file == NULL )
 	{

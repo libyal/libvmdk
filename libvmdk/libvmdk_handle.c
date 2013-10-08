@@ -2372,7 +2372,7 @@ int libvmdk_handle_open_read_signature(
 			goto on_error;
 		}
 		if( libcsplit_narrow_string_split(
-		     signature,
+		     (char *) signature,
 		     32 + read_count,
 		     '\n',
 		     &lines,

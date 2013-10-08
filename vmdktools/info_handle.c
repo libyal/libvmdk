@@ -215,7 +215,6 @@ int info_handle_open_input(
      libcerror_error_t **error )
 {
 	static char *function = "info_handle_open_input";
-	int result            = 0;
 
 	if( info_handle == NULL )
 	{

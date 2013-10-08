@@ -2073,7 +2073,6 @@ int libvmdk_extent_file_read_grain_group_element_data(
 	ssize_t read_count           = 0;
 	int grain_index              = 0;
 	int number_of_entries        = 0;
-	int result                   = 0;
 
 	LIBVMDK_UNREFERENCED_PARAMETER( read_flags )
 

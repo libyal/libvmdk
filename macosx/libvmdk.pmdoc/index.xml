@@ -1,7 +1,7 @@
 <pkmkdoc spec="1.12">
 	<properties>
 		<title>libvmdk</title>
-		<build>/home/jbmetz/Projects/libvmdk/macosx/libvmdk.mpkg</build>
+		<build>/home/lordyesta/Projects/libvmdk/macosx/libvmdk.mpkg</build>
 		<organization>com.google.code.p</organization>
 		<userSees ui="both"/>
 		<min-target os="1"/>
