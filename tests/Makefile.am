@@ -42,9 +42,9 @@ vmdk_test_open_close_SOURCES = \
 	vmdk_test_unused.h
 
 vmdk_test_open_close_LDADD = \
-	@LIBCSTRING_LIBADD@ \
+	../libvmdk/libvmdk.la \
 	@LIBCERROR_LIBADD@ \
-	../libvmdk/libvmdk.la
+	@LIBCSTRING_LIBADD@
 
 vmdk_test_read_SOURCES = \
 	vmdk_test_libcerror.h \
@@ -54,9 +54,9 @@ vmdk_test_read_SOURCES = \
 	vmdk_test_unused.h
 
 vmdk_test_read_LDADD = \
-	@LIBCSTRING_LIBADD@ \
+	../libvmdk/libvmdk.la \
 	@LIBCERROR_LIBADD@ \
-	../libvmdk/libvmdk.la
+	@LIBCSTRING_LIBADD@
 
 vmdk_test_seek_SOURCES = \
 	vmdk_test_libcerror.h \
@@ -66,9 +66,9 @@ vmdk_test_seek_SOURCES = \
 	vmdk_test_unused.h
 
 vmdk_test_seek_LDADD = \
-	@LIBCSTRING_LIBADD@ \
+	../libvmdk/libvmdk.la \
 	@LIBCERROR_LIBADD@ \
-	../libvmdk/libvmdk.la
+	@LIBCSTRING_LIBADD@
 
 MAINTAINERCLEANFILES = \
 	Makefile.in

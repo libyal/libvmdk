@@ -18,6 +18,7 @@ pyvmdk_la_SOURCES = \
 	pyvmdk.c pyvmdk.h \
 	pyvmdk_file_object_io_handle.c pyvmdk_file_object_io_handle.h \
 	pyvmdk_handle.c pyvmdk_handle.h \
+	pyvmdk_integer.c pyvmdk_integer.h \
 	pyvmdk_libbfio.h \
 	pyvmdk_libcerror.h \
 	pyvmdk_libclocale.h \

@@ -29,6 +29,7 @@
 #include "pyvmdk.h"
 #include "pyvmdk_file_object_io_handle.h"
 #include "pyvmdk_handle.h"
+#include "pyvmdk_integer.h"
 #include "pyvmdk_libbfio.h"
 #include "pyvmdk_libcerror.h"
 #include "pyvmdk_libclocale.h"
@@ -102,7 +103,7 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 	{ "get_offset",
 	  (PyCFunction) pyvmdk_handle_get_offset,
 	  METH_NOARGS,
-	  "get_offset() -> Long\n"
+	  "get_offset() -> Integer\n"
 	  "\n"
 	  "Retrieved the current offset within the data." },
 
@@ -125,7 +126,7 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 	{ "tell",
 	  (PyCFunction) pyvmdk_handle_get_offset,
 	  METH_NOARGS,
-	  "tell() -> Long\n"
+	  "tell() -> Integer\n"
 	  "\n"
 	  "Retrieves the current offset within the data." },
 
@@ -134,7 +135,7 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 	{ "get_media_size",
 	  (PyCFunction) pyvmdk_handle_get_media_size,
 	  METH_NOARGS,
-	  "get_media_size() -> Long\n"
+	  "get_media_size() -> Integer\n"
 	  "\n"
 	  "Retrieves the size of the media data." },
 
@@ -1110,6 +1111,7 @@ PyObject *pyvmdk_handle_get_offset(
 	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
 
 	libcerror_error_t *error = NULL;
+	PyObject *integer_object = NULL;
 	static char *function    = "pyvmdk_handle_get_offset";
 	off64_t current_offset   = 0;
 	int result               = 0;
@@ -1159,31 +1161,10 @@ PyObject *pyvmdk_handle_get_offset(
 
 		return( NULL );
 	}
-#if defined( HAVE_LONG_LONG )
-	if( current_offset > (off64_t) LLONG_MAX )
-	{
-		PyErr_Format(
-		 PyExc_OverflowError,
-		 "%s: offset value exceeds maximum.",
-		 function );
+	integer_object = pyvmdk_integer_signed_new_from_64bit(
+	                  (int64_t) current_offset );
 
-		return( NULL );
-	}
-	return( PyLong_FromLongLong(
-	         (long long) current_offset ) );
-#else
-	if( current_offset > (off64_t) LONG_MAX )
-	{
-		PyErr_Format(
-		 PyExc_OverflowError,
-		 "%s: offset value exceeds maximum.",
-		 function );
-
-		return( NULL );
-	}
-	return( PyLong_FromLong(
-	         (long) current_offset ) );
-#endif
+	return( integer_object );
 }
 
 /* Retrieves the media size
@@ -1196,8 +1177,9 @@ PyObject *pyvmdk_handle_get_media_size(
 	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
 
 	libcerror_error_t *error = NULL;
+	PyObject *integer_object = NULL;
 	static char *function    = "pyvmdk_handle_get_media_size";
-	size64_t size            = 0;
+	size64_t media_size      = 0;
 	int result               = 0;
 
 	PYVMDK_UNREFERENCED_PARAMETER( arguments )
@@ -1215,7 +1197,7 @@ PyObject *pyvmdk_handle_get_media_size(
 
 	result = libvmdk_handle_get_media_size(
 	          pyvmdk_handle->handle,
-	          &size,
+	          &media_size,
 	          &error );
 
 	Py_END_ALLOW_THREADS
@@ -1229,14 +1211,14 @@ PyObject *pyvmdk_handle_get_media_size(
 		{
 			PyErr_Format(
 			 PyExc_IOError,
-			 "%s: failed to retrieve size.",
+			 "%s: failed to retrieve media size.",
 			 function );
 		}
 		else
 		{
 			PyErr_Format(
 			 PyExc_IOError,
-			 "%s: failed to retrieve size.\n%s",
+			 "%s: failed to retrieve media size.\n%s",
 			 function,
 			 error_string );
 		}
@@ -1245,30 +1227,9 @@ PyObject *pyvmdk_handle_get_media_size(
 
 		return( NULL );
 	}
-#if defined( HAVE_LONG_LONG )
-	if( size > (size64_t) LLONG_MAX )
-	{
-		PyErr_Format(
-		 PyExc_OverflowError,
-		 "%s: size value exceeds maximum.",
-		 function );
+	integer_object = pyvmdk_integer_unsigned_new_from_64bit(
+	                  (uint64_t) media_size );
 
-		return( NULL );
-	}
-	return( PyLong_FromLongLong(
-	         (long long) size ) );
-#else
-	if( size > (size64_t) LONG_MAX )
-	{
-		PyErr_Format(
-		 PyExc_OverflowError,
-		 "%s: size value exceeds maximum.",
-		 function );
-
-		return( NULL );
-	}
-	return( PyLong_FromLong(
-	         (long) size ) );
-#endif
+	return( integer_object );
 }
 

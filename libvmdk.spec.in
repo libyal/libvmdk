@@ -30,11 +30,20 @@ Requires: libvmdk = %{version}-%{release} @ax_libfuse_spec_requires@
 %description tools
 Several tools for accessing VMware Virtual Disk (VMDK) files
 
+%package python
+Summary: Python bindings for libvmdk
+Group: System Environment/Libraries
+Requires: libvmdk = %{version}-%{release} python
+BuildRequires: python-devel
+
+%description python
+Python bindings for libvmdk
+
 %prep
 %setup -q
 
 %build
-%configure --prefix=/usr --libdir=%{_libdir} --mandir=%{_mandir}
+%configure --prefix=/usr --libdir=%{_libdir} --mandir=%{_mandir} --enable-python
 make %{?_smp_mflags}
 
 %install
@@ -69,6 +78,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %attr(755,root,root) %{_bindir}/vmdkinfo
 %attr(755,root,root) %{_bindir}/vmdkmount
 %{_mandir}/man1/*
+
+%files python
+%defattr(644,root,root,755)
+%doc AUTHORS COPYING NEWS README
+%{_libdir}/python*/site-packages/*.a
+%{_libdir}/python*/site-packages/*.la
+%{_libdir}/python*/site-packages/*.so
 
 %changelog
 * @SPEC_DATE@ Joachim Metz <joachim.metz@gmail.com> @VERSION@-1

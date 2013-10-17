@@ -1,4 +1,5 @@
 TODO
+* fix and check tests
 * handle ZERO extents?
 * extent file add windows support (encoding)
   - add codepage functions + tests
@@ -60,6 +61,10 @@ Deployment:
   - cowd sparse
   - cowd sparse split
   - compressed?
+
+20131017
+* updated dependencies
+* worked on pyvmdk integer support
 
 20131008
 * updated msvscpp files
