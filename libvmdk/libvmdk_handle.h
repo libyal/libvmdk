@@ -172,6 +172,7 @@ int libvmdk_handle_close(
 
 int libvmdk_handle_open_read_grain_table(
      libvmdk_internal_handle_t *internal_handle,
+     libbfio_pool_t *file_io_pool,
      libcerror_error_t **error );
 
 int libvmdk_handle_open_read_signature(

@@ -22,6 +22,7 @@ lib_LTLIBRARIES = libvmdk.la
 
 libvmdk_la_SOURCES = \
 	libvmdk.c \
+	libvmdk_compression.c libvmdk_compression.h \
 	libvmdk_debug.c libvmdk_debug.h \
 	libvmdk_definitions.h \
 	libvmdk_descriptor_file.c libvmdk_descriptor_file.h \
@@ -70,6 +71,7 @@ libvmdk_la_LIBADD = \
 	@LIBFCACHE_LIBADD@ \
 	@LIBFDATA_LIBADD@ \
 	@LIBFVALUE_LIBADD@ \
+	@ZLIB_LIBADD@ \
 	@PTHREAD_LIBADD@
 
 libvmdk_la_LDFLAGS = -no-undefined -version-info 1:0:0

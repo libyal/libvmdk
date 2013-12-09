@@ -1418,6 +1418,7 @@ int libvmdk_extent_table_initialize_extents(
 	 && ( disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	 && ( disk_type != LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED )
@@ -1480,6 +1481,7 @@ int libvmdk_extent_table_initialize_extents(
 	}
 	else if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
 	      || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	      || ( disk_type == LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
 	      || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE )
 	      || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN ) )
 	{
@@ -1940,7 +1942,8 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
 		{
 			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
-			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE ) )
+			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED ) )
 			{
 				libcerror_error_set(
 				 error,

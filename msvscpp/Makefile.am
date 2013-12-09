@@ -22,6 +22,7 @@ MSVSCPP_FILES = \
 	vmdk_test_seek/vmdk_test_seek.vcproj \
 	vmdkinfo/vmdkinfo.vcproj \
 	vmdkmount/vmdkmount.vcproj \
+	zlib_dll/zlib_dll.vcproj \
 	libvmdk.sln
 
 SCRIPT_FILES = \

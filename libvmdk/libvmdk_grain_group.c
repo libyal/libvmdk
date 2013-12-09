@@ -219,15 +219,21 @@ int libvmdk_grain_group_fill(
      libfdata_list_t *grains_list,
      int grain_index,
      size64_t grain_size,
+     libbfio_pool_t *file_io_pool,
      int file_io_pool_entry,
      const uint8_t *grain_group_data,
      size_t grain_group_data_size,
      int number_of_grain_group_entries,
+     uint32_t extent_file_flags,
      libcerror_error_t **error )
 {
+	uint8_t compressed_data_header[ 12 ];
+
 	const uint8_t *grain_group_entry = NULL;
 	static char *function            = "libvmdk_grain_group_fill";
 	off64_t grain_data_offset        = 0;
+	size64_t grain_data_size         = 0;
+	ssize_t read_count               = 0;
 	uint32_t range_flags             = 0;
 	int element_index                = 0;
 	int grain_group_entry_index      = 0;
@@ -297,15 +303,6 @@ int libvmdk_grain_group_fill(
 		 grain_group_entry,
 		 grain_data_offset );
 
-		if( grain_data_offset != 0 )
-		{
-			grain_data_offset *= 512;
-			range_flags        = 0;
-		}
-		else
-		{
-			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
-		}
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
@@ -314,7 +311,73 @@ int libvmdk_grain_group_fill(
 			 function,
 			 grain_group_entry_index,
 			 grain_data_offset );
+		}
+#endif
+		if( grain_data_offset != 0 )
+		{
+			if( ( extent_file_flags & LIBVMDK_FLAG_HAS_GRAIN_COMPRESSION ) != 0 )
+			{
+				range_flags = LIBVMDK_RANGE_FLAG_IS_COMPRESSED;
+			}
+			else
+			{
+				range_flags = 0;
+			}
+			grain_data_offset *= 512;
+		}
+		else
+		{
+			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
+		}
+		if( ( extent_file_flags & LIBVMDK_FLAG_HAS_GRAIN_COMPRESSION ) != 0 )
+		{
+			if( libbfio_pool_seek_offset(
+			     file_io_pool,
+			     file_io_pool_entry,
+			     grain_data_offset,
+			     SEEK_SET,
+			     error ) == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_SEEK_FAILED,
+				 "%s: unable to seek grain offset: %" PRIi64 " in file IO pool entry: %d.",
+				 function,
+				 grain_data_offset,
+				 file_io_pool_entry );
 
+				return( -1 );
+			}
+			read_count = libbfio_pool_read_buffer(
+				      file_io_pool,
+				      file_io_pool_entry,
+				      compressed_data_header,
+				      12,
+				      error );
+
+			if( read_count != (ssize_t) 12 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read compressed grain data header.",
+				 function );
+
+				return( -1 );
+			}
+			byte_stream_copy_to_uint32_little_endian(
+			 &( compressed_data_header[ 8 ] ),
+			 grain_data_size );
+		}
+		else
+		{
+			grain_data_size = grain_size;
+		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
 			libcnotify_printf(
 			 "%s: grain table entry: %03" PRIu32 " offset\t\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
 			 function,
@@ -326,7 +389,7 @@ int libvmdk_grain_group_fill(
 			 "%s: grain table entry: %03" PRIu32 " size\t\t\t: %" PRIu64 "\n",
 			 function,
 			 grain_group_entry_index,
-			 grain_size );
+			 grain_data_size );
 
 			libcnotify_printf(
 			 "%s: grain table entry: %03" PRIu32 " file IO pool entry\t: %d\n",
@@ -345,17 +408,23 @@ int libvmdk_grain_group_fill(
 				libcnotify_printf(
 				 "\tIs sparse.\n" );
 			}
+			if( ( range_flags & LIBVMDK_RANGE_FLAG_IS_COMPRESSED ) != 0 )
+			{
+				libcnotify_printf(
+				 "\tIs compressed.\n" );
+			}
 			libcnotify_printf(
 			 "\n" );
 		}
 #endif
-		if( libfdata_list_append_element(
+		if( libfdata_list_append_element_with_mapped_size(
 		     grains_list,
 		     &element_index,
 		     file_io_pool_entry,
 		     grain_data_offset,
-		     grain_size,
+		     grain_data_size,
 		     range_flags,
+		     grain_size,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -368,155 +437,6 @@ int libvmdk_grain_group_fill(
 
 			return( -1 );
 		}
-		grain_group_entry += sizeof( uint32_t );
-
-		grain_index++;
-	}
-	return( 1 );
-}
-
-/* Compares the grain offset with the ones in the grain group and makes corrections if necessary
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_grain_group_correct(
-     libfdata_list_t *grains_list,
-     int grain_index,
-     size64_t grain_size,
-     int file_io_pool_entry,
-     const uint8_t *grain_group_data,
-     size_t grain_group_data_size,
-     int number_of_grain_group_entries,
-     libcerror_error_t **error )
-{
-	const uint8_t *grain_group_entry = NULL;
-	static char *function            = "libvmdk_grain_group_correct";
-	int grain_group_entry_index      = 0;
-
-#if defined( HAVE_DEBUG_OUTPUT )
-	off64_t grain_data_offset        = 0;
-	uint32_t range_flags             = 0;
-#endif
-
-	if( grains_list == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid grains list.",
-		 function );
-
-		return( -1 );
-	}
-	if( grain_size == 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid grain size.",
-		 function );
-
-		return( -1 );
-	}
-	if( grain_group_data == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid grain group data.",
-		 function );
-
-		return( -1 );
-	}
-	if( grain_group_data_size > (size_t) SSIZE_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid grain group size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-	if( ( (size_t) number_of_grain_group_entries * 4 ) > grain_group_data_size )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid number of grain group entries value out of bounds.",
-		 function );
-
-		return( -1 );
-	}
-	grain_group_entry = grain_group_data;
-
-	for( grain_group_entry_index = 0;
-	     grain_group_entry_index < number_of_grain_group_entries;
-	     grain_group_entry_index++ )
-	{
-#if defined( HAVE_DEBUG_OUTPUT )
-		byte_stream_copy_to_uint32_little_endian(
-		 grain_group_entry,
-		 grain_data_offset );
-
-		if( grain_data_offset != 0 )
-		{
-			grain_data_offset *= 512;
-			range_flags        = 0;
-		}
-		else
-		{
-			range_flags = LIBVMDK_RANGE_FLAG_IS_SPARSE;
-		}
-#endif
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: grain table entry: %03" PRIu32 " sector number\t\t: %" PRIi64 "\n",
-			 function,
-			 grain_group_entry_index,
-			 grain_data_offset );
-
-			libcnotify_printf(
-			 "%s: grain table entry: %03" PRIu32 " offset\t\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
-			 function,
-			 grain_group_entry_index,
-			 grain_data_offset * 512,
-			 grain_data_offset * 512 );
-
-			libcnotify_printf(
-			 "%s: grain table entry: %03" PRIu32 " size\t\t\t: %" PRIu64 "\n",
-			 function,
-			 grain_group_entry_index,
-			 grain_size );
-
-			libcnotify_printf(
-			 "%s: grain table entry: %03" PRIu32 " file IO pool entry\t\t: %d\n",
-			 function,
-			 grain_group_entry_index,
-			 file_io_pool_entry );
-
-			libcnotify_printf(
-			 "%s: grain table entry: %03" PRIu32 " range flags\t\t: 0x%08" PRIx64 "\n",
-			 function,
-			 grain_group_entry_index,
-			 range_flags );
-
-			if( ( range_flags & LIBVMDK_RANGE_FLAG_IS_SPARSE ) != 0 )
-			{
-				libcnotify_printf(
-				 "\tIs sparse.\n" );
-			}
-			libcnotify_printf(
-			 "\n" );
-		}
-#endif
-/* TODO */
 		grain_group_entry += sizeof( uint32_t );
 
 		grain_index++;

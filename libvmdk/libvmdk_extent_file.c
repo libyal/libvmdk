@@ -1538,7 +1538,7 @@ int libvmdk_extent_file_read_grain_directory(
 		libcnotify_print_data(
 		 grain_directory_data,
 		 extent_file->grain_directory_size,
-		 0 );
+		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
 	grain_directory_entry = grain_directory_data;
@@ -1551,10 +1551,20 @@ int libvmdk_extent_file_read_grain_directory(
 		 grain_directory_entry,
 		 grain_table_offset );
 
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: grain directory entry: %05" PRIu32 " sector number\t\t: %" PRIi64 "\n",
+			 function,
+			 grain_directory_entry_index,
+			 grain_table_offset );
+		}
+#endif
 		if( grain_table_offset != 0 )
 		{
-			grain_table_offset *= 512;
 			range_flags         = 0;
+			grain_table_offset *= 512;
 		}
 		else
 		{
@@ -1571,12 +1581,6 @@ int libvmdk_extent_file_read_grain_directory(
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
-			libcnotify_printf(
-			 "%s: grain directory entry: %05" PRIu32 " sector number\t\t: %" PRIi64 "\n",
-			 function,
-			 grain_directory_entry_index,
-			 grain_table_offset );
-
 			libcnotify_printf(
 			 "%s: grain directory entry: %05" PRIu32 " offset\t\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
 			 function,
@@ -1791,7 +1795,7 @@ int libvmdk_extent_file_read_backup_grain_directory(
 		libcnotify_print_data(
 		 grain_directory_data,
 		 extent_file->grain_directory_size,
-		 0 );
+		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
 	grain_directory_entry = grain_directory_data;
@@ -1805,10 +1809,18 @@ int libvmdk_extent_file_read_backup_grain_directory(
 		 grain_directory_entry,
 		 grain_table_offset );
 
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: grain directory entry: %05" PRIu32 " sector number\t: %" PRIi64 "\n",
+			 function,
+			 grain_directory_entry_index,
+			 grain_table_offset );
+		}
 		if( grain_table_offset != 0 )
 		{
-			grain_table_offset *= 512;
 			range_flags         = 0;
+			grain_table_offset *= 512;
 		}
 		else
 		{
@@ -1829,12 +1841,6 @@ int libvmdk_extent_file_read_backup_grain_directory(
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
-			libcnotify_printf(
-			 "%s: grain directory entry: %05" PRIu32 " sector number\t: %" PRIi64 "\n",
-			 function,
-			 grain_directory_entry_index,
-			 grain_table_offset );
-
 			libcnotify_printf(
 			 "%s: grain directory entry: %05" PRIu32 " offset\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
 			 function,
@@ -2200,7 +2206,7 @@ int libvmdk_extent_file_read_grain_group_element_data(
 		libcnotify_print_data(
 		 grain_table_data,
 		 (size_t) grain_group_data_size,
-		 0 );
+		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
 #endif
 	if( libfdata_list_initialize(
@@ -2229,10 +2235,12 @@ int libvmdk_extent_file_read_grain_group_element_data(
 	     grains_list,
 	     grain_index,
 	     extent_file->io_handle->grain_size,
+	     file_io_pool,
 	     file_io_pool_entry,
 	     grain_table_data,
 	     (size_t) grain_group_data_size,
 	     number_of_entries,
+	     extent_file->flags,
 	     error ) != 1 )
 	{
 		libcerror_error_set(

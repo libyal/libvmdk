@@ -1,5 +1,8 @@
 TODO
-* fix and check tests
+* pyvmdk
+  - expose exent data files
+  - expose parent images
+* compressed VMDK - validate uncompressed sector value in compressed data header?
 * handle ZERO extents?
 * extent file add windows support (encoding)
   - add codepage functions + tests
@@ -41,9 +44,12 @@ Tools:
   - same for all the parent extent files?
 
 Tests:
-* add open close
-* add read
-* add seek
+* open close
+  - add parent support
+* read
+  - add parent support
+* seek
+  - add parent support
 * add integrity tests
 * add pyvmdk
 
@@ -55,12 +61,19 @@ Deployment:
 
 * Test images
   - vmdk flat
-  - vmdk flat split
+  - vmdk flat split (done)
   - Monolithic sparse (done)
   - 2GB extent sparse (done)
   - cowd sparse
   - cowd sparse split
-  - compressed?
+  - compressed (done)
+  - (compressed) with parent (done)
+
+20131209
+* updated dependencies
+* worked on pyvmdk
+* worked on compressed VMDK sparse extent data files support
+* vmdkmount bug fix in parent chain mounting
 
 20131017
 * updated dependencies

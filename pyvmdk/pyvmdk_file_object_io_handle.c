@@ -24,6 +24,7 @@
 #include <types.h>
 
 #include "pyvmdk_file_object_io_handle.h"
+#include "pyvmdk_integer.h"
 #include "pyvmdk_libbfio.h"
 #include "pyvmdk_libcerror.h"
 #include "pyvmdk_libcstring.h"
@@ -1033,11 +1034,6 @@ int pyvmdk_file_object_get_offset(
 	PyObject *method_result       = NULL;
 	char *error_string            = NULL;
 	static char *function         = "pyvmdk_file_object_get_offset";
-#if defined( HAVE_LONG_LONG )
-	PY_LONG_LONG safe_offset      = 0;
-#else
-	long safe_offset              = 0;
-#endif
 	int result                    = 0;
 
 	if( file_object == NULL )
@@ -1127,69 +1123,20 @@ int pyvmdk_file_object_get_offset(
 
 		goto on_error;
 	}
-	PyErr_Clear();
-
-#if defined( HAVE_LONG_LONG )
-	safe_offset = PyLong_AsLongLong(
-	               method_result );
-#else
-	safe_offset = PyLong_AsLong(
-	               method_result );
-#endif
-	if( safe_offset == -1 )
-	{
-		PyErr_Fetch(
-		 &exception_type,
-		 &exception_value,
-		 &exception_traceback );
-
-		exception_string = PyObject_Repr(
-		                    exception_value );
-
-		error_string = PyString_AsString(
-		                exception_string );
-
-		if( error_string != NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve current offset in file object with error: %s.",
-			 function,
-			 error_string );
-		}
-		else
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve current offset in file object.",
-			 function );
-		}
-		Py_DecRef(
-		 exception_string );
-
-		goto on_error;
-	}
-#if defined( HAVE_LONG_LONG )
-	if( safe_offset > (PY_LONG_LONG) INT64_MAX )
-#else
-	if( (off64_t) safe_offset > (off64_t) INT64_MAX )
-#endif
+	if( pyvmdk_integer_signed_copy_to_64bit(
+	     method_result,
+	     offset,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid offset value exceeds maximum.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to convert method result into current offset of file object.",
 		 function );
 
 		goto on_error;
 	}
-	*offset = (off64_t) safe_offset;
-
 	Py_DecRef(
 	 method_result );
 
@@ -1358,11 +1305,6 @@ int pyvmdk_file_object_get_size(
 	PyObject *method_result       = NULL;
 	char *error_string            = NULL;
 	static char *function         = "pyvmdk_file_object_get_size";
-#if defined( HAVE_LONG_LONG )
-	PY_LONG_LONG safe_size        = 0;
-#else
-	long safe_size                = 0;
-#endif
 
 	if( file_object == NULL )
 	{
@@ -1433,69 +1375,20 @@ int pyvmdk_file_object_get_size(
 
 		goto on_error;
 	}
-	PyErr_Clear();
-
-#if defined( HAVE_LONG_LONG )
-	safe_size = PyLong_AsUnsignedLongLong(
-	             method_result );
-#else
-	safe_size = PyLong_AsUnsignedLong(
-	             method_result );
-#endif
-	if( safe_size == -1 )
-	{
-		PyErr_Fetch(
-		 &exception_type,
-		 &exception_value,
-		 &exception_traceback );
-
-		exception_string = PyObject_Repr(
-		                    exception_value );
-
-		error_string = PyString_AsString(
-		                exception_string );
-
-		if( error_string != NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve size of file object with error: %s.",
-			 function,
-			 error_string );
-		}
-		else
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve size of in file object.",
-			 function );
-		}
-		Py_DecRef(
-		 exception_string );
-
-		goto on_error;
-	}
-#if defined( HAVE_LONG_LONG )
-	if( safe_size > (PY_LONG_LONG) INT64_MAX )
-#else
-	if( (size64_t) safe_size > (size64_t) INT64_MAX )
-#endif
+	if( pyvmdk_integer_unsigned_copy_to_64bit(
+	     method_result,
+	     size,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid size value exceeds maximum.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to convert method result into size of file object.",
 		 function );
 
 		goto on_error;
 	}
-	*size = (size64_t) safe_size;
-
 	Py_DecRef(
 	 method_result );
 

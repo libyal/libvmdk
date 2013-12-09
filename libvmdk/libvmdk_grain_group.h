@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libfdata.h"
 
@@ -66,20 +67,12 @@ int libvmdk_grain_group_fill(
      libfdata_list_t *grains_list,
      int grain_index,
      size64_t grain_size,
+     libbfio_pool_t *file_io_pool,
      int file_io_pool_entry,
      const uint8_t *grain_group_data,
      size_t grain_group_data_size,
      int number_of_grain_group_entries,
-     libcerror_error_t **error );
-
-int libvmdk_grain_group_correct(
-     libfdata_list_t *grains_list,
-     int grain_index,
-     size64_t grain_size,
-     int file_io_pool_entry,
-     const uint8_t *grain_group_data,
-     size_t grain_group_data_size,
-     int number_of_grain_group_entries,
+     uint32_t extent_file_flags,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

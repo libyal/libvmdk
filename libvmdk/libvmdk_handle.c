@@ -1053,6 +1053,17 @@ int libvmdk_handle_open_extent_data_files(
 
 		return( -1 );
 	}
+	if( internal_handle->extent_data_file_io_pool != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid handle - extent data file IO pool already exists.",
+		 function );
+
+		return( -1 );
+	}
 	if( libvmdk_descriptor_file_get_number_of_extents(
 	     internal_handle->descriptor_file,
 	     &number_of_extents,
@@ -1188,6 +1199,8 @@ int libvmdk_handle_open_extent_data_files(
 				extent_data_file_location      = extent_data_filename_start;
 				extent_data_file_location_size = extent_data_filename_size;
 			}
+			/* Note that the open extent data file function will initialize extent_data_file_io_pool
+			 */
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libvmdk_handle_open_extent_data_file_wide(
 				  internal_handle,
@@ -1225,6 +1238,7 @@ int libvmdk_handle_open_extent_data_files(
 	}
 	if( libvmdk_handle_open_read_grain_table(
 	     internal_handle,
+	     internal_handle->extent_data_file_io_pool,
 	     error ) != 1 )
 	{
                 libcerror_error_set(
@@ -1239,6 +1253,17 @@ int libvmdk_handle_open_extent_data_files(
 	return( 1 );
 
 on_error:
+	if( internal_handle->extent_data_file_io_pool != NULL )
+	{
+		libbfio_pool_close_all(
+		 internal_handle->extent_data_file_io_pool,
+		 NULL );
+		libbfio_pool_free(
+		 &( internal_handle->extent_data_file_io_pool ),
+		 NULL );
+
+		internal_handle->extent_data_file_io_pool_created_in_library = 0;
+	}
 	if( ( extent_data_file_location != NULL )
 	 && ( extent_data_file_location != extent_data_filename_start ) )
 	{
@@ -1306,10 +1331,9 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 
 		return( -1 );
 	}
-	internal_handle->extent_data_file_io_pool = file_io_pool;
-
 	if( libvmdk_handle_open_read_grain_table(
 	     internal_handle,
+	     file_io_pool,
 	     error ) != 1 )
 	{
                 libcerror_error_set(
@@ -1321,6 +1345,8 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 
                 return( -1 );
 	}
+	internal_handle->extent_data_file_io_pool = file_io_pool;
+
 	return( 1 );
 }
 
@@ -1647,7 +1673,7 @@ int libvmdk_handle_open_extent_data_file_io_handle(
 			 "%s: unable to retrieve number of extents.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		if( libbfio_pool_initialize(
 		     &( internal_handle->extent_data_file_io_pool ),
@@ -1662,7 +1688,7 @@ int libvmdk_handle_open_extent_data_file_io_handle(
 			 "%s: unable to create extent data file file IO pool.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 		internal_handle->extent_data_file_io_pool_created_in_library = 1;
 	}
@@ -1682,7 +1708,7 @@ int libvmdk_handle_open_extent_data_file_io_handle(
                  "%s: unable to open file IO handle.",
                  function );
 
-                return( -1 );
+		goto on_error;
 	}
 	/* This function currently does not allow the file_io_handle to be set more than once
 	 */
@@ -1701,9 +1727,23 @@ int libvmdk_handle_open_extent_data_file_io_handle(
 		 function,
 		 extent_index );
 
-		return( -1 );
+		goto on_error;
 	}
 	return( 1 );
+
+on_error:
+	if( internal_handle->extent_data_file_io_pool != NULL )
+	{
+		libbfio_pool_close_all(
+		 internal_handle->extent_data_file_io_pool,
+		 NULL );
+		libbfio_pool_free(
+		 &( internal_handle->extent_data_file_io_pool ),
+		 NULL );
+
+		internal_handle->extent_data_file_io_pool_created_in_library = 0;
+	}
+	return( -1 );
 }
 
 /* Closes the VMDK file(s)
@@ -1844,6 +1884,7 @@ int libvmdk_handle_close(
  */
 int libvmdk_handle_open_read_grain_table(
      libvmdk_internal_handle_t *internal_handle,
+     libbfio_pool_t *file_io_pool,
      libcerror_error_t **error )
 {
 	libvmdk_extent_descriptor_t *extent_descriptor = NULL;
@@ -1883,17 +1924,6 @@ int libvmdk_handle_open_read_grain_table(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid internal handle - missing descriptor file.",
-		 function );
-
-		return( -1 );
-	}
-	if( internal_handle->extent_data_file_io_pool == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing extent data file IO pool.",
 		 function );
 
 		return( -1 );
@@ -1946,7 +1976,7 @@ int libvmdk_handle_open_read_grain_table(
 		goto on_error;
 	}
 	if( libbfio_pool_get_number_of_handles(
-	     internal_handle->extent_data_file_io_pool,
+	     file_io_pool,
 	     &number_of_file_io_handles,
 	     error ) != 1 )
 	{
@@ -2046,7 +2076,7 @@ int libvmdk_handle_open_read_grain_table(
 			goto on_error;
 		}
 		if( libbfio_pool_get_size(
-		     internal_handle->extent_data_file_io_pool,
+		     file_io_pool,
 		     extent_index,
 		     &extent_file_size,
 		     error ) != 1 )
@@ -2108,7 +2138,7 @@ int libvmdk_handle_open_read_grain_table(
 #endif
 			if( libvmdk_extent_file_read_file_header(
 			     extent_file,
-			     internal_handle->extent_data_file_io_pool,
+			     file_io_pool,
 			     extent_index,
 			     error ) != 1 )
 			{
@@ -2130,6 +2160,19 @@ int libvmdk_handle_open_read_grain_table(
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
 				 "%s: extent file type not supported for extent type.",
+				 function );
+
+				goto on_error;
+			}
+			if( ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
+			 && ( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+			 && ( ( extent_file->flags & LIBVMDK_FLAG_HAS_GRAIN_COMPRESSION ) != 0 ) )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+				 "%s: grain compression not supported for disk type.",
 				 function );
 
 				goto on_error;
@@ -2164,7 +2207,7 @@ int libvmdk_handle_open_read_grain_table(
 #endif
 			if( libvmdk_extent_file_read_grain_directories(
 			     extent_file,
-			     internal_handle->extent_data_file_io_pool,
+			     file_io_pool,
 			     extent_index,
 			     error ) != 1 )
 			{

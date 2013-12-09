@@ -1,5 +1,5 @@
 /*
- * Python bindings for libvmdk (pyvmdk)
+ * Error functions
  *
  * Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,34 +19,27 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _PYVMDK_H )
-#define _PYVMDK_H
+#if !defined( _PYVMDK_ERROR_H )
+#define _PYVMDK_ERROR_H
 
 #include <common.h>
 #include <types.h>
 
+#include "pyvmdk_libcerror.h"
 #include "pyvmdk_python.h"
+
+#define PYVMDK_ERROR_FORMAT_STRING_SIZE		128
+#define PYVMDK_ERROR_STRING_SIZE		512
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-PyObject *pyvmdk_get_version(
-           PyObject *self,
-           PyObject *arguments );
-
-PyObject *pyvmdk_check_file_signature(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
-PyObject *pyvmdk_check_file_signature_file_object(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
-PyMODINIT_FUNC initpyvmdk(
-                void );
+void pyvmdk_error_raise(
+      PyObject *exception_object,
+      const char *format_string,
+      const char *function,
+      libcerror_error_t *error );
 
 #if defined( __cplusplus )
 }

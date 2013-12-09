@@ -377,6 +377,7 @@ int mount_handle_open_input(
 	if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	 || ( disk_type == LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED )
@@ -536,8 +537,8 @@ int mount_handle_open_input_parent_handle(
 	size_t parent_filename_size                    = 0;
 	size_t parent_path_size                        = 0;
 	uint32_t parent_content_identifier             = 0;
-	int disk_type                                  = 0;
 	int entry_index                                = 0;
+	int parent_disk_type                           = 0;
 	int result                                     = 0;
 
 	if( mount_handle == NULL )
@@ -712,7 +713,7 @@ int mount_handle_open_input_parent_handle(
 
 	if( libvmdk_handle_get_disk_type(
 	     parent_input_handle,
-	     &disk_type,
+	     &parent_disk_type,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -724,17 +725,18 @@ int mount_handle_open_input_parent_handle(
 
 		goto on_error;
 	}
-	if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
-	 || ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
-	 || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
-	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT )
-	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
-	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED )
-	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE )
-	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN ) )
+	if( ( parent_disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
+	 || ( parent_disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
+	 || ( parent_disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	 || ( parent_disk_type == LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
+	 || ( parent_disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT )
+	 || ( parent_disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
+	 || ( parent_disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED )
+	 || ( parent_disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE )
+	 || ( parent_disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN ) )
 	{
 		result = libvmdk_handle_get_parent_content_identifier(
-			  input_handle,
+			  parent_input_handle,
 			  &parent_content_identifier,
 			  error );
 

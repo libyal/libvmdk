@@ -27,6 +27,7 @@
 #endif
 
 #include "pyvmdk.h"
+#include "pyvmdk_error.h"
 #include "pyvmdk_file_object_io_handle.h"
 #include "pyvmdk_handle.h"
 #include "pyvmdk_integer.h"
@@ -345,8 +346,6 @@ PyObject *pyvmdk_handle_new_open_file_object(
 int pyvmdk_handle_init(
      pyvmdk_handle_t *pyvmdk_handle )
 {
-	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
-
 	static char *function    = "pyvmdk_handle_init";
 	libcerror_error_t *error = NULL;
 
@@ -367,24 +366,12 @@ int pyvmdk_handle_init(
 	     &( pyvmdk_handle->handle ),
 	     &error ) != 1 )
 	{
-		if( libcerror_error_backtrace_sprint(
-		     error,
-		     error_string,
-		     PYVMDK_ERROR_STRING_SIZE ) == -1 )
-                {
-			PyErr_Format(
-			 PyExc_MemoryError,
-			 "%s: unable to initialize handle.",
-			 function );
-		}
-		else
-		{
-			PyErr_Format(
-			 PyExc_MemoryError,
-			 "%s: unable to initialize handle.\n%s",
-			 function,
-			 error_string );
-		}
+		pyvmdk_error_raise(
+		 PyExc_MemoryError,
+		 "%s: unable to initialize handle.",
+		 function,
+		 error );
+
 		libcerror_error_free(
 		 &error );
 
@@ -398,8 +385,6 @@ int pyvmdk_handle_init(
 void pyvmdk_handle_free(
       pyvmdk_handle_t *pyvmdk_handle )
 {
-	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
-
 	libcerror_error_t *error = NULL;
 	static char *function    = "pyvmdk_handle_free";
 	int result               = 0;
@@ -450,24 +435,12 @@ void pyvmdk_handle_free(
 
 	if( result != 1 )
 	{
-		if( libcerror_error_backtrace_sprint(
-		     error,
-		     error_string,
-		     PYVMDK_ERROR_STRING_SIZE ) == -1 )
-                {
-			PyErr_Format(
-			 PyExc_MemoryError,
-			 "%s: unable to free libvmdk handle.",
-			 function );
-		}
-		else
-		{
-			PyErr_Format(
-			 PyExc_MemoryError,
-			 "%s: unable to free libvmdk handle.\n%s",
-			 function,
-			 error_string );
-		}
+		pyvmdk_error_raise(
+		 PyExc_MemoryError,
+		 "%s: unable to free libvmdk handle.",
+		 function,
+		 error );
+
 		libcerror_error_free(
 		 &error );
 	}
@@ -482,8 +455,6 @@ PyObject *pyvmdk_handle_signal_abort(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments PYVMDK_ATTRIBUTE_UNUSED )
 {
-	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
-
 	libcerror_error_t *error = NULL;
 	static char *function    = "pyvmdk_handle_signal_abort";
 	int result               = 0;
@@ -509,24 +480,12 @@ PyObject *pyvmdk_handle_signal_abort(
 
 	if( result != 1 )
 	{
-		if( libcerror_error_backtrace_sprint(
-		     error,
-		     error_string,
-		     PYVMDK_ERROR_STRING_SIZE ) == -1 )
-                {
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to signal abort.",
-			 function );
-		}
-		else
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to signal abort.\n%s",
-			 function,
-			 error_string );
-		}
+		pyvmdk_error_raise(
+		 PyExc_IOError,
+		 "%s: unable to signal abort.",
+		 function,
+		 error );
+
 		libcerror_error_free(
 		 &error );
 
@@ -546,8 +505,6 @@ PyObject *pyvmdk_handle_open(
            PyObject *arguments,
            PyObject *keywords )
 {
-	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
-
 	libcerror_error_t *error    = NULL;
 	char *filename              = NULL;
 	char *mode                  = NULL;
@@ -597,24 +554,12 @@ PyObject *pyvmdk_handle_open(
 
 	if( result != 1 )
 	{
-		if( libcerror_error_backtrace_sprint(
-		     error,
-		     error_string,
-		     PYVMDK_ERROR_STRING_SIZE ) == -1 )
-                {
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to open handle.",
-			 function );
-		}
-		else
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to open handle.\n%s",
-			 function,
-			 error_string );
-		}
+		pyvmdk_error_raise(
+		 PyExc_IOError,
+		 "%s: unable to open handle.",
+		 function,
+		 error );
+
 		libcerror_error_free(
 		 &error );
 
@@ -634,8 +579,6 @@ PyObject *pyvmdk_handle_open_file_object(
            PyObject *arguments,
            PyObject *keywords )
 {
-	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
-
 	PyObject *file_object            = NULL;
 	libbfio_handle_t *file_io_handle = NULL;
 	libcerror_error_t *error         = NULL;
@@ -679,24 +622,12 @@ PyObject *pyvmdk_handle_open_file_object(
 	     file_object,
 	     &error ) != 1 )
 	{
-		if( libcerror_error_backtrace_sprint(
-		     error,
-		     error_string,
-		     PYVMDK_ERROR_STRING_SIZE ) == -1 )
-                {
-			PyErr_Format(
-			 PyExc_MemoryError,
-			 "%s: unable to initialize file IO handle.",
-			 function );
-		}
-		else
-		{
-			PyErr_Format(
-			 PyExc_MemoryError,
-			 "%s: unable to initialize file IO handle.\n%s",
-			 function,
-			 error_string );
-		}
+		pyvmdk_error_raise(
+		 PyExc_MemoryError,
+		 "%s: unable to initialize file IO handle.",
+		 function,
+		 error );
+
 		libcerror_error_free(
 		 &error );
 
@@ -714,24 +645,12 @@ PyObject *pyvmdk_handle_open_file_object(
 
 	if( result != 1 )
 	{
-		if( libcerror_error_backtrace_sprint(
-		     error,
-		     error_string,
-		     PYVMDK_ERROR_STRING_SIZE ) == -1 )
-                {
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to open handle.",
-			 function );
-		}
-		else
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to open handle.\n%s",
-			 function,
-			 error_string );
-		}
+		pyvmdk_error_raise(
+		 PyExc_IOError,
+		 "%s: unable to open handle.",
+		 function,
+		 error );
+
 		libcerror_error_free(
 		 &error );
 
@@ -759,8 +678,6 @@ PyObject *pyvmdk_handle_close(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments PYVMDK_ATTRIBUTE_UNUSED )
 {
-	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
-
 	libcerror_error_t *error = NULL;
 	static char *function    = "pyvmdk_handle_close";
 	int result               = 0;
@@ -786,24 +703,12 @@ PyObject *pyvmdk_handle_close(
 
 	if( result != 0 )
 	{
-		if( libcerror_error_backtrace_sprint(
-		     error,
-		     error_string,
-		     PYVMDK_ERROR_STRING_SIZE ) == -1 )
-                {
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to close handle.",
-			 function );
-		}
-		else
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to close handle.\n%s",
-			 function,
-			 error_string );
-		}
+		pyvmdk_error_raise(
+		 PyExc_IOError,
+		 "%s: unable to close handle.",
+		 function,
+		 error );
+
 		libcerror_error_free(
 		 &error );
 
@@ -823,8 +728,6 @@ PyObject *pyvmdk_handle_read_buffer(
            PyObject *arguments,
            PyObject *keywords )
 {
-	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
-
 	libcerror_error_t *error    = NULL;
 	PyObject *result_data       = NULL;
 	static char *function       = "pyvmdk_handle_read_buffer";
@@ -885,28 +788,30 @@ PyObject *pyvmdk_handle_read_buffer(
 
 	Py_END_ALLOW_THREADS
 
-	if( read_count != (ssize_t) read_size )
+	if( read_count <= -1 )
 	{
-		if( libcerror_error_backtrace_sprint(
-		     error,
-		     error_string,
-		     PYVMDK_ERROR_STRING_SIZE ) == -1 )
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to read data.",
-			 function );
-		}
-		else
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to read data.\n%s",
-			 function,
-			 error_string );
-		}
+		pyvmdk_error_raise(
+		 PyExc_IOError,
+		 "%s: unable to read data.",
+		 function,
+		 error );
+
 		libcerror_error_free(
 		 &error );
+
+		Py_DecRef(
+		 (PyObject *) result_data );
+
+		return( NULL );
+	}
+	/* Need to resize the string here in case read_size was not fully read.
+	 */
+	if( _PyString_Resize(
+	     &result_data,
+	     (Py_ssize_t) read_count ) != 0 )
+	{
+		Py_DecRef(
+		 (PyObject *) result_data );
 
 		return( NULL );
 	}
@@ -921,8 +826,6 @@ PyObject *pyvmdk_handle_read_random(
            PyObject *arguments,
            PyObject *keywords )
 {
-	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
-
 	libcerror_error_t *error    = NULL;
 	PyObject *result_data       = NULL;
 	static char *function       = "pyvmdk_handle_read_random";
@@ -997,28 +900,30 @@ PyObject *pyvmdk_handle_read_random(
 
 	Py_END_ALLOW_THREADS
 
-	if( read_count != (ssize_t) read_size )
+	if( read_count <= -1 )
 	{
-		if( libcerror_error_backtrace_sprint(
-		     error,
-		     error_string,
-		     PYVMDK_ERROR_STRING_SIZE ) == -1 )
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to read data.",
-			 function );
-		}
-		else
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to read data.\n%s",
-			 function,
-			 error_string );
-		}
+		pyvmdk_error_raise(
+		 PyExc_IOError,
+		 "%s: unable to read data.",
+		 function,
+		 error );
+
 		libcerror_error_free(
 		 &error );
+
+		Py_DecRef(
+		 (PyObject *) result_data );
+
+		return( NULL );
+	}
+	/* Need to resize the string here in case read_size was not fully read.
+	 */
+	if( _PyString_Resize(
+	     &result_data,
+	     (Py_ssize_t) read_count ) != 0 )
+	{
+		Py_DecRef(
+		 (PyObject *) result_data );
 
 		return( NULL );
 	}
@@ -1033,8 +938,6 @@ PyObject *pyvmdk_handle_seek_offset(
            PyObject *arguments,
            PyObject *keywords )
 {
-	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
-
 	libcerror_error_t *error    = NULL;
 	static char *function       = "pyvmdk_handle_seek_offset";
 	static char *keyword_list[] = { "offset", "whence", NULL };
@@ -1072,24 +975,12 @@ PyObject *pyvmdk_handle_seek_offset(
 
  	if( offset == -1 )
 	{
-		if( libcerror_error_backtrace_sprint(
-		     error,
-		     error_string,
-		     PYVMDK_ERROR_STRING_SIZE ) == -1 )
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to seek offset.",
-			 function );
-		}
-		else
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to seek offset.\n%s",
-			 function,
-			 error_string );
-		}
+		pyvmdk_error_raise(
+		 PyExc_IOError,
+		 "%s: unable to seek offset.",
+		 function,
+		 error );
+
 		libcerror_error_free(
 		 &error );
 
@@ -1108,8 +999,6 @@ PyObject *pyvmdk_handle_get_offset(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments PYVMDK_ATTRIBUTE_UNUSED )
 {
-	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
-
 	libcerror_error_t *error = NULL;
 	PyObject *integer_object = NULL;
 	static char *function    = "pyvmdk_handle_get_offset";
@@ -1138,24 +1027,12 @@ PyObject *pyvmdk_handle_get_offset(
 
 	if( result != 1 )
 	{
-		if( libcerror_error_backtrace_sprint(
-		     error,
-		     error_string,
-		     PYVMDK_ERROR_STRING_SIZE ) == -1 )
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to retrieve offset.",
-			 function );
-		}
-		else
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: unable to retrieve offset.\n%s",
-			 function,
-			 error_string );
-		}
+		pyvmdk_error_raise(
+		 PyExc_IOError,
+		 "%s: unable to retrieve offset.",
+		 function,
+		 error );
+
 		libcerror_error_free(
 		 &error );
 
@@ -1174,8 +1051,6 @@ PyObject *pyvmdk_handle_get_media_size(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments PYVMDK_ATTRIBUTE_UNUSED )
 {
-	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
-
 	libcerror_error_t *error = NULL;
 	PyObject *integer_object = NULL;
 	static char *function    = "pyvmdk_handle_get_media_size";
@@ -1204,24 +1079,12 @@ PyObject *pyvmdk_handle_get_media_size(
 
 	if( result != 1 )
 	{
-		if( libcerror_error_backtrace_sprint(
-		     error,
-		     error_string,
-		     PYVMDK_ERROR_STRING_SIZE ) == -1 )
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: failed to retrieve media size.",
-			 function );
-		}
-		else
-		{
-			PyErr_Format(
-			 PyExc_IOError,
-			 "%s: failed to retrieve media size.\n%s",
-			 function,
-			 error_string );
-		}
+		pyvmdk_error_raise(
+		 PyExc_IOError,
+		 "%s: failed to retrieve media size.",
+		 function,
+		 error );
+
 		libcerror_error_free(
 		 &error );
 

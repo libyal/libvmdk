@@ -16,6 +16,7 @@ pyexec_LTLIBRARIES = pyvmdk.la
 
 pyvmdk_la_SOURCES = \
 	pyvmdk.c pyvmdk.h \
+	pyvmdk_error.c pyvmdk_error.h \
 	pyvmdk_file_object_io_handle.c pyvmdk_file_object_io_handle.h \
 	pyvmdk_handle.c pyvmdk_handle.h \
 	pyvmdk_integer.c pyvmdk_integer.h \
@@ -44,9 +45,14 @@ pyvmdk_la_LDFLAGS  = -module -avoid-version $(PYTHON_LDFLAGS)
 
 endif
 
+EXTRA_DIST = \
+	setup.py \
+	setup.py.in
+
 MAINTAINERCLEANFILES = \
 	Makefile.in
 
 distclean: clean
+	/bin/rm -f setup.py
 	/bin/rm -f Makefile
 
