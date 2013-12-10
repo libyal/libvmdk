@@ -146,7 +146,7 @@ void vmdkmount_signal_handler(
 static char *vmdkmount_fuse_path_prefix         = "/vmdk";
 static size_t vmdkmount_fuse_path_prefix_length = 5;
 
-/* Opens a file
+/* Opens a file or directory
  * Returns 0 if successful or a negative errno value otherwise
  */
 int vmdkmount_fuse_open(

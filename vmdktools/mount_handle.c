@@ -635,40 +635,43 @@ int mount_handle_open_input_parent_handle(
 
 		goto on_error;
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libcpath_path_join_wide(
-	     &parent_path,
-	     &parent_path_size,
-	     mount_handle->basename,
-	     mount_handle->basename_size - 1,
-	     parent_filename,
-	     parent_filename_size - 1,
-	     error ) != 1 )
-#else
-	if( libcpath_path_join(
-	     &parent_path,
-	     &parent_path_size,
-	     mount_handle->basename,
-	     mount_handle->basename_size - 1,
-	     parent_filename,
-	     parent_filename_size - 1,
-	     error ) != 1 )
-#endif
+	if( mount_handle->basename == NULL )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create parent path.",
-		 function );
-
-		goto on_error;
+		parent_path      = parent_filename;
+		parent_path_size = parent_filename_size;
 	}
-	memory_free(
-	 parent_filename );
+	else
+	{
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+		if( libcpath_path_join_wide(
+		     &parent_path,
+		     &parent_path_size,
+		     mount_handle->basename,
+		     mount_handle->basename_size - 1,
+		     parent_filename,
+		     parent_filename_size - 1,
+		     error ) != 1 )
+#else
+		if( libcpath_path_join(
+		     &parent_path,
+		     &parent_path_size,
+		     mount_handle->basename,
+		     mount_handle->basename_size - 1,
+		     parent_filename,
+		     parent_filename_size - 1,
+		     error ) != 1 )
+#endif
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create parent path.",
+			 function );
 
-	parent_filename = NULL;
-
+			goto on_error;
+		}
+	}
 	if( libvmdk_handle_initialize(
 	     &parent_input_handle,
 	     error ) != 1 )
@@ -706,11 +709,22 @@ int mount_handle_open_input_parent_handle(
 
 		goto on_error;
 	}
-	memory_free(
-	 parent_path );
+	if( parent_path != NULL )
+	{
+		if( mount_handle->basename != NULL )
+		{
+			memory_free(
+			 parent_path );
+		}
+		parent_path = NULL;
+	}
+	if( parent_filename != NULL )
+	{
+		memory_free(
+		 parent_filename );
 
-	parent_path = NULL;
-
+		parent_filename = NULL;
+	}
 	if( libvmdk_handle_get_disk_type(
 	     parent_input_handle,
 	     &parent_disk_type,
@@ -865,7 +879,8 @@ on_error:
 		 &parent_input_handle,
 		 NULL );
 	}
-	if( parent_path != NULL )
+	if( ( parent_path != NULL )
+	 && ( mount_handle->basename != NULL ) )
 	{
 		memory_free(
 		 parent_path );

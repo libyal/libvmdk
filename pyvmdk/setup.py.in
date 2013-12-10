@@ -92,9 +92,10 @@ if platform.system() == "Windows":
 	LIBRARY_DIRS.append(library_directory)
 
 	library_dll_file = os.path.join(library_directory, "%s.dll" % (LIBRARY_NAME))
+	zlib_dll_file = os.path.join(library_directory, "zlib.dll")
 
-	# Add the library DLL file to the distribution.
-	LIBRARY_DATA_FILES.append((sysconfig.get_python_lib(True), [library_dll_file]))
+	# Add the library DLL and zlib.dll files to the distribution.
+	LIBRARY_DATA_FILES.append((sysconfig.get_python_lib(True), [library_dll_file, zlib_dll_file]))
 
 else:
 	DEFINE_MACROS = [
