@@ -1,7 +1,7 @@
 /*
  * Extent file functions
  *
- * Copyright (c) 2009-2013 Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2014, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -2253,7 +2253,7 @@ int libvmdk_extent_file_read_grain_group_element_data(
 		goto on_error;
 	}
 /* TODO what about backup range */
-/* TODO check if remainder of sector block is emtpy */
+/* TODO check if remainder of sector block is empty */
 
 	memory_free(
 	 grain_table_data );

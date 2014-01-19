@@ -1,7 +1,7 @@
 /*
  * The internal definitions
  *
- * Copyright (c) 2009-2013, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (c) 2009-2014, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -37,11 +37,11 @@
  * for local use of libvmdk
  */
 #else
-#define LIBVMDK_VERSION						20131209
+#define LIBVMDK_VERSION						20140119
 
 /* The libvmdk version string
  */
-#define LIBVMDK_VERSION_STRING					"20131209"
+#define LIBVMDK_VERSION_STRING					"20140119"
 
 /* The access flags definitions
  * bit 1        set to 1 for read access

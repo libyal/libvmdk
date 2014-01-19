@@ -69,6 +69,10 @@ Deployment:
   - compressed (done)
   - (compressed) with parent (done)
 
+20140119
+* 2014 update
+* updated dependencies
+
 20131210
 * fixed issue in mount handle for empty basename
 
