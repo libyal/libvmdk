@@ -2185,7 +2185,7 @@ int main( int argc, char * const argv[] )
 #else
 	fprintf(
 	 stderr,
-	 "No sub system to mount VMDK format.\n" );
+	 "No sub system to mount VMDK.\n" );
 
 	return( EXIT_FAILURE );
 #endif
