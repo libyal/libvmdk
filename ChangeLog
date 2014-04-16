@@ -4,6 +4,9 @@ TODO
   - expose parent images
 * compressed VMDK - validate uncompressed sector value in compressed data header?
 * handle ZERO extents?
+* if there is a single filename in the disk database and the current file is
+  not a descriptor-only file assume the current file is the right one even if
+  the names don't match
 * extent file add windows support (encoding)
   - add codepage functions + tests
   - libvmdk_extent_descriptor.c:629
@@ -42,6 +45,8 @@ Tools:
 * vmdkinfo:
   - add flag to have test to check if all the extent files are there?
   - same for all the parent extent files?
+  - add option to print descriptor file data?
+  - print disk database?
 
 Tests:
 * open close
