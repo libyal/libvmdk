@@ -75,6 +75,9 @@ Tests:
   - compressed (done)
   - (compressed) with parent (done)
 
+20140417
+* worked on support for a stream optimized VMDK file without a grain table
+
 20140416
 * worked on support for a stream optimized VMDK file without a grain table
   - added support for grain directory sector value -1

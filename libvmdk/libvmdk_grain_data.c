@@ -404,8 +404,7 @@ int libvmdk_grain_data_read_element_data(
 			goto on_error;
 		}
 #endif
-		if( ( grain_data->compressed_data_size == 0 )
-		 || ( (size64_t) grain_data->compressed_data_size > io_handle->grain_size ) )
+		if( grain_data->compressed_data_size == 0 )
 		{
 			libcerror_error_set(
 			 error,
