@@ -37,6 +37,14 @@ typedef struct libvmdk_grain_data libvmdk_grain_data_t;
 
 struct libvmdk_grain_data
 {
+	/* The uncompressed data offset
+	 */
+	off64_t uncompressed_data_offset;
+
+	/* The compressed data size
+	 */
+	uint32_t compressed_data_size;
+
 	/* The data
 	 */
 	uint8_t *data;
@@ -54,6 +62,13 @@ int libvmdk_grain_data_initialize(
 int libvmdk_grain_data_free(
      libvmdk_grain_data_t **grain_data,
      libcerror_error_t **error );
+
+ssize_t libvmdk_grain_data_read_compressed_header(
+         libvmdk_grain_data_t *grain_data,
+         libvmdk_io_handle_t *io_handle,
+         libbfio_pool_t *file_io_pool,
+         int file_io_pool_entry,
+         libcerror_error_t **error );
 
 int libvmdk_grain_data_read_element_data(
      libvmdk_io_handle_t *io_handle,

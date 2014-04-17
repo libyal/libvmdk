@@ -292,6 +292,17 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
 
 		return( -1 );
 	}
+	if( extent_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing extent file.",
+		 function );
+
+		return( -1 );
+	}
 	result = libvmdk_extent_file_grain_group_is_sparse_at_offset(
 	          extent_file,
 	          extent_file_data_offset,
@@ -424,6 +435,17 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 		 "%s: unable to retrieve extent file at offset: %" PRIi64 " from extent files list.",
 		 function,
 		 offset );
+
+		return( -1 );
+	}
+	if( extent_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing extent file.",
+		 function );
 
 		return( -1 );
 	}

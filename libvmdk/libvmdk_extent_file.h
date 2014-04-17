@@ -140,12 +140,14 @@ int libvmdk_extent_file_check_for_empty_block(
 int libvmdk_extent_file_read_file_header_file_io_handle(
      libvmdk_extent_file_t *extent_file,
      libbfio_handle_t *file_io_handle,
+     off64_t file_offset,
      libcerror_error_t **error );
 
 int libvmdk_extent_file_read_file_header(
      libvmdk_extent_file_t *extent_file,
      libbfio_pool_t *file_io_pool,
      int file_io_pool_entry,
+     off64_t file_offset,
      libcerror_error_t **error );
 
 int libvmdk_extent_file_read_file_header_data(
@@ -179,6 +181,12 @@ int libvmdk_extent_file_read_backup_grain_directory(
      libbfio_pool_t *file_io_pool,
      int file_io_pool_entry,
      off64_t file_offset,
+     libcerror_error_t **error );
+
+int libvmdk_extent_file_read_grains_scan(
+     libvmdk_extent_file_t *extent_file,
+     libbfio_pool_t *file_io_pool,
+     int file_io_pool_entry,
      libcerror_error_t **error );
 
 int libvmdk_extent_file_read_element_data(

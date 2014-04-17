@@ -188,7 +188,7 @@ ssize_t libvmdk_handle_read_buffer(
          libcerror_error_t **error );
 
 LIBVMDK_EXTERN \
-ssize_t libvmdk_handle_read_random(
+ssize_t libvmdk_handle_read_buffer_at_offset(
          libvmdk_handle_t *handle,
          void *buffer,
          size_t buffer_size,
@@ -204,7 +204,7 @@ ssize_t libvmdk_handle_write_buffer(
          libcerror_error_t **error );
 
 LIBVMDK_EXTERN \
-ssize_t libvmdk_handle_write_random(
+ssize_t libvmdk_handle_write_buffer_at_offset(
          libvmdk_handle_t *handle,
          const void *buffer,
          size_t buffer_size,

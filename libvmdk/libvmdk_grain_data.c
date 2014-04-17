@@ -172,6 +172,104 @@ int libvmdk_grain_data_free(
 	return( 1 );
 }
 
+/* Reads a compressed grain data header
+ * The number of bytes read or -1 on error
+ */
+ssize_t libvmdk_grain_data_read_compressed_header(
+         libvmdk_grain_data_t *grain_data,
+         libvmdk_io_handle_t *io_handle,
+         libbfio_pool_t *file_io_pool,
+         int file_io_pool_entry,
+         libcerror_error_t **error )
+{
+	uint8_t compressed_data_header[ 12 ];
+
+	static char *function = "libvmdk_grain_data_read_compressed_header";
+	ssize_t read_count    = 0;
+
+	if( grain_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid grain data.",
+		 function );
+
+		return( -1 );
+	}
+	if( io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	read_count = libbfio_pool_read_buffer(
+		      file_io_pool,
+		      file_io_pool_entry,
+		      compressed_data_header,
+		      12,
+		      error );
+
+	if( read_count != (ssize_t) 12 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read compressed grain data header.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: compressed grain data header:\n",
+		 function );
+		libcnotify_print_data(
+		 compressed_data_header,
+		 12,
+		 0 );
+	}
+#endif
+	byte_stream_copy_to_uint64_little_endian(
+	 compressed_data_header,
+	 grain_data->uncompressed_data_offset );
+
+	byte_stream_copy_to_uint32_little_endian(
+	 &( compressed_data_header[ 8 ] ),
+	 grain_data->compressed_data_size );
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "%s: uncompressed data offset\t: %" PRIu64 " grains (0x%08" PRIx64 ")\n",
+		 function,
+		 grain_data->uncompressed_data_offset,
+		 grain_data->uncompressed_data_offset * io_handle->grain_size );
+
+		libcnotify_printf(
+		 "%s: compressed data size\t\t: %" PRIu32 "\n",
+		 function,
+		 grain_data->compressed_data_size );
+
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
+	grain_data->uncompressed_data_offset *= io_handle->grain_size;
+
+	return( read_count );
+}
+
 /* Reads a grain
  * Callback function for the grains list
  * Returns 1 if successful or -1 on error
@@ -188,16 +286,11 @@ int libvmdk_grain_data_read_element_data(
      uint8_t read_flags LIBVMDK_ATTRIBUTE_UNUSED,
      libcerror_error_t **error )
 {
-	uint8_t compressed_data_header[ 12 ];
-
-	libvmdk_grain_data_t *grain_data  = NULL;
-	uint8_t *compressed_data          = NULL;
-	static char *function             = "libvmdk_grain_data_read_element_data";
-	size_t uncompressed_data_size     = 0;
-	size_t read_size                  = 0;
-	ssize_t read_count                = 0;
-	uint64_t uncompressed_data_offset = 0;
-	uint32_t compressed_data_size     = 0;
+	libvmdk_grain_data_t *grain_data = NULL;
+	uint8_t *compressed_data         = NULL;
+	static char *function            = "libvmdk_grain_data_read_element_data";
+	size_t read_size                 = 0;
+	ssize_t read_count               = 0;
 
 	LIBVMDK_UNREFERENCED_PARAMETER( read_flags )
 
@@ -280,25 +373,14 @@ int libvmdk_grain_data_read_element_data(
 
 			goto on_error;
 		}
-		if( grain_data == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing grain data.",
-			 function );
+		read_count = libvmdk_grain_data_read_compressed_header(
+		              grain_data,
+		              io_handle,
+		              file_io_pool,
+		              file_io_pool_entry,
+		              error );
 
-			goto on_error;
-		}
-		read_count = libbfio_pool_read_buffer(
-			      file_io_pool,
-			      file_io_pool_entry,
-			      compressed_data_header,
-			      12,
-			      error );
-
-		if( read_count != (ssize_t) 12 )
+		if( read_count == -1 )
 		{
 			libcerror_error_set(
 			 error,
@@ -309,62 +391,33 @@ int libvmdk_grain_data_read_element_data(
 
 			goto on_error;
 		}
-		byte_stream_copy_to_uint64_little_endian(
-		 compressed_data_header,
-		 uncompressed_data_offset );
-
-		byte_stream_copy_to_uint32_little_endian(
-		 &( compressed_data_header[ 8 ] ),
-		 compressed_data_size );
-
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: uncompressed data offset\t\t: %" PRIu64 " grains (%" PRIu64 ")\n",
-			 function,
-			 uncompressed_data_offset,
-			 uncompressed_data_offset * io_handle->grain_size );
-
-			libcnotify_printf(
-			 "%s: compressed data size\t\t: %" PRIu32 "\n",
-			 function,
-			 compressed_data_size );
-
-			libcnotify_printf(
-			 "\n" );
-		}
-#endif
-		uncompressed_data_offset *= io_handle->grain_size;
-		uncompressed_data_size    = (size_t) io_handle->grain_size;
-
-		if( ( compressed_data_size == 0 )
-		 || ( (size64_t) compressed_data_size > io_handle->grain_size ) )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid compressed data size value out of bounds.",
-			 function );
-
-			goto on_error;
-		}
 #if SIZEOF_UINT32 <= SIZEOF_SIZE_T
-		if( compressed_data_size > (uint32_t) SSIZE_MAX )
+		if( grain_data->compressed_data_size > (uint32_t) SSIZE_MAX )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid compressed data size value exceeds maximum.",
+			 "%s: invalid grain data - compressed data size value exceeds maximum.",
 			 function );
 
 			goto on_error;
 		}
 #endif
+		if( ( grain_data->compressed_data_size == 0 )
+		 || ( (size64_t) grain_data->compressed_data_size > io_handle->grain_size ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid grain data - compressed data size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
 		compressed_data = (uint8_t *) memory_allocate(
-		                               sizeof( uint8_t ) * (size_t) compressed_data_size );
+		                               sizeof( uint8_t ) * (size_t) grain_data->compressed_data_size );
 
 		if( compressed_data == NULL )
 		{
@@ -381,10 +434,10 @@ int libvmdk_grain_data_read_element_data(
 			      file_io_pool,
 			      file_io_pool_entry,
 			      compressed_data,
-			      (size_t) compressed_data_size,
+			      (size_t) grain_data->compressed_data_size,
 			      error );
 
-		if( read_count != (ssize_t) compressed_data_size )
+		if( read_count != (ssize_t) grain_data->compressed_data_size )
 		{
 			libcerror_error_set(
 			 error,
@@ -397,7 +450,7 @@ int libvmdk_grain_data_read_element_data(
 		}
 		if( libvmdk_decompress_data(
 		     compressed_data,
-		     (size_t) compressed_data_size,
+		     (size_t) grain_data->compressed_data_size,
 		     LIBVMDK_COMPRESSION_METHOD_DEFLATE,
 		     grain_data->data,
 		     &( grain_data->data_size ),
@@ -407,7 +460,7 @@ int libvmdk_grain_data_read_element_data(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_COMPRESSION,
 			 LIBCERROR_COMPRESSION_ERROR_DECOMPRESS_FAILED,
-			 "%s: unable to decompress grain data buffer.",
+			 "%s: unable to decompress grain data.",
 			 function );
 
 			goto on_error;

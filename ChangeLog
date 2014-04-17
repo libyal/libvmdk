@@ -1,4 +1,11 @@
 TODO
+* check if extent files are cached after reading?
+* libvmdk_extent_file_read_element_data
+  - why is only the primary grain table read?
+* update manuals
+  - update libvmdk.3
+  - update vmdkinfo.1
+  - add vmdkmount.1
 * pyvmdk
   - expose exent data files
   - expose parent images
@@ -58,12 +65,6 @@ Tests:
 * add integrity tests
 * add pyvmdk
 
-Deployment:
-* check manuals
-  - update libvmdk.3
-  - update vmdkinfo.1
-  - add vmdkmount.1
-
 * Test images
   - vmdk flat
   - vmdk flat split (done)
@@ -73,6 +74,11 @@ Deployment:
   - cowd sparse split
   - compressed (done)
   - (compressed) with parent (done)
+
+20140416
+* worked on support for a stream optimized VMDK file without a grain table
+  - added support for grain directory sector value -1
+* added debug information
 
 20140119
 * 2014 update

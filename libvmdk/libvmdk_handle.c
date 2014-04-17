@@ -846,6 +846,7 @@ int libvmdk_handle_open_file_io_handle(
 			if( libvmdk_extent_file_read_file_header_file_io_handle(
 			     extent_file,
 			     file_io_handle,
+			     0,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
@@ -2140,6 +2141,7 @@ int libvmdk_handle_open_read_grain_table(
 			     extent_file,
 			     file_io_pool,
 			     extent_index,
+			     0,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
@@ -2166,7 +2168,7 @@ int libvmdk_handle_open_read_grain_table(
 			}
 			if( ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
 			 && ( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
-			 && ( ( extent_file->flags & LIBVMDK_FLAG_HAS_GRAIN_COMPRESSION ) != 0 ) )
+			 && ( ( extent_file->flags & LIBVMDK_FLAG_HAS_GRAIN_COMPRESSION ) != LIBVMDK_COMPRESSION_METHOD_NONE ) )
 			{
 				libcerror_error_set(
 				 error,
@@ -2176,6 +2178,28 @@ int libvmdk_handle_open_read_grain_table(
 				 function );
 
 				goto on_error;
+			}
+			if( ( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
+			 && ( extent_file->primary_grain_directory_offset == (off64_t) -1 )
+			 && ( extent_file->compression_method == LIBVMDK_COMPRESSION_METHOD_DEFLATE ) )
+			{
+				if( libvmdk_extent_file_read_file_header(
+				     extent_file,
+				     file_io_pool,
+				     extent_index,
+				     extent_file_size - 1024,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read secondary extent file: %d header.",
+					 function,
+					 extent_index );
+
+					goto on_error;
+				}
 			}
 			if( extent_index == 0 )
 			{
@@ -2215,7 +2239,7 @@ int libvmdk_handle_open_read_grain_table(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_IO,
 				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read extent file: %d header.",
+				 "%s: unable to read extent file: %d grain directories.",
 				 function,
 				 extent_index );
 
@@ -2659,7 +2683,7 @@ ssize_t libvmdk_handle_read_buffer(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: requested offset\t\t\t: 0x%08" PRIx64 "\n",
+			 "%s: requested offset\t\t\t\t: 0x%08" PRIx64 "\n",
 			 function,
 			 internal_handle->current_offset );
 		}
@@ -2851,14 +2875,14 @@ ssize_t libvmdk_handle_read_buffer(
 /* Reads (media) data at a specific offset
  * Returns the number of bytes read or -1 on error
  */
-ssize_t libvmdk_handle_read_random(
+ssize_t libvmdk_handle_read_buffer_at_offset(
          libvmdk_handle_t *handle,
          void *buffer,
          size_t buffer_size,
          off64_t offset,
          libcerror_error_t **error )
 {
-	static char *function = "libvmdk_handle_read_random";
+	static char *function = "libvmdk_handle_read_buffer_at_offset";
 	ssize_t read_count    = 0;
 
 	if( libvmdk_handle_seek_offset(
@@ -2967,14 +2991,14 @@ ssize_t libvmdk_handle_write_buffer(
  * Will initialize write if necessary
  * Returns the number of input bytes written, 0 when no longer bytes can be written or -1 on error
  */
-ssize_t libvmdk_handle_write_random(
+ssize_t libvmdk_handle_write_buffer_at_offset(
          libvmdk_handle_t *handle,
          const void *buffer,
          size_t buffer_size,
          off64_t offset,
          libcerror_error_t **error )
 {
-	static char *function = "libvmdk_handle_write_random";
+	static char *function = "libvmdk_handle_write_buffer_at_offset";
 	ssize_t write_count   = 0;
 
 	if( libvmdk_handle_seek_offset(

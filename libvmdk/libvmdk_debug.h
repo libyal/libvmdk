@@ -37,6 +37,12 @@ extern "C" {
 void libvmdk_debug_print_vmdk_flags(
       uint32_t flags );
 
+const char *libvmdk_debug_get_compression_method_description(
+             uint32_t compression_method );
+
+const char *libvmdk_debug_get_marker_description(
+             uint32_t marker );
+
 int libvmdk_debug_print_read_offsets(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error );

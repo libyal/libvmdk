@@ -62,6 +62,50 @@ void libvmdk_debug_print_vmdk_flags(
 	 "\n" );
 }
 
+/* Returns a string with the compression method description
+ */
+const char *libvmdk_debug_get_compression_method_description(
+             uint32_t compression_method )
+{
+	switch( compression_method )
+	{
+		case LIBVMDK_COMPRESSION_METHOD_NONE:
+			return( "None" );
+
+		case LIBVMDK_COMPRESSION_METHOD_DEFLATE:
+			return( "Deflate" );
+
+		default:
+			break;
+	}
+	return( "UNKNOWN" );
+}
+
+/* Returns a string with the maker description
+ */
+const char *libvmdk_debug_get_marker_description(
+             uint32_t marker )
+{
+	switch( marker )
+	{
+		case LIBVMDK_MARKER_END_OF_STREAM:
+			return( "End of stream" );
+
+		case LIBVMDK_MARKER_GRAIN_TABLE:
+			return( "Grain table" );
+
+		case LIBVMDK_MARKER_GRAIN_DIRECTORY:
+			return( "Grain directory" );
+
+		case LIBVMDK_MARKER_FOOTER:
+			return( "Footer" );
+
+		default:
+			break;
+	}
+	return( "UNKNOWN" );
+}
+
 /* Prints the read offsets
  * Returns 1 if successful or -1 on error
  */
