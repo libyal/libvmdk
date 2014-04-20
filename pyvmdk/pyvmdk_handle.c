@@ -26,16 +26,15 @@
 #include <stdlib.h>
 #endif
 
-#include "pyvmdk.h"
 #include "pyvmdk_error.h"
 #include "pyvmdk_file_object_io_handle.h"
+#include "pyvmdk_file_objects_io_pool.h"
 #include "pyvmdk_handle.h"
 #include "pyvmdk_integer.h"
 #include "pyvmdk_libbfio.h"
 #include "pyvmdk_libcerror.h"
-#include "pyvmdk_libclocale.h"
-#include "pyvmdk_libcstring.h"
 #include "pyvmdk_libvmdk.h"
+#include "pyvmdk_metadata.h"
 #include "pyvmdk_python.h"
 #include "pyvmdk_unused.h"
 
@@ -45,6 +44,12 @@ int libvmdk_handle_open_file_io_handle(
      libvmdk_handle_t *handle,
      libbfio_handle_t *file_io_handle,
      int access_flags,
+     libvmdk_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_open_extent_data_files_file_io_pool(
+     libvmdk_handle_t *handle,
+     libbfio_pool_t *file_io_pool,
      libvmdk_error_t **error );
 #endif
 
@@ -64,21 +69,35 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 	  METH_VARARGS | METH_KEYWORDS,
 	  "open(filename, mode='r') -> None\n"
 	  "\n"
-	  "Opens a VMDK image handle using the descriptor file." },
+	  "Opens a handle using the descriptor file." },
 
 	{ "open_file_object",
 	  (PyCFunction) pyvmdk_handle_open_file_object,
 	  METH_VARARGS | METH_KEYWORDS,
 	  "open_file_object(file_object, mode='r') -> None\n"
 	  "\n"
-	  "Opens a VMDK image handle using a file-like object of the descriptor file." },
+	  "Opens a handle using a file-like object of the descriptor file." },
+
+	{ "open_extent_data_files",
+	  (PyCFunction) pyvmdk_handle_open_extent_data_files,
+	  METH_VARARGS | METH_KEYWORDS,
+	  "open_extent_data_files() -> None\n"
+	  "\n"
+	  "Opens the extent data files." },
+
+	{ "open_extent_data_files_file_objects",
+	  (PyCFunction) pyvmdk_handle_open_extent_data_files_file_objects,
+	  METH_VARARGS | METH_KEYWORDS,
+	  "open_extent_data_files_file_objects(file_objects) -> None\n"
+	  "\n"
+	  "Opens extent data files using a list of file-like objects." },
 
 	{ "close",
 	  (PyCFunction) pyvmdk_handle_close,
 	  METH_NOARGS,
 	  "close() -> None\n"
 	  "\n"
-	  "Closes a VMDK image handle." },
+	  "Closes a handle." },
 
 	{ "read_buffer",
 	  (PyCFunction) pyvmdk_handle_read_buffer,
@@ -87,10 +106,10 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 	  "\n"
 	  "Reads a buffer of data." },
 
-	{ "read_random",
-	  (PyCFunction) pyvmdk_handle_read_random,
+	{ "read_buffer_at_offset",
+	  (PyCFunction) pyvmdk_handle_read_buffer_at_offset,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "read_random(size, offset) -> String\n"
+	  "read_buffer_at_offset(size, offset) -> String\n"
 	  "\n"
 	  "Reads a buffer of data at a specific offset." },
 
@@ -131,7 +150,14 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 	  "\n"
 	  "Retrieves the current offset within the data." },
 
-	/* Functions to access the handle values */
+	/* Functions to access the metadata */
+
+	{ "get_disk_type",
+	  (PyCFunction) pyvmdk_handle_get_disk_type,
+	  METH_NOARGS,
+	  "get_type() -> Integer\n"
+	  "\n"
+	  "Retrieves the disk type." },
 
 	{ "get_media_size",
 	  (PyCFunction) pyvmdk_handle_get_media_size,
@@ -140,16 +166,89 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 	  "\n"
 	  "Retrieves the size of the media data." },
 
+	{ "get_content_identifier",
+	  (PyCFunction) pyvmdk_handle_get_content_identifier,
+	  METH_NOARGS,
+	  "get_type() -> Integer\n"
+	  "\n"
+	  "Retrieves the content identifier." },
+
+	{ "get_parent_content_identifier",
+	  (PyCFunction) pyvmdk_handle_get_parent_content_identifier,
+	  METH_NOARGS,
+	  "get_type() -> Integer\n"
+	  "\n"
+	  "Retrieves the parent content identifier." },
+
+	{ "get_parent_filename",
+	  (PyCFunction) pyvmdk_handle_get_parent_filename,
+	  METH_NOARGS,
+	  "get_parent_filename() -> Unicode string or None\n"
+	  "\n"
+	  "Retrieves the parent filename." },
+
+	/* Functions to access the extent descriptors */
+
+	{ "get_number_of_extents",
+	  (PyCFunction) pyvmdk_handle_get_number_of_extents,
+	  METH_NOARGS,
+	  "get_number_of_extents() -> Integer\n"
+	  "\n"
+	  "Retrieves the number of extents" },
+
+	{ "get_extent_descriptor",
+	  (PyCFunction) pyvmdk_handle_get_extent_descriptor,
+	  METH_VARARGS | METH_KEYWORDS,
+	  "get_extent_descriptor(extent_index) -> Object or None\n"
+	  "\n"
+	  "Retrieves a specific extent descriptor" },
+
 	/* Sentinel */
 	{ NULL, NULL, 0, NULL }
 };
 
 PyGetSetDef pyvmdk_handle_object_get_set_definitions[] = {
 
-	{ "size",
+	{ "disk_type",
+	  (getter) pyvmdk_handle_get_disk_type,
+	  (setter) 0,
+	  "The disk type.",
+	  NULL },
+
+	{ "media_size",
 	  (getter) pyvmdk_handle_get_media_size,
 	  (setter) 0,
 	  "The media size.",
+	  NULL },
+
+	{ "content_identifier",
+	  (getter) pyvmdk_handle_get_content_identifier,
+	  (setter) 0,
+	  "The content identifier.",
+	  NULL },
+
+	{ "parent_content_identifier",
+	  (getter) pyvmdk_handle_get_parent_content_identifier,
+	  (setter) 0,
+	  "The parent content identifier.",
+	  NULL },
+
+	{ "parent_filename",
+	  (getter) pyvmdk_handle_get_parent_filename,
+	  (setter) 0,
+	  "The parent filename.",
+	  NULL },
+
+	{ "number_of_extents",
+	  (getter) pyvmdk_handle_get_number_of_extents,
+	  (setter) 0,
+	  "The number of extents",
+	  NULL },
+
+	{ "extent_descriptors",
+	  (getter) pyvmdk_handle_get_extent_descriptors,
+	  (setter) 0,
+	  "The extent descriptors",
 	  NULL },
 
 	/* Sentinel */
@@ -358,19 +457,19 @@ int pyvmdk_handle_init(
 
 		return( -1 );
 	}
-	/* Make sure libvmdk handle is set to NULL
-	 */
-	pyvmdk_handle->handle = NULL;
+	pyvmdk_handle->handle         = NULL;
+	pyvmdk_handle->file_io_handle = NULL;
+	pyvmdk_handle->file_io_pool   = NULL;
 
 	if( libvmdk_handle_initialize(
 	     &( pyvmdk_handle->handle ),
 	     &error ) != 1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_MemoryError,
 		 "%s: unable to initialize handle.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
@@ -436,10 +535,10 @@ void pyvmdk_handle_free(
 	if( result != 1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_MemoryError,
 		 "%s: unable to free libvmdk handle.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
@@ -481,10 +580,10 @@ PyObject *pyvmdk_handle_signal_abort(
 	if( result != 1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_IOError,
 		 "%s: unable to signal abort.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
@@ -555,10 +654,10 @@ PyObject *pyvmdk_handle_open(
 	if( result != 1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_IOError,
 		 "%s: unable to open handle.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
@@ -579,13 +678,12 @@ PyObject *pyvmdk_handle_open_file_object(
            PyObject *arguments,
            PyObject *keywords )
 {
-	PyObject *file_object            = NULL;
-	libbfio_handle_t *file_io_handle = NULL;
-	libcerror_error_t *error         = NULL;
-	char *mode                       = NULL;
-	static char *keyword_list[]      = { "file_object", "mode", NULL };
-	static char *function            = "pyvmdk_handle_open_file_object";
-	int result                       = 0;
+	PyObject *file_object       = NULL;
+	libcerror_error_t *error    = NULL;
+	char *mode                  = NULL;
+	static char *keyword_list[] = { "file_object", "mode", NULL };
+	static char *function       = "pyvmdk_handle_open_file_object";
+	int result                  = 0;
 
 	if( pyvmdk_handle == NULL )
 	{
@@ -618,15 +716,15 @@ PyObject *pyvmdk_handle_open_file_object(
 		return( NULL );
 	}
 	if( pyvmdk_file_object_initialize(
-	     &file_io_handle,
+	     &( pyvmdk_handle->file_io_handle ),
 	     file_object,
 	     &error ) != 1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_MemoryError,
 		 "%s: unable to initialize file IO handle.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
@@ -637,7 +735,7 @@ PyObject *pyvmdk_handle_open_file_object(
 
 	result = libvmdk_handle_open_file_io_handle(
 	          pyvmdk_handle->handle,
-                  file_io_handle,
+                  pyvmdk_handle->file_io_handle,
                   LIBVMDK_OPEN_READ,
 	          &error );
 
@@ -646,10 +744,10 @@ PyObject *pyvmdk_handle_open_file_object(
 	if( result != 1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_IOError,
 		 "%s: unable to open handle.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
@@ -662,10 +760,143 @@ PyObject *pyvmdk_handle_open_file_object(
 	return( Py_None );
 
 on_error:
-	if( file_io_handle != NULL )
+	if( pyvmdk_handle->file_io_handle  != NULL )
 	{
 		libbfio_handle_free(
-		 &file_io_handle,
+		 &( pyvmdk_handle->file_io_handle ),
+		 NULL );
+	}
+	return( NULL );
+}
+
+/* Opens the extent data files
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyvmdk_handle_open_extent_data_files(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments PYVMDK_ATTRIBUTE_UNUSED )
+{
+	libcerror_error_t *error = NULL;
+	static char *function    = "pyvmdk_handle_open_extent_data_files";
+	int result               = 0;
+
+	if( pyvmdk_handle == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid handle.",
+		 function );
+
+		return( NULL );
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libvmdk_handle_open_extent_data_files(
+	          pyvmdk_handle->handle,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pyvmdk_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to open extent data files.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	Py_IncRef(
+	 Py_None );
+
+	return( Py_None );
+}
+
+/* Opens extent data files using a list of file-like objects
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyvmdk_handle_open_extent_data_files_file_objects(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+	PyObject *file_objects      = NULL;
+	libcerror_error_t *error    = NULL;
+	static char *keyword_list[] = { "file_object", NULL };
+	static char *function       = "pyvmdk_handle_open_extent_data_files_file_objects";
+	int result                  = 0;
+
+	if( pyvmdk_handle == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid file.",
+		 function );
+
+		return( NULL );
+	}
+	if( PyArg_ParseTupleAndKeywords(
+	     arguments,
+	     keywords,
+	     "O",
+	     keyword_list,
+	     &file_objects ) == 0 )
+        {
+                return( NULL );
+        }
+	if( pyvmdk_file_objects_pool_initialize(
+	     &( pyvmdk_handle->file_io_pool ),
+	     file_objects,
+	     LIBBFIO_OPEN_READ,
+	     &error ) != 1 )
+	{
+		pyvmdk_error_raise(
+		 error,
+		 PyExc_MemoryError,
+		 "%s: unable to initialize file IO pool.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libvmdk_handle_open_extent_data_files_file_io_pool(
+	          pyvmdk_handle->handle,
+                  pyvmdk_handle->file_io_pool,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pyvmdk_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to open extent data files.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		goto on_error;
+	}
+	Py_IncRef(
+	 Py_None );
+
+	return( Py_None );
+
+on_error:
+	if( pyvmdk_handle->file_io_pool != NULL )
+	{
+		libbfio_pool_free(
+		 &( pyvmdk_handle->file_io_pool ),
 		 NULL );
 	}
 	return( NULL );
@@ -704,15 +935,63 @@ PyObject *pyvmdk_handle_close(
 	if( result != 0 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_IOError,
 		 "%s: unable to close handle.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
 
 		return( NULL );
+	}
+	if( pyvmdk_handle->file_io_handle != NULL )
+	{
+		Py_BEGIN_ALLOW_THREADS
+
+		result = libbfio_handle_free(
+		          &( pyvmdk_handle->file_io_handle ),
+		          &error );
+
+		Py_END_ALLOW_THREADS
+
+		if( result != 1 )
+		{
+			pyvmdk_error_raise(
+			 error,
+			 PyExc_IOError,
+			 "%s: unable to free libbfio file IO handle.",
+			 function );
+
+			libcerror_error_free(
+			 &error );
+
+			return( NULL );
+		}
+	}
+	if( pyvmdk_handle->file_io_pool != NULL )
+	{
+		Py_BEGIN_ALLOW_THREADS
+
+		result = libbfio_pool_free(
+		          &( pyvmdk_handle->file_io_pool ),
+		          &error );
+
+		Py_END_ALLOW_THREADS
+
+		if( result != 1 )
+		{
+			pyvmdk_error_raise(
+			 error,
+			 PyExc_IOError,
+			 "%s: unable to free libbfio file IO pool.",
+			 function );
+
+			libcerror_error_free(
+			 &error );
+
+			return( NULL );
+		}
 	}
 	Py_IncRef(
 	 Py_None );
@@ -729,7 +1008,7 @@ PyObject *pyvmdk_handle_read_buffer(
            PyObject *keywords )
 {
 	libcerror_error_t *error    = NULL;
-	PyObject *result_data       = NULL;
+	PyObject *string_object     = NULL;
 	static char *function       = "pyvmdk_handle_read_buffer";
 	static char *keyword_list[] = { "size", NULL };
 	ssize_t read_count          = 0;
@@ -773,16 +1052,16 @@ PyObject *pyvmdk_handle_read_buffer(
 
 		return( NULL );
 	}
-	result_data = PyString_FromStringAndSize(
-	               NULL,
-	               read_size );
+	string_object = PyString_FromStringAndSize(
+	                 NULL,
+	                 read_size );
 
 	Py_BEGIN_ALLOW_THREADS
 
 	read_count = libvmdk_handle_read_buffer(
 	              pyvmdk_handle->handle,
 	              PyString_AsString(
-	               result_data ),
+	               string_object ),
 	              (size_t) read_size,
 	              &error );
 
@@ -791,44 +1070,44 @@ PyObject *pyvmdk_handle_read_buffer(
 	if( read_count <= -1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_IOError,
 		 "%s: unable to read data.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
 
 		Py_DecRef(
-		 (PyObject *) result_data );
+		 (PyObject *) string_object );
 
 		return( NULL );
 	}
 	/* Need to resize the string here in case read_size was not fully read.
 	 */
 	if( _PyString_Resize(
-	     &result_data,
+	     &string_object,
 	     (Py_ssize_t) read_count ) != 0 )
 	{
 		Py_DecRef(
-		 (PyObject *) result_data );
+		 (PyObject *) string_object );
 
 		return( NULL );
 	}
-	return( result_data );
+	return( string_object );
 }
 
 /* Reads data at a specific offset
  * Returns a Python object if successful or NULL on error
  */
-PyObject *pyvmdk_handle_read_random(
+PyObject *pyvmdk_handle_read_buffer_at_offset(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments,
            PyObject *keywords )
 {
 	libcerror_error_t *error    = NULL;
-	PyObject *result_data       = NULL;
-	static char *function       = "pyvmdk_handle_read_random";
+	PyObject *string_object     = NULL;
+	static char *function       = "pyvmdk_handle_read_buffer_at_offset";
 	static char *keyword_list[] = { "size", "offset", NULL };
 	off64_t read_offset         = 0;
 	ssize_t read_count          = 0;
@@ -884,16 +1163,16 @@ PyObject *pyvmdk_handle_read_random(
 	}
 	/* Make sure the data fits into the memory buffer
 	 */
-	result_data = PyString_FromStringAndSize(
-	               NULL,
-	               read_size );
+	string_object = PyString_FromStringAndSize(
+	                 NULL,
+	                 read_size );
 
 	Py_BEGIN_ALLOW_THREADS
 
-	read_count = libvmdk_handle_read_random(
+	read_count = libvmdk_handle_read_buffer_at_offset(
 	              pyvmdk_handle->handle,
 	              PyString_AsString(
-	               result_data ),
+	               string_object ),
 	              (size_t) read_size,
 	              (off64_t) read_offset,
 	              &error );
@@ -903,31 +1182,31 @@ PyObject *pyvmdk_handle_read_random(
 	if( read_count <= -1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_IOError,
 		 "%s: unable to read data.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
 
 		Py_DecRef(
-		 (PyObject *) result_data );
+		 (PyObject *) string_object );
 
 		return( NULL );
 	}
 	/* Need to resize the string here in case read_size was not fully read.
 	 */
 	if( _PyString_Resize(
-	     &result_data,
+	     &string_object,
 	     (Py_ssize_t) read_count ) != 0 )
 	{
 		Py_DecRef(
-		 (PyObject *) result_data );
+		 (PyObject *) string_object );
 
 		return( NULL );
 	}
-	return( result_data );
+	return( string_object );
 }
 
 /* Seeks a certain offset in the data
@@ -976,10 +1255,10 @@ PyObject *pyvmdk_handle_seek_offset(
  	if( offset == -1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_IOError,
 		 "%s: unable to seek offset.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
@@ -1028,10 +1307,10 @@ PyObject *pyvmdk_handle_get_offset(
 	if( result != 1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_IOError,
 		 "%s: unable to retrieve offset.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
@@ -1040,58 +1319,6 @@ PyObject *pyvmdk_handle_get_offset(
 	}
 	integer_object = pyvmdk_integer_signed_new_from_64bit(
 	                  (int64_t) current_offset );
-
-	return( integer_object );
-}
-
-/* Retrieves the media size
- * Returns a Python object if successful or NULL on error
- */
-PyObject *pyvmdk_handle_get_media_size(
-           pyvmdk_handle_t *pyvmdk_handle,
-           PyObject *arguments PYVMDK_ATTRIBUTE_UNUSED )
-{
-	libcerror_error_t *error = NULL;
-	PyObject *integer_object = NULL;
-	static char *function    = "pyvmdk_handle_get_media_size";
-	size64_t media_size      = 0;
-	int result               = 0;
-
-	PYVMDK_UNREFERENCED_PARAMETER( arguments )
-
-	if( pyvmdk_handle == NULL )
-	{
-		PyErr_Format(
-		 PyExc_TypeError,
-		 "%s: invalid handle.",
-		 function );
-
-		return( NULL );
-	}
-	Py_BEGIN_ALLOW_THREADS
-
-	result = libvmdk_handle_get_media_size(
-	          pyvmdk_handle->handle,
-	          &media_size,
-	          &error );
-
-	Py_END_ALLOW_THREADS
-
-	if( result != 1 )
-	{
-		pyvmdk_error_raise(
-		 PyExc_IOError,
-		 "%s: failed to retrieve media size.",
-		 function,
-		 error );
-
-		libcerror_error_free(
-		 &error );
-
-		return( NULL );
-	}
-	integer_object = pyvmdk_integer_unsigned_new_from_64bit(
-	                  (uint64_t) media_size );
 
 	return( integer_object );
 }

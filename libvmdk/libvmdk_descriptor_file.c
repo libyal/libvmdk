@@ -157,7 +157,7 @@ int libvmdk_descriptor_file_free(
 		}
 		if( libcdata_array_free(
 		     &( ( *descriptor_file )->extents_array ),
-		     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_descriptor_free,
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_internal_extent_descriptor_free,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1309,12 +1309,12 @@ int libvmdk_descriptor_file_read_extents(
      int *line_index,
      libcerror_error_t **error )
 {
-	libvmdk_extent_descriptor_t *extent_descriptor = NULL;
-	char *line_string_segment                      = NULL;
-	static char *function                          = "libvmdk_descriptor_file_read_extents";
-	size_t line_string_segment_index               = 0;
-	size_t line_string_segment_size                = 0;
-	int entry_index                                = 0;
+	libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
+	char *line_string_segment                               = NULL;
+	static char *function                                   = "libvmdk_descriptor_file_read_extents";
+	size_t line_string_segment_index                        = 0;
+	size_t line_string_segment_size                         = 0;
+	int entry_index                                         = 0;
 
 	if( descriptor_file == NULL )
 	{
@@ -1444,7 +1444,7 @@ int libvmdk_descriptor_file_read_extents(
 
 	if( libcdata_array_empty(
 	     descriptor_file->extents_array,
-	     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_descriptor_free,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_internal_extent_descriptor_free,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1605,13 +1605,13 @@ int libvmdk_descriptor_file_read_extents(
 on_error:
 	if( extent_descriptor != NULL )
 	{
-		libvmdk_extent_descriptor_free(
+		libvmdk_internal_extent_descriptor_free(
 		 &extent_descriptor,
 		 NULL );
 	}
 	libcdata_array_empty(
 	 descriptor_file->extents_array,
-	 (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_descriptor_free,
+	 (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_internal_extent_descriptor_free,
 	 NULL );
 
 	return( -1 );
@@ -2039,7 +2039,7 @@ int libvmdk_descriptor_file_get_number_of_extents(
 int libvmdk_descriptor_file_get_extent_by_index(
      libvmdk_descriptor_file_t *descriptor_file,
      int extent_index,
-     libvmdk_extent_descriptor_t **extent_descriptor,
+     libvmdk_internal_extent_descriptor_t **extent_descriptor,
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_descriptor_file_get_extent_by_index";

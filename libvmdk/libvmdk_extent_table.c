@@ -1880,7 +1880,7 @@ int libvmdk_extent_table_set_extent_file_by_index(
  */
 int libvmdk_extent_table_set_extent_by_extent_descriptor(
      libvmdk_extent_table_t *extent_table,
-     libvmdk_extent_descriptor_t *extent_descriptor,
+     libvmdk_internal_extent_descriptor_t *extent_descriptor,
      int extent_index,
      int file_io_pool_entry,
      size64_t extent_file_size,

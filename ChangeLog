@@ -1,19 +1,13 @@
 TODO
-* check if extent files are cached after reading?
-* libvmdk_extent_file_read_element_data
-  - why is only the primary grain table read?
+* fix mingw build issues
+* if there is a single filename in the disk database and the current file is
+  not a descriptor-only file assume the current file is the right one even if
+  the names don't match
 * update manuals
   - update libvmdk.3
   - update vmdkinfo.1
   - add vmdkmount.1
-* pyvmdk
-  - expose exent data files
-  - expose parent images
-* compressed VMDK - validate uncompressed sector value in compressed data header?
 * handle ZERO extents?
-* if there is a single filename in the disk database and the current file is
-  not a descriptor-only file assume the current file is the right one even if
-  the names don't match
 * extent file add windows support (encoding)
   - add codepage functions + tests
   - libvmdk_extent_descriptor.c:629
@@ -24,36 +18,25 @@ TODO
   - remove unused functions from libvmdk_extent_table after refactor
 * implement libvmdk_handle_set_maximum_number_of_open_handles
 * add support for zero-grain table entry support
-* test multi segment sparse image support
-* build grain table
-* descriptor file: put disk data base in fvalue table ?
-* vmdkinfo:
-  - print dirty status
-  - add byte size string support
 
 * code clean up:
   - support and locale functions
-* add glob functions
+* add glob functions?
 * debug output
   - descriptor file: disk database
-  - extent file: flags
-  - extent file: compression method
 
 API
 * add functions to access storage media data
 * add functions to access extents
-
-library
-* add support for VMDK markers
-* complete COWD support
-* support compressed extent files
+* add functions to access grains
 
 Tools:
 * vmdkinfo:
   - add flag to have test to check if all the extent files are there?
   - same for all the parent extent files?
   - add option to print descriptor file data?
-  - print disk database?
+  - print dirty status
+  - add byte size string support
 
 Tests:
 * open close
@@ -74,6 +57,11 @@ Tests:
   - cowd sparse split
   - compressed (done)
   - (compressed) with parent (done)
+
+20140420
+* updated dependencies
+* updated Python bindings
+* worked on exposing extent information
 
 20140417
 * worked on support for a stream optimized VMDK file without a grain table

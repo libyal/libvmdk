@@ -409,3 +409,144 @@ int libvmdk_handle_get_utf16_parent_filename(
 	return( result );
 }
 
+/* Retrieves the number of extents
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_get_number_of_extents(
+     libvmdk_handle_t *handle,
+     int *number_of_extents,
+     libcerror_error_t **error )
+{
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	static char *function                      = "libvmdk_handle_get_number_of_extents";
+
+	if( handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid handle.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle = (libvmdk_internal_handle_t *) handle;
+
+	if( internal_handle->descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid internal handle - missing descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( libvmdk_descriptor_file_get_number_of_extents(
+	     internal_handle->descriptor_file,
+	     number_of_extents,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of extents.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Retrieves a specific extent descriptor
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_get_extent_descriptor(
+     libvmdk_handle_t *handle,
+     int extent_index,
+     libvmdk_extent_descriptor_t **extent_descriptor,
+     libcerror_error_t **error )
+{
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	static char *function                      = "libvmdk_handle_get_extent_descriptor";
+
+	if( handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid handle.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle = (libvmdk_internal_handle_t *) handle;
+
+	if( internal_handle->descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid internal handle - missing descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( *extent_descriptor != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid extent descriptor value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( libvmdk_descriptor_file_get_extent_by_index(
+	     internal_handle->descriptor_file,
+	     extent_index,
+	     (libvmdk_internal_extent_descriptor_t **) extent_descriptor,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve extent: %d from descriptor file.",
+		 function,
+		 extent_index );
+
+		return( -1 );
+	}
+	if( *extent_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing extent descriptor: %d.",
+		 function,
+		 extent_index );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+

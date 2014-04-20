@@ -83,6 +83,19 @@ int libvmdk_handle_get_utf16_parent_filename(
      size_t utf16_string_size,
      libcerror_error_t **error );
 
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_number_of_extents(
+     libvmdk_handle_t *handle,
+     int *number_of_extents,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_extent_descriptor(
+     libvmdk_handle_t *handle,
+     int extent_index,
+     libvmdk_extent_descriptor_t **extent_descriptor,
+     libcerror_error_t **error );
+
 #if defined( __cplusplus )
 }
 #endif

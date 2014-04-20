@@ -1,5 +1,5 @@
 /*
- * Integer functions
+ * Error functions
  *
  * Copyright (c) 2009-2014, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -20,31 +20,58 @@
  */
 
 #include <common.h>
+#include <memory.h>
 #include <types.h>
+
+#if defined( HAVE_STDARG_H ) || defined( WINAPI )
+#include <stdarg.h>
+#elif defined( HAVE_VARARGS_H )
+#include <varargs.h>
+#else
+#error Missing headers stdarg.h and varargs.h
+#endif
 
 #include "pyvmdk_error.h"
 #include "pyvmdk_libcerror.h"
 #include "pyvmdk_libcstring.h"
 #include "pyvmdk_python.h"
 
+#if defined( HAVE_STDARG_H ) || defined( WINAPI )
+#define VARARGS( function, error, exception_object, type, argument ) \
+	function( error, exception_object, type argument, ... )
+#define VASTART( argument_list, type, name ) \
+	va_start( argument_list, name )
+#define VAEND( argument_list ) \
+	va_end( argument_list )
+
+#elif defined( HAVE_VARARGS_H )
+#define VARARGS( function, error, exception_object, type, argument ) \
+	function( error, exception_object, va_alist ) va_dcl
+#define VASTART( argument_list, type, name ) \
+	{ type name; va_start( argument_list ); name = va_arg( argument_list, type )
+#define VAEND( argument_list ) \
+	va_end( argument_list ); }
+
+#endif
+
 /* Raises an error
  */
-void pyvmdk_error_raise(
+void VARARGS(
+      pyvmdk_error_raise,
+      libcerror_error_t *error,
       PyObject *exception_object,
-      const char *format_string,
-      const char *function,
-      libcerror_error_t *error )
+      const char *,
+      format_string )
 {
+	va_list argument_list;
+
 	char error_string[ PYVMDK_ERROR_STRING_SIZE ];
-	char extended_format_string[ PYVMDK_ERROR_FORMAT_STRING_SIZE ];
+	char exception_string[ PYVMDK_ERROR_STRING_SIZE ];
 
-	size_t error_string_index   = 0;
-	size_t format_string_length = 0;
+	static char *function     = "pyvmdk_error_raise";
+	size_t error_string_index = 0;
+	int print_count           = 0;
 
-	if( function == NULL )
-	{
-		function = "pyvmdk_error_raise";
-	}
        	if( format_string == NULL )
 	{
 		PyErr_Format(
@@ -54,57 +81,70 @@ void pyvmdk_error_raise(
 
 		return;
 	}
+	VASTART(
+	 argument_list,
+	 const char *,
+	 format_string );
+
+	print_count = PyOS_vsnprintf(
+	               exception_string,
+	               PYVMDK_ERROR_STRING_SIZE,
+	               format_string,
+	               argument_list );
+
+	VAEND(
+	 argument_list );
+
+       	if( print_count < 0 )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: unable to format exception string.",
+		 function );
+
+		return;
+	}
 	if( error != NULL )
 	{
-		format_string_length = libcstring_narrow_string_length(
-		                        format_string );
-
-		if( format_string_length < ( PYVMDK_ERROR_FORMAT_STRING_SIZE - 4 ) )
+		if( libcerror_error_backtrace_sprint(
+		     error,
+		     error_string,
+		     PYVMDK_ERROR_STRING_SIZE ) != -1 )
 		{
-			if( libcerror_error_backtrace_sprint(
-			     error,
-			     error_string,
-			     PYVMDK_ERROR_STRING_SIZE ) != -1 )
+			while( error_string_index < PYVMDK_ERROR_STRING_SIZE )
 			{
-				if( memory_copy(
-				     extended_format_string,
-				     format_string,
-				     format_string_length ) != NULL )
+				if( error_string[ error_string_index ] == 0 )
 				{
-					extended_format_string[ format_string_length++ ] = ' ';
-					extended_format_string[ format_string_length++ ] = '%';
-					extended_format_string[ format_string_length++ ] = 's';
-					extended_format_string[ format_string_length ] = 0;
-
-					for( error_string_index = 0;
-					     error_string_index < PYVMDK_ERROR_STRING_SIZE;
-					     error_string_index++ )
-					{
-						if( error_string[ error_string_index ] == 0 )
-						{
-							break;
-						}
-						if( error_string[ error_string_index ] == '\n' )
-						{
-							error_string[ error_string_index ] = ' ';
-						}
-					}
-					PyErr_Format(
-					 exception_object,
-					 extended_format_string,
-					 function,
-					 error_string );
-
-					return;
+					break;
 				}
+				if( error_string[ error_string_index ] == '\n' )
+				{
+					error_string[ error_string_index ] = ' ';
+				}
+				error_string_index++;
 			}
+			if( error_string_index >= PYVMDK_ERROR_STRING_SIZE )
+			{
+				error_string[ PYVMDK_ERROR_STRING_SIZE - 1 ] = 0;
+			}
+			PyErr_Format(
+			 exception_object,
+			 "%s %s",
+			 exception_string,
+			 error_string );
+
+			return;
 		}
 	}
 	PyErr_Format(
 	 exception_object,
-	 format_string,
-	 function );
+	 "%s",
+	 exception_string );
 
 	return;
 }
+
+#undef VARARGS
+#undef VASTART
+#undef VAEND
 

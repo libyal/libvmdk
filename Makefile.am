@@ -120,6 +120,7 @@ splint:
 	(cd $(srcdir)/libvmdk && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libcsystem && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/vmdktools && $(MAKE) splint $(AM_MAKEFLAGS))
+	(cd $(srcdir)/pyvmdk && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/po && $(MAKE) $(AM_MAKEFLAGS))
 	(cd $(srcdir)/tests && $(MAKE) $(AM_MAKEFLAGS))
 

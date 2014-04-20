@@ -27,6 +27,8 @@
 #endif
 
 #include "pyvmdk.h"
+#include "pyvmdk_extent_descriptor.h"
+#include "pyvmdk_extent_descriptors.h"
 #include "pyvmdk_error.h"
 #include "pyvmdk_libcerror.h"
 #include "pyvmdk_libcstring.h"
@@ -154,10 +156,10 @@ PyObject *pyvmdk_check_file_signature(
 	if( result == -1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_IOError,
 		 "%s: unable to check file signature.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
@@ -203,10 +205,10 @@ PyObject *pyvmdk_check_file_signature_file_object(
 	     &error ) != 1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_MemoryError,
 		 "%s: unable to initialize file IO handle.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
@@ -224,10 +226,10 @@ PyObject *pyvmdk_check_file_signature_file_object(
 	if( result == -1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_IOError,
 		 "%s: unable to check file signature.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
@@ -239,10 +241,10 @@ PyObject *pyvmdk_check_file_signature_file_object(
 	     &error ) != 1 )
 	{
 		pyvmdk_error_raise(
+		 error,
 		 PyExc_MemoryError,
 		 "%s: unable to free file IO handle.",
-		 function,
-		 error );
+		 function );
 
 		libcerror_error_free(
 		 &error );
@@ -276,9 +278,11 @@ on_error:
 PyMODINIT_FUNC initpyvmdk(
                 void )
 {
-	PyObject *module                 = NULL;
-	PyTypeObject *handle_type_object = NULL;
-	PyGILState_STATE gil_state       = 0;
+	PyObject *module                             = NULL;
+	PyTypeObject *extent_descriptor_type_object  = NULL;
+	PyTypeObject *extent_descriptors_type_object = NULL;
+	PyTypeObject *handle_type_object             = NULL;
+	PyGILState_STATE gil_state                   = 0;
 
 	/* Create the module
 	 * This function must be called before grabbing the GIL
@@ -309,8 +313,46 @@ PyMODINIT_FUNC initpyvmdk(
 
 	PyModule_AddObject(
 	 module,
-	"handle",
-	(PyObject *) handle_type_object );
+	 "handle",
+	 (PyObject *) handle_type_object );
+
+	/* Setup the extent descriptors type object
+	 */
+	pyvmdk_extent_descriptors_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyvmdk_extent_descriptors_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyvmdk_extent_descriptors_type_object );
+
+	extent_descriptors_type_object = &pyvmdk_extent_descriptors_type_object;
+
+	PyModule_AddObject(
+	 module,
+	 "_extent_descriptors",
+	 (PyObject *) extent_descriptors_type_object );
+
+	/* Setup the extent descriptor type object
+	 */
+	pyvmdk_extent_descriptor_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyvmdk_extent_descriptor_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyvmdk_extent_descriptor_type_object );
+
+	extent_descriptor_type_object = &pyvmdk_extent_descriptor_type_object;
+
+	PyModule_AddObject(
+	 module,
+	 "extent_descriptor",
+	 (PyObject *) extent_descriptor_type_object );
 
 on_error:
 	PyGILState_Release(

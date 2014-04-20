@@ -1,5 +1,5 @@
 /*
- * The internal type definitions
+ * Python file objects IO pool functions
  *
  * Copyright (c) 2009-2014, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,36 +19,29 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBVMDK_INTERNAL_TYPES_H )
-#define _LIBVMDK_INTERNAL_TYPES_H
+#if !defined( _PYVMDK_FILE_OBJECTS_IO_POOL_H )
+#define _PYVMDK_FILE_OBJECTS_IO_POOL_H
 
 #include <common.h>
 #include <types.h>
 
-/* Define HAVE_LOCAL_LIBVMDK for local use of libvhdi
- * The definitions in <libvhdi/types.h> are copied here
- * for local use of libvhdi
- */
-#if defined( HAVE_LOCAL_LIBVMDK )
+#include "pyvmdk_libbfio.h"
+#include "pyvmdk_libcerror.h"
+#include "pyvmdk_python.h"
 
-/* The following type definitions hide internal data structures
- */
-#if defined( HAVE_DEBUG_OUTPUT )
-typedef struct libvhdi_extent_descriptor {}	libvhdi_extent_descriptor_t;
-typedef struct libvhdi_handle {}		libvhdi_handle_t;
+#if defined( __cplusplus )
+extern "C" {
+#endif
 
-#else
-typedef intptr_t libvhdi_extent_descriptor_t;
-typedef intptr_t libvhdi_handle_t;
+int pyvmdk_file_objects_pool_initialize(
+     libbfio_pool_t **pool,
+     PyObject *sequence_object,
+     int access_flags,
+     libcerror_error_t **error );
 
-#endif /* defined( HAVE_DEBUG_OUTPUT ) */
-
-#endif /* defined( HAVE_LOCAL_LIBVMDK ) */
-
-/* The largest primary (or scalar) available
- * supported by a single load and store instruction
- */
-typedef unsigned long int libvmdk_aligned_t;
+#if defined( __cplusplus )
+}
+#endif
 
 #endif
 

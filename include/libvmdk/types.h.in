@@ -201,6 +201,7 @@ typedef int64_t off64_t;
 
 /* The following type definitions hide internal data structures
  */
+typedef intptr_t libvmdk_extent_descriptor_t;
 typedef intptr_t libvmdk_handle_t;
 
 #ifdef __cplusplus

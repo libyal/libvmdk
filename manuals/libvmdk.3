@@ -1,4 +1,4 @@
-.Dd April 16, 2014
+.Dd April 20, 2014
 .Dt libvmdk 3
 .Os libvmdk
 .Sh NAME
@@ -60,6 +60,16 @@ Handle functions
 .Fn libvmdk_handle_open "libvmdk_handle_t *file, const char *filename, int flags, libvmdk_error_t **error"
 .Ft int
 .Fn libvmdk_handle_close "libvmdk_handle_t *file, libvmdk_error_t **error"
+.Ft ssize_t
+.Fn libvmdk_handle_read_buffer "libvmdk_handle_t *handle, void *buffer, size_t buffer_size, libvmdk_error_t **error"
+.Ft ssize_t
+.Fn libvmdk_handle_read_buffer_at_offset "libvmdk_handle_t *handle, void *buffer, size_t buffer_size, off64_t offset, libvmdk_error_t **error"
+.Ft off64_t
+.Fn libvmdk_handle_seek_offset "libvmdk_handle_t *handle, off64_t offset, int whence, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_get_offset "libvmdk_handle_t *handle, off64_t *offset, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_set_parent_handle "libvmdk_handle_t *handle, libvmdk_handle_t *parent_handle, libvmdk_error_t **error"
 .Pp
 Available when compiled with wide character string support:
 .Ft int
@@ -86,6 +96,26 @@ Metadata functions
 .Fn libvmdk_handle_get_utf16_parent_filename_size "libvmdk_handle_t *handle, size_t *utf16_string_size, libvmdk_error_t **error"
 .Ft int
 .Fn libvmdk_handle_get_utf16_parent_filename "libvmdk_handle_t *handle, uint16_t *utf16_string, size_t utf16_string_size, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_get_number_of_extents "libvmdk_handle_t *handle, int *number_of_extents, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_get_extent_descriptor "libvmdk_handle_t *handle, int extent_index, libvmdk_extent_descriptor_t **extent_descriptor, libvmdk_error_t **error"
+.Pp
+Extent descriptor functions
+.Ft int
+.Fn libvmdk_extent_descriptor_free "libvmdk_extent_descriptor_t **extent_descriptor, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_extent_descriptor_get_type "libvmdk_extent_descriptor_t *extent_descriptor, int *type, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_extent_descriptor_get_range "libvmdk_extent_descriptor_t *extent_descriptor, off64_t *offset, size64_t *size, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_extent_descriptor_get_utf8_filename_size "libvmdk_extent_descriptor_t *extent_descriptor, size_t *utf8_string_size, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_extent_descriptor_get_utf8_filename "libvmdk_extent_descriptor_t *extent_descriptor, uint8_t *utf8_string, size_t utf8_string_size, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_extent_descriptor_get_utf16_filename_size "libvmdk_extent_descriptor_t *extent_descriptor, size_t *utf16_string_size, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_extent_descriptor_get_utf16_filename "libvmdk_extent_descriptor_t *extent_descriptor, uint16_t *utf16_string, size_t utf16_string_size, libvmdk_error_t **error"
 .Sh DESCRIPTION
 The
 .Fn libvmdk_get_version

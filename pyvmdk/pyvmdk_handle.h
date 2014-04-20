@@ -25,6 +25,7 @@
 #include <common.h>
 #include <types.h>
 
+#include "pyvmdk_libbfio.h"
 #include "pyvmdk_libvmdk.h"
 #include "pyvmdk_python.h"
 
@@ -43,6 +44,14 @@ struct pyvmdk_handle
 	/* The libvmdk handle
 	 */
 	libvmdk_handle_t *handle;
+
+	/* The libbfio file IO handle
+	 */
+	libbfio_handle_t *file_io_handle;
+
+	/* The file IO pool
+	 */
+	libbfio_pool_t *file_io_pool;
 };
 
 extern PyMethodDef pyvmdk_handle_object_methods[];
@@ -81,6 +90,15 @@ PyObject *pyvmdk_handle_open_file_object(
            PyObject *arguments,
            PyObject *keywords );
 
+PyObject *pyvmdk_handle_open_extent_data_files(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments );
+
+PyObject *pyvmdk_handle_open_extent_data_files_file_objects(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments,
+           PyObject *keywords );
+
 PyObject *pyvmdk_handle_close(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments );
@@ -90,7 +108,7 @@ PyObject *pyvmdk_handle_read_buffer(
            PyObject *arguments,
            PyObject *keywords );
 
-PyObject *pyvmdk_handle_read_random(
+PyObject *pyvmdk_handle_read_buffer_at_offset(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments,
            PyObject *keywords );
@@ -101,10 +119,6 @@ PyObject *pyvmdk_handle_seek_offset(
            PyObject *keywords );
 
 PyObject *pyvmdk_handle_get_offset(
-           pyvmdk_handle_t *pyvmdk_handle,
-           PyObject *arguments );
-
-PyObject *pyvmdk_handle_get_media_size(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments );
 

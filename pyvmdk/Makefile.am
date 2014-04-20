@@ -17,7 +17,10 @@ pyexec_LTLIBRARIES = pyvmdk.la
 pyvmdk_la_SOURCES = \
 	pyvmdk.c pyvmdk.h \
 	pyvmdk_error.c pyvmdk_error.h \
+	pyvmdk_extent_descriptor.c pyvmdk_extent_descriptor.h \
+	pyvmdk_extent_descriptors.c pyvmdk_extent_descriptors.h \
 	pyvmdk_file_object_io_handle.c pyvmdk_file_object_io_handle.h \
+	pyvmdk_file_objects_io_pool.c pyvmdk_file_objects_io_pool.h \
 	pyvmdk_handle.c pyvmdk_handle.h \
 	pyvmdk_integer.c pyvmdk_integer.h \
 	pyvmdk_libbfio.h \
@@ -25,6 +28,7 @@ pyvmdk_la_SOURCES = \
 	pyvmdk_libclocale.h \
 	pyvmdk_libcstring.h \
 	pyvmdk_libvmdk.h \
+	pyvmdk_metadata.c pyvmdk_metadata.h \
 	pyvmdk_python.h \
 	pyvmdk_unused.h
 

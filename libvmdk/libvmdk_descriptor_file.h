@@ -137,7 +137,7 @@ int libvmdk_descriptor_file_get_number_of_extents(
 int libvmdk_descriptor_file_get_extent_by_index(
      libvmdk_descriptor_file_t *descriptor_file,
      int extent_index,
-     libvmdk_extent_descriptor_t **extent_descriptor,
+     libvmdk_internal_extent_descriptor_t **extent_descriptor,
      libcerror_error_t **error );
 
 int libvmdk_descriptor_file_get_parent_content_identifier(

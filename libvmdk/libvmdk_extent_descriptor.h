@@ -19,23 +19,25 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBVMDK_EXTENT_DESCRIPTOR_H )
-#define _LIBVMDK_EXTENT_DESCRIPTOR_H
+#if !defined( _LIBVMDK_INTERNAL_EXTENT_DESCRIPTOR_H )
+#define _LIBVMDK_INTERNAL_EXTENT_DESCRIPTOR_H
 
 #include <common.h>
 #include <types.h>
 
+#include "libvmdk_extern.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcsplit.h"
 #include "libvmdk_libcstring.h"
+#include "libvmdk_types.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-typedef struct libvmdk_extent_descriptor libvmdk_extent_descriptor_t;
+typedef struct libvmdk_internal_extent_descriptor libvmdk_internal_extent_descriptor_t;
 
-struct libvmdk_extent_descriptor
+struct libvmdk_internal_extent_descriptor
 {
 	/* The filename
 	 */
@@ -63,18 +65,62 @@ struct libvmdk_extent_descriptor
 };
 
 int libvmdk_extent_descriptor_initialize(
-     libvmdk_extent_descriptor_t **extent_descriptor,
+     libvmdk_internal_extent_descriptor_t **extent_descriptor,
      libcerror_error_t **error );
 
+LIBVMDK_EXTERN \
 int libvmdk_extent_descriptor_free(
      libvmdk_extent_descriptor_t **extent_descriptor,
      libcerror_error_t **error );
 
+int libvmdk_internal_extent_descriptor_free(
+     libvmdk_internal_extent_descriptor_t **extent_descriptor,
+     libcerror_error_t **error );
+
 int libvmdk_extent_descriptor_read(
-     libvmdk_extent_descriptor_t *extent_descriptor,
+     libvmdk_internal_extent_descriptor_t *extent_descriptor,
      char *value_string,
      size_t value_string_size,
      int encoding,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_extent_descriptor_get_type(
+     libvmdk_extent_descriptor_t *extent_descriptor,
+     int *type,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_extent_descriptor_get_range(
+     libvmdk_extent_descriptor_t *extent_descriptor,
+     off64_t *offset,
+     size64_t *size,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_extent_descriptor_get_utf8_filename_size(
+     libvmdk_extent_descriptor_t *extent_descriptor,
+     size_t *utf8_string_size,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_extent_descriptor_get_utf8_filename(
+     libvmdk_extent_descriptor_t *extent_descriptor,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_extent_descriptor_get_utf16_filename_size(
+     libvmdk_extent_descriptor_t *extent_descriptor,
+     size_t *utf16_string_size,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_extent_descriptor_get_utf16_filename(
+     libvmdk_extent_descriptor_t *extent_descriptor,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

@@ -1021,7 +1021,7 @@ int libvmdk_handle_open_extent_data_files(
 {
 	libcstring_system_character_t *extent_data_file_location  = NULL;
 	libcstring_system_character_t *extent_data_filename_start = NULL;
-	libvmdk_extent_descriptor_t *extent_descriptor            = NULL;
+	libvmdk_internal_extent_descriptor_t *extent_descriptor   = NULL;
 	libvmdk_internal_handle_t *internal_handle                = NULL;
 	static char *function                                     = "libvmdk_handle_open_extent_data_files";
 	size_t extent_data_file_location_size                     = 0;
@@ -1888,13 +1888,13 @@ int libvmdk_handle_open_read_grain_table(
      libbfio_pool_t *file_io_pool,
      libcerror_error_t **error )
 {
-	libvmdk_extent_descriptor_t *extent_descriptor = NULL;
-	libvmdk_extent_file_t *extent_file             = NULL;
-	static char *function                          = "libvmdk_handle_open_read_grain_table";
-	size64_t extent_file_size                      = 0;
-	int extent_index                               = 0;
-	int number_of_extents                          = 0;
-	int number_of_file_io_handles                  = 0;
+	libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
+	libvmdk_extent_file_t *extent_file                      = NULL;
+	static char *function                                   = "libvmdk_handle_open_read_grain_table";
+	size64_t extent_file_size                               = 0;
+	int extent_index                                        = 0;
+	int number_of_extents                                   = 0;
+	int number_of_file_io_handles                           = 0;
 
 	if( internal_handle == NULL )
 	{

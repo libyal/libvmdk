@@ -30,13 +30,14 @@
 #include "libvmdk_libcsplit.h"
 #include "libvmdk_libfvalue.h"
 #include "libvmdk_libuna.h"
+#include "libvmdk_types.h"
 
 /* Creates an extent descriptor
  * Make sure the value extent_descriptor is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_extent_descriptor_initialize(
-     libvmdk_extent_descriptor_t **extent_descriptor,
+     libvmdk_internal_extent_descriptor_t **extent_descriptor,
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_descriptor_initialize";
@@ -64,7 +65,7 @@ int libvmdk_extent_descriptor_initialize(
 		return( -1 );
 	}
 	*extent_descriptor = memory_allocate_structure(
-	                      libvmdk_extent_descriptor_t );
+	                      libvmdk_internal_extent_descriptor_t );
 
 	if( *extent_descriptor == NULL )
 	{
@@ -80,7 +81,7 @@ int libvmdk_extent_descriptor_initialize(
 	if( memory_set(
 	     *extent_descriptor,
 	     0,
-	     sizeof( libvmdk_extent_descriptor_t ) ) == NULL )
+	     sizeof( libvmdk_internal_extent_descriptor_t ) ) == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -126,6 +127,33 @@ int libvmdk_extent_descriptor_free(
 	}
 	if( *extent_descriptor != NULL )
 	{
+		*extent_descriptor = NULL;
+	}
+	return( 1 );
+}
+
+/* Frees an extent descriptor
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_internal_extent_descriptor_free(
+     libvmdk_internal_extent_descriptor_t **extent_descriptor,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_internal_extent_descriptor_free";
+
+	if( extent_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	if( *extent_descriptor != NULL )
+	{
 		if( ( *extent_descriptor )->filename != NULL )
 		{
 			memory_free(
@@ -143,23 +171,23 @@ int libvmdk_extent_descriptor_free(
  * Returns the number of bytes read if successful, or -1 on error
  */
 int libvmdk_extent_descriptor_read(
-     libvmdk_extent_descriptor_t *extent_descriptor,
+     libvmdk_internal_extent_descriptor_t *extent_descriptor,
      char *value_string,
      size_t value_string_size,
      int encoding,
      libcerror_error_t **error )
 {
-	libcsplit_narrow_split_string_t *values = NULL;
-	char *filename                          = NULL;
-	char *value_string_segment              = NULL;
-	static char *function                   = "libvmdk_extent_descriptor_read";
-	size_t filename_length                  = 0;
-	size_t value_string_index               = 0;
-	size_t value_string_length              = 0;
-	size_t value_string_segment_size        = 0;
-	uint64_t value_64bit                    = 0;
-	int number_of_values                    = 0;
-	int result                              = 0;
+	libcsplit_narrow_split_string_t *values     = NULL;
+	char *filename                              = NULL;
+	char *value_string_segment                  = NULL;
+	static char *function                       = "libvmdk_extent_descriptor_read";
+	size_t filename_length                      = 0;
+	size_t value_string_index                   = 0;
+	size_t value_string_length                  = 0;
+	size_t value_string_segment_size            = 0;
+	uint64_t value_64bit                        = 0;
+	int number_of_values                        = 0;
+	int result                                  = 0;
 
 	if( extent_descriptor == NULL )
 	{
@@ -602,15 +630,6 @@ int libvmdk_extent_descriptor_read(
 	{
 		/* The extent value: 3 contains the filename
 		 */
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: filename\t\t\t\t: %s\n",
-			 function,
-			 filename );
-		}
-#endif
 		if( encoding != 0 )
 		{
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
@@ -719,6 +738,15 @@ int libvmdk_extent_descriptor_read(
 
 			goto on_error;
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: filename\t\t\t\t: %" PRIs_LIBCSTRING_SYSTEM "\n",
+			 function,
+			 extent_descriptor->filename );
+		}
+#endif
 	}
 	if( value_string_size > 0 )
 	{
@@ -933,5 +961,404 @@ on_error:
 	extent_descriptor->filename_size = 0;
 
 	return( -1 );
+}
+
+/* Retrieves the extent type
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_descriptor_get_type(
+     libvmdk_extent_descriptor_t *extent_descriptor,
+     int *type,
+     libcerror_error_t **error )
+{
+	libvmdk_internal_extent_descriptor_t *internal_extent_descriptor = NULL;
+	static char *function                                            = "libvmdk_extent_descriptor_get_type";
+
+	if( extent_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
+
+	if( type == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid type.",
+		 function );
+
+		return( -1 );
+	}
+	*type = internal_extent_descriptor->type;
+
+	return( 1 );
+}
+
+/* Retrieves the extent range (offset and size)
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_descriptor_get_range(
+     libvmdk_extent_descriptor_t *extent_descriptor,
+     off64_t *offset,
+     size64_t *size,
+     libcerror_error_t **error )
+{
+	libvmdk_internal_extent_descriptor_t *internal_extent_descriptor = NULL;
+	static char *function                                            = "libvmdk_extent_descriptor_get_range";
+
+	if( extent_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
+
+	if( offset == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid offset.",
+		 function );
+
+		return( -1 );
+	}
+	if( size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid size.",
+		 function );
+
+		return( -1 );
+	}
+	*offset = internal_extent_descriptor->offset;
+	*size   = internal_extent_descriptor->size;
+
+	return( 1 );
+}
+
+/* Retrieves the size of the UTF-8 encoded filename
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_descriptor_get_utf8_filename_size(
+     libvmdk_extent_descriptor_t *extent_descriptor,
+     size_t *utf8_string_size,
+     libcerror_error_t **error )
+{
+	libvmdk_internal_extent_descriptor_t *internal_extent_descriptor = NULL;
+	static char *function                                            = "libvmdk_extent_descriptor_get_utf8_filename_size";
+
+	if( extent_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
+
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( libuna_utf8_string_size_from_utf16_string(
+	     internal_extent_descriptor->filename,
+	     internal_extent_descriptor->filename_size,
+	     utf8_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 string size.",
+		 function );
+
+		return( -1 );
+	}
+#else
+	if( utf8_string_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-8 string size.",
+		 function );
+
+		return( -1 );
+	}
+	*utf8_string_size = internal_extent_descriptor->filename_size;
+#endif
+	return( 1 );
+}
+
+/* Retrieves the UTF-8 encoded filename
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_descriptor_get_utf8_filename(
+     libvmdk_extent_descriptor_t *extent_descriptor,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error )
+{
+	libvmdk_internal_extent_descriptor_t *internal_extent_descriptor = NULL;
+	static char *function                                            = "libvmdk_extent_descriptor_get_utf8_filename";
+
+	if( extent_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
+
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( libuna_utf8_string_copy_from_utf16_stream(
+	     utf8_string,
+	     utf8_string_size,
+	     internal_extent_descriptor->filename,
+	     internal_extent_descriptor->filename_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy UTF-8 string.",
+		 function );
+
+		return( -1 );
+	}
+#else
+	if( utf8_string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-8 string.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf8_string_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid UTF-8 string size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf8_string_size < internal_extent_descriptor->filename_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: UTF-8 string is too small.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcstring_narrow_string_copy(
+	     utf8_string,
+	     internal_extent_descriptor->filename,
+	     internal_extent_descriptor->filename_size ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy UTF-8 string.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( 1 );
+}
+
+/* Retrieves the size of the UTF-16 encoded filename
+ * The returned size includes the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_descriptor_get_utf16_filename_size(
+     libvmdk_extent_descriptor_t *extent_descriptor,
+     size_t *utf16_string_size,
+     libcerror_error_t **error )
+{
+	libvmdk_internal_extent_descriptor_t *internal_extent_descriptor = NULL;
+	static char *function                                            = "libvmdk_extent_descriptor_get_utf16_filename_size";
+
+	if( extent_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
+
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( utf16_string_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-16 string size.",
+		 function );
+
+		return( -1 );
+	}
+	*utf16_string_size = internal_extent_descriptor->filename_size;
+#else
+	if( libuna_utf16_string_size_from_utf8_stream(
+	     internal_extent_descriptor->filename,
+	     internal_extent_descriptor->filename_size,
+	     utf16_string_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 size size.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( 1 );
+}
+
+/* Retrieves the UTF-16 encoded filename
+ * The size should include the end of string character
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_descriptor_get_utf16_filename(
+     libvmdk_extent_descriptor_t *extent_descriptor,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error )
+{
+	libvmdk_internal_extent_descriptor_t *internal_extent_descriptor = NULL;
+	static char *function                                            = "libvmdk_extent_descriptor_get_utf16_filename";
+
+	if( extent_descriptor == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent descriptor.",
+		 function );
+
+		return( -1 );
+	}
+	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
+
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+	if( utf16_string == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid UTF-16 string.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf16_string_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid UTF-16 string size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( utf16_string_size < internal_extent_descriptor->filename_size )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
+		 "%s: UTF-16 string is too small.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcstring_wide_string_copy(
+	     utf16_string,
+	     internal_extent_descriptor->filename,
+	     internal_extent_descriptor->filename_size ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy UTF-16 string.",
+		 function );
+
+		return( -1 );
+	}
+#else
+	if( libuna_utf16_string_copy_from_utf8_stream(
+	     utf16_string,
+	     utf16_string_size,
+	     internal_extent_descriptor->filename,
+	     internal_extent_descriptor->filename_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy UTF-16 string.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( 1 );
 }
 

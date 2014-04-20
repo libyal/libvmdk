@@ -211,7 +211,8 @@ int pyvmdk_file_object_io_handle_free(
      pyvmdk_file_object_io_handle_t **file_object_io_handle,
      libcerror_error_t **error )
 {
-	static char *function = "pyvmdk_file_object_io_handle_free";
+	PyGILState_STATE gil_state = 0;
+	static char *function      = "pyvmdk_file_object_io_handle_free";
 
 	if( file_object_io_handle == NULL )
 	{
@@ -226,8 +227,13 @@ int pyvmdk_file_object_io_handle_free(
 	}
 	if( *file_object_io_handle != NULL )
 	{
+		gil_state = PyGILState_Ensure();
+
 		Py_DecRef(
 		 ( *file_object_io_handle )->file_object );
+
+		PyGILState_Release(
+		 gil_state );
 
 		PyMem_Free(
 		 *file_object_io_handle );
@@ -686,7 +692,6 @@ ssize_t pyvmdk_file_object_write_buffer(
 	PyObject *method_result       = NULL;
 	char *error_string            = NULL;
 	static char *function         = "pyvmdk_file_object_write_buffer";
-	ssize_t write_count           = 0;
 
 	if( file_object == NULL )
 	{
@@ -710,7 +715,11 @@ ssize_t pyvmdk_file_object_write_buffer(
 
 		return( -1 );
 	}
+#if SIZEOF_SIZE_T > SIZEOF_INT
+	if( size > (size_t) INT_MAX )
+#else
 	if( size > (size_t) SSIZE_MAX )
+#endif
 	{
 		libcerror_error_set(
 		 error,
@@ -726,9 +735,9 @@ ssize_t pyvmdk_file_object_write_buffer(
 		method_name = PyString_FromString(
 			       "write" );
 
-/* TODO set up argument_string */
-
-		write_count = (ssize_t) size;
+		argument_string = PyString_FromStringAndSize(
+		                   (char *) buffer,
+		                   size );
 
 		PyErr_Clear();
 
@@ -784,7 +793,7 @@ ssize_t pyvmdk_file_object_write_buffer(
 		Py_DecRef(
 		 method_name );
 	}
-	return( write_count );
+	return( (ssize_t) size );
 
 on_error:
 	if( method_result != NULL )

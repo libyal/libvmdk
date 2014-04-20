@@ -22,7 +22,6 @@
 #include <common.h>
 #include <types.h>
 
-#include "pyvmdk.h"
 #include "pyvmdk_libcerror.h"
 #include "pyvmdk_integer.h"
 #include "pyvmdk_python.h"
