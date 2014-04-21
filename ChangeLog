@@ -63,6 +63,10 @@ Tests:
 20140421
 * changes for mingw and msvsccp build
 * updated msvsccp files
+* code clean up
+* worked on libvmdk_handle_open_extent_data_files_file_io_pool
+* added support for corruption scenario where grain table entries is lager
+  than the maximum number of sectors.
 
 20140420
 * updated dependencies

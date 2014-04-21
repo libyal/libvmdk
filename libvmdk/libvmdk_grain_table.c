@@ -432,7 +432,7 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve extent file at offset: %" PRIi64 " from extent files list.",
+		 "%s: unable to retrieve extent file at offset: %" PRIi64 " from extent table.",
 		 function,
 		 offset );
 

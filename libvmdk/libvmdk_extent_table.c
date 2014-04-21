@@ -1884,6 +1884,8 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
      int extent_index,
      int file_io_pool_entry,
      size64_t extent_file_size,
+     off64_t extent_offset,
+     size64_t extent_size,
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_table_set_extent_by_extent_descriptor";
@@ -2013,12 +2015,34 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 	if( ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
 	 || ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_FLAT ) )
 	{
+		if( extent_offset > extent_file_size )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid extent offset value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
+		if( extent_size > ( extent_file_size - extent_offset ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid extent size value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
 		if( libfdata_stream_set_segment_by_index(
 		     extent_table->extent_files_stream,
 		     extent_index,
 		     file_io_pool_entry,
-		     0,
-		     extent_file_size,
+		     extent_offset,
+		     extent_size,
 		     0,
 		     error ) != 1 )
 		{
@@ -2036,13 +2060,25 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 	else if( ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
 	      || ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE ) )
 	{
-		if( libfdata_list_set_element_by_index(
+		if( extent_offset != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid extent offset value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
+		if( libfdata_list_set_element_by_index_with_mapped_size(
 		     extent_table->extent_files_list,
 		     extent_index,
 		     file_io_pool_entry,
 		     0,
 		     extent_file_size,
 		     0,
+		     extent_size,
 		     error ) != 1 )
 		{
 			libcerror_error_set(

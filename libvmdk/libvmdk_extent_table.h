@@ -197,6 +197,8 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
      int extent_index,
      int file_io_pool_entry,
      size64_t extent_file_size,
+     off64_t extent_file_offset,
+     size64_t extent_size,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

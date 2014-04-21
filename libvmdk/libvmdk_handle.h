@@ -79,7 +79,7 @@ struct libvmdk_internal_handle
 	 */
 	libbfio_pool_t *extent_data_file_io_pool;
 
-	/* Value to indicate if the pool was created inside the library
+	/* Value to indicate if the file IO pool was created inside the library
 	 */
 	uint8_t extent_data_file_io_pool_created_in_library;
 
@@ -147,6 +147,7 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 
 int libvmdk_handle_open_extent_data_file(
      libvmdk_internal_handle_t *internal_handle,
+     libbfio_pool_t *file_io_pool,
      int extent_index,
      const char *filename,
      libcerror_error_t **error );
@@ -154,6 +155,7 @@ int libvmdk_handle_open_extent_data_file(
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 int libvmdk_handle_open_extent_data_file_wide(
      libvmdk_internal_handle_t *internal_handle,
+     libbfio_pool_t *file_io_pool,
      int extent_index,
      const wchar_t *filename,
      libcerror_error_t **error );
@@ -161,6 +163,7 @@ int libvmdk_handle_open_extent_data_file_wide(
 
 int libvmdk_handle_open_extent_data_file_io_handle(
      libvmdk_internal_handle_t *internal_handle,
+     libbfio_pool_t *file_io_pool,
      int extent_index,
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error );
