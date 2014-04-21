@@ -693,7 +693,7 @@ int libvmdk_extent_descriptor_read(
 		{
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libuna_utf16_string_copy_from_byte_stream(
-			          extent_descriptor->filename,
+			          (uint16_t *) extent_descriptor->filename,
 			          extent_descriptor->filename_size,
 			          (uint8_t *) filename,
 			          filename_length + 1,
@@ -701,7 +701,7 @@ int libvmdk_extent_descriptor_read(
 			          error );
 #else
 			result = libuna_utf8_string_copy_from_byte_stream(
-			          extent_descriptor->filename,
+			          (uint8_t *) extent_descriptor->filename,
 			          extent_descriptor->filename_size,
 			          (uint8_t *) filename,
 			          filename_length + 1,
@@ -713,14 +713,14 @@ int libvmdk_extent_descriptor_read(
 		{
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libuna_utf16_string_copy_from_utf8_stream(
-			          extent_descriptor->filename,
+			          (uint16_t *) extent_descriptor->filename,
 			          extent_descriptor->filename_size,
 			          (uint8_t *) filename,
 			          filename_length + 1,
 			          error );
 #else
 			result = libuna_utf8_string_copy_from_utf8_stream(
-			          extent_descriptor->filename,
+			          (uint8_t *) extent_descriptor->filename,
 			          extent_descriptor->filename_size,
 			          (uint8_t *) filename,
 			          filename_length + 1,
@@ -1082,8 +1082,8 @@ int libvmdk_extent_descriptor_get_utf8_filename_size(
 	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
 
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libuna_utf8_string_size_from_utf16_string(
-	     internal_extent_descriptor->filename,
+	if( libuna_utf8_string_size_from_utf16(
+	     (uint16_t *) internal_extent_descriptor->filename,
 	     internal_extent_descriptor->filename_size,
 	     utf8_string_size,
 	     error ) != 1 )
@@ -1141,10 +1141,10 @@ int libvmdk_extent_descriptor_get_utf8_filename(
 	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
 
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libuna_utf8_string_copy_from_utf16_stream(
+	if( libuna_utf8_string_copy_from_utf16(
 	     utf8_string,
 	     utf8_string_size,
-	     internal_extent_descriptor->filename,
+	     (uint16_t *) internal_extent_descriptor->filename,
 	     internal_extent_descriptor->filename_size,
 	     error ) != 1 )
 	{
@@ -1248,8 +1248,8 @@ int libvmdk_extent_descriptor_get_utf16_filename_size(
 	}
 	*utf16_string_size = internal_extent_descriptor->filename_size;
 #else
-	if( libuna_utf16_string_size_from_utf8_stream(
-	     internal_extent_descriptor->filename,
+	if( libuna_utf16_string_size_from_utf8(
+	     (uint8_t *) internal_extent_descriptor->filename,
 	     internal_extent_descriptor->filename_size,
 	     utf16_string_size,
 	     error ) != 1 )
@@ -1342,10 +1342,10 @@ int libvmdk_extent_descriptor_get_utf16_filename(
 		return( -1 );
 	}
 #else
-	if( libuna_utf16_string_copy_from_utf8_stream(
+	if( libuna_utf16_string_copy_from_utf8(
 	     utf16_string,
 	     utf16_string_size,
-	     internal_extent_descriptor->filename,
+	     (uint8_t *) internal_extent_descriptor->filename,
 	     internal_extent_descriptor->filename_size,
 	     error ) != 1 )
 	{

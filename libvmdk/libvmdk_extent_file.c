@@ -1334,7 +1334,6 @@ int libvmdk_extent_file_read_grain_directories(
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_file_read_grain_directories";
-	ssize_t read_count    = 0;
 
 	if( extent_file == NULL )
 	{

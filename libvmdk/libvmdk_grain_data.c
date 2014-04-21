@@ -289,7 +289,6 @@ int libvmdk_grain_data_read_element_data(
 	libvmdk_grain_data_t *grain_data = NULL;
 	uint8_t *compressed_data         = NULL;
 	static char *function            = "libvmdk_grain_data_read_element_data";
-	size_t read_size                 = 0;
 	ssize_t read_count               = 0;
 
 	LIBVMDK_UNREFERENCED_PARAMETER( read_flags )

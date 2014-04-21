@@ -37,11 +37,11 @@
  * for local use of libvmdk
  */
 #else
-#define LIBVMDK_VERSION						20140420
+#define LIBVMDK_VERSION						20140421
 
 /* The libvmdk version string
  */
-#define LIBVMDK_VERSION_STRING					"20140420"
+#define LIBVMDK_VERSION_STRING					"20140421"
 
 /* The access flags definitions
  * bit 1        set to 1 for read access

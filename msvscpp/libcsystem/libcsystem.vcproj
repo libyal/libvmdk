@@ -41,10 +41,8 @@
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="..\..\include;..\..\common;..\..\libcstring;..\..\libcerror;..\..\libclocale;..\..\libcnotify;..\..\libuna"
 				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE;HAVE_LOCAL_LIBCSTRING;HAVE_LOCAL_LIBCERROR;HAVE_LOCAL_LIBCLOCALE;HAVE_LOCAL_LIBCNOTIFY;HAVE_LOCAL_LIBUNA;HAVE_LOCAL_LIBCSYSTEM"
-				SmallerTypeCheck="false"
 				RuntimeLibrary="2"
 				WarningLevel="4"
-				WarnAsError="false"
 				CompileAs="1"
 			/>
 			<Tool
@@ -109,7 +107,6 @@
 				SmallerTypeCheck="true"
 				RuntimeLibrary="3"
 				WarningLevel="4"
-				WarnAsError="false"
 				DebugInformationFormat="3"
 				CompileAs="1"
 			/>
@@ -184,15 +181,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libcsystem\libcsystem_find.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libcsystem\libcsystem_file_io.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\libcsystem\libcsystem_file_stream.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libcsystem\libcsystem_find.h"
 				>
 			</File>
 			<File
@@ -208,6 +205,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libcsystem\libcsystem_libcstring.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libcsystem\libcsystem_libcerror.h"
 				>
 			</File>
@@ -217,10 +218,6 @@
 			</File>
 			<File
 				RelativePath="..\..\libcsystem\libcsystem_libcnotify.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libcsystem\libcsystem_libcstring.h"
 				>
 			</File>
 			<File

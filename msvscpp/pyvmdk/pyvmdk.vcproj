@@ -98,7 +98,7 @@
 			Name="VSDebug|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
 			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
+			ConfigurationType="2"
 			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
@@ -197,7 +197,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\pyvmdk\pyvmdkextent_descriptors.c"
+				RelativePath="..\..\pyvmdk\pyvmdk_extent_descriptors.c"
 				>
 			</File>
 			<File

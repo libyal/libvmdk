@@ -1,5 +1,7 @@
 TODO
-* fix mingw build issues
+* make libvmdk_handle_open_extent_data_files_file_io_pool work
+* make libvmdk_handle_open_extent_data_files use libvmdk_handle_open_extent_data_files_file_io_pool
+
 * if there is a single filename in the disk database and the current file is
   not a descriptor-only file assume the current file is the right one even if
   the names don't match
@@ -57,6 +59,10 @@ Tests:
   - cowd sparse split
   - compressed (done)
   - (compressed) with parent (done)
+
+20140421
+* changes for mingw and msvsccp build
+* updated msvsccp files
 
 20140420
 * updated dependencies
