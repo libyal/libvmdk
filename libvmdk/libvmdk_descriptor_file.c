@@ -38,6 +38,7 @@
 
 const char *vmdk_descriptor_file_signature                       = "# Disk DescriptorFile";
 const char *vmdk_descriptor_file_extent_section_signature        = "# Extent description";
+const char *vmdk_descriptor_file_change_tracking_file_signature  = "# Change Tracking File";
 const char *vmdk_descriptor_file_disk_database_section_signature = "# The Disk Data Base";
 
 /* Creates a descriptor file
@@ -316,6 +317,7 @@ int libvmdk_descriptor_file_read_string(
 	static char *function                  = "libvmdk_descriptor_file_read_string";
 	int line_index                         = 0;
 	int number_of_lines                    = 0;
+	int result                             = 0;
 
 	if( descriptor_file == NULL )
 	{
@@ -401,6 +403,24 @@ int libvmdk_descriptor_file_read_string(
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
 		 "%s: unable to read extents.",
+		 function );
+
+		goto on_error;
+	}
+	result = libvmdk_descriptor_file_read_change_tracking_file(
+	          descriptor_file,
+	          lines,
+	          number_of_lines,
+	          &line_index,
+	          error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read change tracking file.",
 		 function );
 
 		goto on_error;
@@ -1545,6 +1565,16 @@ int libvmdk_descriptor_file_read_extents(
 				break;
 			}
 		}
+		else if( ( line_string_segment_size - line_string_segment_index ) == 23 )
+		{
+			if( libcstring_narrow_string_compare(
+			     &( line_string_segment[ line_string_segment_index ] ),
+			     vmdk_descriptor_file_change_tracking_file_signature,
+			     22 ) == 0 )
+			{
+				break;
+			}
+		}
 		/* Make sure the string is terminated by an end of string
 		 */
 		line_string_segment[ line_string_segment_size - 1 ] = 0;
@@ -1615,6 +1645,342 @@ on_error:
 	 NULL );
 
 	return( -1 );
+}
+
+/* Reads the change tracking file from the descriptor file
+ * Returns the 1 if succesful, 0 if no such value or -1 on error
+ */
+int libvmdk_descriptor_file_read_change_tracking_file(
+     libvmdk_descriptor_file_t *descriptor_file,
+     libcsplit_narrow_split_string_t *lines,
+     int number_of_lines,
+     int *line_index,
+     libcerror_error_t **error )
+{
+	char *line_string_segment        = NULL;
+	char *value                      = NULL;
+	char *value_identifier           = NULL;
+	static char *function            = "libvmdk_descriptor_file_read_change_tracking_file";
+	size_t line_string_segment_index = 0;
+	size_t line_string_segment_size  = 0;
+	size_t value_identifier_length   = 0;
+	size_t value_length              = 0;
+
+	if( descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( line_index == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid line index.",
+		 function );
+
+		return( -1 );
+	}
+	if( number_of_lines <= 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of lines value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( *line_index < 0 )
+	 || ( *line_index >= number_of_lines ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid line index value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcsplit_narrow_split_string_get_segment_by_index(
+	     lines,
+	     *line_index,
+	     &line_string_segment,
+	     &line_string_segment_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve line: %d.",
+		 function,
+		 *line_index );
+
+		return( -1 );
+	}
+	if( line_string_segment == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing line string segment: %d.",
+		 function,
+		 *line_index );
+
+		return( -1 );
+	}
+	/* Ignore trailing white space
+	 */
+	line_string_segment_index = line_string_segment_size - 2;
+
+	while( line_string_segment_index > 0 )
+	{
+		if( ( line_string_segment[ line_string_segment_index ] != '\t' )
+		 && ( line_string_segment[ line_string_segment_index ] != '\n' )
+		 && ( line_string_segment[ line_string_segment_index ] != '\f' )
+		 && ( line_string_segment[ line_string_segment_index ] != '\v' )
+		 && ( line_string_segment[ line_string_segment_index ] != '\r' )
+		 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
+		{
+			break;
+		}
+		line_string_segment_index--;
+		line_string_segment_size--;
+	}
+	/* Ignore leading white space
+	 */
+	line_string_segment_index = 0;
+
+	while( line_string_segment_index < line_string_segment_size )
+	{
+		if( ( line_string_segment[ line_string_segment_index ] != '\t' )
+		 && ( line_string_segment[ line_string_segment_index ] != '\n' )
+		 && ( line_string_segment[ line_string_segment_index ] != '\f' )
+		 && ( line_string_segment[ line_string_segment_index ] != '\v' )
+		 && ( line_string_segment[ line_string_segment_index ] != '\r' )
+		 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
+		{
+			break;
+		}
+		line_string_segment_index++;
+	}
+	if( ( ( line_string_segment_size - line_string_segment_index ) != 23 )
+	 || ( libcstring_narrow_string_compare(
+	       &( line_string_segment[ line_string_segment_index ] ),
+	       vmdk_descriptor_file_change_tracking_file_signature,
+	       22 ) != 0 ) )
+	{
+		return( 0 );
+	}
+	*line_index += 1;
+
+	while( *line_index < number_of_lines )
+	{
+		if( libcsplit_narrow_split_string_get_segment_by_index(
+		     lines,
+		     *line_index,
+		     &line_string_segment,
+		     &line_string_segment_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve line: %d.",
+			 function,
+			 *line_index );
+
+			return( -1 );
+		}
+		if( line_string_segment == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+			 "%s: missing line string segment: %d.",
+			 function,
+			 *line_index );
+
+			return( -1 );
+		}
+		/* Ignore trailing white space
+		 */
+		line_string_segment_index = line_string_segment_size - 2;
+
+		while( line_string_segment_index > 0 )
+		{
+			if( ( line_string_segment[ line_string_segment_index ] != '\t' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\n' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\f' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\v' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\r' )
+			 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
+			{
+				break;
+			}
+			line_string_segment_index--;
+			line_string_segment_size--;
+		}
+		/* Ignore leading white space
+		 */
+		line_string_segment_index = 0;
+
+		while( line_string_segment_index < line_string_segment_size )
+		{
+			if( ( line_string_segment[ line_string_segment_index ] != '\t' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\n' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\f' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\v' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\r' )
+			 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
+			{
+				break;
+			}
+			line_string_segment_index++;
+		}
+		/* Skip an empty line
+		 */
+		if( ( line_string_segment_index >= line_string_segment_size )
+		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
+		{
+			*line_index += 1;
+
+			continue;
+		}
+		if( ( line_string_segment_size - line_string_segment_index ) == 21 )
+		{
+			/* Check for the end of the section
+			 */
+			if( libcstring_narrow_string_compare(
+			     &( line_string_segment[ line_string_segment_index ] ),
+			     vmdk_descriptor_file_disk_database_section_signature,
+			     20 ) == 0 )
+			{
+				break;
+			}
+		}
+		/* Determine the value identifier
+		 */
+		value_identifier        = &( line_string_segment[ line_string_segment_index ] );
+		value_identifier_length = 0;
+
+		while( line_string_segment_index < line_string_segment_size )
+		{
+			if( ( line_string_segment[ line_string_segment_index ] == '\t' )
+			 || ( line_string_segment[ line_string_segment_index ] == '\n' )
+			 || ( line_string_segment[ line_string_segment_index ] == '\f' )
+			 || ( line_string_segment[ line_string_segment_index ] == '\v' )
+			 || ( line_string_segment[ line_string_segment_index ] == '\r' )
+			 || ( line_string_segment[ line_string_segment_index ] == ' ' )
+			 || ( line_string_segment[ line_string_segment_index ] == '=' ) )
+			{
+				break;
+			}
+			value_identifier_length++;
+
+			line_string_segment_index++;
+		}
+		/* Make sure the value identifier is terminated by an end of string
+		 */
+		line_string_segment[ line_string_segment_index ] = 0;
+
+		line_string_segment_index++;
+
+		/* Ignore whitespace
+		 */
+		while( line_string_segment_index < line_string_segment_size )
+		{
+			if( ( line_string_segment[ line_string_segment_index ] != '\t' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\n' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\f' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\v' )
+			 && ( line_string_segment[ line_string_segment_index ] != '\r' )
+			 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
+			{
+				break;
+			}
+			line_string_segment_index++;
+		}
+		if( line_string_segment[ line_string_segment_index ] == '=' )
+		{
+			line_string_segment_index++;
+
+			while( line_string_segment_index < line_string_segment_size )
+			{
+				if( ( line_string_segment[ line_string_segment_index ] != '\t' )
+				 && ( line_string_segment[ line_string_segment_index ] != '\n' )
+				 && ( line_string_segment[ line_string_segment_index ] != '\f' )
+				 && ( line_string_segment[ line_string_segment_index ] != '\v' )
+				 && ( line_string_segment[ line_string_segment_index ] != '\r' )
+				 && ( line_string_segment[ line_string_segment_index ] != ' ' ) )
+				{
+					break;
+				}
+				line_string_segment_index++;
+			}
+		}
+		/* Skip a line not containing a value
+		 */
+		if( ( line_string_segment_index >= line_string_segment_size )
+		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
+		{
+			*line_index += 1;
+
+			continue;
+		}
+		/* Determine the value
+		 */
+		value        = &( line_string_segment[ line_string_segment_index ] );
+		value_length = line_string_segment_size - 1;
+
+		/* Ingore quotes at the beginning of the value data
+		 */
+		if( ( line_string_segment[ line_string_segment_index ] == '"' )
+		 || ( line_string_segment[ line_string_segment_index ] == '\'' ) )
+		{
+			line_string_segment_index++;
+			value++;
+			value_length--;
+		}
+		/* Ingore quotes at the end of the value data
+		 */
+		if( ( line_string_segment[ value_length - 1 ] == '"' )
+		 || ( line_string_segment[ value_length - 1 ] == '\'' ) )
+		{
+			value_length--;
+		}
+		/* Make sure the value is terminated by an end of string
+		 */
+		line_string_segment[ value_length ] = 0;
+
+		value_length -= line_string_segment_index;
+
+		if( value_identifier_length == 15 )
+		{
+			if( libcstring_narrow_string_compare(
+			     value_identifier,
+			     "changeTrackPath",
+			     15 ) == 0 )
+			{
+/* TODO */
+			}
+		}
+		*line_index += 1;
+	}
+	return( 1 );
 }
 
 /* Reads the disk database from the descriptor file

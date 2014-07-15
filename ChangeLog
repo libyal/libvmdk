@@ -1,4 +1,6 @@
 TODO
+* add support for the change tracking file?
+
 * make libvmdk_handle_open_extent_data_files_file_io_pool work
 * make libvmdk_handle_open_extent_data_files use libvmdk_handle_open_extent_data_files_file_io_pool
 

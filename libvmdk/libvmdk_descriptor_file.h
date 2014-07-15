@@ -122,6 +122,13 @@ int libvmdk_descriptor_file_read_extents(
      int *line_index,
      libcerror_error_t **error );
 
+int libvmdk_descriptor_file_read_change_tracking_file(
+     libvmdk_descriptor_file_t *descriptor_file,
+     libcsplit_narrow_split_string_t *lines,
+     int number_of_lines,
+     int *line_index,
+     libcerror_error_t **error );
+
 int libvmdk_descriptor_file_read_disk_database(
      libvmdk_descriptor_file_t *descriptor_file,
      libcsplit_narrow_split_string_t *lines,
