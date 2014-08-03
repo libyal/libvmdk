@@ -1,5 +1,5 @@
 MSVSCPP_FILES = \
-	dokan_dll/dokan_dll.vcproj \
+	dokan/dokan.vcproj \
 	libbfio/libbfio.vcproj \
 	libcdata/libcdata.vcproj \
 	libcerror/libcerror.vcproj \
@@ -14,15 +14,15 @@ MSVSCPP_FILES = \
 	libfcache/libfcache.vcproj \
 	libfdata/libfdata.vcproj \
 	libfvalue/libfvalue.vcproj \
-	libvmdk_dll/libvmdk_dll.vcproj \
 	libuna/libuna.vcproj \
+	libvmdk/libvmdk.vcproj \
 	pyvmdk/pyvmdk.vcproj \
 	vmdk_test_open_close/vmdk_test_open_close.vcproj \
 	vmdk_test_read/vmdk_test_read.vcproj \
 	vmdk_test_seek/vmdk_test_seek.vcproj \
 	vmdkinfo/vmdkinfo.vcproj \
 	vmdkmount/vmdkmount.vcproj \
-	zlib_dll/zlib_dll.vcproj \
+	zlib/zlib.vcproj \
 	libvmdk.sln
 
 SCRIPT_FILES = \

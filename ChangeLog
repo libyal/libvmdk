@@ -1,5 +1,6 @@
 TODO
 * add support for the change tracking file?
+* make sure descriptor file data is cleaned on close - also if no data files were set!
 
 * make libvmdk_handle_open_extent_data_files_file_io_pool work
 * make libvmdk_handle_open_extent_data_files use libvmdk_handle_open_extent_data_files_file_io_pool
@@ -7,6 +8,7 @@ TODO
 * if there is a single filename in the disk database and the current file is
   not a descriptor-only file assume the current file is the right one even if
   the names don't match
+
 * update manuals
   - update libvmdk.3
   - update vmdkinfo.1
@@ -61,6 +63,12 @@ Tests:
   - cowd sparse split
   - compressed (done)
   - (compressed) with parent (done)
+
+20140803
+* bug fix in Python-bindings
+
+20140729
+* updated dependencies
 
 20140421
 * changes for mingw and msvsccp build

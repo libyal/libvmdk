@@ -409,19 +409,6 @@ int libvmdk_handle_open(
 
 		goto on_error;
 	}
-	if( libbfio_handle_close(
-	     file_io_handle,
-	     error ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-		 "%s: unable to close file IO handle.",
-		 function );
-
-		goto on_error;
-	}
 	if( libbfio_handle_free(
 	     &file_io_handle,
 	     error ) != 1 )
@@ -602,19 +589,6 @@ int libvmdk_handle_open_wide(
 
 		goto on_error;
 	}
-	if( libbfio_handle_close(
-	     file_io_handle,
-	     error ) != 0 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-		 "%s: unable to close file IO handle.",
-		 function );
-
-		goto on_error;
-	}
 	if( libbfio_handle_free(
 	     &file_io_handle,
 	     error ) != 1 )
@@ -746,7 +720,7 @@ int libvmdk_handle_open_file_io_handle(
 		 "%s: unable to open file.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	else if( file_io_handle_is_open == 0 )
 	{
@@ -762,7 +736,7 @@ int libvmdk_handle_open_file_io_handle(
 			 "%s: unable to open file IO handle.",
 			 function );
 
-			return( -1 );
+			goto on_error;
 		}
 	}
 	result = libvmdk_handle_open_read_signature(
@@ -983,7 +957,23 @@ int libvmdk_handle_open_file_io_handle(
 
 		goto on_error;
 	}
-	internal_handle->io_handle->media_size   = internal_handle->descriptor_file->media_size;
+	if( file_io_handle_is_open == 0 )
+	{
+		if( libbfio_handle_close(
+		     file_io_handle,
+		     error ) != 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
+			 "%s: unable to close file IO handle.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	internal_handle->io_handle->media_size = internal_handle->descriptor_file->media_size;
 
 	internal_handle->access_flags = access_flags;
 
@@ -1006,6 +996,12 @@ on_error:
 		libvmdk_descriptor_file_free(
 		 &( internal_handle->descriptor_file ),
 		 NULL );
+	}
+	if( file_io_handle_is_open == 0 )
+	{
+		libbfio_handle_close(
+		 file_io_handle,
+		 error );
 	}
 	return( -1 );
 }
@@ -1050,7 +1046,7 @@ int libvmdk_handle_open_extent_data_files(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );
@@ -1324,7 +1320,7 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );
@@ -1378,7 +1374,7 @@ int libvmdk_handle_open_extent_data_file(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid internal handle.",
+		 "%s: invalid handle.",
 		 function );
 
 		return( -1 );
@@ -1389,7 +1385,7 @@ int libvmdk_handle_open_extent_data_file(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );
@@ -1500,7 +1496,7 @@ int libvmdk_handle_open_extent_data_file_wide(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid internal handle.",
+		 "%s: invalid handle.",
 		 function );
 
 		return( -1 );
@@ -1511,7 +1507,7 @@ int libvmdk_handle_open_extent_data_file_wide(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );
@@ -1613,8 +1609,9 @@ int libvmdk_handle_open_extent_data_file_io_handle(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_handle_open_extent_data_file_io_handle";
-	int bfio_access_flags = 0;
+	static char *function      = "libvmdk_handle_open_extent_data_file_io_handle";
+	int bfio_access_flags      = 0;
+	int file_io_handle_is_open = 0;
 
 	if( internal_handle == NULL )
 	{
@@ -1622,7 +1619,7 @@ int libvmdk_handle_open_extent_data_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid internal handle.",
+		 "%s: invalid handle.",
 		 function );
 
 		return( -1 );
@@ -1633,7 +1630,7 @@ int libvmdk_handle_open_extent_data_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );
@@ -1665,19 +1662,37 @@ int libvmdk_handle_open_extent_data_file_io_handle(
 	{
 		bfio_access_flags = LIBBFIO_ACCESS_FLAG_READ;
 	}
-	if( libbfio_handle_open(
-	     file_io_handle,
-	     bfio_access_flags,
-	     error ) != 1 )
+	file_io_handle_is_open = libbfio_handle_is_open(
+	                          file_io_handle,
+	                          error );
+
+	if( file_io_handle_is_open == -1 )
 	{
-                libcerror_error_set(
-                 error,
-                 LIBCERROR_ERROR_DOMAIN_IO,
-                 LIBCERROR_IO_ERROR_OPEN_FAILED,
-                 "%s: unable to open file IO handle.",
-                 function );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to determine if file IO handle is open.",
+		 function );
 
 		goto on_error;
+	}
+	else if( file_io_handle_is_open == 0 )
+	{
+		if( libbfio_handle_open(
+		     file_io_handle,
+		     bfio_access_flags,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_IO,
+			 LIBCERROR_IO_ERROR_OPEN_FAILED,
+			 "%s: unable to open file IO handle.",
+			 function );
+
+			goto on_error;
+		}
 	}
 	if( libbfio_pool_set_handle(
 	     file_io_pool,
@@ -1699,10 +1714,12 @@ int libvmdk_handle_open_extent_data_file_io_handle(
 	return( 1 );
 
 on_error:
-	libbfio_handle_close(
-	 file_io_handle,
-	 NULL );
-
+	if( file_io_handle_is_open == 0 )
+	{
+		libbfio_handle_close(
+		 file_io_handle,
+		 error );
+	}
 	return( -1 );
 }
 
@@ -1761,6 +1778,7 @@ int libvmdk_handle_close(
 		internal_handle->extent_data_file_io_pool_created_in_library = 0;
 	}
 	internal_handle->extent_data_file_io_pool = NULL;
+	internal_handle->current_offset           = 0;
 
 	if( libvmdk_io_handle_clear(
 	     internal_handle->io_handle,
@@ -1861,7 +1879,7 @@ int libvmdk_handle_open_read_grain_table(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid internal handle.",
+		 "%s: invalid handle.",
 		 function );
 
 		return( -1 );
@@ -1872,7 +1890,7 @@ int libvmdk_handle_open_read_grain_table(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing IO handle.",
+		 "%s: invalid handle - missing IO handle.",
 		 function );
 
 		return( -1 );
@@ -1883,7 +1901,7 @@ int libvmdk_handle_open_read_grain_table(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );
@@ -2518,7 +2536,7 @@ ssize_t libvmdk_handle_read_buffer(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing IO handle.",
+		 "%s: invalid handle - missing IO handle.",
 		 function );
 
 		return( -1 );
@@ -2529,7 +2547,7 @@ ssize_t libvmdk_handle_read_buffer(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid internal handle - invalid IO handle - current offset value out of bounds.",
+		 "%s: invalid handle - invalid IO handle - current offset value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -2540,7 +2558,7 @@ ssize_t libvmdk_handle_read_buffer(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );
@@ -2554,7 +2572,7 @@ ssize_t libvmdk_handle_read_buffer(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: invalid internal handle - missing parent handle.",
+			 "%s: invalid handle - missing parent handle.",
 			 function );
 
 			return( -1 );
@@ -2914,7 +2932,7 @@ ssize_t libvmdk_handle_write_buffer(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing IO handle.",
+		 "%s: invalid handle - missing IO handle.",
 		 function );
 
 		return( -1 );
@@ -3029,7 +3047,7 @@ off64_t libvmdk_handle_seek_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing IO handle.",
+		 "%s: invalid handle - missing IO handle.",
 		 function );
 
 		return( -1 );
@@ -3101,7 +3119,7 @@ int libvmdk_handle_get_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing IO handle.",
+		 "%s: invalid handle - missing IO handle.",
 		 function );
 
 		return( -1 );
@@ -3153,7 +3171,7 @@ int libvmdk_handle_set_parent_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );

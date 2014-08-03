@@ -2015,7 +2015,8 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 	if( ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
 	 || ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_FLAT ) )
 	{
-		if( extent_offset > extent_file_size )
+		if( ( extent_offset < 0 )
+		 || ( (size64_t) extent_offset > extent_file_size ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -2026,7 +2027,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 
 			return( -1 );
 		}
-		if( extent_size > ( extent_file_size - extent_offset ) )
+		if( extent_size > ( extent_file_size - (size64_t) extent_offset ) )
 		{
 			libcerror_error_set(
 			 error,

@@ -56,7 +56,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\libfvalue.lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 				ModuleDefinitionFile=""
 				IgnoreAllDefaultLibraries="false"
 			/>
@@ -121,7 +121,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\libfvalue.lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 				ModuleDefinitionFile=""
 				IgnoreAllDefaultLibraries="false"
 			/>
@@ -183,6 +183,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libfvalue\libfvalue_support.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libfvalue\libfvalue_table.c"
 				>
 			</File>
@@ -196,10 +200,6 @@
 			</File>
 			<File
 				RelativePath="..\..\libfvalue\libfvalue_value_type.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libfvalue\libfvalue_support.c"
 				>
 			</File>
 		</Filter>
@@ -285,11 +285,19 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libfvalue\libfvalue_types.h"
+				RelativePath="..\..\libfvalue\libfvalue_support.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\libfvalue\libfvalue_table.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvalue\libfvalue_types.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libfvalue\libfvalue_unused.h"
 				>
 			</File>
 			<File
@@ -302,14 +310,6 @@
 			</File>
 			<File
 				RelativePath="..\..\libfvalue\libfvalue_value_type.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libfvalue\libfvalue_support.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libfvalue\libfvalue_unused.h"
 				>
 			</File>
 		</Filter>

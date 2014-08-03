@@ -146,6 +146,10 @@ void vmdkmount_signal_handler(
 static char *vmdkmount_fuse_path_prefix         = "/vmdk";
 static size_t vmdkmount_fuse_path_prefix_length = 5;
 
+#if defined( HAVE_TIME )
+time_t vmdkmount_timestamp                      = 0;
+#endif
+
 /* Opens a file or directory
  * Returns 0 if successful or a negative errno value otherwise
  */
@@ -375,6 +379,182 @@ on_error:
 	return( result );
 }
 
+/* Sets the values in a stat info structure
+ * Returns 1 if successful or -1 on error
+ */
+int vmdkmount_fuse_set_stat_info(
+     struct stat *stat_info,
+     size64_t size,
+     int number_of_sub_items,
+     uint8_t use_mount_time,
+     libcerror_error_t **error )
+{
+	static char *function = "vmdkmount_fuse_set_stat_info";
+
+	if( stat_info == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid stat info.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_TIME )
+	if( use_mount_time != 0 )
+	{
+		if( vmdkmount_timestamp == 0 )
+		{
+			if( time(
+			     &vmdkmount_timestamp ) == (time_t) -1 )
+			{
+				vmdkmount_timestamp = 0;
+			}
+		}
+		stat_info->st_atime = vmdkmount_timestamp;
+		stat_info->st_mtime = vmdkmount_timestamp;
+		stat_info->st_ctime = vmdkmount_timestamp;
+	}
+#endif
+	if( size != 0 )
+	{
+#if SIZEOF_OFF_T <= 4
+		if( size > (size64_t) UINT32_MAX )
+#else
+		if( size > (size64_t) INT64_MAX )
+#endif
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid size value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
+		stat_info->st_size = (off_t) size;
+	}
+	if( number_of_sub_items > 0 )
+	{
+		stat_info->st_mode  = S_IFDIR | 0555;
+		stat_info->st_nlink = 2;
+	}
+	else
+	{
+		stat_info->st_mode  = S_IFREG | 0444;
+		stat_info->st_nlink = 1;
+	}
+#if defined( HAVE_GETEUID )
+	stat_info->st_uid = geteuid();
+#endif
+#if defined( HAVE_GETEGID )
+	stat_info->st_gid = getegid();
+#endif
+	return( 1 );
+}
+
+/* Fills a directory entry
+ * Returns 1 if successful or -1 on error
+ */
+int vmdkmount_fuse_filldir(
+     void *buffer,
+     fuse_fill_dir_t filler,
+     char *name,
+     size_t name_size,
+     struct stat *stat_info,
+     mount_handle_t *mount_handle,
+     int input_handle_index,
+     uint8_t use_mount_time,
+     libcerror_error_t **error )
+{
+	static char *function   = "vmdkmount_fuse_filldir";
+	size64_t media_size     = 0;
+	int number_of_sub_items = 0;
+
+	if( filler == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid filler.",
+		 function );
+
+		return( -1 );
+	}
+	if( mount_handle == NULL )
+	{
+		number_of_sub_items = 1;
+	}
+	else
+	{
+		if( mount_handle_get_media_size(
+		     mount_handle,
+		     input_handle_index,
+		     &media_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve media size.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	if( memory_set(
+	     stat_info,
+	     0,
+	     sizeof( struct stat ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear stat info.",
+		 function );
+
+		return( -1 );
+	}
+	if( vmdkmount_fuse_set_stat_info(
+	     stat_info,
+	     media_size,
+	     number_of_sub_items,
+	     use_mount_time,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set stat info.",
+		 function );
+
+		return( -1 );
+	}
+	if( filler(
+	     buffer,
+	     name,
+	     stat_info,
+	     0 ) == 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
 /* Reads a directory
  * Returns 0 if successful or a negative errno value otherwise
  */
@@ -388,6 +568,7 @@ int vmdkmount_fuse_readdir(
 	char vmdkmount_fuse_path[ 10 ];
 
 	libcerror_error_t *error    = NULL;
+	struct stat *stat_info      = NULL;
 	static char *function       = "vmdkmount_fuse_readdir";
 	size_t path_length          = 0;
 	int input_handle_index      = 0;
@@ -474,11 +655,32 @@ int vmdkmount_fuse_readdir(
 
 		goto on_error;
 	}
-	if( filler(
+	stat_info = memory_allocate_structure(
+	             struct stat );
+
+	if( stat_info == NULL )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create stat info.",
+		 function );
+
+		result = errno;
+
+		goto on_error;
+	}
+	if( vmdkmount_fuse_filldir(
 	     buffer,
+	     filler,
 	     ".",
+	     2,
+	     stat_info,
 	     NULL,
-	     0 ) == 1 )
+	     -1,
+	     1,
+	     &error ) != 1 )
 	{
 		libcerror_error_set(
 		 &error,
@@ -491,11 +693,16 @@ int vmdkmount_fuse_readdir(
 
 		goto on_error;
 	}
-	if( filler(
+	if( vmdkmount_fuse_filldir(
 	     buffer,
+	     filler,
 	     "..",
+	     3,
+	     stat_info,
 	     NULL,
-	     0 ) == 1 )
+	     -1,
+	     0,
+	     &error ) != 1 )
 	{
 		libcerror_error_set(
 		 &error,
@@ -525,11 +732,16 @@ int vmdkmount_fuse_readdir(
 		vmdkmount_fuse_path[ string_index++ ] = '0' + (char) ( input_handle_index % 10 );
 		vmdkmount_fuse_path[ string_index++ ] = 0;
 
-		if( filler(
+		if( vmdkmount_fuse_filldir(
 		     buffer,
+		     filler,
 		     &( vmdkmount_fuse_path[ 1 ] ),
-		     NULL,
-		     0 ) == 1 )
+		     string_index - 1,
+		     stat_info,
+		     vmdkmount_mount_handle,
+		     input_handle_index - 1,
+		     1,
+		     &error ) != 1 )
 		{
 			libcerror_error_set(
 			 &error,
@@ -543,6 +755,9 @@ int vmdkmount_fuse_readdir(
 			goto on_error;
 		}
 	}
+	memory_free(
+	 stat_info );
+
 	return( 0 );
 
 on_error:
@@ -552,6 +767,11 @@ on_error:
 		 error );
 		libcerror_error_free(
 		 &error );
+	}
+	if( stat_info != NULL )
+	{
+		memory_free(
+		 stat_info );
 	}
 	return( result );
 }
@@ -568,12 +788,10 @@ int vmdkmount_fuse_getattr(
 	size64_t media_size      = 0;
 	size_t path_length       = 0;
 	int input_handle_index   = 0;
+	int number_of_sub_items  = 0;
 	int result               = -ENOENT;
 	int string_index         = 0;
-
-#if defined( HAVE_TIME )
-	time_t timestamp         = 0;
-#endif
+	uint8_t use_mount_time   = 0;
 
 	if( path == NULL )
 	{
@@ -624,10 +842,9 @@ int vmdkmount_fuse_getattr(
 	{
 		if( path[ 0 ] == '/' )
 		{
-			stat_info->st_mode  = S_IFDIR | 0755;
-			stat_info->st_nlink = 2;
-
-			result = 0;
+			number_of_sub_items = 1;
+			use_mount_time      = 1;
+			result              = 0;
 		}
 	}
 	else if( ( path_length > vmdkmount_fuse_path_prefix_length )
@@ -654,9 +871,6 @@ int vmdkmount_fuse_getattr(
 			}
 			input_handle_index -= 1;
 
-			stat_info->st_mode  = S_IFREG | 0444;
-			stat_info->st_nlink = 1;
-
 			if( mount_handle_get_media_size(
 			     vmdkmount_mount_handle,
 			     input_handle_index,
@@ -674,52 +888,30 @@ int vmdkmount_fuse_getattr(
 
 				goto on_error;
 			}
-#if SIZEOF_OFF_T == 4
-			if( media_size > (size64_t) UINT32_MAX )
-			{
-				libcerror_error_set(
-				 &error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-				 "%s: invalid media size value out of bounds.",
-				 function );
-
-				result = -ERANGE;
-
-				goto on_error;
-			}
-#endif
-			stat_info->st_size = (off_t) media_size;
-
-			result = 0;
+			use_mount_time = 1;
+			result         = 0;
 		}
 	}
 	if( result == 0 )
 	{
-#if defined( HAVE_TIME )
-		if( time( &timestamp ) == (time_t) -1 )
+		if( vmdkmount_fuse_set_stat_info(
+		     stat_info,
+		     media_size,
+		     number_of_sub_items,
+		     use_mount_time,
+		     &error ) != 1 )
 		{
-			timestamp = 0;
-		}
-		stat_info->st_atime = timestamp;
-		stat_info->st_mtime = timestamp;
-		stat_info->st_ctime = timestamp;
-#else
-		stat_info->st_atime = 0;
-		stat_info->st_mtime = 0;
-		stat_info->st_ctime = 0;
-#endif
+			libcerror_error_set(
+			 &error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set stat info.",
+			 function );
 
-#if defined( HAVE_GETEUID )
-		stat_info->st_uid = geteuid();
-#else
-		stat_info->st_uid = 0;
-#endif
-#if defined( HAVE_GETEGID )
-		stat_info->st_gid = getegid();
-#else
-		stat_info->st_gid = 0;
-#endif
+			result = -EIO;
+
+			goto on_error;
+		}
 	}
 	return( result );
 
@@ -1176,6 +1368,198 @@ on_error:
 	return( result );
 }
 
+/* Sets the values in a find data structure
+ * Returns 1 if successful or -1 on error
+ */
+int vmdkmount_dokan_set_find_data(
+     WIN32_FIND_DATAW *find_data,
+     size64_t size,
+     int number_of_sub_items,
+     uint8_t use_mount_time,
+     libcerror_error_t **error )
+{
+	static char *function = "vmdkmount_dokan_set_find_data";
+
+	if( find_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid find data.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO implement
+	if( use_mount_time != 0 )
+	{
+	}
+*/
+	if( size > 0 )
+	{
+		find_data->nFileSizeHigh = (DWORD) ( size >> 32 );
+		find_data->nFileSizeLow  = (DWORD) ( size & 0xffffffffUL );
+	}
+	find_data->dwFileAttributes = FILE_ATTRIBUTE_READONLY;
+
+	if( number_of_sub_items > 0 )
+	{
+		find_data->dwFileAttributes |= FILE_ATTRIBUTE_DIRECTORY;
+	}
+	return( 1 );
+}
+
+/* Fills a directory entry
+ * Returns 1 if successful or -1 on error
+ */
+int vmdkmount_dokan_filldir(
+     PFillFindData fill_find_data,
+     DOKAN_FILE_INFO *file_info,
+     wchar_t *name,
+     size_t name_size,
+     WIN32_FIND_DATAW *find_data,
+     mount_handle_t *mount_handle,
+     int input_handle_index,
+     uint8_t use_mount_time,
+     libcerror_error_t **error )
+{
+	static char *function   = "vmdkmount_dokan_filldir";
+	size64_t media_size     = 0;
+	int number_of_sub_items = 0;
+
+	if( fill_find_data == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid fill find data.",
+		 function );
+
+		return( -1 );
+	}
+	if( name == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid name.",
+		 function );
+
+		return( -1 );
+	}
+	if( name_size > (size_t) MAX_PATH )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid name size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( mount_handle == NULL )
+	{
+		number_of_sub_items = 1;
+	}
+	else
+	{
+		if( mount_handle_get_media_size(
+		     mount_handle,
+		     input_handle_index,
+		     &media_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve media size.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	if( memory_set(
+	     find_data,
+	     0,
+	     sizeof( WIN32_FIND_DATAW ) ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
+		 "%s: unable to clear find data.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcstring_wide_string_copy(
+	     find_data->cFileName,
+	     name,
+	     name_size ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy filename.",
+		 function );
+
+		return( -1 );
+	}
+	if( name_size <= (size_t) 14 )
+	{
+		if( libcstring_wide_string_copy(
+		     find_data->cAlternateFileName,
+		     name,
+		     name_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+			 "%s: unable to copy alternate filename.",
+			 function );
+
+			return( -1 );
+		}
+	}
+	if( vmdkmount_dokan_set_find_data(
+	     find_data,
+	     media_size,
+	     number_of_sub_items,
+	     use_mount_time,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set find data.",
+		 function );
+
+		return( -1 );
+	}
+	if( fill_find_data(
+	     find_data,
+	     file_info ) != 0 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set directory entry.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
 /* Reads a directory
  * Returns 0 if successful or a negative error code otherwise
  */
@@ -1274,140 +1658,44 @@ int __stdcall vmdkmount_dokan_FindFiles(
 
 		goto on_error;
 	}
-	if( memory_set(
-	     &find_data,
-	     0,
-	     sizeof( WIN32_FIND_DATAW ) ) == NULL )
-	{
-		libcerror_error_set(
-		 &error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear find data.",
-		 function );
-
-		result = -ERROR_GEN_FAILURE;
-
-		goto on_error;
-	}
-	if( libcstring_wide_string_copy(
-	     find_data.cFileName,
+	if( vmdkmount_dokan_filldir(
+	     fill_find_data,
+	     file_info,
 	     L".",
-	     1 ) == NULL )
-	{
-		libcerror_error_set(
-		 &error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy filename.",
-		 function );
-
-		result = -ERROR_GEN_FAILURE;
-
-		goto on_error;
-	}
-	if( libcstring_wide_string_copy(
-	     find_data.cAlternateFileName,
-	     L".",
-	     1 ) == NULL )
-	{
-		libcerror_error_set(
-		 &error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy alternate filename.",
-		 function );
-
-		result = -ERROR_GEN_FAILURE;
-
-		goto on_error;
-	}
-	find_data.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
-/* TODO set timestamps
-	find_data.ftCreationTime   = { 0, 0 };
-	find_data.ftLastAccessTime = { 0, 0 };
-	find_data.ftLastWriteTime  = { 0, 0 };
-*/
-
-	if( fill_find_data(
+	     2,
 	     &find_data,
-	     file_info ) != 0 )
+	     NULL,
+	     -1,
+	     1,
+	     &error ) != 1 )
 	{
 		libcerror_error_set(
 		 &error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set directory entry.",
+		 "%s: unable to set find data.",
 		 function );
 
 		result = -ERROR_GEN_FAILURE;
 
 		goto on_error;
 	}
-	if( memory_set(
+	if( vmdkmount_dokan_filldir(
+	     fill_find_data,
+	     file_info,
+	     L"..",
+	     3,
 	     &find_data,
+	     NULL,
+	     -1,
 	     0,
-	     sizeof( WIN32_FIND_DATAW ) ) == NULL )
-	{
-		libcerror_error_set(
-		 &error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear find data.",
-		 function );
-
-		result = -ERROR_GEN_FAILURE;
-
-		goto on_error;
-	}
-	if( libcstring_wide_string_copy(
-	     find_data.cFileName,
-	     L"..",
-	     2 ) == NULL )
-	{
-		libcerror_error_set(
-		 &error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy filename.",
-		 function );
-
-		result = -ERROR_GEN_FAILURE;
-
-		goto on_error;
-	}
-	if( libcstring_wide_string_copy(
-	     find_data.cAlternateFileName,
-	     L"..",
-	     2 ) == NULL )
-	{
-		libcerror_error_set(
-		 &error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy alternate filename.",
-		 function );
-
-		result = -ERROR_GEN_FAILURE;
-
-		goto on_error;
-	}
-	find_data.dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
-/* TODO set timestamps
-	find_data.ftCreationTime   = { 0, 0 };
-	find_data.ftLastAccessTime = { 0, 0 };
-	find_data.ftLastWriteTime  = { 0, 0 };
-*/
-
-	if( fill_find_data(
-	     &find_data,
-	     file_info ) != 0 )
+	     &error ) != 1 )
 	{
 		libcerror_error_set(
 		 &error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set directory entry.",
+		 "%s: unable to set find data.",
 		 function );
 
 		result = -ERROR_GEN_FAILURE;
@@ -1431,89 +1719,22 @@ int __stdcall vmdkmount_dokan_FindFiles(
 		vmdkmount_dokan_path[ string_index++ ] = (wchar_t) ( '0' + ( input_handle_index % 10 ) );
 		vmdkmount_dokan_path[ string_index++ ] = 0;
 
-		if( mount_handle_get_media_size(
+		if( vmdkmount_dokan_filldir(
+		     fill_find_data,
+		     file_info,
+		     &( vmdkmount_dokan_path[ 1 ] ),
+		     string_index - 1,
+		     &find_data,
 		     vmdkmount_mount_handle,
 		     input_handle_index - 1,
-		     &media_size,
+		     1,
 		     &error ) != 1 )
 		{
 			libcerror_error_set(
 			 &error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve media size.",
-			 function );
-
-			result = -ERROR_GEN_FAILURE;
-
-			goto on_error;
-		}
-		if( memory_set(
-		     &find_data,
-		     0,
-		     sizeof( WIN32_FIND_DATAW ) ) == NULL )
-		{
-			libcerror_error_set(
-			 &error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-			 "%s: unable to clear find data.",
-			 function );
-
-			result = -ERROR_GEN_FAILURE;
-
-			goto on_error;
-		}
-		if( libcstring_wide_string_copy(
-		     find_data.cFileName,
-		     &( vmdkmount_dokan_path[ 1 ] ),
-		     string_index - 2 ) == NULL )
-		{
-			libcerror_error_set(
-			 &error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-			 "%s: unable to copy filename.",
-			 function );
-
-			result = -ERROR_GEN_FAILURE;
-
-			goto on_error;
-		}
-		if( libcstring_wide_string_copy(
-		     find_data.cAlternateFileName,
-		     &( vmdkmount_dokan_path[ 1 ] ),
-		     string_index - 2 ) == NULL )
-		{
-			libcerror_error_set(
-			 &error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-			 "%s: unable to copy alternate filename.",
-			 function );
-
-			result = -ERROR_GEN_FAILURE;
-
-			goto on_error;
-		}
-		find_data.dwFileAttributes = FILE_ATTRIBUTE_READONLY;
-/* TODO set timestamps
-		find_data.ftCreationTime   = { 0, 0 };
-		find_data.ftLastAccessTime = { 0, 0 };
-		find_data.ftLastWriteTime  = { 0, 0 };
-*/
-		find_data.nFileSizeHigh    = (DWORD) ( media_size >> 32 );
-		find_data.nFileSizeLow     = (DWORD) ( media_size & 0xffffffffUL );
-
-		if( fill_find_data(
-		     &find_data,
-		     file_info ) != 0 )
-		{
-			libcerror_error_set(
-			 &error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set directory entry.",
+			 "%s: unable to set find data.",
 			 function );
 
 			result = -ERROR_GEN_FAILURE;
@@ -1534,6 +1755,51 @@ on_error:
 	return( result );
 }
 
+/* Sets the values in a file information structure
+ * Returns 1 if successful or -1 on error
+ */
+int vmdkmount_dokan_set_file_information(
+     BY_HANDLE_FILE_INFORMATION *file_information,
+     size64_t size,
+     int number_of_sub_items,
+     uint8_t use_mount_time,
+     libcerror_error_t **error )
+{
+	static char *function = "vmdkmount_dokan_set_file_information";
+
+	if( file_information == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file information.",
+		 function );
+
+		return( -1 );
+	}
+/* TODO implement
+	if( use_mount_time != 0 )
+	{
+	}
+*/
+	if( size > 0 )
+	{
+		file_information->nFileSizeHigh = (DWORD) ( size >> 32 );
+		file_information->nFileSizeLow  = (DWORD) ( size & 0xffffffffUL );
+	}
+	file_information->dwFileAttributes = FILE_ATTRIBUTE_READONLY;
+
+	if( number_of_sub_items > 0 )
+	{
+		file_information->dwFileAttributes |= FILE_ATTRIBUTE_DIRECTORY;
+	}
+	return( 1 );
+}
+
+/* Retrieves the file information
+ * Returns 0 if successful or a negative error code otherwise
+ */
 int __stdcall vmdkmount_dokan_GetFileInformation(
                const wchar_t *path,
                BY_HANDLE_FILE_INFORMATION *file_information,
@@ -1544,8 +1810,10 @@ int __stdcall vmdkmount_dokan_GetFileInformation(
 	size64_t media_size      = 0;
 	size_t path_length       = 0;
 	int input_handle_index   = 0;
+	int number_of_sub_items  = 0;
 	int result               = 0;
 	int string_index         = 0;
+	uint8_t use_mount_time   = 0;
 
 	if( path == NULL )
 	{
@@ -1592,12 +1860,8 @@ int __stdcall vmdkmount_dokan_GetFileInformation(
 
 			goto on_error;
 		}
-		file_information->dwFileAttributes = FILE_ATTRIBUTE_DIRECTORY;
-/* TODO set timestamps
-		file_information->ftCreationTime   = { 0, 0 };
-		file_information->ftLastAccessTime = { 0, 0 };
-		file_information->ftLastWriteTime  = { 0, 0 };
-*/
+		number_of_sub_items = 1;
+		use_mount_time      = 1;
 	}
 	else
 	{
@@ -1653,14 +1917,25 @@ int __stdcall vmdkmount_dokan_GetFileInformation(
 
 			goto on_error;
 		}
-		file_information->dwFileAttributes = FILE_ATTRIBUTE_READONLY;
-/* TODO set timestamps
-		file_information->ftCreationTime   = { 0, 0 };
-		file_information->ftLastAccessTime = { 0, 0 };
-		file_information->ftLastWriteTime  = { 0, 0 };
-*/
-		file_information->nFileSizeHigh    = (DWORD) ( media_size >> 32 );
-		file_information->nFileSizeLow     = (DWORD) ( media_size & 0xffffffffUL );
+		use_mount_time = 1;
+	}
+	if( vmdkmount_dokan_set_file_information(
+	     file_information,
+	     media_size,
+	     number_of_sub_items,
+	     use_mount_time,
+	     &error ) != 1 )
+	{
+		libcerror_error_set(
+		 &error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set file info.",
+		 function );
+
+		result = -ERROR_GEN_FAILURE;
+
+		goto on_error;
 	}
 	return( 0 );
 

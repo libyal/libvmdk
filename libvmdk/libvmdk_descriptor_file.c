@@ -772,6 +772,15 @@ int libvmdk_descriptor_file_read_header(
 
 			line_string_segment_index++;
 		}
+		/* Skip a line not containing a value
+		 */
+		if( ( line_string_segment_index >= line_string_segment_size )
+		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
+		{
+			*line_index += 1;
+
+			continue;
+		}
 		/* Make sure the value identifier is terminated by an end of string
 		 */
 		line_string_segment[ line_string_segment_index ] = 0;
@@ -1893,6 +1902,15 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 
 			line_string_segment_index++;
 		}
+		/* Skip a line not containing a value
+		 */
+		if( ( line_string_segment_index >= line_string_segment_size )
+		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
+		{
+			*line_index += 1;
+
+			continue;
+		}
 		/* Make sure the value identifier is terminated by an end of string
 		 */
 		line_string_segment[ line_string_segment_index ] = 0;
@@ -1978,8 +1996,26 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 /* TODO */
 			}
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		else if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: value: %d\t\t\t\t: %s = %s\n",
+			 function,
+			 *line_index,
+			 value_identifier,
+			 value );
+		}
+#endif
 		*line_index += 1;
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
 	return( 1 );
 }
 
@@ -2224,6 +2260,15 @@ int libvmdk_descriptor_file_read_disk_database(
 
 			line_string_segment_index++;
 		}
+		/* Skip a line not containing a value
+		 */
+		if( ( line_string_segment_index >= line_string_segment_size )
+		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
+		{
+			*line_index += 1;
+
+			continue;
+		}
 		/* Make sure the value identifier is terminated by an end of string
 		 */
 		line_string_segment[ line_string_segment_index ] = 0;
@@ -2356,8 +2401,26 @@ int libvmdk_descriptor_file_read_disk_database(
 /* TODO */
 			}
 		}
+#if defined( HAVE_DEBUG_OUTPUT )
+		else if( libcnotify_verbose != 0 )
+		{
+			libcnotify_printf(
+			 "%s: value: %d\t\t\t\t: %s = %s\n",
+			 function,
+			 *line_index,
+			 value_identifier,
+			 value );
+		}
+#endif
 		*line_index += 1;
 	}
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+		 "\n" );
+	}
+#endif
 	return( 1 );
 }
 

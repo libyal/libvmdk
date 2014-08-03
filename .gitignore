@@ -101,13 +101,6 @@ stamp-h1
 /include/libvmdk/types.h
 /libvmdk/libvmdk.rc
 /libvmdk/libvmdk_definitions.h
-/macosx/Introduction.rtf
-/macosx/libvmdk.pmdoc/01bin.xml
-/macosx/libvmdk.pmdoc/02include.xml
-/macosx/libvmdk.pmdoc/03lib.xml
-/macosx/libvmdk.pmdoc/04share.xml
-/macosx/libvmdk.pmdoc/05python.xml
-/macosx/libvmdk.pmdoc/index.xml
 /pyvmdk/setup.py
 /tests/input
 /tests/tmp

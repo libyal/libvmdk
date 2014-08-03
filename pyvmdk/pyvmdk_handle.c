@@ -296,7 +296,7 @@ PyTypeObject pyvmdk_handle_type_object = {
 	0,
 	/* tp_as_buffer */
 	0,
-        /* tp_flags */
+	/* tp_flags */
 	Py_TPFLAGS_DEFAULT,
 	/* tp_doc */
 	"pyvmdk handle object (wraps libvmdk_handle_t)",
@@ -596,6 +596,209 @@ PyObject *pyvmdk_handle_signal_abort(
 	return( Py_None );
 }
 
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+
+/* Opens a handle
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyvmdk_handle_open(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+	PyObject *exception_string    = NULL;
+	PyObject *exception_traceback = NULL;
+	PyObject *exception_type      = NULL;
+	PyObject *exception_value     = NULL;
+	PyObject *string_object       = NULL;
+	libcerror_error_t *error      = NULL;
+	static char *function         = "pyvmdk_handle_open";
+	static char *keyword_list[]   = { "filename", "mode", NULL };
+	const wchar_t *filename_wide  = NULL;
+	const char *filename_narrow   = NULL;
+	char *error_string            = NULL;
+	int result                    = 0;
+
+	if( pyvmdk_handle == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid handle.",
+		 function );
+
+		return( NULL );
+	}
+	/* Note that PyArg_ParseTupleAndKeywords with "s" will force Unicode strings to be converted to narrow character string.
+	 * On Windows the narrow character strings contains an extended ASCII string with a codepage. Hence we get a conversion
+	 * exception. We cannot use "u" here either since that does not allow us to pass non Unicode string objects and
+	 * Python (at least 2.7) does not seems to automatically upcast them.
+	 */
+	if( PyArg_ParseTupleAndKeywords(
+	     arguments,
+	     keywords,
+	     "O|s",
+	     keyword_list,
+	     &string_object ) == 0 )
+	{
+		return( NULL );
+	}
+	PyErr_Clear();
+
+	result = PyObject_IsInstance(
+	          string_object,
+	          (PyObject *) &PyUnicode_Type );
+
+	if( result == -1 )
+	{
+		PyErr_Fetch(
+		 &exception_type,
+		 &exception_value,
+		 &exception_traceback );
+
+		exception_string = PyObject_Repr(
+		                    exception_value );
+
+		error_string = PyString_AsString(
+		                exception_string );
+
+		if( error_string != NULL )
+		{
+			PyErr_Format(
+		         PyExc_RuntimeError,
+			 "%s: unable to determine if string object is of type unicode with error: %s.",
+			 function,
+			 error_string );
+		}
+		else
+		{
+			PyErr_Format(
+		         PyExc_RuntimeError,
+			 "%s: unable to determine if string object is of type unicode.",
+			 function );
+		}
+		Py_DecRef(
+		 exception_string );
+
+		return( NULL );
+	}
+	else if( result != 0 )
+	{
+		PyErr_Clear();
+
+		filename_wide = (wchar_t *) PyUnicode_AsUnicode(
+		                             string_object );
+		Py_BEGIN_ALLOW_THREADS
+
+		result = libvmdk_handle_open_wide(
+		          pyvmdk_handle->handle,
+	                  filename_wide,
+		          LIBVMDK_OPEN_READ,
+		          &error );
+
+		Py_END_ALLOW_THREADS
+
+		if( result != 1 )
+		{
+			pyvmdk_error_raise(
+			 error,
+			 PyExc_IOError,
+			 "%s: unable to open handle.",
+			 function );
+
+			libcerror_error_free(
+			 &error );
+
+			return( NULL );
+		}
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	PyErr_Clear();
+
+	result = PyObject_IsInstance(
+		  string_object,
+		  (PyObject *) &PyString_Type );
+
+	if( result == -1 )
+	{
+		PyErr_Fetch(
+		 &exception_type,
+		 &exception_value,
+		 &exception_traceback );
+
+		exception_string = PyObject_Repr(
+				    exception_value );
+
+		error_string = PyString_AsString(
+				exception_string );
+
+		if( error_string != NULL )
+		{
+			PyErr_Format(
+		         PyExc_RuntimeError,
+			 "%s: unable to determine if string object is of type string with error: %s.",
+			 function,
+			 error_string );
+		}
+		else
+		{
+			PyErr_Format(
+		         PyExc_RuntimeError,
+			 "%s: unable to determine if string object is of type string.",
+			 function );
+		}
+		Py_DecRef(
+		 exception_string );
+
+		return( NULL );
+	}
+	else if( result != 0 )
+	{
+		PyErr_Clear();
+
+		filename_narrow = PyString_AsString(
+				   string_object );
+
+		Py_BEGIN_ALLOW_THREADS
+
+		result = libvmdk_handle_open(
+		          pyvmdk_handle->handle,
+	                  filename_narrow,
+		          LIBVMDK_OPEN_READ,
+		          &error );
+
+		Py_END_ALLOW_THREADS
+
+		if( result != 1 )
+		{
+			pyvmdk_error_raise(
+			 error,
+			 PyExc_IOError,
+			 "%s: unable to open handle.",
+			 function );
+
+			libcerror_error_free(
+			 &error );
+
+			return( NULL );
+		}
+		Py_IncRef(
+		 Py_None );
+
+		return( Py_None );
+	}
+	PyErr_Format(
+	 PyExc_TypeError,
+	 "%s: unsupported string object type",
+	 function );
+
+	return( NULL );
+}
+
+#else
+
 /* Opens a handle
  * Returns a Python object if successful or NULL on error
  */
@@ -620,6 +823,9 @@ PyObject *pyvmdk_handle_open(
 
 		return( NULL );
 	}
+	/* Note that PyArg_ParseTupleAndKeywords with "s" will force Unicode strings to be converted to narrow character string.
+	 * For systems that support UTF-8 this works for Unicode string objects as well.
+	 */
 	if( PyArg_ParseTupleAndKeywords(
 	     arguments,
 	     keywords,
@@ -627,9 +833,9 @@ PyObject *pyvmdk_handle_open(
 	     keyword_list,
 	     &filename,
 	     &mode ) == 0 )
-        {
-                return( NULL );
-        }
+	{
+		return( NULL );
+	}
 	if( ( mode != NULL )
 	 && ( mode[ 0 ] != 'r' ) )
 	{
@@ -645,8 +851,8 @@ PyObject *pyvmdk_handle_open(
 
 	result = libvmdk_handle_open(
 	          pyvmdk_handle->handle,
-                  filename,
-                  LIBVMDK_OPEN_READ,
+	          filename,
+	          LIBVMDK_OPEN_READ,
 	          &error );
 
 	Py_END_ALLOW_THREADS
@@ -669,6 +875,8 @@ PyObject *pyvmdk_handle_open(
 
 	return( Py_None );
 }
+
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
 
 /* Opens a handle using a file-like object
  * Returns a Python object if successful or NULL on error
@@ -701,9 +909,9 @@ PyObject *pyvmdk_handle_open_file_object(
 	     keyword_list,
 	     &file_object,
 	     &mode ) == 0 )
-        {
-                return( NULL );
-        }
+	{
+		return( NULL );
+	}
 	if( ( mode != NULL )
 	 && ( mode[ 0 ] != 'r' ) )
 	{
@@ -735,8 +943,8 @@ PyObject *pyvmdk_handle_open_file_object(
 
 	result = libvmdk_handle_open_file_io_handle(
 	          pyvmdk_handle->handle,
-                  pyvmdk_handle->file_io_handle,
-                  LIBVMDK_OPEN_READ,
+	          pyvmdk_handle->file_io_handle,
+	          LIBVMDK_OPEN_READ,
 	          &error );
 
 	Py_END_ALLOW_THREADS
@@ -845,9 +1053,9 @@ PyObject *pyvmdk_handle_open_extent_data_files_file_objects(
 	     "O",
 	     keyword_list,
 	     &file_objects ) == 0 )
-        {
-                return( NULL );
-        }
+	{
+		return( NULL );
+	}
 	if( pyvmdk_file_objects_pool_initialize(
 	     &( pyvmdk_handle->file_io_pool ),
 	     file_objects,
@@ -869,7 +1077,7 @@ PyObject *pyvmdk_handle_open_extent_data_files_file_objects(
 
 	result = libvmdk_handle_open_extent_data_files_file_io_pool(
 	          pyvmdk_handle->handle,
-                  pyvmdk_handle->file_io_pool,
+	          pyvmdk_handle->file_io_pool,
 	          &error );
 
 	Py_END_ALLOW_THREADS

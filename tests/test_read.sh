@@ -60,10 +60,9 @@ test_read()
 
 VMDK_TEST_READ="vmdk_test_read";
 
-if ! test -x ${VMDK_TEST_SEEK};
+if ! test -x ${VMDK_TEST_READ};
 then
 	VMDK_TEST_READ="vmdk_test_read.exe";
-
 fi
 
 if ! test -x ${VMDK_TEST_READ};
@@ -122,13 +121,13 @@ else
 			then
 				if test -f "input/.libvmdk/${DIRNAME}/files";
 				then
-					TESTFILES=`cat input/.libvmdk/${DIRNAME}/files | sed "s?^?${TESTDIR}/?"`;
+					TEST_FILES=`cat input/.libvmdk/${DIRNAME}/files | sed "s?^?${TESTDIR}/?"`;
 				else
-					TESTFILES=`ls ${TESTDIR}/*`;
+					TEST_FILES=`ls -1 ${TESTDIR}/* 2> /dev/null`;
 				fi
-				for TESTFILE in ${TESTFILES};
+				for TEST_FILE in ${TEST_FILES};
 				do
-					if ! test_read "${TESTFILE}";
+					if ! test_read "${TEST_FILE}";
 					then
 						exit ${EXIT_FAILURE};
 					fi

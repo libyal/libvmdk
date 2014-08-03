@@ -143,7 +143,7 @@ PyTypeObject pyvmdk_extent_descriptor_type_object = {
 	0,
 	/* tp_as_buffer */
 	0,
-        /* tp_flags */
+	/* tp_flags */
 	Py_TPFLAGS_DEFAULT,
 	/* tp_doc */
 	"pyvmdk extent descriptor object (wraps libvmdk_extent_descriptor_t)",

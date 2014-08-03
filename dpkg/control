@@ -10,8 +10,16 @@ Package: libvmdk
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Suggests: libvmdk-dbg
 Description: Library to access the VMware Virtual Disk (VMDK) format
  libvmdk is a library to access the VMware Virtual Disk (VMDK) format.
+
+Package: libvmdk-dbg
+Architecture: any
+Section: debug
+Depends: libvmdk (= ${Source-Version}), ${misc:Depends}
+Description: Debugging symbols for libvmdk
+ Debugging symbols for libvmdk.
 
 Package: libvmdk-dev
 Section: libdevel
@@ -31,6 +39,14 @@ Package: libvmdk-python
 Section: python
 Architecture: any
 Depends: libvmdk (= ${Source-Version}), ${shlibs:Depends}, ${python:Depends}
+Suggests: libvmdk-python-dbg
 Description: Python bindings for libvmdk
  Python bindings for libvmdk.
+
+Package: libvmdk-python-dbg
+Section: debug
+Architecture: any
+Depends: libvmdk-python (= ${Source-Version})
+Description: Debugging symbols for libvmdk-python
+ Debugging symbols for libvmdk-python.
 

@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libvmdk],
- [20140421],
+ [20140803],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -87,14 +87,14 @@ AX_LIBCPATH_CHECK_ENABLE
 dnl Check for enabling libbfio for basic file IO support
 AX_LIBBFIO_CHECK_ENABLE
 
-dnl Check for enabling libfvalue for file value support
-AX_LIBFVALUE_CHECK_ENABLE
-
 dnl Check for enabling libfcache for file value cache support
 AX_LIBFCACHE_CHECK_ENABLE
 
 dnl Check for enabling libfdata for file and memory data block support
 AX_LIBFDATA_CHECK_ENABLE
+
+dnl Check for enabling libfvalue for file value support
+AX_LIBFVALUE_CHECK_ENABLE
 
 dnl Check for zlib compression support
 AX_ZLIB_CHECK_ENABLE
@@ -127,21 +127,42 @@ AX_COMMON_CHECK_ENABLE_DEBUG_OUTPUT
 dnl Check if libvmdk python bindings (pyvmdk) should be build
 AX_PYTHON_CHECK_ENABLE
 
-dnl Check if DLL support is needed in vmdktools
+dnl Headers included in various places
+AC_CHECK_HEADERS([stdarg.h varargs.h])
+
 AS_IF(
- [test x"$enable_shared" = xyes && test "x$ac_cv_enable_static_executables" = xno],
+ [test "x$ac_cv_header_stdarg_h" != xyes && test "x$ac_cv_header_varargs_h" != xyes],
+ [AC_MSG_FAILURE(
+  [Missing headers: stdarg.h and varargs.h],
+  [1])
+ ])
+
+dnl Check if DLL support is needed
+AS_IF(
+ [test "x$enable_shared" = xyes],
  [AS_CASE(
   [$host],
   [*cygwin* | *mingw*],
-  [AC_SUBST(
-   [LIBVMDK_DLL_IMPORT],
-   ["-DLIBVMDK_DLL_IMPORT"])
+  [AC_DEFINE(
+   [HAVE_DLLMAIN],
+   [1],
+   [Define to 1 to enable the DllMain function.])
+  AC_SUBST(
+   [HAVE_DLLMAIN],
+   [1])
+
+  AS_IF(
+   [test "x$ac_cv_enable_static_executables" = xno],
+   [AC_SUBST(
+    [LIBVMDK_DLL_IMPORT],
+    ["-DLIBVMDK_DLL_IMPORT"])
+   ])
   ])
  ])
 
 dnl Check if requires and build requires should be set in spec file
 AS_IF(
- [test "x$ac_cv_libcstring" = xyes || test "x$ac_cv_libcerror" = xyes || test "x$ac_cv_libcthreads" = xyes || test "x$ac_cv_libcdata" = xyes ||  test "x$ac_cv_libclocale" = xyes || test "x$ac_cv_libcnotify" = xyes || test "x$ac_cv_libcsplit" = xyes || test "x$ac_cv_libuna" = xyes || test "x$ac_cv_libcfile" = xyes || test "x$ac_cv_libcpath" = xyes || test "x$ac_cv_libbfio" = xyes || test "x$ac_cv_libfcache" = xyes || test "x$ac_cv_libfdata" = xyes || test "x$ac_cv_libfvalue" = xyes  || test "x$ac_cv_zlib" != xno],
+ [test "x$ac_cv_libcstring" = xyes || test "x$ac_cv_libcerror" = xyes || test "x$ac_cv_libcthreads" = xyes || test "x$ac_cv_libcdata" = xyes ||  test "x$ac_cv_libclocale" = xyes || test "x$ac_cv_libcnotify" = xyes || test "x$ac_cv_libcsplit" = xyes || test "x$ac_cv_libuna" = xyes || test "x$ac_cv_libcfile" = xyes || test "x$ac_cv_libcpath" = xyes || test "x$ac_cv_libbfio" = xyes || test "x$ac_cv_libfcache" = xyes || test "x$ac_cv_libfdata" = xyes || test "x$ac_cv_libfvalue" = xyes || test "x$ac_cv_zlib" != xno],
  [AC_SUBST(
   [libvmdk_spec_requires],
   [Requires:])
@@ -198,7 +219,6 @@ AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([po/Makevars])
 AC_CONFIG_FILES([manuals/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
-AC_CONFIG_FILES([macosx/Makefile])
 AC_CONFIG_FILES([msvscpp/Makefile])
 dnl Have configure make the include files
 AC_CONFIG_FILES([include/libvmdk.h])
@@ -211,13 +231,6 @@ AC_CONFIG_FILES([common/types.h])
 AC_CONFIG_FILES([dpkg/changelog])
 AC_CONFIG_FILES([dpkg/copyright])
 AC_CONFIG_FILES([libvmdk/libvmdk.rc])
-AC_CONFIG_FILES([macosx/libvmdk.pmdoc/01bin.xml])
-AC_CONFIG_FILES([macosx/libvmdk.pmdoc/02include.xml])
-AC_CONFIG_FILES([macosx/libvmdk.pmdoc/03lib.xml])
-AC_CONFIG_FILES([macosx/libvmdk.pmdoc/04share.xml])
-AC_CONFIG_FILES([macosx/libvmdk.pmdoc/05python.xml])
-AC_CONFIG_FILES([macosx/libvmdk.pmdoc/index.xml])
-AC_CONFIG_FILES([macosx/Introduction.rtf])
 AC_CONFIG_FILES([pyvmdk/setup.py])
 AC_CONFIG_FILES([libvmdk.pc])
 AC_CONFIG_FILES([libvmdk.spec])

@@ -58,7 +58,7 @@ int libvmdk_handle_get_disk_type(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );
@@ -109,7 +109,7 @@ int libvmdk_handle_get_media_size(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );
@@ -160,7 +160,7 @@ int libvmdk_handle_get_content_identifier(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );
@@ -439,7 +439,7 @@ int libvmdk_handle_get_number_of_extents(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );
@@ -492,7 +492,7 @@ int libvmdk_handle_get_extent_descriptor(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid internal handle - missing descriptor file.",
+		 "%s: invalid handle - missing descriptor file.",
 		 function );
 
 		return( -1 );

@@ -489,9 +489,9 @@ PyObject *pyvmdk_handle_get_extent_descriptor(
 	     "i",
 	     keyword_list,
 	     &extent_index ) == 0 )
-        {
+	{
 		return( NULL );
-        }
+	}
 	extent_descriptor_object = pyvmdk_handle_get_extent_descriptor_by_index(
 	                            pyvmdk_handle,
 	                            extent_index );

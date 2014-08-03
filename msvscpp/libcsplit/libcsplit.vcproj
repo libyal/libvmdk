@@ -56,7 +56,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\libcsplit.lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 				ModuleDefinitionFile=""
 				IgnoreAllDefaultLibraries="false"
 			/>
@@ -121,7 +121,7 @@
 			/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="$(OutDir)\libcsplit.lib"
+				OutputFile="$(OutDir)\$(ProjectName).lib"
 				ModuleDefinitionFile=""
 				IgnoreAllDefaultLibraries="false"
 			/>
@@ -185,19 +185,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libcsplit\libcsplit_extern.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\libcsplit\libcsplit_error.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\libcsplit\libcsplit_narrow_split_string.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libcsplit\libcsplit_narrow_string.h"
+				RelativePath="..\..\libcsplit\libcsplit_extern.h"
 				>
 			</File>
 			<File
@@ -206,6 +198,14 @@
 			</File>
 			<File
 				RelativePath="..\..\libcsplit\libcsplit_libcstring.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libcsplit\libcsplit_narrow_split_string.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libcsplit\libcsplit_narrow_string.h"
 				>
 			</File>
 			<File

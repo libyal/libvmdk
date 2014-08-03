@@ -55,7 +55,6 @@ int libvmdk_set_codepage(
 
 #endif /* !defined( HAVE_LOCAL_LIBVMDK ) */
 
-
 LIBVMDK_EXTERN \
 int libvmdk_check_file_signature(
      const char *filename,
