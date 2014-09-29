@@ -1,0 +1,63 @@
+.Dd January 19, 2014
+.Dt vmdkinfo
+.Os libvmdk
+.Sh NAME
+.Nm vmdkinfo
+.Nd determines information about a VMware Virtual Disk (VMDK) file(s)
+.Sh SYNOPSIS
+.Nm vmdkinfo
+.Op Fl ahvV
+.Va Ar vmdk_files
+.Sh DESCRIPTION
+.Nm vmdkinfo
+is a utility to determine information about a VMware Virtual Disk (VMDK) file(s)
+.Pp
+.Nm vmdkinfo
+is part of the
+.Nm libvmdk
+package.
+.Nm libvmdk
+is a library to access the VMware Virtual Disk (VMDK) format
+.Pp
+.Ar vmdk_files
+the entire set of VMDK segment files or the one containing the descriptor.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl a
+shows allocation information
+.It Fl h
+shows this help
+.It Fl v
+verbose output to stderr
+.It Fl V
+print version
+.El
+.Sh ENVIRONMENT
+None
+.Sh FILES
+None
+.Sh EXAMPLES
+.Bd -literal
+# vmdkinfo file.vmdk
+vmdkinfo 20130514
+
+VMware Virtual Disk (VMDK) information:
+	Disk type:			Monolithic sparse
+	Media size:			8589934592 bytes
+	Content identifier:		0x505dcf0a
+	Parent content identifier:	0xffffffff
+
+.Ed
+.Sh DIAGNOSTICS
+Errors, verbose and debug output are printed to stderr when verbose output \-v is enabled.
+Verbose and debug output are only printed when enabled at compilation.
+.Sh BUGS
+Please report bugs of any kind to <forensics@hoffmannbv.nl> or on the project website:
+http://code.google.com/p/libvmdk/
+.Sh AUTHOR
+These man pages were written by Joachim Metz.
+.Sh COPYRIGHT
+Copyright 2009-2014, Joachim Metz <joachim.metz@gmail.com>.
+This is free software; see the source for copying conditions. There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+.Sh SEE ALSO

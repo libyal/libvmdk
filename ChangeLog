@@ -1,0 +1,235 @@
+TODO
+* add support for the change tracking file?
+* make sure descriptor file data is cleaned on close - also if no data files were set!
+
+* make libvmdk_handle_open_extent_data_files_file_io_pool work
+* make libvmdk_handle_open_extent_data_files use libvmdk_handle_open_extent_data_files_file_io_pool
+
+* if there is a single filename in the disk database and the current file is
+  not a descriptor-only file assume the current file is the right one even if
+  the names don't match
+
+* update manuals
+  - update libvmdk.3
+  - update vmdkinfo.1
+  - add vmdkmount.1
+* handle ZERO extents?
+* extent file add windows support (encoding)
+  - add codepage functions + tests
+  - libvmdk_extent_descriptor.c:629
+  - libvmdk_descriptor_file.c:852
+* implement extent file current offset ?
+* implement libvmdk_extent_file_read_grain_group_element_data
+* get grain data by grain table
+  - remove unused functions from libvmdk_extent_table after refactor
+* implement libvmdk_handle_set_maximum_number_of_open_handles
+* add support for zero-grain table entry support
+
+* code clean up:
+  - support and locale functions
+* add glob functions?
+* debug output
+  - descriptor file: disk database
+
+API
+* add functions to access storage media data
+* add functions to access extents
+* add functions to access grains
+
+Tools:
+* vmdkinfo:
+  - add flag to have test to check if all the extent files are there?
+  - same for all the parent extent files?
+  - add option to print descriptor file data?
+  - print dirty status
+  - add byte size string support
+
+Tests:
+* open close
+  - add parent support
+* read
+  - add parent support
+* seek
+  - add parent support
+* add integrity tests
+* add pyvmdk
+
+* Test images
+  - vmdk flat
+  - vmdk flat split (done)
+  - Monolithic sparse (done)
+  - 2GB extent sparse (done)
+  - cowd sparse
+  - cowd sparse split
+  - compressed (done)
+  - (compressed) with parent (done)
+
+20140929
+* removed README.macosx
+
+20140803
+* bug fix in Python-bindings
+
+20140729
+* updated dependencies
+
+20140421
+* changes for mingw and msvsccp build
+* updated msvsccp files
+* code clean up
+* worked on libvmdk_handle_open_extent_data_files_file_io_pool
+* added support for corruption scenario where grain table entries is lager
+  than the maximum number of sectors.
+
+20140420
+* updated dependencies
+* updated Python bindings
+* worked on exposing extent information
+
+20140417
+* worked on support for a stream optimized VMDK file without a grain table
+
+20140416
+* worked on support for a stream optimized VMDK file without a grain table
+  - added support for grain directory sector value -1
+* added debug information
+
+20140119
+* 2014 update
+* updated dependencies
+
+20131210
+* fixed issue in mount handle for empty basename
+
+20131209
+* updated dependencies
+* worked on pyvmdk
+* worked on compressed VMDK sparse extent data files support
+* vmdkmount bug fix in parent chain mounting
+
+20131017
+* updated dependencies
+* worked on pyvmdk integer support
+
+20131008
+* updated msvscpp files
+
+20131004
+* updated dependencies
+* worked on libcthreads build support
+
+20130916
+* updated dependencies
+* worked on libcthreads build support
+* code clean up
+
+20130831
+* updated dependencies
+
+20130608
+* worked on tests
+
+20130522
+* changes for deployment
+
+20130521
+* changes for deployment
+
+20130520
+* changes for deployment
+
+20130517
+* changes for extent descriptor parsing
+  - added support for extent descriptor with additional values
+  - added support for ZERO extent descriptor
+
+20130516
+* worked on mfdata refactor
+* added support for flat extent files
+* worked on COWD extent file support
+* changes for deployment
+
+20130515
+* worked on mfdata refactor
+
+20130514
+* worked on mfdata refactor
+
+20130513
+* worked on mfdata refactor
+
+20130512
+* updated dependencies
+* added to macosx files
+* worked on Python bindings
+
+20130427
+* 2013 update
+* updated dependencies
+
+20121201
+* worked on parent image support
+
+20121129
+* worked on parent image support
+* updated libvmdk.3 man page
+
+20121128
+* worked on parent image support
+
+20121127
+* worked on parent image support
+* updated libvmdk.3 man page
+
+20120924
+* added extent data file sector restriction
+* bug fixes
+* code clean up
+
+20120923
+* worked on multi-file image support
+
+20120922
+* code clean up
+* worked on descriptor file support
+* worked on multi-file image support
+
+20120921
+* renamed segment file into extent file
+* merged segment file and segment file handle
+* worked on descriptor file support
+
+20120920
+* applied updates
+* changes due to updates
+* code clean up
+* created debian package files
+
+20100418
+* added libcstring
+* updated common, liberror, libnotify, libuna, libbfio, libsystem
+* changed libvmdk_file to libvmdk_handle
+* added support for multiple source files
+* worked on descriptor file
+
+20100314
+* string fix in vmdkinfo
+* moved file io handle into libvmdk_file
+
+20100221
+* updated common, liberror, libuna, libbfio
+* libvmdk 2010 update
+* worked on byte stream update
+* worked on libnotify update
+
+20091004
+* updated acinclude
+* updated libuna, libbfio, common, libsystem, liberror, libnotify
+
+20090913
+* worked on VMDK support
+
+20090912
+* initial version based on liblnk
+* worked on implementing vmdk and cowd sparse data files
+
