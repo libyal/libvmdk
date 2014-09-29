@@ -28,7 +28,7 @@ BEGIN
       VALUE "OriginalFilename",		"libvmdk.dll\0"
       VALUE "ProductName",		"libvmdk\0"
       VALUE "ProductVersion",		"@VERSION@" "\0"
-      VALUE "Comments",			"For more information visit http://code.google.com/p/libvmdk/\0"
+      VALUE "Comments",			"For more information visit https://github.com/libyal/libvmdk/\0"
     END
   END
   BLOCK "VarFileInfo"
