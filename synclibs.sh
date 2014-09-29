@@ -1,9 +1,9 @@
 #!/bin/sh
 # Script that synchronizes the local library dependencies
 #
-# Version: 20130330
+# Version: 20140915
 
-GIT_URL_PREFIX="https://code.google.com/p"
+GIT_URL_PREFIX="https://github.com/libyal";
 LOCAL_LIBS="libbfio libcdata libcerror libcfile libclocale libcnotify libcpath libcsplit libcthreads libfcache libfdata libfvalue libuna";
 
 OLDIFS=$IFS;
@@ -11,7 +11,7 @@ IFS=" ";
 
 for LOCAL_LIB in ${LOCAL_LIBS};
 do
-	git clone ${GIT_URL_PREFIX}/${LOCAL_LIB}/ ${LOCAL_LIB}-$$;
+	git clone ${GIT_URL_PREFIX}/${LOCAL_LIB}.git ${LOCAL_LIB}-$$;
 
 	if [ -d ${LOCAL_LIB}-$$ ];
 	then
@@ -76,6 +76,13 @@ SED_SCRIPT="
         }
 }";
 			sed "${SED_SCRIPT}" -i ${LOCAL_LIB}/Makefile.am;
+
+			if [ ${LOCAL_LIB} = "libfvalue" ];
+			then
+				sed "/@LIBFDATETIME_CPPFLAGS@/d" -i ${LOCAL_LIB}/Makefile.am;
+				sed "/@LIBFGUID_CPPFLAGS@/d" -i ${LOCAL_LIB}/Makefile.am;
+				sed "/@LIBFWNT_CPPFLAGS@/d" -i ${LOCAL_LIB}/Makefile.am;
+			fi
 
 			rm -f ${LOCAL_LIB}/${LOCAL_LIB}.c;
 
