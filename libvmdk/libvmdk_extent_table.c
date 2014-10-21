@@ -1450,7 +1450,7 @@ int libvmdk_extent_table_initialize_extents(
 		          (ssize_t (*)(intptr_t *, intptr_t *, int, int, uint8_t *, size_t, uint32_t, uint8_t, libcerror_error_t **)) &libvmdk_extent_file_read_segment_data,
 		          NULL,
 		          (off64_t (*)(intptr_t *, intptr_t *, int, int, off64_t, libcerror_error_t **)) &libvmdk_extent_file_seek_segment_offset,
-		          LIBFDATA_FLAG_DATA_HANDLE_NON_MANAGED,
+		          LIBFDATA_DATA_HANDLE_FLAG_NON_MANAGED,
 		          error );
 
 		if( result != 1 )
@@ -1493,7 +1493,7 @@ int libvmdk_extent_table_initialize_extents(
 		          NULL,
 		          (int (*)(intptr_t *, intptr_t *, libfdata_list_element_t *, libfcache_cache_t *, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libvmdk_extent_file_read_element_data,
 		          NULL,
-		          LIBFDATA_FLAG_DATA_HANDLE_NON_MANAGED,
+		          LIBFDATA_DATA_HANDLE_FLAG_NON_MANAGED,
 		          error );
 
 		if( result != 1 )

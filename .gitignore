@@ -1,12 +1,13 @@
 # Files to ignore by git
 #
-# Version: 20130922
+# Version: 20141014
 
 # Generic auto-generated build files
 *~
 *.a
 *.la
 *.lai
+*.lineno
 *.lo
 *.Plo
 *.Po
@@ -26,6 +27,7 @@ stamp-h1
 /ABOUT-NLS
 /aclocal.m4
 /autom4te.cache/
+/compile
 /config.guess
 /config.log
 /config.rpath
@@ -37,6 +39,7 @@ stamp-h1
 /libtool
 /ltmain.sh
 /missing
+/test-driver
 /ylwrap
 /m4/codeset.m4
 /m4/fcntl-o.m4
@@ -101,6 +104,8 @@ stamp-h1
 /include/libvmdk/types.h
 /libvmdk/libvmdk.rc
 /libvmdk/libvmdk_definitions.h
+/vmdktools/vmdkinfo
+/vmdktools/vmdkmount
 /pyvmdk/setup.py
 /tests/input
 /tests/tmp
@@ -117,6 +122,8 @@ stamp-h1
 /libcnotify
 /libcpath
 /libcsplit
+/libcstring
+/libcsystem
 /libcthreads
 /libfcache
 /libfdata
