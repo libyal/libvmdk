@@ -64,6 +64,9 @@ Tests:
   - compressed (done)
   - (compressed) with parent (done)
 
+20141021
+* changes for deployment
+
 20140929
 * removed README.macosx
 * changes for project site move
