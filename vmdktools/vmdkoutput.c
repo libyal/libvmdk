@@ -24,18 +24,6 @@
 #include <memory.h>
 #include <types.h>
 
-#if defined( HAVE_LOCAL_LIBUNA )
-#include <libuna_definitions.h>
-#elif defined( HAVE_LIBUNA_H )
-#include <libuna.h>
-#endif
-
-#if defined( HAVE_LOCAL_LIBBFIO )
-#include <libbfio_definitions.h>
-#elif defined( HAVE_LIBBFIO_H )
-#include <libbfio.h>
-#endif
-
 #if defined( HAVE_LOCAL_LIBFVALUE )
 #include <libfvalue_definitions.h>
 #elif defined( HAVE_LIBFVALUE_H )
@@ -43,10 +31,12 @@
 #endif
 
 #include "vmdkoutput.h"
+#include "vmdktools_libbfio.h"
 #include "vmdktools_libcerror.h"
 #include "vmdktools_libclocale.h"
 #include "vmdktools_libcnotify.h"
 #include "vmdktools_libcsystem.h"
+#include "vmdktools_libuna.h"
 #include "vmdktools_libvmdk.h"
 
 /* Prints the copyright information

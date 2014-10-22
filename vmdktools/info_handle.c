@@ -27,6 +27,7 @@
 #include "info_handle.h"
 #include "vmdktools_libcerror.h"
 #include "vmdktools_libcnotify.h"
+#include "vmdktools_libcstring.h"
 #include "vmdktools_libvmdk.h"
 
 #define INFO_HANDLE_NOTIFY_STREAM		stdout
