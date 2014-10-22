@@ -31,6 +31,7 @@
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcnotify.h"
+#include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
 #include "libvmdk_unused.h"
 

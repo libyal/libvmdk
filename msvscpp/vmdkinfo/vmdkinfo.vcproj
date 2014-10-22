@@ -202,6 +202,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\vmdktools\vmdktools_libbfio.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\vmdktools\vmdktools_libcerror.h"
 				>
 			</File>
@@ -219,6 +223,14 @@
 			</File>
 			<File
 				RelativePath="..\..\vmdktools\vmdktools_libcsystem.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\vmdktools\vmdktools_libfvalue.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\vmdktools\vmdktools_libuna.h"
 				>
 			</File>
 			<File

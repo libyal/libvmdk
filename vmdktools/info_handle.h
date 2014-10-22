@@ -28,6 +28,7 @@
 
 #include "vmdktools_libcerror.h"
 #include "vmdktools_libcnotify.h"
+#include "vmdktools_libcstring.h"
 #include "vmdktools_libvmdk.h"
 
 #if defined( __cplusplus )
