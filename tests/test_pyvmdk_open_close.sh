@@ -24,6 +24,40 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
+list_contains()
+{
+	LIST=$1;
+	SEARCH=$2;
+
+	for LINE in $LIST;
+	do
+		if test $LINE = $SEARCH;
+		then
+			return ${EXIT_SUCCESS};
+		fi
+	done
+
+	return ${EXIT_FAILURE};
+}
+
+test_open_close()
+{ 
+	INPUT_FILE=$1;
+
+	rm -rf tmp;
+	mkdir tmp;
+
+	echo "Testing open close of input: ${INPUT_FILE}";
+
+	PYTHONPATH=../pyvmdk/.libs/ ${PYTHON} pyvmdk_test_open_close.py ${INPUT_FILE};
+
+	rm -rf tmp;
+
+	RESULT=$?;
+
+	return ${RESULT};
+}
+
 PYTHON="/usr/bin/python";
 
 if ! test -x ${PYTHON};
@@ -52,19 +86,36 @@ then
 
 	EXIT_RESULT=${EXIT_IGNORE};
 else
+	IGNORELIST="";
+
+	if test -f "input/.libvmdk/ignore";
+	then
+		IGNORELIST=`cat input/.libvmdk/ignore | sed '/^#/d'`;
+	fi
 	for TESTDIR in input/*;
 	do
 		if test -d "${TESTDIR}";
 		then
 			DIRNAME=`basename ${TESTDIR}`;
 
-			for TESTFILE in ${TESTDIR}/*;
-			do
-				if ! PYTHONPATH=../pyvmdk/.libs/ ${PYTHON} pyvmdk_test_open_close.py ${TESTFILE};
+			if ! list_contains "${IGNORELIST}" "${DIRNAME}";
+			then
+				if test -f "input/.libvmdk/${DIRNAME}/files";
 				then
-					exit ${EXIT_FAILURE};
+					TEST_FILES=`cat input/.libvmdk/${DIRNAME}/files | sed "s?^?${TESTDIR}/?"`;
+				else
+					TEST_FILES=`ls -1 ${TESTDIR}/* 2> /dev/null`;
 				fi
-			done
+				for TEST_FILE in ${TEST_FILES};
+				do
+					BASENAME=`basename ${TEST_FILE}`;
+
+					if ! test_open_close "${TEST_FILE}";
+					then
+						exit ${EXIT_FAILURE};
+					fi
+				done
+			fi
 		fi
 	done
 

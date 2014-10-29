@@ -81,6 +81,7 @@ int libvmdk_check_file_signature(
      libvmdk_error_t **error );
 
 #if defined( LIBVMDK_HAVE_WIDE_CHARACTER_TYPE )
+
 /* Determines if a file is a VMDK file
  * Returns 1 if true, 0 if not or -1 on error
  */
@@ -88,9 +89,11 @@ LIBVMDK_EXTERN \
 int libvmdk_check_file_signature_wide(
      const wchar_t *filename,
      libvmdk_error_t **error );
-#endif
+
+#endif /* defined( LIBVMDK_HAVE_WIDE_CHARACTER_TYPE ) */
 
 #if defined( LIBVMDK_HAVE_BFIO )
+
 /* Determines if a file is a VMDK file using a Basic File IO (bfio) handle
  * Returns 1 if true, 0 if not or -1 on error
  */
@@ -98,7 +101,8 @@ LIBVMDK_EXTERN \
 int libvmdk_check_file_signature_file_io_handle(
      libbfio_handle_t *file_io_handle,
      libvmdk_error_t **error );
-#endif
+
+#endif /* defined( LIBVMDK_HAVE_BFIO ) */
 
 /* -------------------------------------------------------------------------
  * Notify functions
