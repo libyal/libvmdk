@@ -18,6 +18,7 @@ TESTS = \
 	$(TESTS_PYVMDK)
 
 check_SCRIPTS = \
+	pyvmdk_test_open_close.py \
 	test_pyvmdk_open_close.sh \
 	test_open_close.sh \
 	test_pyvmdk_open_close.sh \

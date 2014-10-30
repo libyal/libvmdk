@@ -64,6 +64,9 @@ Tests:
   - compressed (done)
   - (compressed) with parent (done)
 
+20141030
+* added tests/pyvmdk_test_open_close.py to make dist
+
 20141029
 * bug fix in Python-bindings
 
