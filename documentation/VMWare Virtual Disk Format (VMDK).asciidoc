@@ -118,7 +118,7 @@ delta image can chain to another delta image.
 
 [yellow-background]*Name <name>-delta.vmdk*
 
-== The descriptor file
+== [[descriptor_file]]The descriptor file
 The descriptor file is a text based file that contains the following information:
 
 * comment and empty lines (optional)
@@ -152,7 +152,7 @@ Section header
 | version | The format version +
 1, 2 or 3
 | encoding | The used string encoding (for the descriptor file) +
-See section: 2.1.1 Encodings
+See section: <<encodings,Encodings>>
 | CID | Content identifier _
 A random 32-bit value updated the first time the content of the virtual disk is modified after the virtual disk is opened. +
 [yellow-background]*A value of 'fffffffe' (-2) represents that the long content identifier should be used?*
@@ -162,12 +162,12 @@ A 32-bit value identifying the parent content. A value of 'ffffffff' (-1) repres
 Seen values "no" +
 Seen in VMWare Player 9 descriptor file uncertain when this was introduced
 | createType | The disk type +
-See section: 2.1.2 Disk type
+See section: <<disk_type,Disk type>>
 | parentFileNameHint | Contains the path to the parent image. +
 This value is only present if the image is a differential image (delta link).
 |===
 
-==== Encodings
+==== [[encodings]]Encodings
 [yellow-background]*It is unknown which encodings are supported, currently it 
 is assumed that at least the Windows codepages are supported and that the 
 default is UTF-8.*
@@ -181,7 +181,7 @@ default is UTF-8.*
 Seen in VMWare Player 9 descriptor file uncertain when this was introduced.
 |===
 
-==== Disk type
+==== [[disk_type]]Disk type
 
 [cols="1,1",options="header"]
 |===
@@ -251,11 +251,11 @@ The extent descriptor consists of the following values:
 |===
 | Value | Description
 | 1st | The access mode +
-See section: 2.2.2 Extent access mode
+See section: <<extent_access_mode,Extent access mode>>
 | 2nd | The number of sectors +
 [yellow-background]*Likely 512 bytes per sector is always assumed*
 | 3rd | The extent type +
-See section: 2.2.3 Extent type
+See section: <<extent_type,Extent type>>
 2+| _If extent type is not ZERO_
 | 4th | The filename of the VMDK extent data file +
 The filename is relative to the location of the VMDK descriptor file
@@ -272,7 +272,7 @@ offset in the file or device where the extent data is located. For
 device-backed virtual disks (physical or raw disks) the extent offset can be 
 non-zero. For RAW extent data files the extent offset should be zero.
 
-==== Extent access mode
+==== [[extent_access_mode]]Extent access mode
 The extent access mode consists of the following values:
 
 [cols="1,1",options="header"]
@@ -283,7 +283,7 @@ The extent access mode consists of the following values:
 | RW | Read write
 |===
 
-==== Extent type
+==== [[extent_type]]Extent type
 The extent type consists of the following values:
 
 [cols="1,1",options="header"]
@@ -357,7 +357,7 @@ The disk database consists of the following values:
 | ddb.geometry.biosSectors | The number of sectors as reported by the BIOS +
 [yellow-background]*Seen in VMWare Player 9 for a Device*
 | ddb.adapterType | The disk adapter type +
-[yellow-background]*See section: 2.4.2 The disk adapter type*
+[yellow-background]*See section: <<disk_adapter_type,The disk adapter type>>*
 | ddb.toolsVersion | [yellow-background]*TODO* +
 [yellow-background]*String containing the version of the installed VMWare tools version8
 | ddb.thinProvisioned | [yellow-background]*TODO* +
@@ -377,7 +377,7 @@ The disk database consists of the following values:
 | 9 | [yellow-background]*VMWare Player/Workstation 9.0*
 |===
 
-==== The disk adapter type
+==== [[disk_adapter_type]]The disk adapter type
 
 [cols="1,1",options="header"]
 |===
@@ -440,7 +440,7 @@ The file header is 512 bytes of size and consists of:
 | 0 | 4 | "KDMV" | Signature
 | 4 | 4 | 1, 2 or 3 | Version
 | 8 | 4 | | Flags +
-See section: 4.1.1 Flags
+See section: <<vmdk_extent_file_flags,Flags>>
 | 12 | 8 | | Maximum data number of sectors (capacity)
 | 20 | 8 | | Grain number of sectors +
 The value must be a power of 2 and > 8
@@ -476,7 +476,7 @@ If the grain directory sector number value is -1 (0xffffffffffffffff)
 secondary file header stored at offset -1024 relative from the end of the file 
 (stream) that contains the correct grain directory sector number value.
 
-==== Flags
+==== [[vmdk_extent_file_flags]]Flags
 The flags consist of the following values:
 
 [cols="1,1,5",options="header"]
@@ -532,7 +532,8 @@ The marker is 512 bytes of size and consists of:
 | 0 | 8 | | Value
 | 8 | 4 | | Marker data size
 4+| _If marker data size equals 0_
-| 12 | 4 | | Marker type
+| 12 | 4 | | Marker type +
+See section: <<vmdk_extent_file_marker_type,Marker type>>
 | 16 | 496 | 0 | Padding +
 Unused bytes are set to 0.
 4+| _If marker data size > 0_
@@ -541,7 +542,7 @@ Unused bytes are set to 0.
 
 If the marker data size > 0 the marker is a compressed grain marker.
 
-==== Marker type
+==== [[vmdk_extent_file_marker_type]]Marker type
 The marker type consist of the following values:
 
 [cols="1,1,5",options="header"]
@@ -578,7 +579,7 @@ end-of-stream marker is an empty sector block.
 | 0 | 8 | 0 | Value
 | 8 | 4 | 0 | Marker data size
 | 12 | 4 | MARKER_EOS | Marker type +
-See section: 4.3.1 Marker type
+See section: <<vmdk_extent_file_marker_type,Marker type>>
 | 16 | 496 | 0 | Padding
 |===
 
@@ -591,10 +592,10 @@ The grain table marker indicates that a grain table follows the marker sector bl
 | 0 | 8 | 0 | Value
 | 8 | 4 | 0 | Marker data size
 | 12 | 4 | MARKER_GT | Marker type +
-See section: 4.3.1 Marker type
+See section: <<vmdk_extent_file_marker_type,Marker type>>
 | 16 | 496 | 0 | Padding
 | 512 | ...  | | Grain table +
-See section: 4.6 Grain table
+See section: <<vmdk_extent_file_grain_table,Grain table>>
 |===
 
 ==== Grain directory marker
@@ -607,10 +608,10 @@ sector block.
 | 0 | 8 | 0 | Value
 | 8 | 4 | 0 | Marker data size
 | 12 | 4 | MARKER_GD | Marker type +
-See section: 4.3.1 Marker type
+See section: <<vmdk_extent_file_marker_type,Marker type>>
 | 16 | 496 | 0 | Padding
 | 512 | ...  | | Grain directory +
-See section: 4.5 Grain directory
+See section: <<vmdk_extent_file_grain_directory,Grain directory>>
 |===
 
 ==== Footer marker
@@ -622,13 +623,13 @@ The footer marker indicates that a footer follows the marker sector block.
 | 0 | 8 | 0 | Value
 | 8 | 4 | 0 | Marker data size
 | 12 | 4 | MARKER_FOOTER | Marker type +
-See section: 4.3.1 Marker type
+See section: <<vmdk_extent_file_marker_type,Marker type>>
 | 16 | 496 | 0 | Padding
 | 512 | ...  | | Footer +
-See section: 4.3.7 Footer
+See section: <<vmdk_extent_file_footer,Footer>>
 |===
 
-==== Footer
+==== [[vmdk_extent_file_footer]]Footer
 The footer is only used in Stream-Optimized Compressed Sparse Extents. The 
 footer is the same as the file header. The footer should be the last block of 
 the disk and immediately followed by the end-of-stream marker so that they 
@@ -644,10 +645,10 @@ extent data file if the stream has been truncated, but not that this can be
 very expensive process IO-wise.
 
 === Descriptor
-Contains data similar to the descriptor file. See section: 2 The descriptor 
-file.
+Contains data similar to the descriptor file. See section: 
+<<descriptor_file, The descriptor file>>.
 
-=== Grain directory
+=== [[vmdk_extent_file_grain_directory]]Grain directory
 The grain directory is also referred to as level-0 metadata.
 
 The size of the grain directory is dependent on the number of grains in the 
@@ -678,7 +679,7 @@ The grain directory is stored in a multitude of 512 byte sized blocks.
 * [yellow-background]*As of VMDK sparse extent data file version 2 if the "use zeroed‐grain table entry" flag is set a sector number of 1 indicates the grain table is sparse.*
 * Any other value point to a sector number in the VMDK sparse extent data file.
 
-=== Grain table
+=== [[vmdk_extent_file_grain_table]]Grain table
 The grain table is also referred to as level-1 metadata.
 
 The size of the grain table is variable of size. The number of entries in the 
