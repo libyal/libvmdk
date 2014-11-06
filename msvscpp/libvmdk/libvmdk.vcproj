@@ -332,6 +332,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libvmdk\libvmdk_libcthreads.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libvmdk\libvmdk_libfcache.h"
 				>
 			</File>

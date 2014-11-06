@@ -32,6 +32,7 @@
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libcthreads.h"
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
 
@@ -94,6 +95,12 @@ struct libvmdk_internal_handle
 	/* The parent handle
 	 */
 	libvmdk_handle_t *parent_handle;
+
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	/* The read/write lock
+	 */
+	libcthreads_read_write_lock_t *read_write_lock;
+#endif
 };
 
 LIBVMDK_EXTERN \
@@ -183,6 +190,13 @@ int libvmdk_handle_open_read_signature(
      uint8_t *file_type,
      libcerror_error_t **error );
 
+ssize_t libvmdk_internal_handle_read_buffer_from_file_io_pool(
+         libvmdk_internal_handle_t *internal_handle,
+         libbfio_pool_t *file_io_pool,
+         void *buffer,
+         size_t buffer_size,
+         libcerror_error_t **error );
+
 LIBVMDK_EXTERN \
 ssize_t libvmdk_handle_read_buffer(
          libvmdk_handle_t *handle,
@@ -198,7 +212,8 @@ ssize_t libvmdk_handle_read_buffer_at_offset(
          off64_t offset,
          libcerror_error_t **error );
 
-#ifdef TODO
+#ifdef TODO_WRITE_SUPPORT
+
 LIBVMDK_EXTERN \
 ssize_t libvmdk_handle_write_buffer(
          libvmdk_handle_t *handle,
@@ -213,7 +228,14 @@ ssize_t libvmdk_handle_write_buffer_at_offset(
          size_t buffer_size,
          off64_t offset,
          libcerror_error_t **error );
-#endif
+
+#endif /* TODO_WRITE_SUPPORT */
+
+off64_t libvmdk_internal_handle_seek_offset(
+         libvmdk_internal_handle_t *internal_handle,
+         off64_t offset,
+         int whence,
+         libcerror_error_t **error );
 
 LIBVMDK_EXTERN \
 off64_t libvmdk_handle_seek_offset(

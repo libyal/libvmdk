@@ -3,6 +3,16 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/common \
 	@LIBCSTRING_CPPFLAGS@ \
 	@LIBCERROR_CPPFLAGS@ \
+	@LIBCTHREADS_CPPFLAGS@ \
+	@LIBCDATA_CPPFLAGS@ \
+	@LIBCLOCALE_CPPFLAGS@ \
+	@LIBCNOTIFY_CPPFLAGS@ \
+	@LIBCSPLIT_CPPFLAGS@ \
+	@LIBUNA_CPPFLAGS@ \
+	@LIBCFILE_CPPFLAGS@ \
+	@LIBCPATH_CPPFLAGS@ \
+	@LIBBFIO_CPPFLAGS@ \
+	@PTHREAD_CPPFLAGS@ \
 	@LIBVMDK_DLL_IMPORT@
 
 if HAVE_PYTHON
@@ -44,8 +54,10 @@ vmdk_test_open_close_SOURCES = \
 
 vmdk_test_open_close_LDADD = \
 	../libvmdk/libvmdk.la \
+	@LIBCTHREADS_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@
+	@LIBCSTRING_LIBADD@ \
+	@PTHREAD_LIBADD@
 
 vmdk_test_read_SOURCES = \
 	vmdk_test_libcerror.h \
@@ -56,8 +68,10 @@ vmdk_test_read_SOURCES = \
 
 vmdk_test_read_LDADD = \
 	../libvmdk/libvmdk.la \
+	@LIBCTHREADS_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@
+	@LIBCSTRING_LIBADD@ \
+	@PTHREAD_LIBADD@
 
 vmdk_test_seek_SOURCES = \
 	vmdk_test_libcerror.h \
@@ -68,8 +82,10 @@ vmdk_test_seek_SOURCES = \
 
 vmdk_test_seek_LDADD = \
 	../libvmdk/libvmdk.la \
+	@LIBCTHREADS_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@
+	@LIBCSTRING_LIBADD@ \
+	@PTHREAD_LIBADD@
 
 MAINTAINERCLEANFILES = \
 	Makefile.in
