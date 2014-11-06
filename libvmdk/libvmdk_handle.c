@@ -39,6 +39,7 @@
 #include "libvmdk_libcnotify.h"
 #include "libvmdk_libcpath.h"
 #include "libvmdk_libcstring.h"
+#include "libvmdk_libcthreads.h"
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
 #include "libvmdk_libuna.h"
@@ -134,6 +135,21 @@ int libvmdk_handle_initialize(
 
 		goto on_error;
 	}
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_initialize(
+	     &( internal_handle->read_write_lock ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to intialize read/write lock.",
+		 function );
+
+		goto on_error;
+	}
+#endif
 	internal_handle->maximum_number_of_open_handles = LIBBFIO_POOL_UNLIMITED_NUMBER_OF_OPEN_HANDLES;
 
 	*handle = (libvmdk_handle_t *) internal_handle;
@@ -143,6 +159,12 @@ int libvmdk_handle_initialize(
 on_error:
 	if( internal_handle != NULL )
 	{
+		if( internal_handle->extent_table != NULL )
+		{
+			libvmdk_extent_table_free(
+			 &( internal_handle->extent_table ),
+			 NULL );
+		}
 		if( internal_handle->io_handle != NULL )
 		{
 			libvmdk_io_handle_free(
@@ -199,6 +221,34 @@ int libvmdk_handle_free(
 		}
 		*handle = NULL;
 
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+		if( libcthreads_read_write_lock_free(
+		     &( internal_handle->read_write_lock ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free read/write lock.",
+			 function );
+
+			result = -1;
+		}
+#endif
+		if( libvmdk_extent_table_free(
+		     &( internal_handle->extent_table ),
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free extent table.",
+			 function );
+
+			result = -1;
+		}
 		if( libvmdk_io_handle_free(
 		     &( internal_handle->io_handle ),
 		     error ) != 1 )
@@ -323,33 +373,6 @@ int libvmdk_handle_open(
 	filename_length = libcstring_narrow_string_length(
 	                   filename );
 
-	basename_end = libcstring_narrow_string_search_character_reverse(
-	                filename,
-	                (int) LIBCPATH_SEPARATOR,
-	                filename_length + 1 );
-
-	if( basename_end != NULL )
-	{
-		basename_length = (size_t) ( basename_end - filename ) + 1;
-	}
-	if( basename_length > 0 )
-	{
-		if( libvmdk_extent_table_set_basename(
-		     internal_handle->extent_table,
-		     filename,
-		     basename_length,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set basename in extent table.",
-			 function );
-
-			goto on_error;
-		}
-	}
 	if( libbfio_file_initialize(
 	     &file_io_handle,
 	     error ) != 1 )
@@ -421,6 +444,68 @@ int libvmdk_handle_open(
 		 function );
 
 		goto on_error;
+	}
+	basename_end = libcstring_narrow_string_search_character_reverse(
+	                filename,
+	                (int) LIBCPATH_SEPARATOR,
+	                filename_length + 1 );
+
+	if( basename_end != NULL )
+	{
+		basename_length = (size_t) ( basename_end - filename ) + 1;
+	}
+	if( basename_length > 0 )
+	{
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+		if( libcthreads_read_write_lock_grab_for_write(
+		     internal_handle->read_write_lock,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to grab read/write lock for writing.",
+			 function );
+
+			return( -1 );
+		}
+#endif
+		if( libvmdk_extent_table_set_basename(
+		     internal_handle->extent_table,
+		     filename,
+		     basename_length,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set basename in extent table.",
+			 function );
+
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+			libcthreads_read_write_lock_release_for_write(
+			 internal_handle->read_write_lock,
+			 NULL );
+#endif
+			goto on_error;
+		}
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+		if( libcthreads_read_write_lock_release_for_write(
+		     internal_handle->read_write_lock,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to release read/write lock for writing.",
+			 function );
+
+			return( -1 );
+		}
+#endif
 	}
 	return( 1 );
 
@@ -502,34 +587,6 @@ int libvmdk_handle_open_wide(
 	filename_length = libcstring_wide_string_length(
 	                   filename );
 
-/* TODO does this work for UTF-16 ? */
-	basename_end = libcstring_wide_string_search_character_reverse(
-	                filename,
-	                (wint_t) LIBCPATH_SEPARATOR,
-	                filename_length + 1 );
-
-	if( basename_end != NULL )
-	{
-		basename_length = (size_t) ( basename_end - filename ) + 1;
-	}
-	if( basename_length > 0 )
-	{
-		if( libvmdk_extent_table_set_basename_wide(
-		     internal_handle->extent_table,
-		     filename,
-		     basename_length,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set basename in extent table.",
-			 function );
-
-			goto on_error;
-		}
-	}
 	if( libbfio_file_initialize(
 	     &file_io_handle,
 	     error ) != 1 )
@@ -602,6 +659,69 @@ int libvmdk_handle_open_wide(
 
 		goto on_error;
 	}
+/* TODO does this work for UTF-16 ? */
+	basename_end = libcstring_wide_string_search_character_reverse(
+	                filename,
+	                (wint_t) LIBCPATH_SEPARATOR,
+	                filename_length + 1 );
+
+	if( basename_end != NULL )
+	{
+		basename_length = (size_t) ( basename_end - filename ) + 1;
+	}
+	if( basename_length > 0 )
+	{
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+		if( libcthreads_read_write_lock_grab_for_write(
+		     internal_handle->read_write_lock,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to grab read/write lock for writing.",
+			 function );
+
+			return( -1 );
+		}
+#endif
+		if( libvmdk_extent_table_set_basename_wide(
+		     internal_handle->extent_table,
+		     filename,
+		     basename_length,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set basename in extent table.",
+			 function );
+
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+			libcthreads_read_write_lock_release_for_write(
+			 internal_handle->read_write_lock,
+			 NULL );
+#endif
+			goto on_error;
+		}
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+		if( libcthreads_read_write_lock_release_for_write(
+		     internal_handle->read_write_lock,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to release read/write lock for writing.",
+			 function );
+
+			return( -1 );
+		}
+#endif
+	}
 	return( 1 );
 
 on_error:
@@ -614,7 +734,7 @@ on_error:
 	return( -1 );
 }
 
-#endif
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 /* Opens a set of VMDK file(s) using a Basic File IO (bfio) handle
  * Returns 1 if successful or -1 on error
@@ -625,6 +745,7 @@ int libvmdk_handle_open_file_io_handle(
      int access_flags,
      libcerror_error_t **error )
 {
+	libvmdk_descriptor_file_t *descriptor_file = NULL;
 	libvmdk_internal_handle_t *internal_handle = NULL;
 	libvmdk_extent_file_t *extent_file         = NULL;
 	uint8_t *descriptor_data                   = NULL;
@@ -762,19 +883,8 @@ int libvmdk_handle_open_file_io_handle(
 	switch( file_type )
 	{
 		case LIBVMDK_FILE_TYPE_DESCRIPTOR_FILE:
-			if( internal_handle->descriptor_file != NULL )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-				 "%s: invalid handle - descriptor file already set.",
-				 function );
-
-				goto on_error;
-			}
 			if( libvmdk_descriptor_file_initialize(
-			     &( internal_handle->descriptor_file ),
+			     &descriptor_file,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
@@ -787,7 +897,7 @@ int libvmdk_handle_open_file_io_handle(
 				goto on_error;
 			}
 			if( libvmdk_descriptor_file_read(
-			     internal_handle->descriptor_file,
+			     descriptor_file,
 			     file_io_handle,
 			     error ) != 1 )
 			{
@@ -834,19 +944,8 @@ int libvmdk_handle_open_file_io_handle(
 			}
 			if( extent_file->descriptor_size > 0 )
 			{
-				if( internal_handle->descriptor_file != NULL )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-					 "%s: invalid handle - descriptor file already set.",
-					 function );
-
-					goto on_error;
-				}
 				if( libvmdk_descriptor_file_initialize(
-				     &( internal_handle->descriptor_file ),
+				     &descriptor_file,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
@@ -900,7 +999,7 @@ int libvmdk_handle_open_file_io_handle(
 					goto on_error;
 				}
 				if( libvmdk_descriptor_file_read_string(
-				     internal_handle->descriptor_file,
+				     descriptor_file,
 				     (char *) descriptor_data,
 				     (size_t) extent_file->descriptor_size,
 				     error ) != 1 )
@@ -946,7 +1045,7 @@ int libvmdk_handle_open_file_io_handle(
 
 			goto on_error;
 	}
-	if( internal_handle->descriptor_file == NULL )
+	if( descriptor_file == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -973,10 +1072,40 @@ int libvmdk_handle_open_file_io_handle(
 			goto on_error;
 		}
 	}
-	internal_handle->io_handle->media_size = internal_handle->descriptor_file->media_size;
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
 
-	internal_handle->access_flags = access_flags;
+		return( -1 );
+	}
+#endif
+	internal_handle->descriptor_file       = descriptor_file;
+	internal_handle->io_handle->media_size = descriptor_file->media_size;
+	internal_handle->access_flags          = access_flags;
 
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	return( 1 );
 
 on_error:
@@ -991,10 +1120,10 @@ on_error:
 		 &extent_file,
 		 NULL );
 	}
-	if( internal_handle->descriptor_file != NULL )
+	if( descriptor_file != NULL )
 	{
 		libvmdk_descriptor_file_free(
-		 &( internal_handle->descriptor_file ),
+		 &descriptor_file,
 		 NULL );
 	}
 	if( file_io_handle_is_open == 0 )
@@ -1597,7 +1726,7 @@ on_error:
 	return( -1 );
 }
 
-#endif
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 /* Opens an extent data file using a Basic File IO (bfio) handle
  * Returns 1 if successful or -1 on error
@@ -1747,6 +1876,21 @@ int libvmdk_handle_close(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	if( internal_handle->extent_data_file_io_pool_created_in_library != 0 )
 	{
 		if( libbfio_pool_close_all(
@@ -1854,6 +1998,21 @@ int libvmdk_handle_close(
 
 		result = -1;
 	}
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	return( result );
 }
 
@@ -2498,26 +2657,27 @@ on_error:
 	return( -1 );
 }
 
-/* Reads (media) data from the last current into a buffer
+/* Reads (media) data from the last current into a buffer using a Basic File IO (bfio) pool
+ * This function is not multi-thread safe acquire write lock before call
  * Returns the number of bytes read or -1 on error
  */
-ssize_t libvmdk_handle_read_buffer(
-         libvmdk_handle_t *handle,
+ssize_t libvmdk_internal_handle_read_buffer_from_file_io_pool(
+         libvmdk_internal_handle_t *internal_handle,
+         libbfio_pool_t *file_io_pool,
          void *buffer,
          size_t buffer_size,
          libcerror_error_t **error )
 {
-	libvmdk_grain_data_t *grain_data           = NULL;
-	libvmdk_internal_handle_t *internal_handle = NULL;
-	static char *function                      = "libvmdk_handle_read_buffer";
-	size_t buffer_offset                       = 0;
-	size_t read_size                           = 0;
-	ssize_t read_count                         = 0;
-	uint64_t grain_index                       = 0;
-	off64_t grain_data_offset                  = 0;
-	int grain_is_sparse                        = 0;
+	libvmdk_grain_data_t *grain_data = NULL;
+	static char *function            = "libvmdk_internal_handle_read_buffer_from_file_io_pool";
+	size_t buffer_offset             = 0;
+	size_t read_size                 = 0;
+	ssize_t read_count               = 0;
+	off64_t grain_data_offset        = 0;
+	uint64_t grain_index             = 0;
+	int grain_is_sparse              = 0;
 
-	if( handle == NULL )
+	if( internal_handle == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -2528,8 +2688,6 @@ ssize_t libvmdk_handle_read_buffer(
 
 		return( -1 );
 	}
-	internal_handle = (libvmdk_internal_handle_t *) handle;
-
 	if( internal_handle->io_handle == NULL )
 	{
 		libcerror_error_set(
@@ -2633,7 +2791,7 @@ ssize_t libvmdk_handle_read_buffer(
 		}
 		read_count = libfdata_stream_read_buffer(
 		              internal_handle->extent_table->extent_files_stream,
-			      (intptr_t *) internal_handle->extent_data_file_io_pool,
+			      (intptr_t *) file_io_pool,
 			      (uint8_t *) buffer,
 			      read_size,
 			      0,
@@ -2674,7 +2832,7 @@ ssize_t libvmdk_handle_read_buffer(
 			grain_is_sparse = libvmdk_grain_table_grain_is_sparse_at_offset(
 					   internal_handle->grain_table,
 					   grain_index,
-					   internal_handle->extent_data_file_io_pool,
+					   file_io_pool,
 					   internal_handle->extent_table,
 					   internal_handle->current_offset,
 					   error );
@@ -2763,7 +2921,7 @@ ssize_t libvmdk_handle_read_buffer(
 				if( libvmdk_grain_table_get_grain_data_at_offset(
 				     internal_handle->grain_table,
 				     grain_index,
-				     internal_handle->extent_data_file_io_pool,
+				     file_io_pool,
 				     internal_handle->extent_table,
 				     internal_handle->grains_cache,
 				     internal_handle->current_offset,
@@ -2850,6 +3008,83 @@ ssize_t libvmdk_handle_read_buffer(
 	return( (ssize_t) buffer_offset );
 }
 
+/* Reads (media) data from the last current into a buffer
+ * Returns the number of bytes read or -1 on error
+ */
+ssize_t libvmdk_handle_read_buffer(
+         libvmdk_handle_t *handle,
+         void *buffer,
+         size_t buffer_size,
+         libcerror_error_t **error )
+{
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	static char *function                      = "libvmdk_handle_read_buffer";
+	ssize_t read_count                         = 0;
+
+	if( handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid handle.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle = (libvmdk_internal_handle_t *) handle;
+
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	read_count = libvmdk_internal_handle_read_buffer_from_file_io_pool(
+		      internal_handle,
+		      internal_handle->extent_data_file_io_pool,
+		      buffer,
+		      buffer_size,
+		      error );
+
+	if( read_count == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read buffer.",
+		 function );
+
+		read_count = -1;
+	}
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( read_count );
+}
+
 /* Reads (media) data at a specific offset
  * Returns the number of bytes read or -1 on error
  */
@@ -2860,11 +3095,40 @@ ssize_t libvmdk_handle_read_buffer_at_offset(
          off64_t offset,
          libcerror_error_t **error )
 {
-	static char *function = "libvmdk_handle_read_buffer_at_offset";
-	ssize_t read_count    = 0;
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	static char *function                      = "libvmdk_handle_read_buffer_at_offset";
+	ssize_t read_count                         = 0;
 
-	if( libvmdk_handle_seek_offset(
-	     handle,
+	if( handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid handle.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle = (libvmdk_internal_handle_t *) handle;
+
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libvmdk_internal_handle_seek_offset(
+	     internal_handle,
 	     offset,
 	     SEEK_SET,
 	     error ) == -1 )
@@ -2876,15 +3140,16 @@ ssize_t libvmdk_handle_read_buffer_at_offset(
 		 "%s: unable to seek offset.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-	read_count = libvmdk_handle_read_buffer(
-	              handle,
-	              buffer,
-	              buffer_size,
-	              error );
+	read_count = libvmdk_internal_handle_read_buffer_from_file_io_pool(
+		      internal_handle,
+		      internal_handle->extent_data_file_io_pool,
+		      buffer,
+		      buffer_size,
+		      error );
 
-	if( read_count <= -1 )
+	if( read_count == -1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -2893,12 +3158,36 @@ ssize_t libvmdk_handle_read_buffer_at_offset(
 		 "%s: unable to read buffer.",
 		 function );
 
+		goto on_error;
+	}
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
 		return( -1 );
 	}
+#endif
 	return( read_count );
+
+on_error:
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	libcthreads_read_write_lock_release_for_write(
+	 internal_handle->read_write_lock,
+	 NULL );
+#endif
+	return( -1 );
 }
 
-#ifdef TODO
+#ifdef TODO_WRITE_SUPPORT
+
 /* Writes (media) data at the current offset
  * the necessary settings of the write values must have been made
  * Will initialize write if necessary
@@ -3014,21 +3303,21 @@ ssize_t libvmdk_handle_write_buffer_at_offset(
 	return( write_count );
 }
 
-#endif
+#endif /* TODO_WRITE_SUPPORT */
 
 /* Seeks a certain offset of the (media) data
+ * This function is not multi-thread safe acquire write lock before call
  * Returns the offset if seek is successful or -1 on error
  */
-off64_t libvmdk_handle_seek_offset(
-         libvmdk_handle_t *handle,
+off64_t libvmdk_internal_handle_seek_offset(
+         libvmdk_internal_handle_t *internal_handle,
          off64_t offset,
          int whence,
          libcerror_error_t **error )
 {
-	libvmdk_internal_handle_t *internal_handle = NULL;
-	static char *function                      = "libvmdk_handle_seek_offset";
+	static char *function = "libvmdk_handle_seek_offset";
 
-	if( handle == NULL )
+	if( internal_handle == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -3039,8 +3328,6 @@ off64_t libvmdk_handle_seek_offset(
 
 		return( -1 );
 	}
-	internal_handle = (libvmdk_internal_handle_t *) handle;
-
 	if( internal_handle->io_handle == NULL )
 	{
 		libcerror_error_set(
@@ -3086,6 +3373,81 @@ off64_t libvmdk_handle_seek_offset(
 	}
 	internal_handle->current_offset = offset;
 
+	return( offset );
+}
+
+/* Seeks a certain offset of the (media) data
+ * Returns the offset if seek is successful or -1 on error
+ */
+off64_t libvmdk_handle_seek_offset(
+         libvmdk_handle_t *handle,
+         off64_t offset,
+         int whence,
+         libcerror_error_t **error )
+{
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	static char *function                      = "libvmdk_handle_seek_offset";
+
+	if( handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid handle.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle = (libvmdk_internal_handle_t *) handle;
+
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	offset = libvmdk_internal_handle_seek_offset(
+	          internal_handle,
+	          offset,
+	          whence,
+	          error );
+
+	if( offset == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_SEEK_FAILED,
+		 "%s: unable to seek offset.",
+		 function );
+
+		offset = -1;
+	}
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	return( offset );
 }
 
@@ -3135,8 +3497,38 @@ int libvmdk_handle_get_offset(
 
 		return( -1 );
 	}
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_read(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	*offset = internal_handle->current_offset;
 
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_read(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for reading.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	return( 1 );
 }
 
@@ -3176,6 +3568,21 @@ int libvmdk_handle_set_parent_handle(
 
 		return( -1 );
 	}
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	if( libvmdk_handle_get_content_identifier(
 	     parent_handle,
 	     &content_identifier,
@@ -3188,7 +3595,7 @@ int libvmdk_handle_set_parent_handle(
 		 "%s: unable to retrieve content identifier from parent handle.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	if( content_identifier != internal_handle->descriptor_file->parent_content_identifier )
 	{
@@ -3199,10 +3606,33 @@ int libvmdk_handle_set_parent_handle(
 		 "%s: mismatch in content identifier.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 	internal_handle->parent_handle = parent_handle;
 
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	return( 1 );
+
+on_error:
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	libcthreads_read_write_lock_release_for_write(
+	 internal_handle->read_write_lock,
+	 NULL );
+#endif
+	return( -1 );
 }
 

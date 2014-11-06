@@ -45,6 +45,7 @@ libvmdk_la_SOURCES = \
 	libvmdk_libcpath.h \
 	libvmdk_libcsplit.h \
 	libvmdk_libcstring.h \
+	libvmdk_libcthreads.h \
 	libvmdk_libfcache.h \
 	libvmdk_libfdata.h \
 	libvmdk_libfvalue.h \

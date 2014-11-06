@@ -20,9 +20,9 @@ VMDK format features not supported at the moment:
 
 Work in progress:
 * Dokan library support
+* Thread-safety in handle API functions
 
 Planned:
-* Multi-threading support
 * Python 3 support
 
 For more information see:
