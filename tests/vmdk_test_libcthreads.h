@@ -19,12 +19,12 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _VHDI_TEST_LIBCTHREADS_H )
-#define _VHDI_TEST_LIBCTHREADS_H
+#if !defined( _VMDK_TEST_LIBCTHREADS_H )
+#define _VMDK_TEST_LIBCTHREADS_H
 
 #include <common.h>
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT ) && !defined( HAVE_LOCAL_LIBVHDI )
+#if defined( HAVE_MULTI_THREAD_SUPPORT ) && !defined( HAVE_LOCAL_LIBVMDK )
 
 /* Define HAVE_LOCAL_LIBCTHREADS for local use of libcthreads
  */
@@ -54,7 +54,7 @@
 
 #endif
 
-#endif /* defined( HAVE_MULTI_THREAD_SUPPORT ) && !defined( HAVE_LOCAL_LIBVHDI ) */
+#endif /* defined( HAVE_MULTI_THREAD_SUPPORT ) && !defined( HAVE_LOCAL_LIBVMDK ) */
 
 #endif
 

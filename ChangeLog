@@ -1,6 +1,6 @@
 TODO
-* complete thread-safety in open functions
-  - libvmdk_handle_open_extent_data_files
+* add thread-safety in
+  - extent_descriptor API functions?
 * check TODO in libvmdk_handle_open_wide regardin UTF-16
 
 * add support for the change tracking file?
