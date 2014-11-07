@@ -322,6 +322,7 @@ int libvmdk_handle_open(
 	static char *function                      = "libvmdk_handle_open";
 	size_t basename_length                     = 0;
 	size_t filename_length                     = 0;
+	int result                                 = 1;
 
 	if( handle == NULL )
 	{
@@ -484,12 +485,7 @@ int libvmdk_handle_open(
 			 "%s: unable to set basename in extent table.",
 			 function );
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
-			libcthreads_read_write_lock_release_for_write(
-			 internal_handle->read_write_lock,
-			 NULL );
-#endif
-			goto on_error;
+			result = -1;
 		}
 #if defined( HAVE_MULTI_THREAD_SUPPORT )
 		if( libcthreads_read_write_lock_release_for_write(
@@ -507,7 +503,7 @@ int libvmdk_handle_open(
 		}
 #endif
 	}
-	return( 1 );
+	return( result );
 
 on_error:
 	if( file_io_handle != NULL )
@@ -536,6 +532,7 @@ int libvmdk_handle_open_wide(
 	static char *function                      = "libvmdk_handle_open_wide";
 	size_t basename_length                     = 0;
 	size_t filename_length                     = 0;
+	int result                                 = 1;
 
 	if( handle == NULL )
 	{
@@ -699,12 +696,7 @@ int libvmdk_handle_open_wide(
 			 "%s: unable to set basename in extent table.",
 			 function );
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
-			libcthreads_read_write_lock_release_for_write(
-			 internal_handle->read_write_lock,
-			 NULL );
-#endif
-			goto on_error;
+			result = -1;
 		}
 #if defined( HAVE_MULTI_THREAD_SUPPORT )
 		if( libcthreads_read_write_lock_release_for_write(
@@ -722,7 +714,7 @@ int libvmdk_handle_open_wide(
 		}
 #endif
 	}
-	return( 1 );
+	return( result );
 
 on_error:
 	if( file_io_handle != NULL )
