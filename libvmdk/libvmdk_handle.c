@@ -1191,6 +1191,21 @@ int libvmdk_handle_open_extent_data_files(
 
 		return( -1 );
 	}
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	if( libvmdk_descriptor_file_get_number_of_extents(
 	     internal_handle->descriptor_file,
 	     &number_of_extents,
@@ -1380,8 +1395,8 @@ int libvmdk_handle_open_extent_data_files(
 			extent_data_file_location  = NULL;
 		}
 	}
-	if( libvmdk_handle_open_extent_data_files_file_io_pool(
-	     handle,
+	if( libvmdk_handle_open_read_grain_table(
+	     internal_handle,
 	     file_io_pool,
 	     error ) != 1 )
 	{
@@ -1389,7 +1404,7 @@ int libvmdk_handle_open_extent_data_files(
                  error,
                  LIBCERROR_ERROR_DOMAIN_RUNTIME,
                  LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to open extent data files using a file IO pool.",
+                 "%s: unable to read grain table.",
                  function );
 
                 goto on_error;
@@ -1397,6 +1412,21 @@ int libvmdk_handle_open_extent_data_files(
 	internal_handle->extent_data_file_io_pool                    = file_io_pool;
 	internal_handle->extent_data_file_io_pool_created_in_library = 1;
 
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	return( 1 );
 
 on_error:
@@ -1415,6 +1445,11 @@ on_error:
 		memory_free(
 		 extent_data_file_location );
 	}
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	libcthreads_read_write_lock_release_for_write(
+	 internal_handle->read_write_lock,
+	 NULL );
+#endif
 	return( -1 );
 }
 
@@ -1465,6 +1500,21 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 
 		return( -1 );
 	}
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	if( libvmdk_handle_open_read_grain_table(
 	     internal_handle,
 	     file_io_pool,
@@ -1477,11 +1527,34 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
                  "%s: unable to read grain table.",
                  function );
 
-                return( -1 );
+                goto on_error;
 	}
 	internal_handle->extent_data_file_io_pool = file_io_pool;
 
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
 	return( 1 );
+
+on_error:
+#if defined( HAVE_MULTI_THREAD_SUPPORT )
+	libcthreads_read_write_lock_release_for_write(
+	 internal_handle->read_write_lock,
+	 NULL );
+#endif
+	return( -1 );
 }
 
 /* Opens a specific extent data file

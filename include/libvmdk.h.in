@@ -222,6 +222,7 @@ int libvmdk_handle_open(
      libvmdk_error_t **error );
 
 #if defined( LIBVMDK_HAVE_WIDE_CHARACTER_TYPE )
+
 /* Opens a set of VMDK file(s)
  * Returns 1 if successful or -1 on error
  */
@@ -231,9 +232,11 @@ int libvmdk_handle_open_wide(
      const wchar_t *filename,
      int access_flags,
      libvmdk_error_t **error );
-#endif
+
+#endif /* defined( LIBVMDK_HAVE_WIDE_CHARACTER_TYPE ) */
 
 #if defined( LIBVMDK_HAVE_BFIO )
+
 /* Opens a set of VMDK file(s) using a Basic File IO (bfio) handle
  * Returns 1 if successful or -1 on error
  */
@@ -243,7 +246,8 @@ int libvmdk_handle_open_file_io_handle(
      libbfio_handle_t *file_io_handle,
      int access_flags,
      libvmdk_error_t **error );
-#endif
+
+#endif /* defined( LIBVMDK_HAVE_BFIO ) */
 
 /* Opens the extent data files
  * If the extent data filenames were not set explicitly this function assumes the extent data files
@@ -256,6 +260,7 @@ int libvmdk_handle_open_extent_data_files(
      libvmdk_error_t **error );
 
 #if defined( LIBVMDK_HAVE_BFIO )
+
 /* Opens the extent data files using a Basic File IO (bfio) pool
  * This function assumes the extent data files are in same order as defined by the descriptor file
  * Returns 1 if successful or -1 on error
@@ -265,7 +270,8 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
      libvmdk_handle_t *handle,
      libbfio_pool_t *file_io_pool,
      libvmdk_error_t **error );
-#endif
+
+#endif /* defined( LIBVMDK_HAVE_BFIO ) */
 
 /* Closes the VMDK file(s)
  * Returns 0 if successful or -1 on error
