@@ -68,6 +68,9 @@ Tests:
   - compressed (done)
   - (compressed) with parent (done)
 
+20141114
+* code clean up
+
 20141106
 * worked on multi-threading support
 
