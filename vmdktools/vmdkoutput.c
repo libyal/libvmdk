@@ -24,18 +24,13 @@
 #include <memory.h>
 #include <types.h>
 
-#if defined( HAVE_LOCAL_LIBFVALUE )
-#include <libfvalue_definitions.h>
-#elif defined( HAVE_LIBFVALUE_H )
-#include <libfvalue.h>
-#endif
-
 #include "vmdkoutput.h"
 #include "vmdktools_libbfio.h"
 #include "vmdktools_libcerror.h"
 #include "vmdktools_libclocale.h"
 #include "vmdktools_libcnotify.h"
 #include "vmdktools_libcsystem.h"
+#include "vmdktools_libfvalue.h"
 #include "vmdktools_libuna.h"
 #include "vmdktools_libvmdk.h"
 
