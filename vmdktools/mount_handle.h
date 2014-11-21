@@ -48,7 +48,7 @@ struct mount_handle
 	 */
 	size_t basename_size;
 
-	/* The input handles arry
+	/* The input handles array
 	 */
 	libcdata_array_t *input_handles_array;
 
