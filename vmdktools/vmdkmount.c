@@ -2058,7 +2058,6 @@ int __stdcall vmdkmount_dokan_Unmount(
 
 #endif
 
-
 /* The main program
  */
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )

@@ -72,7 +72,7 @@ int libvmdk_set_codepage(
      int codepage,
      libvmdk_error_t **error );
 
-/* Determines if a file is a VMDK file
+/* Determines if a file contains a VMDK file signature
  * Returns 1 if true, 0 if not or -1 on error
  */
 LIBVMDK_EXTERN \
@@ -82,7 +82,7 @@ int libvmdk_check_file_signature(
 
 #if defined( LIBVMDK_HAVE_WIDE_CHARACTER_TYPE )
 
-/* Determines if a file is a VMDK file
+/* Determines if a file contains a VMDK file signature
  * Returns 1 if true, 0 if not or -1 on error
  */
 LIBVMDK_EXTERN \
@@ -94,7 +94,7 @@ int libvmdk_check_file_signature_wide(
 
 #if defined( LIBVMDK_HAVE_BFIO )
 
-/* Determines if a file is a VMDK file using a Basic File IO (bfio) handle
+/* Determines if a file contains a VMDK file signature using a Basic File IO (bfio) handle
  * Returns 1 if true, 0 if not or -1 on error
  */
 LIBVMDK_EXTERN \

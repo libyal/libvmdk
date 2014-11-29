@@ -745,6 +745,7 @@ int libvmdk_handle_open_file_io_handle(
 	int bfio_access_flags                      = 0;
 	uint8_t file_type                          = 0;
 	int file_io_handle_is_open                 = 0;
+	int file_io_handle_opened_in_library       = 0;
 	int result                                 = 0;
 
 	if( handle == NULL )
@@ -851,6 +852,7 @@ int libvmdk_handle_open_file_io_handle(
 
 			goto on_error;
 		}
+		file_io_handle_opened_in_library = 1;
 	}
 	result = libvmdk_handle_open_read_signature(
 		  file_io_handle,
@@ -1048,7 +1050,7 @@ int libvmdk_handle_open_file_io_handle(
 
 		goto on_error;
 	}
-	if( file_io_handle_is_open == 0 )
+	if( file_io_handle_opened_in_library != 0 )
 	{
 		if( libbfio_handle_close(
 		     file_io_handle,
@@ -1063,6 +1065,7 @@ int libvmdk_handle_open_file_io_handle(
 
 			goto on_error;
 		}
+		file_io_handle_opened_in_library = 0;
 	}
 #if defined( HAVE_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
@@ -1118,7 +1121,7 @@ on_error:
 		 &descriptor_file,
 		 NULL );
 	}
-	if( file_io_handle_is_open == 0 )
+	if( file_io_handle_opened_in_library != 0 )
 	{
 		libbfio_handle_close(
 		 file_io_handle,
@@ -1561,6 +1564,7 @@ int libvmdk_handle_open_extent_data_file(
 {
 	libbfio_handle_t *file_io_handle = NULL;
 	static char *function            = "libvmdk_handle_open_extent_data_file";
+	size_t filename_length           = 0;
 
 	if( internal_handle == NULL )
 	{
@@ -1624,11 +1628,13 @@ int libvmdk_handle_open_extent_data_file(
                 goto on_error;
 	}
 #endif
+	filename_length = libcstring_narrow_string_length(
+	                   filename );
+
 	if( libbfio_file_set_name(
 	     file_io_handle,
 	     filename,
-	     libcstring_narrow_string_length(
-	      filename ) + 1,
+	     filename_length + 1,
 	     error ) != 1 )
 	{
                 libcerror_error_set(
@@ -1683,6 +1689,7 @@ int libvmdk_handle_open_extent_data_file_wide(
 {
 	libbfio_handle_t *file_io_handle = NULL;
 	static char *function            = "libvmdk_handle_open_extent_data_file_wide";
+	size_t filename_length           = 0;
 
 	if( internal_handle == NULL )
 	{
@@ -1746,11 +1753,13 @@ int libvmdk_handle_open_extent_data_file_wide(
                 goto on_error;
 	}
 #endif
+	filename_length = libcstring_wide_string_length(
+	                   filename );
+
 	if( libbfio_file_set_name_wide(
 	     file_io_handle,
 	     filename,
-	     libcstring_wide_string_length(
-	      filename ) + 1,
+	     filename_length + 1,
 	     error ) != 1 )
 	{
                 libcerror_error_set(
@@ -2197,7 +2206,7 @@ int libvmdk_handle_open_read_grain_table(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid number of file IO handles.",
+		 "%s: mismatch between number of file IO handles in pool and number of extents in metadata.",
 		 function );
 
 		goto on_error;
