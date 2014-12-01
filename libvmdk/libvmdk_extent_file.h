@@ -230,7 +230,7 @@ int libvmdk_extent_file_get_grain_group_at_offset(
      libcerror_error_t **error );
 
 ssize_t libvmdk_extent_file_read_segment_data(
-         intptr_t * data_handle,
+         intptr_t *data_handle,
          libbfio_pool_t *file_io_pool,
          int segment_index,
          int segment_file_index,

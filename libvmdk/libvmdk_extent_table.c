@@ -32,10 +32,11 @@
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libclocale.h"
 #include "libvmdk_libcstring.h"
+#include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
 #include "libvmdk_libuna.h"
 
-/* Creates a extent table
+/* Creates an extent table
  * Make sure the value extent_table is referencing, is set to NULL
  * Returns 1 if successful or -1 on error
  */
@@ -122,7 +123,7 @@ on_error:
 	return( -1 );
 }
 
-/* Frees a extent table
+/* Frees an extent table
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_extent_table_free(
@@ -166,7 +167,7 @@ int libvmdk_extent_table_free(
 	return( result );
 }
 
-/* Clears an extent table
+/* Clears the extent table
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_extent_table_clear(
@@ -1639,7 +1640,7 @@ int libvmdk_extent_table_get_extent_by_index(
 	return( 1 );
 }
 
-/* Retrieves a extent at a specific offset from the extent table
+/* Retrieves an extent at a specific offset from the extent table
  * Returns 1 if successful, 0 if not or -1 on error
  */
 int libvmdk_extent_table_get_extent_at_offset(
@@ -1779,7 +1780,7 @@ int libvmdk_extent_table_get_extent_file_by_index(
 	return( 1 );
 }
 
-/* Retrieves a extent file at a specific offset from the extent table
+/* Retrieves an extent file at a specific offset from the extent table
  * Returns 1 if successful, 0 if not or -1 on error
  */
 int libvmdk_extent_table_get_extent_file_at_offset(

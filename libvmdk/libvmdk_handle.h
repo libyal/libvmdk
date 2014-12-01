@@ -96,7 +96,7 @@ struct libvmdk_internal_handle
 	 */
 	libvmdk_handle_t *parent_handle;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	/* The read/write lock
 	 */
 	libcthreads_read_write_lock_t *read_write_lock;

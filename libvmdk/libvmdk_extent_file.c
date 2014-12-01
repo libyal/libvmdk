@@ -2087,7 +2087,7 @@ int libvmdk_extent_file_read_element_data(
      libcerror_error_t **error )
 {
 	libvmdk_extent_file_t *extent_file = NULL;
-	static char *function              = "libvmdk_extent_file_read";
+	static char *function              = "libvmdk_extent_file_read_element_data";
 
 	LIBVMDK_UNREFERENCED_PARAMETER( element_offset )
 	LIBVMDK_UNREFERENCED_PARAMETER( element_flags )

@@ -75,7 +75,7 @@ int libvmdk_handle_get_disk_type(
 
 		return( -1 );
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -92,7 +92,7 @@ int libvmdk_handle_get_disk_type(
 #endif
 	*disk_type = internal_handle->descriptor_file->disk_type;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -156,7 +156,7 @@ int libvmdk_handle_get_media_size(
 
 		return( -1 );
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -173,7 +173,7 @@ int libvmdk_handle_get_media_size(
 #endif
 	*media_size = internal_handle->descriptor_file->media_size;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -237,7 +237,7 @@ int libvmdk_handle_get_content_identifier(
 
 		return( -1 );
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -254,7 +254,7 @@ int libvmdk_handle_get_content_identifier(
 #endif
 	*content_identifier = internal_handle->descriptor_file->content_identifier;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -297,7 +297,7 @@ int libvmdk_handle_get_parent_content_identifier(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -328,7 +328,7 @@ int libvmdk_handle_get_parent_content_identifier(
 
 		goto on_error;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -346,7 +346,7 @@ int libvmdk_handle_get_parent_content_identifier(
 	return( result );
 
 on_error:
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	libcthreads_read_write_lock_release_for_read(
 	 internal_handle->read_write_lock,
 	 NULL );
@@ -380,7 +380,7 @@ int libvmdk_handle_get_utf8_parent_filename_size(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -411,7 +411,7 @@ int libvmdk_handle_get_utf8_parent_filename_size(
 
 		goto on_error;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -429,7 +429,7 @@ int libvmdk_handle_get_utf8_parent_filename_size(
 	return( result );
 
 on_error:
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	libcthreads_read_write_lock_release_for_read(
 	 internal_handle->read_write_lock,
 	 NULL );
@@ -464,7 +464,7 @@ int libvmdk_handle_get_utf8_parent_filename(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -496,7 +496,7 @@ int libvmdk_handle_get_utf8_parent_filename(
 
 		goto on_error;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -514,7 +514,7 @@ int libvmdk_handle_get_utf8_parent_filename(
 	return( result );
 
 on_error:
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	libcthreads_read_write_lock_release_for_read(
 	 internal_handle->read_write_lock,
 	 NULL );
@@ -548,7 +548,7 @@ int libvmdk_handle_get_utf16_parent_filename_size(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -579,7 +579,7 @@ int libvmdk_handle_get_utf16_parent_filename_size(
 
 		goto on_error;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -597,7 +597,7 @@ int libvmdk_handle_get_utf16_parent_filename_size(
 	return( result );
 
 on_error:
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	libcthreads_read_write_lock_release_for_read(
 	 internal_handle->read_write_lock,
 	 NULL );
@@ -632,7 +632,7 @@ int libvmdk_handle_get_utf16_parent_filename(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -664,7 +664,7 @@ int libvmdk_handle_get_utf16_parent_filename(
 
 		goto on_error;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -682,7 +682,7 @@ int libvmdk_handle_get_utf16_parent_filename(
 	return( result );
 
 on_error:
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	libcthreads_read_write_lock_release_for_read(
 	 internal_handle->read_write_lock,
 	 NULL );
@@ -725,7 +725,7 @@ int libvmdk_handle_get_number_of_extents(
 
 		return( -1 );
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -754,7 +754,7 @@ int libvmdk_handle_get_number_of_extents(
 
 		goto on_error;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -772,7 +772,7 @@ int libvmdk_handle_get_number_of_extents(
 	return( 1 );
 
 on_error:
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	libcthreads_read_write_lock_release_for_read(
 	 internal_handle->read_write_lock,
 	 NULL );
@@ -838,7 +838,7 @@ int libvmdk_handle_get_extent_descriptor(
 
 		return( -1 );
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -881,7 +881,7 @@ int libvmdk_handle_get_extent_descriptor(
 
 		goto on_error;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -899,7 +899,7 @@ int libvmdk_handle_get_extent_descriptor(
 	return( 1 );
 
 on_error:
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	libcthreads_read_write_lock_release_for_read(
 	 internal_handle->read_write_lock,
 	 NULL );
