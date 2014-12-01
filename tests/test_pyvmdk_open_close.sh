@@ -58,7 +58,7 @@ test_open_close()
 	return ${RESULT};
 }
 
-PYTHON="/usr/bin/python";
+PYTHON=`which python`;
 
 if ! test -x ${PYTHON};
 then

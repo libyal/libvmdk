@@ -135,7 +135,7 @@ int libvmdk_handle_initialize(
 
 		goto on_error;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_initialize(
 	     &( internal_handle->read_write_lock ),
 	     error ) != 1 )
@@ -221,7 +221,7 @@ int libvmdk_handle_free(
 		}
 		*handle = NULL;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 		if( libcthreads_read_write_lock_free(
 		     &( internal_handle->read_write_lock ),
 		     error ) != 1 )
@@ -457,7 +457,7 @@ int libvmdk_handle_open(
 	}
 	if( basename_length > 0 )
 	{
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 		if( libcthreads_read_write_lock_grab_for_write(
 		     internal_handle->read_write_lock,
 		     error ) != 1 )
@@ -487,7 +487,7 @@ int libvmdk_handle_open(
 
 			result = -1;
 		}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 		if( libcthreads_read_write_lock_release_for_write(
 		     internal_handle->read_write_lock,
 		     error ) != 1 )
@@ -668,7 +668,7 @@ int libvmdk_handle_open_wide(
 	}
 	if( basename_length > 0 )
 	{
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 		if( libcthreads_read_write_lock_grab_for_write(
 		     internal_handle->read_write_lock,
 		     error ) != 1 )
@@ -698,7 +698,7 @@ int libvmdk_handle_open_wide(
 
 			result = -1;
 		}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 		if( libcthreads_read_write_lock_release_for_write(
 		     internal_handle->read_write_lock,
 		     error ) != 1 )
@@ -1067,7 +1067,7 @@ int libvmdk_handle_open_file_io_handle(
 		}
 		file_io_handle_opened_in_library = 0;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -1086,7 +1086,7 @@ int libvmdk_handle_open_file_io_handle(
 	internal_handle->io_handle->media_size = descriptor_file->media_size;
 	internal_handle->access_flags          = access_flags;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -1186,7 +1186,7 @@ int libvmdk_handle_open_extent_data_files(
 
 		return( -1 );
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -1407,7 +1407,7 @@ int libvmdk_handle_open_extent_data_files(
 	internal_handle->extent_data_file_io_pool                    = file_io_pool;
 	internal_handle->extent_data_file_io_pool_created_in_library = 1;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -1440,7 +1440,7 @@ on_error:
 		memory_free(
 		 extent_data_file_location );
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	libcthreads_read_write_lock_release_for_write(
 	 internal_handle->read_write_lock,
 	 NULL );
@@ -1495,7 +1495,7 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 
 		return( -1 );
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -1526,7 +1526,7 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 	}
 	internal_handle->extent_data_file_io_pool = file_io_pool;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -1544,7 +1544,7 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 	return( 1 );
 
 on_error:
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	libcthreads_read_write_lock_release_for_write(
 	 internal_handle->read_write_lock,
 	 NULL );
@@ -1812,9 +1812,10 @@ int libvmdk_handle_open_extent_data_file_io_handle(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
-	static char *function      = "libvmdk_handle_open_extent_data_file_io_handle";
-	int bfio_access_flags      = 0;
-	int file_io_handle_is_open = 0;
+	static char *function                = "libvmdk_handle_open_extent_data_file_io_handle";
+	int bfio_access_flags                = 0;
+	int file_io_handle_is_open           = 0;
+	int file_io_handle_opened_in_library = 0;
 
 	if( internal_handle == NULL )
 	{
@@ -1896,6 +1897,7 @@ int libvmdk_handle_open_extent_data_file_io_handle(
 
 			goto on_error;
 		}
+		file_io_handle_opened_in_library = 1;
 	}
 	if( libbfio_pool_set_handle(
 	     file_io_pool,
@@ -1917,7 +1919,7 @@ int libvmdk_handle_open_extent_data_file_io_handle(
 	return( 1 );
 
 on_error:
-	if( file_io_handle_is_open == 0 )
+	if( file_io_handle_opened_in_library != 0 )
 	{
 		libbfio_handle_close(
 		 file_io_handle,
@@ -1950,7 +1952,7 @@ int libvmdk_handle_close(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -2072,7 +2074,7 @@ int libvmdk_handle_close(
 
 		result = -1;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -3108,7 +3110,7 @@ ssize_t libvmdk_handle_read_buffer(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -3141,7 +3143,7 @@ ssize_t libvmdk_handle_read_buffer(
 
 		read_count = -1;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -3186,7 +3188,7 @@ ssize_t libvmdk_handle_read_buffer_at_offset(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -3234,7 +3236,7 @@ ssize_t libvmdk_handle_read_buffer_at_offset(
 
 		goto on_error;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -3252,7 +3254,7 @@ ssize_t libvmdk_handle_read_buffer_at_offset(
 	return( read_count );
 
 on_error:
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	libcthreads_read_write_lock_release_for_write(
 	 internal_handle->read_write_lock,
 	 NULL );
@@ -3475,7 +3477,7 @@ off64_t libvmdk_handle_seek_offset(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -3507,7 +3509,7 @@ off64_t libvmdk_handle_seek_offset(
 
 		offset = -1;
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -3571,7 +3573,7 @@ int libvmdk_handle_get_offset(
 
 		return( -1 );
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -3588,7 +3590,7 @@ int libvmdk_handle_get_offset(
 #endif
 	*offset = internal_handle->current_offset;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -3642,7 +3644,7 @@ int libvmdk_handle_set_parent_handle(
 
 		return( -1 );
 	}
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -3684,7 +3686,7 @@ int libvmdk_handle_set_parent_handle(
 	}
 	internal_handle->parent_handle = parent_handle;
 
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_handle->read_write_lock,
 	     error ) != 1 )
@@ -3702,7 +3704,7 @@ int libvmdk_handle_set_parent_handle(
 	return( 1 );
 
 on_error:
-#if defined( HAVE_MULTI_THREAD_SUPPORT )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	libcthreads_read_write_lock_release_for_write(
 	 internal_handle->read_write_lock,
 	 NULL );

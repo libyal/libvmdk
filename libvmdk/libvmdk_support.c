@@ -103,7 +103,6 @@ int libvmdk_set_codepage(
 
 #endif /* !defined( HAVE_LOCAL_LIBVMDK ) */
 
-
 /* Determines if a file contains a VMDK file signature
  * Returns 1 if true, 0 if not or -1 on error
  */
