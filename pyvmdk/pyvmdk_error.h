@@ -1,7 +1,7 @@
 /*
  * Error functions
  *
- * Copyright (c) 2009-2014, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2014, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -28,11 +28,23 @@
 #include "pyvmdk_libcerror.h"
 #include "pyvmdk_python.h"
 
-#define PYVMDK_ERROR_STRING_SIZE	768
+#define PYVMDK_ERROR_STRING_SIZE		768
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
+
+void pyvmdk_error_fetch(
+      libcerror_error_t **error,
+      int error_domain,
+      int error_code,
+      const char *format_string,
+      ... );
+
+void pyvmdk_error_fetch_and_raise(
+      PyObject *exception_object,
+      const char *format_string,
+      ... );
 
 void pyvmdk_error_raise(
       libcerror_error_t *error,

@@ -103,10 +103,8 @@ PyGetSetDef pyvmdk_extent_descriptor_object_get_set_definitions[] = {
 };
 
 PyTypeObject pyvmdk_extent_descriptor_type_object = {
-	PyObject_HEAD_INIT( NULL )
+	PyVarObject_HEAD_INIT( NULL, 0 )
 
-	/* ob_size */
-	0,
 	/* tp_name */
 	"pyvmdk.extent_descriptor",
 	/* tp_basicsize */
@@ -287,8 +285,9 @@ int pyvmdk_extent_descriptor_init(
 void pyvmdk_extent_descriptor_free(
       pyvmdk_extent_descriptor_t *pyvmdk_extent_descriptor )
 {
-	libcerror_error_t *error = NULL;
-	static char *function    = "pyvmdk_extent_descriptor_free";
+	libcerror_error_t *error    = NULL;
+	struct _typeobject *ob_type = NULL;
+	static char *function       = "pyvmdk_extent_descriptor_free";
 
 	if( pyvmdk_extent_descriptor == NULL )
 	{
@@ -299,29 +298,32 @@ void pyvmdk_extent_descriptor_free(
 
 		return;
 	}
-	if( pyvmdk_extent_descriptor->ob_type == NULL )
-	{
-		PyErr_Format(
-		 PyExc_TypeError,
-		 "%s: invalid extent descriptor - missing ob_type.",
-		 function );
-
-		return;
-	}
-	if( pyvmdk_extent_descriptor->ob_type->tp_free == NULL )
-	{
-		PyErr_Format(
-		 PyExc_TypeError,
-		 "%s: invalid extent descriptor - invalid ob_type - missing tp_free.",
-		 function );
-
-		return;
-	}
 	if( pyvmdk_extent_descriptor->extent_descriptor == NULL )
 	{
 		PyErr_Format(
 		 PyExc_TypeError,
 		 "%s: invalid extent descriptor - missing libvmdk extent descriptor.",
+		 function );
+
+		return;
+	}
+	ob_type = Py_TYPE(
+	           pyvmdk_extent_descriptor );
+
+	if( ob_type == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: missing ob_type.",
+		 function );
+
+		return;
+	}
+	if( ob_type->tp_free == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid ob_type - missing tp_free.",
 		 function );
 
 		return;
@@ -344,7 +346,7 @@ void pyvmdk_extent_descriptor_free(
 		Py_DecRef(
 		 (PyObject *) pyvmdk_extent_descriptor->handle_object );
 	}
-	pyvmdk_extent_descriptor->ob_type->tp_free(
+	ob_type->tp_free(
 	 (PyObject*) pyvmdk_extent_descriptor );
 }
 
@@ -356,6 +358,7 @@ PyObject *pyvmdk_extent_descriptor_get_type(
            PyObject *arguments PYVMDK_ATTRIBUTE_UNUSED )
 {
 	libcerror_error_t *error = NULL;
+	PyObject *integer_object = NULL;
 	static char *function    = "pyvmdk_extent_descriptor_get_type";
 	int result               = 0;
 	int type                 = 0;
@@ -393,8 +396,14 @@ PyObject *pyvmdk_extent_descriptor_get_type(
 
 		return( NULL );
 	}
-	return( PyInt_FromLong(
-	         (long) type ) );
+#if PY_MAJOR_VERSION >= 3
+	integer_object = PyLong_FromLong(
+	                  (long) type );
+#else
+	integer_object = PyInt_FromLong(
+	                  (long) type );
+#endif
+	return( integer_object );
 }
 
 /* Retrieves the offset
