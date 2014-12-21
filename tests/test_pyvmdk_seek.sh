@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Python-bindings open close testing script
+# Python-bindings seek testing script
 #
 # Copyright (c) 2009-2014, Joachim Metz <joachim.metz@gmail.com>
 #
@@ -40,14 +40,14 @@ list_contains()
 	return ${EXIT_FAILURE};
 }
 
-test_open_close()
+test_seek()
 { 
 	INPUT_FILE=$1;
 
 	rm -rf tmp;
 	mkdir tmp;
 
-	echo "Testing open close of input: ${INPUT_FILE}";
+	echo "Testing seek of input: ${INPUT_FILE}";
 
 	if test `uname -s` = 'Darwin';
 	then
@@ -79,7 +79,7 @@ then
 	exit ${EXIT_IGNORE};
 fi
 
-SCRIPT="pyvmdk_test_open_close.py";
+SCRIPT="pyvmdk_test_seek.py";
 
 if ! test -f ${SCRIPT};
 then
@@ -124,7 +124,7 @@ else
 				do
 					BASENAME=`basename ${TEST_FILE}`;
 
-					if ! test_open_close "${TEST_FILE}";
+					if ! test_seek "${TEST_FILE}";
 					then
 						exit ${EXIT_FAILURE};
 					fi

@@ -214,6 +214,13 @@ ssize_t libvmdk_handle_read_buffer_at_offset(
 
 #ifdef TODO_WRITE_SUPPORT
 
+ssize_t libvmdk_internal_handle_write_buffer_to_file_io_pool(
+         libvmdk_internal_handle_t *internal_handle,
+         libbfio_pool_t *file_io_pool,
+         void *buffer,
+         size_t buffer_size,
+         libcerror_error_t **error );
+
 LIBVMDK_EXTERN \
 ssize_t libvmdk_handle_write_buffer(
          libvmdk_handle_t *handle,

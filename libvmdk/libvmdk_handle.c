@@ -3110,6 +3110,17 @@ ssize_t libvmdk_handle_read_buffer(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
+	if( internal_handle->extent_data_file_io_pool == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid handle - missing extent data file IO pool.",
+		 function );
+
+		return( -1 );
+	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_handle->read_write_lock,
@@ -3188,6 +3199,17 @@ ssize_t libvmdk_handle_read_buffer_at_offset(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
+	if( internal_handle->extent_data_file_io_pool == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid handle - missing extent data file IO pool.",
+		 function );
+
+		return( -1 );
+	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_handle->read_write_lock,
@@ -3264,6 +3286,23 @@ on_error:
 
 #ifdef TODO_WRITE_SUPPORT
 
+/* Writes (media) data at the current offset from a buffer using a Basic File IO (bfio) pool
+ * the necessary settings of the write values must have been made
+ * Will initialize write if necessary
+ * This function is not multi-thread safe acquire write lock before call
+ * Returns the number of input bytes written, 0 when no longer bytes can be written or -1 on error
+ */
+ssize_t libvmdk_internal_handle_write_buffer_to_file_io_pool(
+         libvmdk_internal_handle_t *internal_handle,
+         libbfio_pool_t *file_io_pool,
+         void *buffer,
+         size_t buffer_size,
+         libcerror_error_t **error )
+{
+/* TODO implement */
+	return( -1 );
+}
+
 /* Writes (media) data at the current offset
  * the necessary settings of the write values must have been made
  * Will initialize write if necessary
@@ -3277,6 +3316,7 @@ ssize_t libvmdk_handle_write_buffer(
 {
 	libvmdk_internal_handle_t *internal_handle = NULL;
 	static char *function                      = "libvmdk_handle_write_buffer";
+	ssize_t write_count                        = 0;
 
 	if( handle == NULL )
 	{
@@ -3291,45 +3331,69 @@ ssize_t libvmdk_handle_write_buffer(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
-	if( internal_handle->io_handle == NULL )
+	if( internal_handle->extent_data_file_io_pool == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid handle - missing IO handle.",
+		 "%s: invalid handle - missing extent data file IO pool.",
 		 function );
 
 		return( -1 );
 	}
-	if( buffer == NULL )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid buffer.",
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
 		 function );
 
 		return( -1 );
 	}
-	if( buffer_size > (size_t) SSIZE_MAX )
+#endif
+	write_count = libvmdk_internal_handle_write_buffer_to_file_io_pool(
+	               internal_handle,
+	               internal_handle->extent_data_file_io_pool,
+	               buffer,
+	               buffer_size,
+	               error );
+
+	if( write_count == -1 )
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid element data size value exceeds maximum.",
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to write buffer.",
+		 function );
+
+		write_count = -1;
+	}
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
 		 function );
 
 		return( -1 );
 	}
-	/* TODO */
-
-	return( -1 );
+#endif
+	return( write_count );
 }
 
-/* Writes (media) data in VMDK format at a specific offset,
+/* Writes (media) data at a specific offset,
  * the necessary settings of the write values must have been made
  * Will initialize write if necessary
  * Returns the number of input bytes written, 0 when no longer bytes can be written or -1 on error
@@ -3341,11 +3405,51 @@ ssize_t libvmdk_handle_write_buffer_at_offset(
          off64_t offset,
          libcerror_error_t **error )
 {
-	static char *function = "libvmdk_handle_write_buffer_at_offset";
-	ssize_t write_count   = 0;
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	static char *function                      = "libvmdk_handle_write_buffer_at_offset";
+	ssize_t write_count                        = 0;
 
-	if( libvmdk_handle_seek_offset(
-	     handle,
+	if( handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid handle.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle = (libvmdk_internal_handle_t *) handle;
+
+	if( internal_handle->extent_data_file_io_pool == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid handle - missing extent data file IO pool.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libvmdk_internal_handle_seek_offset(
+	     internal_handle,
 	     offset,
 	     SEEK_SET,
 	     error ) == -1 )
@@ -3357,26 +3461,50 @@ ssize_t libvmdk_handle_write_buffer_at_offset(
 		 "%s: unable to seek offset.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-	write_count = libvmdk_handle_write_buffer(
-	               handle,
+	write_count = libvmdk_internal_handle_write_buffer_to_file_io_pool(
+	               internal_handle,
+	               internal_handle->extent_data_file_io_pool,
 	               buffer,
 	               buffer_size,
 	               error );
 
-	if( write_count <= -1 )
+	if( write_count == -1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_WRITE_FAILED,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
 		 "%s: unable to write buffer.",
+		 function );
+
+		goto on_error;
+	}
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
 		 function );
 
 		return( -1 );
 	}
+#endif
 	return( write_count );
+
+on_error:
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
+	libcthreads_read_write_lock_release_for_write(
+	 internal_handle->read_write_lock,
+	 NULL );
+#endif
+	return( -1 );
 }
 
 #endif /* TODO_WRITE_SUPPORT */
@@ -3477,6 +3605,17 @@ off64_t libvmdk_handle_seek_offset(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
+	if( internal_handle->extent_data_file_io_pool == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid handle - missing extent data file IO pool.",
+		 function );
+
+		return( -1 );
+	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_handle->read_write_lock,
@@ -3558,6 +3697,17 @@ int libvmdk_handle_get_offset(
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: invalid handle - missing IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->extent_data_file_io_pool == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid handle - missing extent data file IO pool.",
 		 function );
 
 		return( -1 );

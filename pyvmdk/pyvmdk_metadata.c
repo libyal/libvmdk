@@ -40,6 +40,7 @@ PyObject *pyvmdk_handle_get_disk_type(
            PyObject *arguments PYVMDK_ATTRIBUTE_UNUSED )
 {
 	libcerror_error_t *error = NULL;
+	PyObject *integer_object = NULL;
 	static char *function    = "pyvmdk_handle_get_disk_type";
 	int result               = 0;
 	int disk_type            = 0;
@@ -77,8 +78,14 @@ PyObject *pyvmdk_handle_get_disk_type(
 
 		return( NULL );
 	}
-	return( PyInt_FromLong(
-	         (long) disk_type ) );
+#if PY_MAJOR_VERSION >= 3
+	integer_object = PyLong_FromLong(
+	                  (long) disk_type );
+#else
+	integer_object = PyInt_FromLong(
+	                  (long) disk_type );
+#endif
+	return( integer_object );
 }
 
 /* Retrieves the media size
@@ -359,6 +366,7 @@ PyObject *pyvmdk_handle_get_number_of_extents(
            PyObject *arguments PYVMDK_ATTRIBUTE_UNUSED )
 {
 	libcerror_error_t *error = NULL;
+	PyObject *integer_object = NULL;
 	static char *function    = "pyvmdk_handle_get_number_of_extents";
 	int number_of_extents    = 0;
 	int result               = 0;
@@ -396,8 +404,14 @@ PyObject *pyvmdk_handle_get_number_of_extents(
 
 		return( NULL );
 	}
-	return( PyInt_FromLong(
-	         (long) number_of_extents ) );
+#if PY_MAJOR_VERSION >= 3
+	integer_object = PyLong_FromLong(
+	                  (long) number_of_extents );
+#else
+	integer_object = PyInt_FromLong(
+	                  (long) number_of_extents );
+#endif
+	return( integer_object );
 }
 
 /* Retrieves a specific extent descriptor by index

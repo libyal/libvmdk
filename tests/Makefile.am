@@ -17,7 +17,8 @@ AM_CPPFLAGS = \
 
 if HAVE_PYTHON
 TESTS_PYVMDK  = \
-	test_pyvmdk_open_close.sh
+	test_pyvmdk_open_close.sh \
+	test_pyvmdk_seek.sh
 endif
 
 TESTS = \
@@ -29,9 +30,10 @@ TESTS = \
 
 check_SCRIPTS = \
 	pyvmdk_test_open_close.py \
-	test_pyvmdk_open_close.sh \
+	pyvmdk_test_seek.py \
 	test_open_close.sh \
 	test_pyvmdk_open_close.sh \
+	test_pyvmdk_seek.sh \
 	test_read.sh \
 	test_runner.sh \
 	test_seek.sh \

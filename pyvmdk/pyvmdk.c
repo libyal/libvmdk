@@ -128,22 +128,17 @@ PyObject *pyvmdk_check_file_signature(
            PyObject *arguments,
            PyObject *keywords )
 {
-	PyObject *exception_string    = NULL;
-	PyObject *exception_traceback = NULL;
-	PyObject *exception_type      = NULL;
-	PyObject *exception_value     = NULL;
-	PyObject *string_object       = NULL;
-	libcerror_error_t *error      = NULL;
-	static char *function         = "pyvmdk_check_file_signature";
-	static char *keyword_list[]   = { "filename", NULL };
-	const char *filename_narrow   = NULL;
-	char *error_string            = NULL;
-	int result                    = 0;
+	PyObject *string_object      = NULL;
+	libcerror_error_t *error     = NULL;
+	static char *function        = "pyvmdk_check_file_signature";
+	static char *keyword_list[]  = { "filename", NULL };
+	const char *filename_narrow  = NULL;
+	int result                   = 0;
 
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	const wchar_t *filename_wide  = NULL;
+	const wchar_t *filename_wide = NULL;
 #else
-	PyObject *utf8_string_object  = NULL;
+	PyObject *utf8_string_object = NULL;
 #endif
 
 	PYVMDK_UNREFERENCED_PARAMETER( self )
@@ -170,34 +165,10 @@ PyObject *pyvmdk_check_file_signature(
 
 	if( result == -1 )
 	{
-		PyErr_Fetch(
-		 &exception_type,
-		 &exception_value,
-		 &exception_traceback );
-
-		exception_string = PyObject_Repr(
-		                    exception_value );
-
-		error_string = PyString_AsString(
-		                exception_string );
-
-		if( error_string != NULL )
-		{
-			PyErr_Format(
-		         PyExc_RuntimeError,
-			 "%s: unable to determine if string object is of type unicode with error: %s.",
-			 function,
-			 error_string );
-		}
-		else
-		{
-			PyErr_Format(
-		         PyExc_RuntimeError,
-			 "%s: unable to determine if string object is of type unicode.",
-			 function );
-		}
-		Py_DecRef(
-		 exception_string );
+		pyvmdk_error_fetch_and_raise(
+	         PyExc_RuntimeError,
+		 "%s: unable to determine if string object is of type unicode.",
+		 function );
 
 		return( NULL );
 	}
@@ -221,40 +192,20 @@ PyObject *pyvmdk_check_file_signature(
 
 		if( utf8_string_object == NULL )
 		{
-			PyErr_Fetch(
-			 &exception_type,
-			 &exception_value,
-			 &exception_traceback );
-
-			exception_string = PyObject_Repr(
-					    exception_value );
-
-			error_string = PyString_AsString(
-					exception_string );
-
-			if( error_string != NULL )
-			{
-				PyErr_Format(
-				 PyExc_RuntimeError,
-				 "%s: unable to convert unicode string to UTF-8 with error: %s.",
-				 function,
-				 error_string );
-			}
-			else
-			{
-				PyErr_Format(
-				 PyExc_RuntimeError,
-				 "%s: unable to convert unicode string to UTF-8.",
-				 function );
-			}
-			Py_DecRef(
-			 exception_string );
+			pyvmdk_error_fetch_and_raise(
+			 PyExc_RuntimeError,
+			 "%s: unable to convert unicode string to UTF-8.",
+			 function );
 
 			return( NULL );
 		}
+#if PY_MAJOR_VERSION >= 3
+		filename_narrow = PyBytes_AsString(
+				   utf8_string_object );
+#else
 		filename_narrow = PyString_AsString(
 				   utf8_string_object );
-
+#endif
 		Py_BEGIN_ALLOW_THREADS
 
 		result = libvmdk_check_file_signature(
@@ -293,40 +244,21 @@ PyObject *pyvmdk_check_file_signature(
 	}
 	PyErr_Clear();
 
+#if PY_MAJOR_VERSION >= 3
+	result = PyObject_IsInstance(
+		  string_object,
+		  (PyObject *) &PyBytes_Type );
+#else
 	result = PyObject_IsInstance(
 		  string_object,
 		  (PyObject *) &PyString_Type );
-
+#endif
 	if( result == -1 )
 	{
-		PyErr_Fetch(
-		 &exception_type,
-		 &exception_value,
-		 &exception_traceback );
-
-		exception_string = PyObject_Repr(
-				    exception_value );
-
-		error_string = PyString_AsString(
-				exception_string );
-
-		if( error_string != NULL )
-		{
-			PyErr_Format(
-		         PyExc_RuntimeError,
-			 "%s: unable to determine if string object is of type string with error: %s.",
-			 function,
-			 error_string );
-		}
-		else
-		{
-			PyErr_Format(
-		         PyExc_RuntimeError,
-			 "%s: unable to determine if string object is of type string.",
-			 function );
-		}
-		Py_DecRef(
-		 exception_string );
+		pyvmdk_error_fetch_and_raise(
+	         PyExc_RuntimeError,
+		 "%s: unable to determine if string object is of type string.",
+		 function );
 
 		return( NULL );
 	}
@@ -334,9 +266,13 @@ PyObject *pyvmdk_check_file_signature(
 	{
 		PyErr_Clear();
 
+#if PY_MAJOR_VERSION >= 3
+		filename_narrow = PyBytes_AsString(
+				   string_object );
+#else
 		filename_narrow = PyString_AsString(
 				   string_object );
-
+#endif
 		Py_BEGIN_ALLOW_THREADS
 
 		result = libvmdk_check_file_signature(
@@ -478,16 +414,42 @@ on_error:
 	return( NULL );
 }
 
-/* Declarations for DLL import/export
+#if PY_MAJOR_VERSION >= 3
+
+/* The pyvmdk module definition
  */
-#ifndef PyMODINIT_FUNC
-#define PyMODINIT_FUNC void
-#endif
+PyModuleDef pyvmdk_module_definition = {
+	PyModuleDef_HEAD_INIT,
+
+	/* m_name */
+	"pyvmdk",
+	/* m_doc */
+	"Python libvmdk module (pyvmdk).",
+	/* m_size */
+	-1,
+	/* m_methods */
+	pyvmdk_module_methods,
+	/* m_reload */
+	NULL,
+	/* m_traverse */
+	NULL,
+	/* m_clear */
+	NULL,
+	/* m_free */
+	NULL,
+};
+
+#endif /* PY_MAJOR_VERSION >= 3 */
 
 /* Initializes the pyvmdk module
  */
+#if PY_MAJOR_VERSION >= 3
+PyMODINIT_FUNC PyInit_pyvmdk(
+                void )
+#else
 PyMODINIT_FUNC initpyvmdk(
                 void )
+#endif
 {
 	PyObject *module                             = NULL;
 	PyTypeObject *extent_descriptor_type_object  = NULL;
@@ -507,11 +469,23 @@ PyMODINIT_FUNC initpyvmdk(
 	 * This function must be called before grabbing the GIL
 	 * otherwise the module will segfault on a version mismatch
 	 */
+#if PY_MAJOR_VERSION >= 3
+	module = PyModule_Create(
+	          &pyvmdk_module_definition );
+#else
 	module = Py_InitModule3(
 	          "pyvmdk",
 	          pyvmdk_module_methods,
 	          "Python libvmdk module (pyvmdk)." );
-
+#endif
+	if( module == NULL )
+	{
+#if PY_MAJOR_VERSION >= 3
+		return( NULL );
+#else
+		return;
+#endif
+	}
 	PyEval_InitThreads();
 
 	gil_state = PyGILState_Ensure();
@@ -573,8 +547,23 @@ PyMODINIT_FUNC initpyvmdk(
 	 "extent_descriptor",
 	 (PyObject *) extent_descriptor_type_object );
 
+	PyGILState_Release(
+	 gil_state );
+
+#if PY_MAJOR_VERSION >= 3
+	return( module );
+#else
+	return;
+#endif
+
 on_error:
 	PyGILState_Release(
 	 gil_state );
+
+#if PY_MAJOR_VERSION >= 3
+	return( NULL );
+#else
+	return;
+#endif
 }
 

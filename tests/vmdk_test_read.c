@@ -27,8 +27,8 @@
 
 #include <stdio.h>
 
-#include "vmdk_test_libcstring.h"
 #include "vmdk_test_libcerror.h"
+#include "vmdk_test_libcstring.h"
 #include "vmdk_test_libcthreads.h"
 #include "vmdk_test_libvmdk.h"
 #include "vmdk_test_unused.h"
@@ -859,9 +859,10 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libvmdk_error_t *error   = NULL;
-	libvmdk_handle_t *handle = NULL;
-	size64_t media_size      = 0;
+	libvmdk_error_t *error                = NULL;
+	libvmdk_handle_t *handle              = NULL;
+	libcstring_system_character_t *source = NULL;
+	size64_t media_size                   = 0;
 
 	if( argc < 2 )
 	{
@@ -871,6 +872,8 @@ int main( int argc, char * const argv[] )
 
 		return( EXIT_FAILURE );
 	}
+	source = argv[ 1 ];
+
 #if defined( HAVE_DEBUG_OUTPUT ) && defined( VMDK_TEST_READ_VERBOSE )
 	libvmdk_notify_set_verbose(
 	 1 );
@@ -893,13 +896,13 @@ int main( int argc, char * const argv[] )
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libvmdk_handle_open_wide(
 	     handle,
-	     argv[ 1 ],
+	     source,
 	     LIBVMDK_OPEN_READ,
 	     &error ) != 1 )
 #else
 	if( libvmdk_handle_open(
 	     handle,
-	     argv[ 1 ],
+	     source,
 	     LIBVMDK_OPEN_READ,
 	     &error ) != 1 )
 #endif
