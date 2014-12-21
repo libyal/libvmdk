@@ -427,7 +427,6 @@ int vmdk_test_seek_file(
 {
 	libvmdk_handle_t *handle = NULL;
 	size64_t media_size      = 0;
-	size_t string_length     = 0;
 	int result               = 0;
 
 	if( libvmdk_handle_initialize(
@@ -536,7 +535,6 @@ int vmdk_test_seek_file_no_open(
      libcerror_error_t **error )
 {
 	libvmdk_handle_t *handle = NULL;
-	size_t string_length     = 0;
 	off64_t result_offset    = 0;
 	int result               = 0;
 
