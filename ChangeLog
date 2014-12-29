@@ -69,6 +69,11 @@ Tests:
   - compressed (done)
   - (compressed) with parent (done)
 
+20141229
+* updated dpkg files
+* updated dependencies
+* updated .gitignore
+
 20141221
 * worked on Python 3 support
 * worked on tests

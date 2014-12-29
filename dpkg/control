@@ -1,13 +1,12 @@
 Source: libvmdk
-Section: unknown
+Section: libs
 Priority: extra
 Maintainer: Joachim Metz <joachim.metz@gmail.com>
 Build-Depends: debhelper (>= 7), autotools-dev, zlib1g-dev, libfuse-dev, python-dev
-Standards-Version: 3.8.3
+Standards-Version: 3.9.5
 Homepage: https://github.com/libyal/libvmdk/
 
 Package: libvmdk
-Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Suggests: libvmdk-dbg
@@ -17,28 +16,28 @@ Description: Library to access the VMware Virtual Disk (VMDK) format
 Package: libvmdk-dbg
 Architecture: any
 Section: debug
-Depends: libvmdk (= ${Source-Version}), ${misc:Depends}
+Depends: libvmdk (= ${binary:Version}), ${misc:Depends}
 Description: Debugging symbols for libvmdk
  Debugging symbols for libvmdk.
 
 Package: libvmdk-dev
 Section: libdevel
 Architecture: any
-Depends: libvmdk (= ${Source-Version})
+Depends: libvmdk (= ${binary:Version}), ${misc:Depends}
 Description: Header files and libraries for developing applications for libvmdk
  Header files and libraries for developing applications for libvmdk.
 
 Package: libvmdk-tools
 Section: utils
 Architecture: any
-Depends: libvmdk (= ${Source-Version}), ${shlibs:Depends}
+Depends: libvmdk (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: Several tools for reading VMware Virtual Disk (VMDK) files
  Several tools for reading VMware Virtual Disk (VMDK) files.
 
 Package: libvmdk-python
 Section: python
 Architecture: any
-Depends: libvmdk (= ${Source-Version}), ${shlibs:Depends}, ${python:Depends}
+Depends: libvmdk (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Suggests: libvmdk-python-dbg
 Description: Python bindings for libvmdk
  Python bindings for libvmdk.
@@ -46,7 +45,7 @@ Description: Python bindings for libvmdk
 Package: libvmdk-python-dbg
 Section: debug
 Architecture: any
-Depends: libvmdk-python (= ${Source-Version})
+Depends: libvmdk-python (= ${binary:Version}), ${misc:Depends}
 Description: Debugging symbols for libvmdk-python
  Debugging symbols for libvmdk-python.
 
