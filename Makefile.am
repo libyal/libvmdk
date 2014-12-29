@@ -29,14 +29,15 @@ SUBDIRS = \
 DPKG_FILES = \
 	dpkg/changelog \
 	dpkg/changelog.in \
-       	dpkg/compat \
-       	dpkg/control \
-       	dpkg/copyright \
-       	dpkg/copyright.in \
-       	dpkg/rules \
-       	dpkg/libvmdk-dev.docs \
-       	dpkg/libvmdk.docs \
-       	dpkg/libvmdk-tools.docs
+	dpkg/compat \
+	dpkg/control \
+	dpkg/copyright \
+	dpkg/copyright.in \
+	dpkg/rules \
+	dpkg/libvmdk-dev.docs \
+	dpkg/libvmdk.docs \
+	dpkg/libvmdk-tools.docs \
+	dpkg/source/format
 
 GETTEXT_FILES = \
 	config.rpath \
