@@ -15,7 +15,6 @@ TODO
   the names don't match
 
 * update manuals
-  - update libvmdk.3
   - update vmdkinfo.1
   - add vmdkmount.1
 * handle ZERO extents?
@@ -68,6 +67,9 @@ Tests:
   - cowd sparse split
   - compressed (done)
   - (compressed) with parent (done)
+
+20150105
+* 2015 update
 
 20141229
 * updated dpkg files
