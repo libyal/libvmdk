@@ -50,6 +50,7 @@ check_PROGRAMS = \
 vmdk_test_open_close_SOURCES = \
 	vmdk_test_libcerror.h \
 	vmdk_test_libcstring.h \
+	vmdk_test_libcthreads.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_open_close.c \
 	vmdk_test_unused.h
@@ -64,6 +65,7 @@ vmdk_test_open_close_LDADD = \
 vmdk_test_read_SOURCES = \
 	vmdk_test_libcerror.h \
 	vmdk_test_libcstring.h \
+	vmdk_test_libcthreads.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_read.c \
 	vmdk_test_unused.h
@@ -78,6 +80,7 @@ vmdk_test_read_LDADD = \
 vmdk_test_seek_SOURCES = \
 	vmdk_test_libcerror.h \
 	vmdk_test_libcstring.h \
+	vmdk_test_libcthreads.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_seek.c \
 	vmdk_test_unused.h
