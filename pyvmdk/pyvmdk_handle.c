@@ -1069,8 +1069,9 @@ PyObject *pyvmdk_handle_set_parent(
     if (PyArg_ParseTupleAndKeywords(
         arguments,
         keywords,
-        "O",
+        "O!",
         keyword_list,
+        &pyvmdk_handle_type_object,
         &pyvmdk_parent_object) == 0)
     {
         return(NULL);
