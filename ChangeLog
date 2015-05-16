@@ -68,6 +68,9 @@ Tests:
   - compressed (done)
   - (compressed) with parent (done)
 
+20150516
+* worked on Python bindings
+
 20150325
 * changes for deployment
 
