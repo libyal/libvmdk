@@ -69,6 +69,8 @@ Tests:
   - (compressed) with parent (done)
 
 20150516
+* fixed bug handling extent without filename
+* fixed bug in basename handling on non UTF-8 system string systems
 * worked on Python bindings
 
 20150325

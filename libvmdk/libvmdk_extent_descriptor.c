@@ -1058,7 +1058,7 @@ int libvmdk_extent_descriptor_get_range(
 
 /* Retrieves the size of the UTF-8 encoded filename
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libvmdk_extent_descriptor_get_utf8_filename_size(
      libvmdk_extent_descriptor_t *extent_descriptor,
@@ -1081,6 +1081,10 @@ int libvmdk_extent_descriptor_get_utf8_filename_size(
 	}
 	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
 
+	if( internal_extent_descriptor->filename == NULL )
+	{
+		return( 0 );
+	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libuna_utf8_string_size_from_utf16(
 	     (uint16_t *) internal_extent_descriptor->filename,
@@ -1116,7 +1120,7 @@ int libvmdk_extent_descriptor_get_utf8_filename_size(
 
 /* Retrieves the UTF-8 encoded filename
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libvmdk_extent_descriptor_get_utf8_filename(
      libvmdk_extent_descriptor_t *extent_descriptor,
@@ -1140,6 +1144,10 @@ int libvmdk_extent_descriptor_get_utf8_filename(
 	}
 	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
 
+	if( internal_extent_descriptor->filename == NULL )
+	{
+		return( 0 );
+	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libuna_utf8_string_copy_from_utf16(
 	     utf8_string,
@@ -1211,7 +1219,7 @@ int libvmdk_extent_descriptor_get_utf8_filename(
 
 /* Retrieves the size of the UTF-16 encoded filename
  * The returned size includes the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libvmdk_extent_descriptor_get_utf16_filename_size(
      libvmdk_extent_descriptor_t *extent_descriptor,
@@ -1234,6 +1242,10 @@ int libvmdk_extent_descriptor_get_utf16_filename_size(
 	}
 	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
 
+	if( internal_extent_descriptor->filename == NULL )
+	{
+		return( 0 );
+	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	if( utf16_string_size == NULL )
 	{
@@ -1269,7 +1281,7 @@ int libvmdk_extent_descriptor_get_utf16_filename_size(
 
 /* Retrieves the UTF-16 encoded filename
  * The size should include the end of string character
- * Returns 1 if successful or -1 on error
+ * Returns 1 if successful, 0 if not available or -1 on error
  */
 int libvmdk_extent_descriptor_get_utf16_filename(
      libvmdk_extent_descriptor_t *extent_descriptor,
@@ -1293,6 +1305,10 @@ int libvmdk_extent_descriptor_get_utf16_filename(
 	}
 	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
 
+	if( internal_extent_descriptor->filename == NULL )
+	{
+		return( 0 );
+	}
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
 	if( utf16_string == NULL )
 	{

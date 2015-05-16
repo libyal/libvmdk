@@ -332,7 +332,7 @@ int info_handle_file_fprint(
 {
 	libcstring_system_character_t *filename        = NULL;
 	libvmdk_extent_descriptor_t *extent_descriptor = NULL;
-	static char *function                          = "vmdkinfo_file_info_fprint";
+	static char *function                          = "info_handle_file_fprint";
 	size64_t extent_size                           = 0;
 	size64_t media_size                            = 0;
 	off64_t extent_offset                          = 0;

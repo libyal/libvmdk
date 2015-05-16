@@ -2405,7 +2405,7 @@ int libvmdk_descriptor_file_read_disk_database(
 		else if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: value: %d\t\t\t\t: %s = %s\n",
+			 "%s: value: %d\t\t\t: %s = %s\n",
 			 function,
 			 *line_index,
 			 value_identifier,
