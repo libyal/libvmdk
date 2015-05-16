@@ -92,6 +92,13 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 	  "\n"
 	  "Opens extent data files using a list of file-like objects." },
 
+	{ "set_parent",
+	  (PyCFunction) pyvmdk_handle_set_parent,
+	  METH_VARARGS | METH_KEYWORDS,
+      "set_parent(vmdk_object) -> None\n"
+	  "\n"
+	  "Sets the parent handle." },
+
 	{ "close",
 	  (PyCFunction) pyvmdk_handle_close,
 	  METH_NOARGS,
@@ -1034,6 +1041,67 @@ on_error:
 		 NULL );
 	}
 	return( NULL );
+}
+
+/* Sets the parent handle
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyvmdk_handle_set_parent(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+    pyvmdk_handle_t *pyvmdk_parent_object = NULL;
+    libcerror_error_t *error = NULL;
+    static char *keyword_list[] = { "vmdk_object", NULL };
+	static char *function    = "pyvmdk_handle_set_parent";
+	int result               = 0;
+
+	if( pyvmdk_handle == NULL )
+	{
+		PyErr_Format(
+		 PyExc_ValueError,
+		 "%s: invalid handle.",
+		 function );
+
+		return( NULL );
+	}
+    if (PyArg_ParseTupleAndKeywords(
+        arguments,
+        keywords,
+        "O!",
+        keyword_list,
+        &pyvmdk_handle_type_object,
+        &pyvmdk_parent_object) == 0)
+    {
+        return(NULL);
+    }
+	Py_BEGIN_ALLOW_THREADS
+
+	result = libvmdk_handle_set_parent_handle(
+	          pyvmdk_handle->handle,
+              pyvmdk_parent_object->handle,
+	          &error );
+
+	Py_END_ALLOW_THREADS
+
+	if( result != 1 )
+	{
+		pyvmdk_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: unable to set parent handle.",
+		 function );
+
+		libcerror_error_free(
+		 &error );
+
+		return( NULL );
+	}
+	Py_IncRef(
+	 Py_None );
+
+	return( Py_None );
 }
 
 /* Closes a handle

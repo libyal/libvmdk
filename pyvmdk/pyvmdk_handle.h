@@ -99,6 +99,11 @@ PyObject *pyvmdk_handle_open_extent_data_files_file_objects(
            PyObject *arguments,
            PyObject *keywords );
 
+PyObject *pyvmdk_handle_set_parent(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments,
+           PyObject *keywords );
+
 PyObject *pyvmdk_handle_close(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments );
