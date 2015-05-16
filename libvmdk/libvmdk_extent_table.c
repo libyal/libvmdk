@@ -766,13 +766,13 @@ int libvmdk_extent_table_set_basename(
 #if SIZEOF_WCHAR_T == 4
 		result = libuna_utf32_string_size_from_utf8(
 		          (libuna_utf8_character_t *) basename,
-		          basename_length + 1,
+		          basename_length,
 		          &( extent_table->basename_size ),
 		          error );
 #elif SIZEOF_WCHAR_T == 2
 		result = libuna_utf16_string_size_from_utf8(
 		          (libuna_utf8_character_t *) basename,
-		          basename_length + 1,
+		          basename_length,
 		          &( extent_table->basename_size ),
 		          error );
 #else
@@ -784,14 +784,14 @@ int libvmdk_extent_table_set_basename(
 #if SIZEOF_WCHAR_T == 4
 		result = libuna_utf32_string_size_from_byte_stream(
 		          (uint8_t *) basename,
-		          basename_length + 1,
+		          basename_length,
 		          libclocale_codepage,
 		          &( extent_table->basename_size ),
 		          error );
 #elif SIZEOF_WCHAR_T == 2
 		result = libuna_utf16_string_size_from_byte_stream(
 		          (uint8_t *) basename,
-		          basename_length + 1,
+		          basename_length,
 		          libclocale_codepage,
 		          &( extent_table->basename_size ),
 		          error );
@@ -814,7 +814,7 @@ int libvmdk_extent_table_set_basename(
 	extent_table->basename_size = basename_length + 1;
 #endif
 	extent_table->basename = libcstring_system_string_allocate(
-	                           extent_table->basename_size );
+	                          extent_table->basename_size );
 
 	if( extent_table->basename == NULL )
 	{
