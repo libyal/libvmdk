@@ -68,6 +68,9 @@ Tests:
   - compressed (done)
   - (compressed) with parent (done)
 
+20150712
+* fixed memory leak
+
 20150516
 * fixed bug handling extent without filename
 * fixed bug in basename handling on non UTF-8 system string systems

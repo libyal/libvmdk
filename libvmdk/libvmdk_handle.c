@@ -2716,6 +2716,9 @@ int libvmdk_handle_open_read_signature(
 			goto on_error;
 		}
 	}
+	memory_free(
+	 signature );
+
 	return( result );
 
 on_error:
