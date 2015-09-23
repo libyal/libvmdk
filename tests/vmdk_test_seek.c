@@ -461,7 +461,7 @@ int vmdk_test_seek_file(
 	}
 	if( libvmdk_handle_open_extent_data_files(
 	     handle,
-	     &error ) != 1 )
+	     error ) != 1 )
 	{
 		fprintf(
 		 stderr,
