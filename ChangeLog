@@ -64,6 +64,9 @@ Tests:
   - compressed (done)
   - (compressed) with parent (done)
 
+20140929
+* removed README.macosx
+
 20140803
 * bug fix in Python-bindings
 
