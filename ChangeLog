@@ -68,6 +68,10 @@ Tests:
   - compressed (done)
   - (compressed) with parent (done)
 
+201512223
+* Changes to Python bindings
+* updated dependencies
+
 20150712
 * fixed memory leak
 

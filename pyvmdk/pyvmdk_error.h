@@ -28,7 +28,7 @@
 #include "pyvmdk_libcerror.h"
 #include "pyvmdk_python.h"
 
-#define PYVMDK_ERROR_STRING_SIZE		768
+#define PYVMDK_ERROR_STRING_SIZE		2048
 
 #if defined( __cplusplus )
 extern "C" {
