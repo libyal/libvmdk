@@ -114,7 +114,6 @@ stamp-h[1-9]
 /libvmdk/libvmdk_definitions.h
 /vmdktools/vmdkinfo
 /vmdktools/vmdkmount
-/pyvmdk/setup.py
 /tests/input
 /tests/tmp*
 /tests/vmdk_test_open_close
