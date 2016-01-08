@@ -1,29 +1,34 @@
 libvmdk is a library to access the VMware Virtual Disk (VMDK) format.
 
 Project information:
+
 * Status: alpha
 * Licence: LGPLv3+
 
 Read supported extent file formats:
+
 * RAW (flat)
 * COWD version 1 (sparse)
 * VMDK version 1, 2 and 3 (sparse)
 
 Supported VMDK format features:
+
 * delta links
 * grain compression (as of version 20131209)
 * data markers (as of version 20140416)
 
 VMDK format features not supported at the moment:
+
 * images that use a physical device
 * changed block tracking (CBT) (supported by VMDK version 3 (sparse)) / change tracking file
 
 Work in progress:
+
 * Dokan library support
-* Python 3 support
 * Thread-safety in handle API functions
 
 For more information see:
+
 * Project documentation: https://github.com/libyal/libvmdk/wiki/Home
 * How to build from source: https://github.com/libyal/libvmdk/wiki/Building
 

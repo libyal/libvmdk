@@ -21,6 +21,8 @@ SUBDIRS = \
 	libcsystem \
 	vmdktools \
 	pyvmdk \
+	pyvmdk2 \
+	pyvmdk3 \
 	po \
 	manuals \
 	tests \
@@ -34,8 +36,10 @@ DPKG_FILES = \
 	dpkg/copyright \
 	dpkg/copyright.in \
 	dpkg/rules \
-	dpkg/libvmdk-dev.docs \
 	dpkg/libvmdk.docs \
+	dpkg/libvmdk-dev.docs \
+	dpkg/libvmdk-python.docs \
+	dpkg/libvmdk-python3.docs \
 	dpkg/libvmdk-tools.docs \
 	dpkg/source/format
 
