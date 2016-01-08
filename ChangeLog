@@ -68,6 +68,9 @@ Tests:
   - compressed (done)
   - (compressed) with parent (done)
 
+20160108
+* 2016 update
+
 201512223
 * Changes to Python bindings
 * updated dependencies

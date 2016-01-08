@@ -17,7 +17,7 @@ install:
 before_build:
   - ps: .\synclibs.ps1
   - ps: .\autogen.ps1
-  - cmd: C:\Python27\python.exe ..\libyal\msvscpp-convert.py --to 2010 msvscpp\libvmdk.sln
+  - cmd: C:\Python27\python.exe ..\libyal\scripts\msvscpp-convert.py --to 2010 msvscpp\libvmdk.sln
 
 build:
   project: vs2010\libvmdk.sln
