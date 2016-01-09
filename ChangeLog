@@ -68,8 +68,12 @@ Tests:
   - compressed (done)
   - (compressed) with parent (done)
 
+20160109
+* fixes for rpmbuild
+
 20160108
 * 2016 update
+* worked on Python 3 support
 
 201512223
 * Changes to Python bindings

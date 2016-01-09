@@ -39,6 +39,7 @@
 #include "pyvmdk_unused.h"
 
 #if !defined( LIBVMDK_HAVE_BFIO )
+
 LIBVMDK_EXTERN \
 int libvmdk_handle_open_file_io_handle(
      libvmdk_handle_t *handle,
@@ -51,7 +52,8 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
      libvmdk_handle_t *handle,
      libbfio_pool_t *file_io_pool,
      libvmdk_error_t **error );
-#endif
+
+#endif /* !defined( LIBVMDK_HAVE_BFIO ) */
 
 PyMethodDef pyvmdk_handle_object_methods[] = {
 
@@ -80,15 +82,23 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 
 	{ "open_extent_data_files",
 	  (PyCFunction) pyvmdk_handle_open_extent_data_files,
-	  METH_VARARGS | METH_KEYWORDS,
+	  METH_NOARGS,
 	  "open_extent_data_files() -> None\n"
 	  "\n"
 	  "Opens the extent data files." },
 
+/* TODO remove */
 	{ "open_extent_data_files_file_objects",
-	  (PyCFunction) pyvmdk_handle_open_extent_data_files_file_objects,
+	  (PyCFunction) pyvmdk_handle_open_extent_data_files_as_file_objects,
 	  METH_VARARGS | METH_KEYWORDS,
 	  "open_extent_data_files_file_objects(file_objects) -> None\n"
+	  "\n"
+	  "Opens extent data files using a list of file-like objects." },
+
+	{ "open_extent_data_files_as_file_objects",
+	  (PyCFunction) pyvmdk_handle_open_extent_data_files_as_file_objects,
+	  METH_VARARGS | METH_KEYWORDS,
+	  "open_extent_data_files_as_file_objects(file_objects) -> None\n"
 	  "\n"
 	  "Opens extent data files using a list of file-like objects." },
 
@@ -960,7 +970,7 @@ PyObject *pyvmdk_handle_open_extent_data_files(
 /* Opens extent data files using a list of file-like objects
  * Returns a Python object if successful or NULL on error
  */
-PyObject *pyvmdk_handle_open_extent_data_files_file_objects(
+PyObject *pyvmdk_handle_open_extent_data_files_as_file_objects(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments,
            PyObject *keywords )
@@ -968,7 +978,7 @@ PyObject *pyvmdk_handle_open_extent_data_files_file_objects(
 	PyObject *file_objects      = NULL;
 	libcerror_error_t *error    = NULL;
 	static char *keyword_list[] = { "file_object", NULL };
-	static char *function       = "pyvmdk_handle_open_extent_data_files_file_objects";
+	static char *function       = "pyvmdk_handle_open_extent_data_files_as_file_objects";
 	int result                  = 0;
 
 	if( pyvmdk_handle == NULL )
