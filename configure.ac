@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libvmdk],
- [20160109],
+ [20160111],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -218,8 +218,8 @@ AC_CONFIG_FILES([libvmdk/Makefile])
 AC_CONFIG_FILES([libcsystem/Makefile])
 AC_CONFIG_FILES([vmdktools/Makefile])
 AC_CONFIG_FILES([pyvmdk/Makefile])
-AC_CONFIG_FILES([pyvmdk2/Makefile])
-AC_CONFIG_FILES([pyvmdk3/Makefile])
+AC_CONFIG_FILES([pyvmdk-python2/Makefile])
+AC_CONFIG_FILES([pyvmdk-python3/Makefile])
 AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([po/Makevars])
 AC_CONFIG_FILES([manuals/Makefile])

@@ -21,8 +21,8 @@ SUBDIRS = \
 	libcsystem \
 	vmdktools \
 	pyvmdk \
-	pyvmdk2 \
-	pyvmdk3 \
+	pyvmdk-python2 \
+	pyvmdk-python3 \
 	po \
 	manuals \
 	tests \

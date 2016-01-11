@@ -112,7 +112,7 @@ stamp-h[1-9]
 /include/libvmdk/types.h
 /libvmdk/libvmdk.rc
 /libvmdk/libvmdk_definitions.h
-/pyvmdk[23]/*.[ch]
+/pyvmdk-python[23]/*.[ch]
 /vmdktools/vmdkinfo
 /vmdktools/vmdkmount
 /tests/input
