@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libvmdk],
- [20160111],
+ [20160116],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -98,6 +98,7 @@ AX_LIBFVALUE_CHECK_ENABLE
 
 dnl Check for zlib compression support
 AX_ZLIB_CHECK_ENABLE
+AX_ZLIB_CHECK_UNCOMPRESS
 
 dnl Check for library function support
 AX_LIBVMDK_CHECK_LOCAL
@@ -260,7 +261,7 @@ Building:
    libfcache support:                         $ac_cv_libfcache
    libfdata support:                          $ac_cv_libfdata
    libfvalue support:                         $ac_cv_libfvalue
-   DEFLATE compression support:               $ac_cv_zlib
+   DEFLATE compression support:               $ac_cv_uncompress
    libcsystem support:                        $ac_cv_libcsystem
    FUSE support:                              $ac_cv_libfuse
 

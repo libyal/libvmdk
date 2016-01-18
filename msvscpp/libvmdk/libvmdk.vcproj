@@ -182,6 +182,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libvmdk\libvmdk_deflate.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libvmdk\libvmdk_descriptor_file.c"
 				>
 			</File>
@@ -253,6 +257,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libvmdk\libvmdk_definitions.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_deflate.h"
 				>
 			</File>
 			<File

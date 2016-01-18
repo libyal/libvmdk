@@ -20,14 +20,13 @@
  */
 
 #include <common.h>
-#include <memory.h>
 #include <types.h>
 
 #include "libvmdk_debug.h"
 #include "libvmdk_definitions.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
-#include "libvmdk_libcstring.h"
+#include "libvmdk_libcnotify.h"
 
 #if defined( HAVE_DEBUG_OUTPUT )
 

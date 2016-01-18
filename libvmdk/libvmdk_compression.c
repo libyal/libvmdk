@@ -32,6 +32,7 @@
 
 #include "libvmdk_compression.h"
 #include "libvmdk_definitions.h"
+#include "libvmdk_deflate.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcnotify.h"
 
@@ -49,7 +50,7 @@ int libvmdk_decompress_data(
 	static char *function              = "libvmdk_decompress_data";
 	int result                         = 0;
 
-#if defined( HAVE_ZLIB ) || defined( ZLIB_DLL )
+#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_UNCOMPRESS ) ) || defined( ZLIB_DLL )
 	uLongf zlib_uncompressed_data_size = 0;
 #endif
 
@@ -99,7 +100,7 @@ int libvmdk_decompress_data(
 	}
 	if( compression_method == LIBVMDK_COMPRESSION_METHOD_DEFLATE )
 	{
-#if defined( HAVE_ZLIB ) || defined( ZLIB_DLL )
+#if ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_UNCOMPRESS ) ) || defined( ZLIB_DLL )
 		if( compressed_data_size > (size_t) ULONG_MAX )
 		{
 			libcerror_error_set(
@@ -194,15 +195,25 @@ int libvmdk_decompress_data(
 			result = -1;
 		}
 #else
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: missing support for deflate compression.",
-		 function );
+		result = libvmdk_deflate_decompress(
+		          compressed_data,
+		          compressed_data_size,
+		          uncompressed_data,
+		          uncompressed_data_size,
+		          error );
 
-		return( -1 );
-#endif /* defined( HAVE_ZLIB ) || defined( ZLIB_DLL ) */
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ENCRYPTION,
+			 LIBCERROR_ENCRYPTION_ERROR_GENERIC,
+			 "%s: unable to decompress deflate compressed data.",
+			 function );
+
+			return( -1 );
+		}
+#endif /* ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_UNCOMPRESS ) ) || defined( ZLIB_DLL ) */
 	}
 	else
 	{

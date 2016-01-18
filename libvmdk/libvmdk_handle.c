@@ -43,6 +43,7 @@
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
 #include "libvmdk_libuna.h"
+#include "libvmdk_metadata.h"
 
 /* Creates a handle
  * Make sure the value handle is referencing, is set to NULL

@@ -25,6 +25,7 @@ libvmdk_la_SOURCES = \
 	libvmdk.c \
 	libvmdk_compression.c libvmdk_compression.h \
 	libvmdk_debug.c libvmdk_debug.h \
+	libvmdk_deflate.c libvmdk_deflate.h \
 	libvmdk_definitions.h \
 	libvmdk_descriptor_file.c libvmdk_descriptor_file.h \
 	libvmdk_error.c libvmdk_error.h \

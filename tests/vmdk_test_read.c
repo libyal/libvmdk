@@ -721,7 +721,7 @@ int vmdk_test_read_from_handle_multi_thread(
 
 		expected_offset = (off64_t) number_of_iterations * VMDK_TEST_READ_BUFFER_SIZE;
 
-		if( expected_offset > media_size )
+		if( (size64_t) expected_offset > media_size )
 		{
 			expected_offset = media_size;
 
