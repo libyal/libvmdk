@@ -1015,6 +1015,7 @@ int libvmdk_deflate_decompress(
 	uint8_t compression_method            = 0;
 	uint8_t compression_window_bits       = 0;
 	uint8_t last_block_flag               = 0;
+	uint8_t skip_bits                     = 0;
 
 	if( compressed_data == NULL )
 	{
@@ -1193,20 +1194,27 @@ int libvmdk_deflate_decompress(
 		switch( block_type )
 		{
 			case LIBVMDK_DEFLATE_BLOCK_TYPE_UNCOMPRESSED:
-				if( libvmdk_deflate_bit_stream_get_value(
-				     &bit_stream,
-				     5,
-				     &value_32bit,
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-					 "%s: unable to retrieve value from bit stream.",
-					 function );
+				/* Ignore the bits in the buffer upto the next byte
+				 */
+				skip_bits = bit_stream.bit_buffer_size & 0x07;
 
-					return( -1 );
+				if( skip_bits > 0 )
+				{
+					if( libvmdk_deflate_bit_stream_get_value(
+					     &bit_stream,
+					     skip_bits,
+					     &value_32bit,
+					     error ) != 1 )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+						 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+						 "%s: unable to retrieve value from bit stream.",
+						 function );
+
+						return( -1 );
+					}
 				}
 				if( libvmdk_deflate_bit_stream_get_value(
 				     &bit_stream,
@@ -1223,7 +1231,8 @@ int libvmdk_deflate_decompress(
 
 					return( -1 );
 				}
-				block_size_copy ^= 0x0000ffffUL;
+				block_size_copy = ( block_size >> 16 ) ^ 0x0000ffffUL;
+				block_size     &= 0x0000ffffUL;
 
 				if( block_size != block_size_copy )
 				{
@@ -1237,6 +1246,10 @@ int libvmdk_deflate_decompress(
 					 block_size_copy );
 
 					return( -1 );
+				}
+				if( block_size == 0 )
+				{
+					break;
 				}
 				if( (size_t) block_size > ( bit_stream.byte_stream_size - bit_stream.byte_stream_offset ) )
 				{
