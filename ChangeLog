@@ -1,4 +1,6 @@
 TODO
+* fallback inflate implementation
+  - add addler32 support
 * vmdkmount empty array on close not on free
 * add thread-safety in
   - extent_descriptor API functions?
@@ -67,6 +69,9 @@ Tests:
   - cowd sparse split
   - compressed (done)
   - (compressed) with parent (done)
+
+20160119
+* worked on fallback inflate implementation
 
 20160118
 * worked on fallback inflate implementation
