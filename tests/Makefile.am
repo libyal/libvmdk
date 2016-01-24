@@ -12,10 +12,11 @@ AM_CPPFLAGS = \
 	@LIBCFILE_CPPFLAGS@ \
 	@LIBCPATH_CPPFLAGS@ \
 	@LIBBFIO_CPPFLAGS@ \
+	@LIBCSYSTEM_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBVMDK_DLL_IMPORT@
 
-if HAVE_PYTHON
+if HAVE_PYTHON_TESTS
 TESTS_PYVMDK  = \
 	test_pyvmdk_open_close.sh \
 	test_pyvmdk_seek.sh
@@ -50,12 +51,14 @@ check_PROGRAMS = \
 vmdk_test_open_close_SOURCES = \
 	vmdk_test_libcerror.h \
 	vmdk_test_libcstring.h \
+	vmdk_test_libcsystem.h \
 	vmdk_test_libcthreads.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_open_close.c \
 	vmdk_test_unused.h
 
 vmdk_test_open_close_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
 	../libvmdk/libvmdk.la \
 	@LIBCTHREADS_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
@@ -65,12 +68,14 @@ vmdk_test_open_close_LDADD = \
 vmdk_test_read_SOURCES = \
 	vmdk_test_libcerror.h \
 	vmdk_test_libcstring.h \
+	vmdk_test_libcsystem.h \
 	vmdk_test_libcthreads.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_read.c \
 	vmdk_test_unused.h
 
 vmdk_test_read_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
 	../libvmdk/libvmdk.la \
 	@LIBCTHREADS_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
@@ -80,12 +85,14 @@ vmdk_test_read_LDADD = \
 vmdk_test_seek_SOURCES = \
 	vmdk_test_libcerror.h \
 	vmdk_test_libcstring.h \
+	vmdk_test_libcsystem.h \
 	vmdk_test_libcthreads.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_seek.c \
 	vmdk_test_unused.h
 
 vmdk_test_seek_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
 	../libvmdk/libvmdk.la \
 	@LIBCTHREADS_LIBADD@ \
 	@LIBCERROR_LIBADD@ \

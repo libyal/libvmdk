@@ -29,6 +29,7 @@
 
 #include "vmdk_test_libcerror.h"
 #include "vmdk_test_libcstring.h"
+#include "vmdk_test_libcsystem.h"
 #include "vmdk_test_libvmdk.h"
 #include "vmdk_test_unused.h"
 
@@ -106,11 +107,11 @@ int vmdk_test_seek_offset(
 	{
 		if( result != 1 )
 		{
-			libvmdk_error_backtrace_fprint(
+			libcerror_error_backtrace_fprint(
 			 error,
 			 stderr );
 		}
-		libvmdk_error_free(
+		libcerror_error_free(
 		 &error );
 	}
 	return( result );
@@ -418,15 +419,16 @@ int vmdk_test_seek(
 	return( result );
 }
 
-/* Tests seeking in a file
+/* Tests seeking in a handle
  * Returns 1 if successful, 0 if not or -1 on error
  */
-int vmdk_test_seek_file(
+int vmdk_test_seek_handle(
      libcstring_system_character_t *source,
      libcerror_error_t **error )
 {
 	libvmdk_handle_t *handle = NULL;
 	size64_t media_size      = 0;
+	size_t string_length     = 0;
 	int result               = 0;
 
 	if( libvmdk_handle_initialize(
@@ -527,14 +529,15 @@ on_error:
 	return( -1 );
 }
 
-/* Tests seeking in a file without opening it
+/* Tests seeking in a handle without opening it
  * Returns 1 if successful, 0 if not or -1 on error
  */
-int vmdk_test_seek_file_no_open(
+int vmdk_test_seek_handle_no_open(
      libcstring_system_character_t *source VMDK_TEST_ATTRIBUTE_UNUSED,
      libcerror_error_t **error )
 {
 	libvmdk_handle_t *handle = NULL;
+	size_t string_length     = 0;
 	off64_t result_offset    = 0;
 	int result               = 0;
 
@@ -585,11 +588,11 @@ int vmdk_test_seek_file_no_open(
 	{
 		if( result != 1 )
 		{
-			libvmdk_error_backtrace_fprint(
+			libcerror_error_backtrace_fprint(
 			 *error,
 			 stderr );
 		}
-		libvmdk_error_free(
+		libcerror_error_free(
 		 error );
 	}
 	if( libvmdk_handle_free(
@@ -624,9 +627,27 @@ int main( int argc, char * const argv[] )
 {
 	libcerror_error_t *error              = NULL;
 	libcstring_system_character_t *source = NULL;
+	libcstring_system_integer_t option    = 0;
 	int result                            = 0;
 
-	if( argc < 2 )
+	while( ( option = libcsystem_getopt(
+	                   argc,
+	                   argv,
+	                   _LIBCSTRING_SYSTEM_STRING( "" ) ) ) != (libcstring_system_integer_t) -1 )
+	{
+		switch( option )
+		{
+			case (libcstring_system_integer_t) '?':
+			default:
+				fprintf(
+				 stderr,
+				 "Invalid argument: %" PRIs_LIBCSTRING_SYSTEM ".\n",
+				 argv[ optind - 1 ] );
+
+				return( EXIT_FAILURE );
+		}
+	}
+	if( optind == argc )
 	{
 		fprintf(
 		 stderr,
@@ -634,7 +655,7 @@ int main( int argc, char * const argv[] )
 
 		return( EXIT_FAILURE );
 	}
-	source = argv[ 1 ];
+	source = argv[ optind ];
 
 #if defined( HAVE_DEBUG_OUTPUT ) && defined( VMDK_TEST_SEEK_VERBOSE )
 	libvmdk_notify_set_verbose(
@@ -643,7 +664,7 @@ int main( int argc, char * const argv[] )
 	 stderr,
 	 NULL );
 #endif
-	result = vmdk_test_seek_file(
+	result = vmdk_test_seek_handle(
 	          source,
 	          &error );
 
@@ -651,11 +672,11 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to seek in file.\n" );
+		 "Unable to seek in handle.\n" );
 
 		goto on_error;
 	}
-	result = vmdk_test_seek_file_no_open(
+	result = vmdk_test_seek_handle_no_open(
 	          source,
 	          &error );
 
@@ -663,7 +684,7 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to seek in file without open.\n" );
+		 "Unable to seek in handle without open.\n" );
 
 		goto on_error;
 	}
@@ -672,10 +693,10 @@ int main( int argc, char * const argv[] )
 on_error:
 	if( error != NULL )
 	{
-		libvmdk_error_backtrace_fprint(
+		libcerror_error_backtrace_fprint(
 		 error,
 		 stderr );
-		libvmdk_error_free(
+		libcerror_error_free(
 		 &error );
 	}
 	return( EXIT_FAILURE );

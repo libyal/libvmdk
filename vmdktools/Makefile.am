@@ -25,6 +25,7 @@ bin_PROGRAMS = \
 	vmdkmount
 
 vmdkinfo_SOURCES = \
+	byte_size_string.c byte_size_string.h \
 	info_handle.c info_handle.h \
 	vmdkinfo.c \
 	vmdkoutput.c vmdkoutput.h \

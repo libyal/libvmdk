@@ -120,6 +120,13 @@ int libvmdk_deflate_bit_stream_get_huffman_encoded_codes_array(
      uint32_t number_of_codes,
      libcerror_error_t **error );
 
+int libvmdk_deflate_calculate_adler32(
+     uint32_t *checksum_value,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     libcerror_error_t **error );
+
 int libvmdk_deflate_decompress(
      const uint8_t *compressed_data,
      size_t compressed_data_size,

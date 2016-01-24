@@ -29,6 +29,7 @@
 
 #include "vmdk_test_libcerror.h"
 #include "vmdk_test_libcstring.h"
+#include "vmdk_test_libcsystem.h"
 #include "vmdk_test_libcthreads.h"
 #include "vmdk_test_libvmdk.h"
 #include "vmdk_test_unused.h"
@@ -49,9 +50,9 @@ int vmdk_test_seek_offset(
      int input_whence,
      off64_t expected_offset )
 {
-	libvmdk_error_t *error = NULL;
-	off64_t result_offset  = 0;
-	int result             = 0;
+	libcerror_error_t *error = NULL;
+	off64_t result_offset    = 0;
+	int result               = 0;
 
 	if( handle == NULL )
 	{
@@ -78,11 +79,11 @@ int vmdk_test_seek_offset(
 	{
 		if( result != 1 )
 		{
-			libvmdk_error_backtrace_fprint(
+			libcerror_error_backtrace_fprint(
 			 error,
 			 stderr );
 		}
-		libvmdk_error_free(
+		libcerror_error_free(
 		 &error );
 	}
 	return( result );
@@ -98,12 +99,12 @@ int vmdk_test_read_buffer(
 {
 	uint8_t buffer[ VMDK_TEST_READ_BUFFER_SIZE ];
 
-	libvmdk_error_t *error  = NULL;
-	size64_t remaining_size = 0;
-	size64_t result_size    = 0;
-	size_t read_size        = 0;
-	ssize_t read_count      = 0;
-	int result              = 0;
+	libcerror_error_t *error = NULL;
+	size64_t remaining_size  = 0;
+	size64_t result_size     = 0;
+	size_t read_size         = 0;
+	ssize_t read_count       = 0;
+	int result               = 0;
 
 	if( handle == NULL )
 	{
@@ -152,11 +153,11 @@ int vmdk_test_read_buffer(
 	{
 		if( result != 1 )
 		{
-			libvmdk_error_backtrace_fprint(
+			libcerror_error_backtrace_fprint(
 			 error,
 			 stderr );
 		}
-		libvmdk_error_free(
+		libcerror_error_free(
 		 &error );
 	}
 	return( result );
@@ -174,13 +175,13 @@ int vmdk_test_read_buffer_at_offset(
 {
 	uint8_t buffer[ VMDK_TEST_READ_BUFFER_SIZE ];
 
-	libvmdk_error_t *error  = NULL;
-	off64_t result_offset   = 0;
-	size64_t remaining_size = 0;
-	size64_t result_size    = 0;
-	size_t read_size        = 0;
-	ssize_t read_count      = 0;
-	int result              = 0;
+	libcerror_error_t *error = NULL;
+	off64_t result_offset    = 0;
+	size64_t remaining_size  = 0;
+	size64_t result_size     = 0;
+	size_t read_size         = 0;
+	ssize_t read_count       = 0;
+	int result               = 0;
 
 	if( handle == NULL )
 	{
@@ -267,11 +268,11 @@ int vmdk_test_read_buffer_at_offset(
 	{
 		if( result != 1 )
 		{
-			libvmdk_error_backtrace_fprint(
+			libcerror_error_backtrace_fprint(
 			 error,
 			 stderr );
 		}
-		libvmdk_error_free(
+		libcerror_error_free(
 		 &error );
 	}
 	return( result );
@@ -859,20 +860,39 @@ int wmain( int argc, wchar_t * const argv[] )
 int main( int argc, char * const argv[] )
 #endif
 {
-	libvmdk_error_t *error                = NULL;
+	libcerror_error_t *error              = NULL;
 	libvmdk_handle_t *handle              = NULL;
 	libcstring_system_character_t *source = NULL;
+	libcstring_system_integer_t option    = 0;
 	size64_t media_size                   = 0;
+	size_t string_length                  = 0;
 
-	if( argc < 2 )
+	while( ( option = libcsystem_getopt(
+	                   argc,
+	                   argv,
+	                   _LIBCSTRING_SYSTEM_STRING( "" ) ) ) != (libcstring_system_integer_t) -1 )
+	{
+		switch( option )
+		{
+			case (libcstring_system_integer_t) '?':
+			default:
+				fprintf(
+				 stderr,
+				 "Invalid argument: %" PRIs_LIBCSTRING_SYSTEM ".\n",
+				 argv[ optind - 1 ] );
+
+				return( EXIT_FAILURE );
+		}
+	}
+	if( optind == argc )
 	{
 		fprintf(
 		 stderr,
-		 "Missing filename.\n" );
+		 "Missing source file or device.\n" );
 
 		return( EXIT_FAILURE );
 	}
-	source = argv[ 1 ];
+	source = argv[ optind ];
 
 #if defined( HAVE_DEBUG_OUTPUT ) && defined( VMDK_TEST_READ_VERBOSE )
 	libvmdk_notify_set_verbose(
@@ -989,10 +1009,10 @@ int main( int argc, char * const argv[] )
 on_error:
 	if( error != NULL )
 	{
-		libvmdk_error_backtrace_fprint(
+		libcerror_error_backtrace_fprint(
 		 error,
 		 stderr );
-		libvmdk_error_free(
+		libcerror_error_free(
 		 &error );
 	}
 	if( handle != NULL )

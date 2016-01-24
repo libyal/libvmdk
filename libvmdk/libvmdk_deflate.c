@@ -986,6 +986,254 @@ int libvmdk_deflate_decode_huffman(
 	return( 1 );
 }
 
+/* Calculates the little-endian Adler-32 of a buffer
+ * It uses the initial value to calculate a new Adler-32
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_deflate_calculate_adler32(
+     uint32_t *checksum_value,
+     const uint8_t *buffer,
+     size_t size,
+     uint32_t initial_value,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_deflate_calculate_adler32";
+	size_t buffer_offset  = 0;
+	uint32_t lower_word   = 0;
+	uint32_t upper_word   = 0;
+	uint32_t value_32bit  = 0;
+	int block_index       = 0;
+
+	if( checksum_value == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid checksum value.",
+		 function );
+
+		return( -1 );
+	}
+	if( buffer == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid buffer.",
+		 function );
+
+		return( -1 );
+	}
+	if( size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	lower_word = initial_value & 0xffff;
+	upper_word = ( initial_value >> 16 ) & 0xffff;
+
+	while( size >= 0x15b0 )
+	{
+		/* The modulo calculation is needed per 5552 (0x15b0) bytes
+		 * 5552 / 16 = 347
+		 */
+		for( block_index = 0;
+		     block_index < 347;
+		     block_index++ )
+		{
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+		}
+		/* Optimized equivalent of:
+		 * lower_word %= 0xfff1
+		 */
+		value_32bit = lower_word >> 16;
+		lower_word &= 0x0000ffffUL;
+		lower_word += ( value_32bit << 4 ) - value_32bit;
+
+		if( lower_word > 65521 )
+		{
+			value_32bit = lower_word >> 16;
+			lower_word &= 0x0000ffffUL;
+			lower_word += ( value_32bit << 4 ) - value_32bit;
+		}
+		if( lower_word >= 65521 )
+		{
+			lower_word -= 65521;
+		}
+		/* Optimized equivalent of:
+		 * upper_word %= 0xfff1
+		 */
+		value_32bit = upper_word >> 16;
+		upper_word &= 0x0000ffffUL;
+		upper_word += ( value_32bit << 4 ) - value_32bit;
+
+		if( upper_word > 65521 )
+		{
+			value_32bit = upper_word >> 16;
+			upper_word &= 0x0000ffffUL;
+			upper_word += ( value_32bit << 4 ) - value_32bit;
+		}
+		if( upper_word >= 65521 )
+		{
+			upper_word -= 65521;
+		}
+		size -= 0x15b0;
+	}
+	if( size > 0 )
+	{
+		while( size > 16 )
+		{
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			size -= 16;
+		}
+		while( size > 0 )
+		{
+			lower_word += buffer[ buffer_offset++ ];
+			upper_word += lower_word;
+
+			size--;
+		}
+		/* Optimized equivalent of:
+		 * lower_word %= 0xfff1
+		 */
+		value_32bit = lower_word >> 16;
+		lower_word &= 0x0000ffffUL;
+		lower_word += ( value_32bit << 4 ) - value_32bit;
+
+		if( lower_word > 65521 )
+		{
+			value_32bit = lower_word >> 16;
+			lower_word &= 0x0000ffffUL;
+			lower_word += ( value_32bit << 4 ) - value_32bit;
+		}
+		if( lower_word >= 65521 )
+		{
+			lower_word -= 65521;
+		}
+		/* Optimized equivalent of:
+		 * upper_word %= 0xfff1
+		 */
+		value_32bit = upper_word >> 16;
+		upper_word &= 0x0000ffffUL;
+		upper_word += ( value_32bit << 4 ) - value_32bit;
+
+		if( upper_word > 65521 )
+		{
+			value_32bit = upper_word >> 16;
+			upper_word &= 0x0000ffffUL;
+			upper_word += ( value_32bit << 4 ) - value_32bit;
+		}
+		if( upper_word >= 65521 )
+		{
+			upper_word -= 65521;
+		}
+	}
+	*checksum_value = ( upper_word << 16 ) | lower_word;
+
+	return( 1 );
+}
+
 /* Decompresses data using zlib compression
  * Returns 1 on success or -1 on error
  */
@@ -1008,7 +1256,9 @@ int libvmdk_deflate_decompress(
 	uint32_t block_size                   = 0;
 	uint32_t block_size_copy              = 0;
 	uint32_t compression_window_size      = 0;
+	uint32_t calculated_checksum          = 0;
 	uint32_t preset_dictionary_identifier = 0;
+	uint32_t stored_checksum              = 0;
 	uint32_t value_32bit                  = 0;
 	uint8_t block_type                    = 0;
 	uint8_t compression_information       = 0;
@@ -1105,10 +1355,8 @@ int libvmdk_deflate_decompress(
 		 preset_dictionary_identifier );
 
 		compressed_data_offset += 4;
-		compressed_data_size   -= 4;
 	}
 	compressed_data_offset += 2;
-	compressed_data_size   -= 2;
 
 	if( compression_method != 8 )
 	{
@@ -1363,6 +1611,42 @@ int libvmdk_deflate_decompress(
 		if( last_block_flag != 0 )
 		{
 			break;
+		}
+	}
+	if( ( bit_stream.byte_stream_size - bit_stream.byte_stream_offset ) >= 4 )
+	{
+		byte_stream_copy_to_uint32_big_endian(
+		 &( bit_stream.byte_stream[ bit_stream.byte_stream_offset ] ),
+		 stored_checksum );
+
+		if( libvmdk_deflate_calculate_adler32(
+		     &calculated_checksum,
+		     uncompressed_data,
+		     uncompressed_data_offset,
+		     1,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to calculate checksum.",
+			 function );
+
+			return( -1 );
+		}
+		if( stored_checksum != calculated_checksum )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_INPUT,
+			 LIBCERROR_INPUT_ERROR_CHECKSUM_MISMATCH,
+			 "%s: checksum does not match (stored: 0x%08" PRIx32 ", calculated: 0x%08" PRIx32 ").",
+			 function,
+			 stored_checksum,
+			 calculated_checksum );
+
+			return( -1 );
 		}
 	}
 	*uncompressed_data_size = uncompressed_data_offset;

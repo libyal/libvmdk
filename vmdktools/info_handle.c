@@ -24,6 +24,7 @@
 #include <memory.h>
 #include <types.h>
 
+#include "byte_size_string.h"
 #include "info_handle.h"
 #include "vmdktools_libcerror.h"
 #include "vmdktools_libcnotify.h"
@@ -330,6 +331,8 @@ int info_handle_file_fprint(
      info_handle_t *info_handle,
      libcerror_error_t **error )
 {
+	libcstring_system_character_t byte_size_string[ 16 ];
+
 	libcstring_system_character_t *filename        = NULL;
 	libvmdk_extent_descriptor_t *extent_descriptor = NULL;
 	static char *function                          = "info_handle_file_fprint";
@@ -499,11 +502,28 @@ int info_handle_file_fprint(
 
 		goto on_error;
 	}
-	fprintf(
-	 info_handle->notify_stream,
-	 "\tMedia size:\t\t\t%" PRIu64 " bytes\n",
-	 media_size );
+	result = byte_size_string_create(
+	          byte_size_string,
+	          16,
+	          media_size,
+	          BYTE_SIZE_STRING_UNIT_MEBIBYTE,
+	          NULL );
 
+	if( result == 1 )
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "\tMedia size:\t\t\t%" PRIs_LIBCSTRING_SYSTEM " (%" PRIu64 " bytes)\n",
+		 byte_size_string,
+		 media_size );
+	}
+	else
+	{
+		fprintf(
+		 info_handle->notify_stream,
+		 "\tMedia size:\t\t\t%" PRIu64 " bytes\n",
+		 media_size );
+	}
 	if( libvmdk_handle_get_content_identifier(
 	     info_handle->input_handle,
 	     &content_identifier,
@@ -880,11 +900,28 @@ int info_handle_file_fprint(
 		 "\tStart offset:\t\t\t%" PRIi64 "\n",
 		 extent_offset );
 
-		fprintf(
-		 info_handle->notify_stream,
-		 "\tSize:\t\t\t\t%" PRIu64 " bytes\n",
-		 extent_size );
+		result = byte_size_string_create(
+		          byte_size_string,
+		          16,
+		          extent_size,
+		          BYTE_SIZE_STRING_UNIT_MEBIBYTE,
+		          NULL );
 
+		if( result == 1 )
+		{
+			fprintf(
+			 info_handle->notify_stream,
+			 "\tSize:\t\t\t\t%" PRIs_LIBCSTRING_SYSTEM " (%" PRIu64 " bytes)\n",
+			 byte_size_string,
+			 extent_size );
+		}
+		else
+		{
+			fprintf(
+			 info_handle->notify_stream,
+			 "\tSize:\t\t\t\t%" PRIu64 " bytes\n",
+			 extent_size );
+		}
 		if( libvmdk_extent_descriptor_free(
 		     &extent_descriptor,
 		     error ) != 1 )

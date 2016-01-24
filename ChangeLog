@@ -58,7 +58,6 @@ Tests:
 * seek
   - add parent support
 * add integrity tests
-* add pyvmdk
 
 * Test images
   - vmdk flat
@@ -69,6 +68,10 @@ Tests:
   - cowd sparse split
   - compressed (done)
   - (compressed) with parent (done)
+
+20160124
+* worked on fallback inflate implementation
+* worked on tests
 
 20160119
 * worked on fallback inflate implementation
