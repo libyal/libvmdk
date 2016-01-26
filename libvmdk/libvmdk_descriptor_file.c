@@ -579,7 +579,7 @@ int libvmdk_descriptor_file_read_signature(
 			if( line_string_segment[ line_string_segment_index ] == '#' )
 			{
 				if( ( line_string_segment_size == 22 )
-				 && ( libcstring_narrow_string_compare(
+				 && ( libcstring_narrow_string_compare_no_case(
 				       &( line_string_segment[ line_string_segment_index ] ),
 				       vmdk_descriptor_file_signature,
 				       21 ) == 0 ) )
@@ -743,7 +743,7 @@ int libvmdk_descriptor_file_read_header(
 		{
 			/* Check for the end of the header
 			 */
-			if( libcstring_narrow_string_compare(
+			if( libcstring_narrow_string_compare_no_case(
 			     &( line_string_segment[ line_string_segment_index ] ),
 			     vmdk_descriptor_file_extent_section_signature,
 			     20 ) == 0 )
@@ -1455,7 +1455,7 @@ int libvmdk_descriptor_file_read_extents(
 		line_string_segment_index++;
 	}
 	if( ( ( line_string_segment_size - line_string_segment_index ) != 21 )
-	 || ( libcstring_narrow_string_compare(
+	 || ( libcstring_narrow_string_compare_no_case(
 	       &( line_string_segment[ line_string_segment_index ] ),
 	       vmdk_descriptor_file_extent_section_signature,
 	       20 ) != 0 ) )
@@ -1566,7 +1566,7 @@ int libvmdk_descriptor_file_read_extents(
 		{
 			/* Check for the end of the section
 			 */
-			if( libcstring_narrow_string_compare(
+			if( libcstring_narrow_string_compare_no_case(
 			     &( line_string_segment[ line_string_segment_index ] ),
 			     vmdk_descriptor_file_disk_database_section_signature,
 			     20 ) == 0 )
@@ -1576,7 +1576,7 @@ int libvmdk_descriptor_file_read_extents(
 		}
 		else if( ( line_string_segment_size - line_string_segment_index ) == 23 )
 		{
-			if( libcstring_narrow_string_compare(
+			if( libcstring_narrow_string_compare_no_case(
 			     &( line_string_segment[ line_string_segment_index ] ),
 			     vmdk_descriptor_file_change_tracking_file_signature,
 			     22 ) == 0 )
@@ -1785,7 +1785,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		line_string_segment_index++;
 	}
 	if( ( ( line_string_segment_size - line_string_segment_index ) != 23 )
-	 || ( libcstring_narrow_string_compare(
+	 || ( libcstring_narrow_string_compare_no_case(
 	       &( line_string_segment[ line_string_segment_index ] ),
 	       vmdk_descriptor_file_change_tracking_file_signature,
 	       22 ) != 0 ) )
@@ -1873,7 +1873,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		{
 			/* Check for the end of the section
 			 */
-			if( libcstring_narrow_string_compare(
+			if( libcstring_narrow_string_compare_no_case(
 			     &( line_string_segment[ line_string_segment_index ] ),
 			     vmdk_descriptor_file_disk_database_section_signature,
 			     20 ) == 0 )
@@ -2148,7 +2148,7 @@ int libvmdk_descriptor_file_read_disk_database(
 		line_string_segment_index++;
 	}
 	if( ( ( line_string_segment_size - line_string_segment_index ) != 21 )
-	 || ( libcstring_narrow_string_compare(
+	 || ( libcstring_narrow_string_compare_no_case(
 	       &( line_string_segment[ line_string_segment_index ] ),
 	       vmdk_descriptor_file_disk_database_section_signature,
 	       20 ) != 0 ) )
