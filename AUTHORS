@@ -5,3 +5,5 @@ Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
 Additional credits go to:
 * Tal Saiag, for providing multiple patches including improvements
   to the Python bindings.
+* Joel Uckelman, for providing patches to make parsing of the descriptor
+  file case-insensitive.
