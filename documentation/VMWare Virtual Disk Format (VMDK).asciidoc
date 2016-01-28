@@ -28,7 +28,7 @@ able to process this file type.
 [preface]
 == License
 ....
-Copyright (C) 2009-2014, Joachim Metz <joachim.metz@gmail.com>.
+Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>.
 Permission is granted to copy, distribute and/or modify this document under the 
 terms of the GNU Free Documentation License, Version 1.3 or any later version 
 published by the Free Software Foundation; with no Invariant Sections, no 
@@ -52,6 +52,7 @@ in the section entitled "GNU Free Documentation License".
 | 0.0.9 | J.B. Metz | April 2014 | Additional information regarding corruption scenarios.
 | 0.0.10 | J.B. Metz | July 2014 | Additional information regarding descriptor file and change track file.
 | 0.0.11 | J.B. Metz | November 2014 | Switched to asccidoc format.
+| 0.0.12 | J.B. Metz | January 2016 | Additional information regarding descriptor file being case-insensitive with thanks to J. Uckelman.
 |===
 
 :numbered:
@@ -122,7 +123,8 @@ delta image can chain to another delta image.
 [yellow-background]*Name <name>-delta.vmdk*
 
 == [[descriptor_file]]The descriptor file
-The descriptor file is a text based file that contains the following information:
+The descriptor file is a case-insensitive text based file that contains the 
+following information:
 
 * comment and empty lines (optional)
 * the header
@@ -366,6 +368,11 @@ The disk database consists of the following values:
 | ddb.thinProvisioned | [yellow-background]*TODO* +
 [yellow-background]*"1"*
 |===
+
+Virtual box is known to use a different case for the disk database e.g.
+....
+# The disk Data Base
+....
 
 ==== Virtual hardware version
 
