@@ -1,13 +1,16 @@
 #!/bin/bash
 # Library open close testing script
 #
-# Version: 20160124
+# Version: 20160126
 
 EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-TEST_PREFIX="vmdk";
+TEST_PREFIX=`pwd`;
+TEST_PREFIX=`dirname ${TEST_PREFIX}`;
+TEST_PREFIX=`basename ${TEST_PREFIX} | sed 's/^lib//'`;
+
 OPTION_SETS="";
 INPUT_GLOB="*";
 

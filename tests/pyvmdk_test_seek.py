@@ -20,6 +20,7 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
 import argparse
 import os
 import sys
@@ -41,29 +42,32 @@ def get_whence_string(whence):
 
 
 def pyvmdk_test_seek_offset(
-    vmdk_handle, input_offset, input_whence, output_offset):
+    vmdk_handle, input_offset, input_whence, expected_offset):
 
   print("Testing seek of offset: {0:d} and whence: {1:s}\t".format(
-      input_offset, get_whence_string(input_whence)))
+      input_offset, get_whence_string(input_whence)), end="")
 
+  error_string = ""
   result = True
   try:
     vmdk_handle.seek(input_offset, input_whence)
 
-    if result:
-      result_offset = vmdk_handle.get_offset()
-      if output_offset != result_offset:
-        result = False
+    result_offset = vmdk_handle.get_offset()
+    if expected_offset != result_offset:
+      result = False
 
   except Exception as exception:
-    print(str(exception))
-    if output_offset != -1:
+    error_string = str(exception)
+    if expected_offset != -1:
       result = False
 
   if not result:
     print("(FAIL)")
   else:
     print("(PASS)")
+
+  if error_string:
+    print(error_string)
   return result
 
 
@@ -123,8 +127,7 @@ def pyvmdk_test_seek(vmdk_handle):
     # Test: SEEK_CUR offset: <-2 * (media_size / 3)>
     # Expected result: 0
     seek_offset, _ = divmod(media_size, 3)
-    if not pyvmdk_test_seek_offset(
-        vmdk_handle, -2 * seek_offset, os.SEEK_CUR, 0):
+    if not pyvmdk_test_seek_offset(vmdk_handle, -2 * seek_offset, os.SEEK_CUR, 0):
       return False
 
   else:
@@ -226,21 +229,25 @@ def pyvmdk_test_seek_file_object(filename):
 
 
 def pyvmdk_test_seek_file_no_open(filename):
-  print("Testing seek of offset without open:\n")
+  print("Testing seek of offset without open:\t", end="")
 
   vmdk_handle = pyvmdk.handle()
 
+  error_string = ""
   result = False
   try:
     vmdk_handle.seek(0, os.SEEK_SET)
   except Exception as exception:
-    print(str(exception))
+    error_string = str(exception)
     result = True
 
   if not result:
     print("(FAIL)")
   else:
     print("(PASS)")
+
+  if error_string:
+    print(error_string)
   return result
 
 
