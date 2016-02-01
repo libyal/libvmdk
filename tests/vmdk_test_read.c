@@ -864,7 +864,6 @@ int main( int argc, char * const argv[] )
 	libcstring_system_character_t *source = NULL;
 	libcstring_system_integer_t option    = 0;
 	size64_t media_size                   = 0;
-	size_t string_length                  = 0;
 
 	while( ( option = libcsystem_getopt(
 	                   argc,

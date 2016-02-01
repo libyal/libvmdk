@@ -20,6 +20,7 @@
 # along with this software.  If not, see <http://www.gnu.org/licenses/>.
 #
 
+from __future__ import print_function
 import argparse
 import sys
 
@@ -43,8 +44,9 @@ def pyvmdk_test_single_open_close_file(filename, mode):
   else:
     filename_string = filename
 
-  print("Testing single open close of: {0:s} with access: {1:s}\t".format(
-      filename_string, get_mode_string(mode)))
+  print(
+      "Testing single open close of: {0:s} with access: {1:s}\t".format(
+          filename_string, get_mode_string(mode)), end="")
 
   result = True
   try:
@@ -62,7 +64,7 @@ def pyvmdk_test_single_open_close_file(filename, mode):
       pass
 
     else:
-      print(str(exception))
+      error_string = str(exception)
       result = False
 
   except ValueError as exception:
@@ -71,23 +73,27 @@ def pyvmdk_test_single_open_close_file(filename, mode):
             "pyvmdk_handle_open")
 
     if mode != "w" or str(exception) != expected_message:
-      print(str(exception))
+      error_string = str(exception)
       result = False
 
   except Exception as exception:
-    print(str(exception))
+    error_string = str(exception)
     result = False
 
   if not result:
     print("(FAIL)")
   else:
     print("(PASS)")
+
+  if error_string:
+    print(error_string)
   return result
 
 
 def pyvmdk_test_multi_open_close_file(filename, mode):
-  print("Testing multi open close of: {0:s} with access: {1:s}\t".format(
-      filename, get_mode_string(mode)))
+  print(
+      "Testing multi open close of: {0:s} with access: {1:s}\t".format(
+          filename, get_mode_string(mode)), end="")
 
   result = True
   try:
@@ -99,19 +105,23 @@ def pyvmdk_test_multi_open_close_file(filename, mode):
     vmdk_handle.close()
 
   except Exception as exception:
-    print(str(exception))
+    error_string = str(exception)
     result = False
 
   if not result:
     print("(FAIL)")
   else:
     print("(PASS)")
+
+  if error_string:
+    print(error_string)
   return result
 
 
 def pyvmdk_test_single_open_close_file_object(filename, mode):
-  print(("Testing single open close of file-like object of: {0:s} "
-         "with access: {1:s}\t").format(filename, get_mode_string(mode)))
+  print(
+      ("Testing single open close of file-like object of: {0:s} "
+       "with access: {1:s}\t").format(filename, get_mode_string(mode)), end="")
 
   result = True
   try:
@@ -122,21 +132,25 @@ def pyvmdk_test_single_open_close_file_object(filename, mode):
     vmdk_handle.close()
 
   except Exception as exception:
-    print(str(exception))
+    error_string = str(exception)
     result = False
 
   if not result:
     print("(FAIL)")
   else:
     print("(PASS)")
+
+  if error_string:
+    print(error_string)
   return result
 
 
 def pyvmdk_test_single_open_close_file_object_with_dereference(
     filename, mode):
-  print(("Testing single open close of file-like object with dereference "
-         "of: {0:s} with access: {1:s}\t").format(
-      filename, get_mode_string(mode)))
+  print(
+      ("Testing single open close of file-like object with dereference "
+       "of: {0:s} with access: {1:s}\t").format(
+          filename, get_mode_string(mode)), end="")
 
   result = True
   try:
@@ -148,19 +162,23 @@ def pyvmdk_test_single_open_close_file_object_with_dereference(
     vmdk_handle.close()
 
   except Exception as exception:
-    print(str(exception))
+    error_string = str(exception)
     result = False
 
   if not result:
     print("(FAIL)")
   else:
     print("(PASS)")
+
+  if error_string:
+    print(error_string)
   return result
 
 
 def pyvmdk_test_multi_open_close_file_object(filename, mode):
-  print(("Testing multi open close of file-like object of: {0:s} "
-         "with access: {1:s}\t").format(filename, get_mode_string(mode)))
+  print(
+      ("Testing multi open close of file-like object of: {0:s} "
+       "with access: {1:s}\t").format(filename, get_mode_string(mode)), end="")
 
   result = True
   try:
@@ -173,13 +191,16 @@ def pyvmdk_test_multi_open_close_file_object(filename, mode):
     vmdk_handle.close()
 
   except Exception as exception:
-    print(str(exception))
+    error_string = str(exception)
     result = False
 
   if not result:
     print("(FAIL)")
   else:
     print("(PASS)")
+
+  if error_string:
+    print(error_string)
   return result
 
 

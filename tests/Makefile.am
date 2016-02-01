@@ -17,7 +17,7 @@ AM_CPPFLAGS = \
 	@LIBVMDK_DLL_IMPORT@
 
 if HAVE_PYTHON_TESTS
-TESTS_PYVMDK  = \
+TESTS_PYVMDK = \
 	test_pyvmdk_open_close.sh \
 	test_pyvmdk_seek.sh \
 	test_pyvmdk_read.sh
