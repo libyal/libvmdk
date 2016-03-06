@@ -447,6 +447,150 @@ int libvmdk_handle_open(
 
 		goto on_error;
 	}
+
+  /*
+   * Extent filenames are not robust under file renaming, and
+   * monolithicSparse images are guaranteed to have an embedded descriptor
+   * file. Therefore, we use the image filename instead of the possibly
+   * stale extent filename for single-extent monolithicSparse images.
+   */
+  if ( internal_handle->descriptor_file->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+  {
+    int extent_count = 0;
+    if ( libvmdk_descriptor_file_get_number_of_extents(
+          internal_handle->descriptor_file,
+          &extent_count, error) != 1 )
+    {
+      libcerror_error_set(
+		    error,
+		    LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		    LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		    "%s: unable to retrieve number of extents.",
+		    function );
+
+		  goto on_error;
+    }
+
+    if ( extent_count == 1 )
+    {
+	    libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
+      if ( libvmdk_descriptor_file_get_extent_by_index(
+		        internal_handle->descriptor_file,
+		        0,
+		        &extent_descriptor,
+		        error ) != 1 )
+		  {
+			  libcerror_error_set(
+	  	   error,
+		     LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			   LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			   "%s: unable to retrieve extent: %d from descriptor file.",
+			   function,
+			   0 );
+
+			  goto on_error;
+		  }
+		  if ( extent_descriptor == NULL )
+  		{ 
+	  		libcerror_error_set(
+		  	 error,
+			   LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			   LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+  			 "%s: missing extent descriptor: %d.",
+	  		 function,
+		  	 0 );
+
+			  goto on_error;
+		  }
+
+      // now I have an extent_descriptor ho ho ho
+      if ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+      {
+
+        // need to copy filename into extent_descriptor->filename
+        // and set extent_descriptor->filename_size
+
+        memory_free(
+          extent_descriptor->filename );
+
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+			  result = libuna_utf16_string_size_from_utf8_stream(
+			            (uint8_t *) filename,
+			            filename_length + 1,
+			            &( extent_descriptor->filename_size ),
+			            error );
+#else
+			  result = libuna_utf8_string_size_from_utf8_stream(
+			            (uint8_t *) filename,
+			            filename_length + 1,
+			            &( extent_descriptor->filename_size ),
+			            error );
+#endif
+		    if( result != 1 )
+		    {
+			    libcerror_error_set(
+			    error,
+    		  LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		   	  LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			    "%s: unable to determine extent filename size.",
+			    function );
+
+			    goto on_error;
+		    }
+
+        extent_descriptor->filename = libcstring_system_string_allocate(
+     		                               extent_descriptor->filename_size );
+		    if( extent_descriptor->filename == NULL )
+		    {
+			    libcerror_error_set(
+			      error,
+			      LIBCERROR_ERROR_DOMAIN_MEMORY,
+			      LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			      "%s: unable to create filename.",
+			      function );
+
+			    goto on_error;
+		    }
+
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+			  result = libuna_utf16_string_copy_from_utf8_stream(
+			            (uint16_t *) extent_descriptor->filename,
+			            extent_descriptor->filename_size,
+			            (uint8_t *) filename,
+			            filename_length + 1,
+			            error );
+#else
+			  result = libuna_utf8_string_copy_from_utf8_stream(
+			            (uint8_t *) extent_descriptor->filename,
+			            extent_descriptor->filename_size,
+			            (uint8_t *) filename,
+			            filename_length + 1,
+			            error );
+#endif
+		    if( result != 1 )
+  		  {
+	  		  libcerror_error_set(
+		  	   error,
+  		  	 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+	  		   LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		  	   "%s: unable to copy extent filename.",
+			     function );
+
+			    goto on_error;
+		    }
+#if defined( HAVE_DEBUG_OUTPUT )
+  		  if( libcnotify_verbose != 0 )
+	  	  {
+		  	  libcnotify_printf(
+			    "%s: filename\t\t\t\t: %" PRIs_LIBCSTRING_SYSTEM "\n",
+  			  function,
+	  		  extent_descriptor->filename );
+		    }
+#endif
+      }
+    }
+  }
+
 	basename_end = libcstring_narrow_string_search_character_reverse(
 	                filename,
 	                (int) LIBCPATH_SEPARATOR,
