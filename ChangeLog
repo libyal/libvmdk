@@ -1,6 +1,4 @@
 TODO
-* fallback inflate implementation
-  - add addler32 support
 * vmdkmount empty array on close not on free
 * add thread-safety in
   - extent_descriptor API functions?
@@ -11,10 +9,6 @@ TODO
 
 * make libvmdk_handle_open_extent_data_files_file_io_pool work
 * make libvmdk_handle_open_extent_data_files use libvmdk_handle_open_extent_data_files_file_io_pool
-
-* if there is a single filename in the disk database and the current file is
-  not a descriptor-only file assume the current file is the right one even if
-  the names don't match
 
 * update manuals
   - update vmdkinfo.1

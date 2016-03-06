@@ -159,6 +159,11 @@ int libvmdk_internal_extent_descriptor_free(
 			memory_free(
 			 ( *extent_descriptor )->filename );
 		}
+		if( ( *extent_descriptor )->alternate_filename != NULL )
+		{
+			memory_free(
+			 ( *extent_descriptor )->alternate_filename );
+		}
 		memory_free(
 		 *extent_descriptor );
 

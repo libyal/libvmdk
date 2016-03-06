@@ -317,13 +317,15 @@ int libvmdk_handle_open(
      int access_flags,
      libcerror_error_t **error )
 {
-	libbfio_handle_t *file_io_handle           = NULL;
-	libvmdk_internal_handle_t *internal_handle = NULL;
-	char *basename_end                         = NULL;
-	static char *function                      = "libvmdk_handle_open";
-	size_t basename_length                     = 0;
-	size_t filename_length                     = 0;
-	int result                                 = 1;
+	libbfio_handle_t *file_io_handle                        = NULL;
+	libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
+	libvmdk_internal_handle_t *internal_handle              = NULL;
+	char *basename_end                                      = NULL;
+	static char *function                                   = "libvmdk_handle_open";
+	size_t basename_length                                  = 0;
+	size_t filename_length                                  = 0;
+	int number_of_extents                                   = 0;
+	int result                                              = 1;
 
 	if( handle == NULL )
 	{
@@ -446,6 +448,222 @@ int libvmdk_handle_open(
 		 function );
 
 		goto on_error;
+	}
+	/* Note that extent file names can be renamed hence for a single monolithic sparse image
+	 * the filename instead of the extent data filename in the descriptor file is used.
+	 */
+	if( internal_handle->descriptor_file->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	{
+		if( libvmdk_descriptor_file_get_number_of_extents(
+		     internal_handle->descriptor_file,
+		     &number_of_extents,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve number of extents.",
+			 function );
+
+			goto on_error;
+		}
+		if( number_of_extents == 1 )
+		{
+			if( libvmdk_descriptor_file_get_extent_by_index(
+			     internal_handle->descriptor_file,
+			     0,
+			     &extent_descriptor,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve extent: 0 from descriptor file.",
+				 function );
+
+				goto on_error;
+			}
+			if( extent_descriptor == NULL )
+			{ 
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+				 "%s: missing extent descriptor: 0.",
+				 function );
+
+				goto on_error;
+			}
+			if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+			{
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+				if( libclocale_codepage == 0 )
+				{
+#if SIZEOF_WCHAR_T == 4
+					result = libuna_utf32_string_size_from_utf8(
+						  (libuna_utf8_character_t *) filename,
+					          filename_length + 1,
+						  &( extent_descriptor->alternate_filename_size ),
+						  error );
+#elif SIZEOF_WCHAR_T == 2
+					result = libuna_utf16_string_size_from_utf8(
+						  (libuna_utf8_character_t *) filename,
+					          filename_length + 1,
+						  &( extent_descriptor->alternate_filename_size ),
+						  error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+				}
+				else
+				{
+#if SIZEOF_WCHAR_T == 4
+					result = libuna_utf32_string_size_from_byte_stream(
+						  (uint8_t *) filename,
+					          filename_length + 1,
+						  libclocale_codepage,
+						  &( extent_descriptor->alternate_filename_size ),
+						  error );
+#elif SIZEOF_WCHAR_T == 2
+					result = libuna_utf16_string_size_from_byte_stream(
+						  (uint8_t *) filename,
+					          filename_length + 1,
+						  libclocale_codepage,
+						  &( extent_descriptor->alternate_filename_size ),
+						  error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+				}
+				if( result != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+					 LIBCERROR_CONVERSION_ERROR_GENERIC,
+					 "%s: unable to determine extent filename size.",
+					 function );
+
+					goto on_error;
+				}
+#else
+				extent_descriptor->alternate_filename_size = filename_length + 1;
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+
+				if( ( extent_descriptor->alternate_filename_size > (size_t) SSIZE_MAX )
+				 || ( ( sizeof( libcstring_system_character_t ) * extent_descriptor->alternate_filename_size ) > (size_t) SSIZE_MAX ) )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+					 "%s: invalid file IO handle - name size value exceeds maximum.",
+					 function );
+
+					goto on_error;
+				}
+				extent_descriptor->alternate_filename = libcstring_system_string_allocate(
+				                                         extent_descriptor->alternate_filename_size );
+
+				if( extent_descriptor->alternate_filename == NULL )
+				{
+					libcerror_error_set(
+					error,
+					LIBCERROR_ERROR_DOMAIN_MEMORY,
+					LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+					"%s: unable to create filename.",
+					function );
+
+					goto on_error;
+				}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+				if( libclocale_codepage == 0 )
+				{
+#if SIZEOF_WCHAR_T == 4
+					result = libuna_utf32_string_copy_from_utf8(
+					          (libuna_utf32_character_t *) extent_descriptor->alternate_filename,
+					          extent_descriptor->alternate_filename_size,
+					          (libuna_utf8_character_t *) filename,
+					          filename_length + 1,
+						  error );
+#elif SIZEOF_WCHAR_T == 2
+					result = libuna_utf16_string_copy_from_utf8(
+					          (libuna_utf16_character_t *) extent_descriptor->alternate_filename,
+					          extent_descriptor->alternate_filename_size,
+					          (libuna_utf8_character_t *) filename,
+					          filename_length + 1,
+						  error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+				}
+				else
+				{
+#if SIZEOF_WCHAR_T == 4
+					result = libuna_utf32_string_copy_from_byte_stream(
+					          (libuna_utf32_character_t *) extent_descriptor->alternate_filename,
+					          extent_descriptor->alternate_filename_size,
+					          (uint8_t *) filename,
+					          filename_length + 1,
+						  libclocale_codepage,
+						  error );
+#elif SIZEOF_WCHAR_T == 2
+					result = libuna_utf16_string_copy_from_byte_stream(
+					          (libuna_utf16_character_t *) extent_descriptor->alternate_filename,
+					          extent_descriptor->alternate_filename_size,
+					          (uint8_t *) filename,
+					          filename_length + 1,
+						  libclocale_codepage,
+						  error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+				}
+				if( result != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+					 "%s: unable to copy extent filename.",
+					 function );
+
+					goto on_error;
+				}
+#else
+				if( filename_length > 1 )
+				{
+					if( libcstring_system_string_copy(
+					     extent_descriptor->alternate_filename,
+					     filename,
+					     filename_length ) == NULL )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_MEMORY,
+						 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+						 "%s: unable to copy extent filename.",
+						 function );
+
+						goto on_error;
+					}
+				}
+				extent_descriptor->alternate_filename[ filename_length ] = 0;
+
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+#if defined( HAVE_DEBUG_OUTPUT )
+				if( libcnotify_verbose != 0 )
+				{
+					libcnotify_printf(
+					 "%s: alternate filename\t\t\t: %" PRIs_LIBCSTRING_SYSTEM "\n",
+					 function,
+					 extent_descriptor->alternate_filename );
+				}
+#endif
+			}
+		}
 	}
 	basename_end = libcstring_narrow_string_search_character_reverse(
 	                filename,
@@ -656,6 +874,222 @@ int libvmdk_handle_open_wide(
 		 function );
 
 		goto on_error;
+	}
+	/* Note that extent file names can be renamed hence for a single monolithic sparse image
+	 * the filename instead of the extent data filename in the descriptor file is used.
+	 */
+	if( internal_handle->descriptor_file->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	{
+		if( libvmdk_descriptor_file_get_number_of_extents(
+		     internal_handle->descriptor_file,
+		     &number_of_extents,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve number of extents.",
+			 function );
+
+			goto on_error;
+		}
+		if( number_of_extents == 1 )
+		{
+			if( libvmdk_descriptor_file_get_extent_by_index(
+			     internal_handle->descriptor_file,
+			     0,
+			     &extent_descriptor,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to retrieve extent: 0 from descriptor file.",
+				 function );
+
+				goto on_error;
+			}
+			if( extent_descriptor == NULL )
+			{ 
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+				 "%s: missing extent descriptor: 0.",
+				 function );
+
+				goto on_error;
+			}
+			if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+			{
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+				extent_descriptor->alternate_filename_size = filename_length + 1;
+#else
+				if( libclocale_codepage == 0 )
+				{
+#if SIZEOF_WCHAR_T == 4
+					result = libuna_utf8_string_size_from_utf32(
+						  (libuna_utf32_character_t *) filename,
+						  filename_length + 1,
+						  &( extent_descriptor->alternate_filename_size ),
+						  error );
+#elif SIZEOF_WCHAR_T == 2
+					result = libuna_utf8_string_size_from_utf16(
+						  (libuna_utf16_character_t *) filename,
+						  filename_length + 1,
+						  &( extent_descriptor->alternate_filename_size ),
+						  error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+				}
+				else
+				{
+#if SIZEOF_WCHAR_T == 4
+					result = libuna_byte_stream_size_from_utf32(
+						  (libuna_utf32_character_t *) filename,
+						  filename_length + 1,
+						  libclocale_codepage,
+						  &( extent_descriptor->alternate_filename_size ),
+						  error );
+#elif SIZEOF_WCHAR_T == 2
+					result = libuna_byte_stream_size_from_utf16(
+						  (libuna_utf16_character_t *) filename,
+						  filename_length + 1,
+						  libclocale_codepage,
+						  &( extent_descriptor->alternate_filename_size ),
+						  error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+				}
+				if( result != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+					 LIBCERROR_CONVERSION_ERROR_GENERIC,
+					 "%s: unable to determine extent filename size.",
+					 function );
+
+					goto on_error;
+				}
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+
+				if( ( extent_descriptor->alternate_filename_size > (size_t) SSIZE_MAX )
+				 || ( ( sizeof( libcstring_system_character_t ) * extent_descriptor->alternate_filename_size ) > (size_t) SSIZE_MAX ) )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+					 "%s: invalid file IO handle - name size value exceeds maximum.",
+					 function );
+
+					goto on_error;
+				}
+				extent_descriptor->alternate_filename = libcstring_system_string_allocate(
+				                                         extent_descriptor->alternate_filename_size );
+
+				if( extent_descriptor->alternate_filename == NULL )
+				{
+					libcerror_error_set(
+					error,
+					LIBCERROR_ERROR_DOMAIN_MEMORY,
+					LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+					"%s: unable to create filename.",
+					function );
+
+					goto on_error;
+				}
+#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+				if( filename_length > 1 )
+				{
+					if( libcstring_system_string_copy(
+					     extent_descriptor->alternate_filename,
+					     filename,
+					     filename_length ) == NULL )
+					{
+						libcerror_error_set(
+						 error,
+						 LIBCERROR_ERROR_DOMAIN_MEMORY,
+						 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+						 "%s: unable to copy extent filename.",
+						 function );
+
+						goto on_error;
+					}
+				}
+				extent_descriptor->alternate_filename[ filename_length ] = 0;
+#else
+				if( libclocale_codepage == 0 )
+				{
+#if SIZEOF_WCHAR_T == 4
+					result = libuna_utf8_string_copy_from_utf32(
+						  (libuna_utf8_character_t *) extent_descriptor->alternate_filename,
+						  extent_descriptor->alternate_filename_size,
+						  (libuna_utf32_character_t *) filename,
+						  filename_length + 1,
+						  error );
+#elif SIZEOF_WCHAR_T == 2
+					result = libuna_utf8_string_copy_from_utf16(
+						  (libuna_utf8_character_t *) extent_descriptor->alternate_filename,
+						  extent_descriptor->alternate_filename_size,
+						  (libuna_utf16_character_t *) filename,
+						  filename_length + 1,
+						  error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+				}
+				else
+				{
+#if SIZEOF_WCHAR_T == 4
+					result = libuna_byte_stream_copy_from_utf32(
+						  (uint8_t *) extent_descriptor->alternate_filename,
+						  extent_descriptor->alternate_filename_size,
+						  libclocale_codepage,
+						  (libuna_utf32_character_t *) filename,
+						  filename_length + 1,
+						  error );
+#elif SIZEOF_WCHAR_T == 2
+					result = libuna_byte_stream_copy_from_utf16(
+						  (uint8_t *) extent_descriptor->alternate_filename,
+						  extent_descriptor->alternate_filename_size,
+						  libclocale_codepage,
+						  (libuna_utf16_character_t *) filename,
+						  filename_length + 1,
+						  error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+				}
+				if( result != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+					 "%s: unable to copy extent filename.",
+					 function );
+
+					goto on_error;
+				}
+#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+
+#if defined( HAVE_DEBUG_OUTPUT )
+				if( libcnotify_verbose != 0 )
+				{
+					libcnotify_printf(
+					 "%s: alternate filename\t\t\t: %" PRIs_LIBCSTRING_SYSTEM "\n",
+					 function,
+					 extent_descriptor->alternate_filename );
+				}
+#endif
+			}
+		}
 	}
 /* TODO does this work for UTF-16 ? */
 	basename_end = libcstring_wide_string_search_character_reverse(
@@ -1352,6 +1786,7 @@ int libvmdk_handle_open_extent_data_files(
 				extent_data_file_location      = extent_data_filename_start;
 				extent_data_file_location_size = extent_data_filename_size;
 			}
+/* TODO add support for alternate extent file name */
 			/* Note that the open extent data file function will initialize extent_data_file_io_pool
 			 */
 #if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )

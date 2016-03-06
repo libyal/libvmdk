@@ -47,6 +47,14 @@ struct libvmdk_internal_extent_descriptor
 	 */
 	size_t filename_size;
 
+	/* The alternate filename
+	 */
+	libcstring_system_character_t *alternate_filename;
+
+	/* The alternate filename size
+	 */
+	size_t alternate_filename_size;
+
 	/* The extent offset
 	 */
 	off64_t offset;
