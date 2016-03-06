@@ -745,13 +745,15 @@ int libvmdk_handle_open_wide(
      int access_flags,
      libcerror_error_t **error )
 {
-	libbfio_handle_t *file_io_handle           = NULL;
-	libvmdk_internal_handle_t *internal_handle = NULL;
-	wchar_t *basename_end                      = NULL;
-	static char *function                      = "libvmdk_handle_open_wide";
-	size_t basename_length                     = 0;
-	size_t filename_length                     = 0;
-	int result                                 = 1;
+	libbfio_handle_t *file_io_handle                        = NULL;
+	libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
+	libvmdk_internal_handle_t *internal_handle              = NULL;
+	wchar_t *basename_end                                   = NULL;
+	static char *function                                   = "libvmdk_handle_open_wide";
+	size_t basename_length                                  = 0;
+	size_t filename_length                                  = 0;
+	int number_of_extents                                   = 0;
+	int result                                              = 1;
 
 	if( handle == NULL )
 	{
