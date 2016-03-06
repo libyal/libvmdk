@@ -23,6 +23,10 @@
 #include <file_stream.h>
 #include <types.h>
 
+#if defined( HAVE_STDLIB_H ) || defined( WINAPI )
+#include <stdlib.h>
+#endif
+
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcnotify.h"
 #include "libvmdk_notify.h"
@@ -112,5 +116,5 @@ int libvmdk_notify_stream_close(
 	return( 0 );
 }
 
-#endif
+#endif /* !defined( HAVE_LOCAL_LIBVMDK ) */
 

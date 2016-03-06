@@ -25,23 +25,23 @@
 #include <common.h>
 #include <types.h>
 
-/* Define HAVE_LOCAL_LIBVMDK for local use of libvhdi
- * The definitions in <libvhdi/types.h> are copied here
- * for local use of libvhdi
+/* Define HAVE_LOCAL_LIBVMDK for local use of libvmdk
+ * The definitions in <libvmdk/types.h> are copied here
+ * for local use of libvmdk
  */
 #if defined( HAVE_LOCAL_LIBVMDK )
 
 /* The following type definitions hide internal data structures
  */
-#if defined( HAVE_DEBUG_OUTPUT )
-typedef struct libvhdi_extent_descriptor {}	libvhdi_extent_descriptor_t;
-typedef struct libvhdi_handle {}		libvhdi_handle_t;
+#if defined( HAVE_DEBUG_OUTPUT ) && !defined( WINAPI )
+typedef struct libvmdk_extent_descriptor {}	libvmdk_extent_descriptor_t;
+typedef struct libvmdk_handle {}		libvmdk_handle_t;
 
 #else
-typedef intptr_t libvhdi_extent_descriptor_t;
-typedef intptr_t libvhdi_handle_t;
+typedef intptr_t libvmdk_extent_descriptor_t;
+typedef intptr_t libvmdk_handle_t;
 
-#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+#endif /* defined( HAVE_DEBUG_OUTPUT ) && !defined( WINAPI ) */
 
 #endif /* defined( HAVE_LOCAL_LIBVMDK ) */
 
@@ -50,5 +50,5 @@ typedef intptr_t libvhdi_handle_t;
  */
 typedef unsigned long int libvmdk_aligned_t;
 
-#endif
+#endif /* !defined( _LIBVMDK_INTERNAL_TYPES_H ) */
 

@@ -53,11 +53,11 @@ LIBVMDK_EXTERN \
 int libvmdk_notify_stream_close(
      libcerror_error_t **error );
 
-#endif
+#endif /* !defined( HAVE_LOCAL_LIBVMDK ) */
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_NOTIFY_H ) */
 
