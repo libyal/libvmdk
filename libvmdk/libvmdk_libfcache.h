@@ -44,7 +44,7 @@
 
 #include <libfcache.h>
 
-#endif
+#endif /* defined( HAVE_LOCAL_LIBFCACHE ) */
 
-#endif
+#endif /* !defined( _LIBVMDK_LIBFCACHE_H ) */
 

@@ -1082,7 +1082,7 @@ PyObject *pyvmdk_handle_set_parent(
 	     "O!",
 	     keyword_list,
 	     &pyvmdk_handle_type_object,
-	     &pyvmdk_parent_handle) == 0)
+	     &pyvmdk_parent_handle ) == 0)
 	{
 		return( NULL );
 	}

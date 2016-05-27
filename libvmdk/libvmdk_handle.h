@@ -126,13 +126,15 @@ int libvmdk_handle_open(
      libcerror_error_t **error );
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
+
 LIBVMDK_EXTERN \
 int libvmdk_handle_open_wide(
      libvmdk_handle_t *handle,
      const wchar_t *filename,
      int access_flags,
      libcerror_error_t **error );
-#endif
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 LIBVMDK_EXTERN \
 int libvmdk_handle_open_file_io_handle(
@@ -160,13 +162,15 @@ int libvmdk_handle_open_extent_data_file(
      libcerror_error_t **error );
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
+
 int libvmdk_handle_open_extent_data_file_wide(
      libvmdk_internal_handle_t *internal_handle,
      libbfio_pool_t *file_io_pool,
      int extent_index,
      const wchar_t *filename,
      libcerror_error_t **error );
-#endif
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 int libvmdk_handle_open_extent_data_file_io_handle(
      libvmdk_internal_handle_t *internal_handle,

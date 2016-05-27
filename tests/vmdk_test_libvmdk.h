@@ -19,19 +19,19 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _VMDKTOOLS_LIBVMDK_H )
-#define _VMDKTOOLS_LIBVMDK_H
+#if !defined( _VMDK_TEST_LIBVMDK_H )
+#define _VMDK_TEST_LIBVMDK_H
 
 #include <common.h>
 
-/* If Cygwin libtool DLL support is enabled set LIBVMDK_DLL_IMPORT
- * before including libvmdk.h
+/* If Cygwin libtool DLL support is enabled and do not want to create static
+ * executables set LIBVMDK_DLL_IMPORT before including libvmdk.h
  */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
+#if defined( _WIN32 ) && defined( DLL_EXPORT ) && !defined( HAVE_STATIC_EXECUTABLES )
 #define LIBVMDK_DLL_IMPORT
 #endif
 
 #include <libvmdk.h>
 
-#endif
+#endif /* !defined( _VMDK_TEST_LIBVMDK_H ) */
 

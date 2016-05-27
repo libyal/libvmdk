@@ -73,5 +73,5 @@ PyObject *pyvmdk_handle_get_extent_descriptors(
 }
 #endif
 
-#endif
+#endif /* !defined( _PYVMDK_METADATA_H ) */
 

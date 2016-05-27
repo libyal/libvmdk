@@ -452,6 +452,7 @@ int libvmdk_handle_open(
 	/* Note that extent file names can be renamed hence for a single monolithic sparse image
 	 * the filename instead of the extent data filename in the descriptor file is used.
 	 */
+/* TODO thread lock */
 	if( internal_handle->descriptor_file->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 	{
 		if( libvmdk_descriptor_file_get_number_of_extents(
@@ -880,6 +881,7 @@ int libvmdk_handle_open_wide(
 	/* Note that extent file names can be renamed hence for a single monolithic sparse image
 	 * the filename instead of the extent data filename in the descriptor file is used.
 	 */
+/* TODO thread lock */
 	if( internal_handle->descriptor_file->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 	{
 		if( libvmdk_descriptor_file_get_number_of_extents(
@@ -3960,7 +3962,7 @@ off64_t libvmdk_internal_handle_seek_offset(
          int whence,
          libcerror_error_t **error )
 {
-	static char *function = "libvmdk_handle_seek_offset";
+	static char *function = "libvmdk_internal_handle_seek_offset";
 
 	if( internal_handle == NULL )
 	{

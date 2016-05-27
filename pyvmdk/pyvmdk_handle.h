@@ -131,5 +131,5 @@ PyObject *pyvmdk_handle_get_offset(
 }
 #endif
 
-#endif
+#endif /* !defined( _PYVMDK_FILE_H ) */
 

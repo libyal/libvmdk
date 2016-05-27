@@ -30,7 +30,10 @@
 
 #include <libbfio_definitions.h>
 #include <libbfio_file.h>
+#include <libbfio_file_pool.h>
+#include <libbfio_file_range.h>
 #include <libbfio_handle.h>
+#include <libbfio_memory_range.h>
 #include <libbfio_pool.h>
 #include <libbfio_types.h>
 
@@ -51,5 +54,5 @@
 
 #endif /* defined( HAVE_LOCAL_LIBBFIO ) */
 
-#endif
+#endif /* !defined( _LIBVMDK_LIBBFIO_H ) */
 

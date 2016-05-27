@@ -17,6 +17,7 @@ MSVSCPP_FILES = \
 	libuna/libuna.vcproj \
 	libvmdk/libvmdk.vcproj \
 	pyvmdk/pyvmdk.vcproj \
+	vmdk_test_get_version/vmdk_test_get_version.vcproj \
 	vmdk_test_open_close/vmdk_test_open_close.vcproj \
 	vmdk_test_read/vmdk_test_read.vcproj \
 	vmdk_test_seek/vmdk_test_seek.vcproj \

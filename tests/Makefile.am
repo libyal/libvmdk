@@ -18,38 +18,42 @@ AM_CPPFLAGS = \
 
 if HAVE_PYTHON_TESTS
 TESTS_PYVMDK = \
-	test_pyvmdk_open_close.sh \
-	test_pyvmdk_seek.sh \
-	test_pyvmdk_read.sh
+	test_python_functions.sh
 endif
 
 TESTS = \
-	test_open_close.sh \
-	test_seek.sh \
-	test_read.sh \
+	test_api_functions.sh \
 	test_vmdkinfo.sh \
 	$(TESTS_PYVMDK)
 
 check_SCRIPTS = \
+	pyvmdk_test_get_version.py \
 	pyvmdk_test_open_close.py \
 	pyvmdk_test_read.py \
 	pyvmdk_test_seek.py \
-	test_open_close.sh \
-	test_pyvmdk_open_close.sh \
-	test_pyvmdk_read.sh \
-	test_pyvmdk_seek.sh \
-	test_read.sh \
+	test_api_functions.sh \
+	test_python_functions.sh \
 	test_runner.sh \
-	test_seek.sh \
 	test_vmdkinfo.sh
 
 EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	vmdk_test_get_version \
 	vmdk_test_open_close \
 	vmdk_test_read \
 	vmdk_test_seek
+
+vmdk_test_get_version_SOURCES = \
+	vmdk_test_get_version.c \
+	vmdk_test_libcstring.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_unused.h
+
+vmdk_test_get_version_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCSTRING_LIBADD@
 
 vmdk_test_open_close_SOURCES = \
 	vmdk_test_libcerror.h \

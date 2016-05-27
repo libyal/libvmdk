@@ -52,7 +52,7 @@ struct mount_handle
 	 */
 	libcdata_array_t *input_handles_array;
 
-	/* The nofication output stream
+	/* The notification output stream
 	 */
 	FILE *notify_stream;
 };
