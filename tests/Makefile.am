@@ -40,15 +40,28 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	vmdk_test_error \
 	vmdk_test_get_version \
 	vmdk_test_open_close \
 	vmdk_test_read \
 	vmdk_test_seek
 
+vmdk_test_error_SOURCES = \
+	vmdk_test_error.c \
+	vmdk_test_libcstring.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_unused.h
+
+vmdk_test_error_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCSTRING_LIBADD@
+
 vmdk_test_get_version_SOURCES = \
 	vmdk_test_get_version.c \
 	vmdk_test_libcstring.h \
 	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
 	vmdk_test_unused.h
 
 vmdk_test_get_version_LDADD = \

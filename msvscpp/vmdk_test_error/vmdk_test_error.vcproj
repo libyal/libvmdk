@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="vmdk_test_get_version"
-	ProjectGUID="{FCCE2296-A419-49F4-95E2-C91588615279}"
-	RootNamespace="vmdk_test_get_version"
+	Name="vmdk_test_error"
+	ProjectGUID="{EA0FB1FC-AC19-4932-9436-23187B85A8E6}"
+	RootNamespace="vmdk_test_error"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -176,7 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\vmdk_test_get_version.c"
+				RelativePath="..\..\tests\vmdk_test_error.c"
 				>
 			</File>
 		</Filter>

@@ -124,7 +124,9 @@ stamp-h[1-9]
 /vmdktools/vmdkmount
 /tests/input
 /tests/tmp*
+/tests/vmdk_test_error
 /tests/vmdk_test_get_version
+/tests/vmdk_test_notify
 /tests/vmdk_test_open_close
 /tests/vmdk_test_read
 /tests/vmdk_test_seek

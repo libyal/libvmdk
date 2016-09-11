@@ -1,5 +1,5 @@
 /*
- * Notification functions
+ * Memory allocation functions for testing
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,45 +19,32 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBVMDK_NOTIFY_H )
-#define _LIBVMDK_NOTIFY_H
+#if !defined( _VMDK_TEST_MEMORY_H )
+#define _VMDK_TEST_MEMORY_H
 
 #include <common.h>
-#include <file_stream.h>
-#include <types.h>
-
-#include "libvmdk_extern.h"
-#include "libvmdk_libcerror.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-#if !defined( HAVE_LOCAL_LIBVMDK )
+#if defined( HAVE_GNU_DL_DLSYM ) && defined( __GNUC__ ) && !defined( __clang__ )
 
-LIBVMDK_EXTERN \
-void libvmdk_notify_set_verbose(
-      int verbose );
+#define HAVE_VMDK_TEST_MEMORY		1
 
-LIBVMDK_EXTERN \
-int libvmdk_notify_set_stream(
-     FILE *stream,
-     libcerror_error_t **error );
+extern int vmdk_test_malloc_attempts_before_fail;
 
-LIBVMDK_EXTERN \
-int libvmdk_notify_stream_open(
-     const char *filename,
-     libcerror_error_t **error );
+extern int vmdk_test_memcpy_attempts_before_fail;
 
-LIBVMDK_EXTERN \
-int libvmdk_notify_stream_close(
-     libcerror_error_t **error );
+extern int vmdk_test_memset_attempts_before_fail;
 
-#endif /* !defined( HAVE_LOCAL_LIBVMDK ) */
+extern int vmdk_test_realloc_attempts_before_fail;
+
+#endif /* defined( HAVE_GNU_DL_DLSYM ) && defined( __GNUC__ ) && !defined( __clang__ ) */
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _LIBVMDK_NOTIFY_H ) */
+#endif /* !defined( _VMDK_TEST_MEMORY_H ) */
 
