@@ -383,7 +383,7 @@ run_test_with_arguments()
 {
 	local TEST_DESCRIPTION=$1;
 	local TEST_EXECUTABLE=$2;
-	shift 1;
+	shift 2;
 	local ARGUMENTS=$@;
 
 	if ! test -f "${TEST_EXECUTABLE}";
