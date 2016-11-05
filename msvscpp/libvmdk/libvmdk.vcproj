@@ -237,6 +237,10 @@
 				RelativePath="..\..\libvmdk\libvmdk_support.c"
 				>
 			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_system_string.c"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -369,6 +373,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libvmdk\libvmdk_support.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_system_string.h"
 				>
 			</File>
 			<File

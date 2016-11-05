@@ -54,6 +54,7 @@ libvmdk_la_SOURCES = \
 	libvmdk_metadata.c libvmdk_metadata.h \
 	libvmdk_notify.c libvmdk_notify.h \
 	libvmdk_support.c libvmdk_support.h \
+	libvmdk_system_string.c libvmdk_system_string.h \
 	libvmdk_types.h \
 	libvmdk_unused.h \
 	cowd_sparse_file_header.h \

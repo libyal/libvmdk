@@ -29,7 +29,7 @@
 #include "libvmdk_extent_file.h"
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
-#include "libvmdk_libcstring.h"
+#include "libvmdk_libcerror.h"
 #include "libvmdk_libcstring.h"
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
@@ -119,6 +119,7 @@ int libvmdk_extent_table_set_basename(
      libcerror_error_t **error );
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
+
 int libvmdk_extent_table_get_basename_size_wide(
      libvmdk_extent_table_t *extent_table,
      size_t *basename_size,
@@ -135,7 +136,8 @@ int libvmdk_extent_table_set_basename_wide(
      const wchar_t *basename,
      size_t basename_length,
      libcerror_error_t **error );
-#endif
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 int libvmdk_extent_table_initialize_extents(
      libvmdk_extent_table_t *extent_table,
@@ -205,5 +207,5 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_EXTENT_TABLE_H ) */
 

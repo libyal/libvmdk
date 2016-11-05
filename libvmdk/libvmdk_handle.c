@@ -1659,11 +1659,11 @@ int libvmdk_handle_open_extent_data_files(
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing extents.",
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid number of extents value out of bounds.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( libbfio_pool_initialize(
 	     &file_io_pool,

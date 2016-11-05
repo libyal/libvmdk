@@ -1193,11 +1193,6 @@ int main(
 	         error );
 
 		VMDK_TEST_RUN_WITH_ARGS(
-		 "libvmdk_handle_open",
-		 vmdk_test_handle_open,
-		 handle );
-
-		VMDK_TEST_RUN_WITH_ARGS(
 		 "libvmdk_handle_get_number_of_extents",
 		 vmdk_test_handle_get_number_of_extents,
 		 handle );

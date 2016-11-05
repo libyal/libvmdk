@@ -30,11 +30,10 @@
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
-#include "libvmdk_libclocale.h"
 #include "libvmdk_libcstring.h"
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
-#include "libvmdk_libuna.h"
+#include "libvmdk_system_string.h"
 
 /* Creates an extent table
  * Make sure the value extent_table is referencing, is set to NULL
@@ -446,10 +445,6 @@ int libvmdk_extent_table_get_basename_size(
 {
 	static char *function = "libvmdk_extent_table_get_basename_size";
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	int result            = 0;
-#endif
-
 	if( extent_table == NULL )
 	{
 		libcerror_error_set(
@@ -461,61 +456,15 @@ int libvmdk_extent_table_get_basename_size(
 
 		return( -1 );
 	}
-	if( basename_size == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid basename size.",
-		 function );
-
-		return( -1 );
-	}
 	if( extent_table->basename == NULL )
 	{
 		return( 0 );
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf8_string_size_from_utf32(
-		          (libuna_utf32_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf8_string_size_from_utf16(
-		          (libuna_utf16_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_byte_stream_size_from_utf32(
-		          (libuna_utf32_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          libclocale_codepage,
-		          basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_byte_stream_size_from_utf16(
-		          (libuna_utf16_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          libclocale_codepage,
-		          basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
+	if( libvmdk_system_string_size_to_narrow_string(
+	     extent_table->basename,
+	     extent_table->basename_size,
+	     basename_size,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -526,10 +475,6 @@ int libvmdk_extent_table_get_basename_size(
 
 		return( -1 );
 	}
-#else
-	*basename_size = extent_table->basename_size;
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-
 	return( 1 );
 }
 
@@ -545,10 +490,6 @@ int libvmdk_extent_table_get_basename(
 	static char *function       = "libvmdk_extent_table_get_basename";
 	size_t narrow_basename_size = 0;
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	int result                  = 0;
-#endif
-
 	if( extent_table == NULL )
 	{
 		libcerror_error_set(
@@ -575,60 +516,21 @@ int libvmdk_extent_table_get_basename(
 	{
 		return( 0 );
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf8_string_size_from_utf32(
-		          (libuna_utf32_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          &narrow_basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf8_string_size_from_utf16(
-		          (libuna_utf16_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          &narrow_basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_byte_stream_size_from_utf32(
-		          (libuna_utf32_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          libclocale_codepage,
-		          &narrow_basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_byte_stream_size_from_utf16(
-		          (libuna_utf16_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          libclocale_codepage,
-		          &narrow_basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
+	if( libvmdk_system_string_size_to_narrow_string(
+	     extent_table->basename,
+	     extent_table->basename_size,
+	     &narrow_basename_size,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
 		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine narrow basename size.",
+		 "%s: unable to determine basename size.",
 		 function );
 
 		return( -1 );
 	}
-#else
-	narrow_basename_size = extent_table->basename_size;
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-
 	if( basename_size < narrow_basename_size )
 	{
 		libcerror_error_set(
@@ -640,50 +542,12 @@ int libvmdk_extent_table_get_basename(
 
 		return( -1 );
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf8_string_copy_from_utf32(
-		          (libuna_utf8_character_t *) basename,
-		          basename_size,
-		          (libuna_utf32_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf8_string_copy_from_utf16(
-		          (libuna_utf8_character_t *) basename,
-		          basename_size,
-		          (libuna_utf16_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_byte_stream_copy_from_utf32(
-		          (uint8_t *) basename,
-		          basename_size,
-		          libclocale_codepage,
-		          (libuna_utf32_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_byte_stream_copy_from_utf16(
-		          (uint8_t *) basename,
-		          basename_size,
-		          libclocale_codepage,
-		          (libuna_utf16_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
+	if( libvmdk_system_string_copy_to_narrow_string(
+	     basename,
+	     basename_size,
+	     extent_table->basename,
+	     extent_table->basename_size,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -694,24 +558,6 @@ int libvmdk_extent_table_get_basename(
 
 		return( -1 );
 	}
-#else
-	if( libcstring_system_string_copy(
-	     basename,
-	     extent_table->basename,
-	     extent_table->basename_size ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to set basename.",
-		 function );
-
-		return( -1 );
-	}
-	basename[ extent_table->basename_size - 1 ] = 0;
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-
 	return( 1 );
 }
 
@@ -725,10 +571,6 @@ int libvmdk_extent_table_set_basename(
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_table_set_basename";
-
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	int result            = 0;
-#endif
 
 	if( extent_table == NULL )
 	{
@@ -760,46 +602,11 @@ int libvmdk_extent_table_set_basename(
 		extent_table->basename      = NULL;
 		extent_table->basename_size = 0;
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_size_from_utf8(
-		          (libuna_utf8_character_t *) basename,
-		          basename_length,
-		          &( extent_table->basename_size ),
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_size_from_utf8(
-		          (libuna_utf8_character_t *) basename,
-		          basename_length,
-		          &( extent_table->basename_size ),
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_size_from_byte_stream(
-		          (uint8_t *) basename,
-		          basename_length,
-		          libclocale_codepage,
-		          &( extent_table->basename_size ),
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_size_from_byte_stream(
-		          (uint8_t *) basename,
-		          basename_length,
-		          libclocale_codepage,
-		          &( extent_table->basename_size ),
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
+	if( libvmdk_system_string_size_from_narrow_string(
+	     basename,
+	     basename_length + 1,
+	     &( extent_table->basename_size ),
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -808,11 +615,8 @@ int libvmdk_extent_table_set_basename(
 		 "%s: unable to determine basename size.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-#else
-	extent_table->basename_size = basename_length + 1;
-#endif
 	extent_table->basename = libcstring_system_string_allocate(
 	                          extent_table->basename_size );
 
@@ -825,54 +629,14 @@ int libvmdk_extent_table_set_basename(
 		 "%s: unable to create basename.",
 		 function );
 
-		extent_table->basename_size = 0;
-
-		return( -1 );
+		goto on_error;
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_copy_from_utf8(
-		          (libuna_utf32_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          (libuna_utf8_character_t *) basename,
-		          basename_length + 1,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_copy_from_utf8(
-		          (libuna_utf16_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          (libuna_utf8_character_t *) basename,
-		          basename_length + 1,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_copy_from_byte_stream(
-		          (libuna_utf32_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          (uint8_t *) basename,
-		          basename_length + 1,
-		          libclocale_codepage,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_copy_from_byte_stream(
-		          (libuna_utf16_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          (uint8_t *) basename,
-		          basename_length + 1,
-		          libclocale_codepage,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
+	if( libvmdk_system_string_copy_from_narrow_string(
+	     extent_table->basename,
+	     extent_table->basename_size,
+	     basename,
+	     basename_length + 1,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -881,39 +645,21 @@ int libvmdk_extent_table_set_basename(
 		 "%s: unable to set basename.",
 		 function );
 
-		memory_free(
-		 extent_table->basename );
-
-		extent_table->basename      = NULL;
-		extent_table->basename_size = 0;
-
-		return( -1 );
+		goto on_error;
 	}
-#else
-	if( libcstring_system_string_copy(
-	     extent_table->basename,
-	     basename,
-	     basename_length ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to set basename.",
-		 function );
-
-		memory_free(
-		 extent_table->basename );
-
-		extent_table->basename      = NULL;
-		extent_table->basename_size = 0;
-
-		return( -1 );
-	}
-	extent_table->basename[ basename_length ] = 0;
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-
 	return( 1 );
+
+on_error:
+	if( extent_table->basename != NULL )
+	{
+		memory_free(
+		 extent_table->basename );
+
+		extent_table->basename = NULL;
+	}
+	extent_table->basename_size = 0;
+
+	return( -1 );
 }
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
@@ -927,10 +673,6 @@ int libvmdk_extent_table_get_basename_size_wide(
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_table_get_basename_size_wide";
-
-#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	int result            = 0;
-#endif
 
 	if( extent_table == NULL )
 	{
@@ -958,48 +700,11 @@ int libvmdk_extent_table_get_basename_size_wide(
 	{
 		return( 0 );
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	*basename_size = extent_table->basename_size;
-#else
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_size_from_utf8(
-		          (libuna_utf8_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_size_from_utf8(
-		          (libuna_utf8_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_size_from_byte_stream(
-		          (uint8_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          libclocale_codepage,
-		          basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_size_from_byte_stream(
-		          (uint8_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          libclocale_codepage,
-		          basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
+	if( libvmdk_system_string_size_to_wide_string(
+	     extent_table->basename,
+	     extent_table->basename_size,
+	     basename_size,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1010,7 +715,6 @@ int libvmdk_extent_table_get_basename_size_wide(
 
 		return( -1 );
 	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
 	return( 1 );
 }
 
@@ -1025,10 +729,6 @@ int libvmdk_extent_table_get_basename_wide(
 {
 	static char *function     = "libvmdk_extent_table_get_basename_wide";
 	size_t wide_basename_size = 0;
-
-#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	int result                = 0;
-#endif
 
 	if( extent_table == NULL )
 	{
@@ -1056,48 +756,11 @@ int libvmdk_extent_table_get_basename_wide(
 	{
 		return( 0 );
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	wide_basename_size = extent_table->basename_size;
-#else
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_size_from_utf8(
-		          (libuna_utf8_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          &wide_basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_size_from_utf8(
-		          (libuna_utf8_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          &wide_basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_size_from_byte_stream(
-		          (uint8_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          libclocale_codepage,
-		          &wide_basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_size_from_byte_stream(
-		          (uint8_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          libclocale_codepage,
-		          &wide_basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
+	if( libvmdk_system_string_size_to_wide_string(
+	     extent_table->basename,
+	     extent_table->basename_size,
+	     &wide_basename_size,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1108,7 +771,6 @@ int libvmdk_extent_table_get_basename_wide(
 
 		return( -1 );
 	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
 	if( basename_size < wide_basename_size )
 	{
 		libcerror_error_set(
@@ -1120,66 +782,12 @@ int libvmdk_extent_table_get_basename_wide(
 
 		return( -1 );
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libcstring_system_string_copy(
+	if( libvmdk_system_string_copy_to_wide_string(
 	     basename,
+	     basename_size,
 	     extent_table->basename,
-	     extent_table->basename_size ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to set basename.",
-		 function );
-
-		return( -1 );
-	}
-	basename[ extent_table->basename_size - 1 ] = 0;
-#else
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_copy_from_utf8(
-		          (libuna_utf32_character_t *) basename,
-		          basename_size,
-		          (libuna_utf8_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_copy_from_utf8(
-		          (libuna_utf16_character_t *) basename,
-		          basename_size,
-		          (libuna_utf8_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf32_string_copy_from_byte_stream(
-		          (libuna_utf32_character_t *) basename,
-		          basename_size,
-		          (uint8_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          libclocale_codepage,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf16_string_copy_from_byte_stream(
-		          (libuna_utf16_character_t *) basename,
-		          basename_size,
-		          (uint8_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          libclocale_codepage,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
+	     extent_table->basename_size,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1190,7 +798,6 @@ int libvmdk_extent_table_get_basename_wide(
 
 		return( -1 );
 	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
 	return( 1 );
 }
 
@@ -1204,10 +811,6 @@ int libvmdk_extent_table_set_basename_wide(
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_table_set_basename_wide";
-
-#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	int result            = 0;
-#endif
 
 	if( extent_table == NULL )
 	{
@@ -1239,48 +842,11 @@ int libvmdk_extent_table_set_basename_wide(
 		extent_table->basename      = NULL;
 		extent_table->basename_size = 0;
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	extent_table->basename_size = basename_length + 1;
-#else
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf8_string_size_from_utf32(
-		          (libuna_utf32_character_t *) basename,
-		          basename_length + 1,
-		          &( extent_table->basename_size ),
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf8_string_size_from_utf16(
-		          (libuna_utf16_character_t *) basename,
-		          basename_length + 1,
-		          &( extent_table->basename_size ),
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_byte_stream_size_from_utf32(
-		          (libuna_utf32_character_t *) basename,
-		          basename_length + 1,
-		          libclocale_codepage,
-		          &( extent_table->basename_size ),
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_byte_stream_size_from_utf16(
-		          (libuna_utf16_character_t *) basename,
-		          basename_length + 1,
-		          libclocale_codepage,
-		          &( extent_table->basename_size ),
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
+	if( libvmdk_system_string_size_from_wide_string(
+	     basename,
+	     basename_length + 1,
+	     &( extent_table->basename_size ),
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1289,9 +855,8 @@ int libvmdk_extent_table_set_basename_wide(
 		 "%s: unable to determine basename size.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
 	extent_table->basename = libcstring_system_string_allocate(
 	                           extent_table->basename_size );
 
@@ -1304,74 +869,14 @@ int libvmdk_extent_table_set_basename_wide(
 		 "%s: unable to create basename.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libcstring_system_string_copy(
+	if( libvmdk_system_string_copy_from_wide_string(
 	     extent_table->basename,
+	     extent_table->basename_size,
 	     basename,
-	     basename_length ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to set basename.",
-		 function );
-
-		memory_free(
-		 extent_table->basename );
-
-		extent_table->basename      = NULL;
-		extent_table->basename_size = 0;
-
-		return( -1 );
-	}
-	extent_table->basename[ basename_length ] = 0;
-#else
-	if( libclocale_codepage == 0 )
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_utf8_string_copy_from_utf32(
-		          (libuna_utf8_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          (libuna_utf32_character_t *) basename,
-		          basename_length + 1,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_utf8_string_copy_from_utf16(
-		          (libuna_utf8_character_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          (libuna_utf16_character_t *) basename,
-		          basename_length + 1,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	else
-	{
-#if SIZEOF_WCHAR_T == 4
-		result = libuna_byte_stream_copy_from_utf32(
-		          (uint8_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          libclocale_codepage,
-		          (libuna_utf32_character_t *) basename,
-		          basename_length + 1,
-		          error );
-#elif SIZEOF_WCHAR_T == 2
-		result = libuna_byte_stream_copy_from_utf16(
-		          (uint8_t *) extent_table->basename,
-		          extent_table->basename_size,
-		          libclocale_codepage,
-		          (libuna_utf16_character_t *) basename,
-		          basename_length + 1,
-		          error );
-#else
-#error Unsupported size of wchar_t
-#endif /* SIZEOF_WCHAR_T */
-	}
-	if( result != 1 )
+	     basename_length + 1,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1380,16 +885,21 @@ int libvmdk_extent_table_set_basename_wide(
 		 "%s: unable to set basename.",
 		 function );
 
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( extent_table->basename != NULL )
+	{
 		memory_free(
 		 extent_table->basename );
 
-		extent_table->basename      = NULL;
-		extent_table->basename_size = 0;
-
-		return( -1 );
+		extent_table->basename = NULL;
 	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
-	return( 1 );
+	extent_table->basename_size = 0;
+
+	return( -1 );
 }
 
 #endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */

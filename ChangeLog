@@ -63,6 +63,10 @@ Tests:
   - compressed (done)
   - (compressed) with parent (done)
 
+20161105
+* code clean up
+* worked on tests
+
 20160124
 * worked on fallback inflate implementation
 * worked on tests
