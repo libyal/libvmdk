@@ -105,19 +105,19 @@ int main(
 
 	VMDK_TEST_RUN(
 	 "libvmdk_notify_set_verbose",
-	 vmdk_test_notify_set_verbose() )
+	 vmdk_test_notify_set_verbose )
 
 	VMDK_TEST_RUN(
 	 "libvmdk_notify_set_stream",
-	 vmdk_test_notify_set_stream() )
+	 vmdk_test_notify_set_stream )
 
 	VMDK_TEST_RUN(
 	 "libvmdk_notify_stream_open",
-	 vmdk_test_notify_stream_open() )
+	 vmdk_test_notify_stream_open )
 
 	VMDK_TEST_RUN(
 	 "libvmdk_notify_stream_close",
-	 vmdk_test_notify_stream_close() )
+	 vmdk_test_notify_stream_close )
 
 	return( EXIT_SUCCESS );
 

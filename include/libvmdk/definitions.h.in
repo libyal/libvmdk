@@ -113,5 +113,5 @@ enum LIBVMDK_EXTENT_TYPES
 	LIBVMDK_EXTENT_TYPE_ZERO				= 7,
 };
 
-#endif
+#endif /* !defined( _LIBVMDK_DEFINITIONS_H ) */
 

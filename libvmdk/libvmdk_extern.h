@@ -24,6 +24,10 @@
 
 #include <common.h>
 
+/* Define HAVE_LOCAL_LIBVMDK for local use of libvmdk
+ */
+#if !defined( HAVE_LOCAL_LIBVMDK )
+
 /* If libtool DLL support is enabled set LIBVMDK_DLL_EXPORT
  * before including libvmdk/extern.h
  */
@@ -33,5 +37,10 @@
 
 #include <libvmdk/extern.h>
 
+#else
+#define LIBVMDK_EXTERN	extern
+
 #endif
+
+#endif /* !defined( _LIBVMDK_INTERNAL_EXTERN_H ) */
 

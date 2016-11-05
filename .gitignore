@@ -1,6 +1,6 @@
 # Files to ignore by git
 #
-# Version: 20160507
+# Version: 20161030
 
 # Generic auto-generated build files
 *~
@@ -57,6 +57,7 @@ stamp-h[1-9]
 /test-driver
 /ylwrap
 /m4/codeset.m4
+/m4/extern-inline.m4
 /m4/fcntl-o.m4
 /m4/gettext.m4
 /m4/glibc2.m4
@@ -125,11 +126,13 @@ stamp-h[1-9]
 /tests/input
 /tests/tmp*
 /tests/vmdk_test_error
-/tests/vmdk_test_get_version
+/tests/vmdk_test_extent_descriptor
+/tests/vmdk_test_handle
 /tests/vmdk_test_notify
 /tests/vmdk_test_open_close
 /tests/vmdk_test_read
 /tests/vmdk_test_seek
+/tests/vmdk_test_support
 
 # Local library dependencies specific files
 /libbfio

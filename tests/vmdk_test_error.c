@@ -123,23 +123,23 @@ int main(
 
 	VMDK_TEST_RUN(
 	 "libvmdk_error_free",
-	 vmdk_test_error_free() )
+	 vmdk_test_error_free );
 
 	VMDK_TEST_RUN(
 	 "libvmdk_error_fprint",
-	 vmdk_test_error_fprint() )
+	 vmdk_test_error_fprint );
 
 	VMDK_TEST_RUN(
 	 "libvmdk_error_sprint",
-	 vmdk_test_error_sprint() )
+	 vmdk_test_error_sprint );
 
 	VMDK_TEST_RUN(
 	 "libvmdk_error_backtrace_fprint",
-	 vmdk_test_error_backtrace_fprint() )
+	 vmdk_test_error_backtrace_fprint );
 
 	VMDK_TEST_RUN(
 	 "libvmdk_error_backtrace_sprint",
-	 vmdk_test_error_backtrace_sprint() )
+	 vmdk_test_error_backtrace_sprint );
 
 	return( EXIT_SUCCESS );
 

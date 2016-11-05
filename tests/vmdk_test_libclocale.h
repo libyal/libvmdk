@@ -1,5 +1,5 @@
 /*
- * Features of libvmdk
+ * The internal libclocale header
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,32 +19,32 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBVMDK_FEATURES_H )
-#define _LIBVMDK_FEATURES_H
+#if !defined( _VMDK_TEST_LIBCLOCALE_H )
+#define _VMDK_TEST_LIBCLOCALE_H
 
-/* The libvmdk type support features
+#include <common.h>
+
+/* Define HAVE_LOCAL_LIBCLOCALE for local use of libclocale
  */
-#if defined( WINAPI ) || @HAVE_WIDE_CHARACTER_TYPE@
-#define LIBVMDK_HAVE_WIDE_CHARACTER_TYPE	1
-#endif
+#if defined( HAVE_LOCAL_LIBCLOCALE )
 
-#if defined( WINAPI ) || @HAVE_MULTI_THREAD_SUPPORT@
-#define LIBVMDK_HAVE_MULTI_THREAD_SUPPORT	1
-#endif
+#include <libclocale_codepage.h>
+#include <libclocale_definitions.h>
+#include <libclocale_locale.h>
+#include <libclocale_support.h>
 
-#if defined( HAVE_LIBBFIO ) || ( !defined( WINAPI ) && @HAVE_LIBBFIO@ )
-#define LIBVMDK_HAVE_BFIO			1
-#endif
-
-#if !defined( LIBVMDK_DEPRECATED )
-#if defined( __GNUC__ ) && __GNUC__ >= 3
-#define LIBVMDK_DEPRECATED	__attribute__ ((__deprecated__))
-#elif defined( _MSC_VER )
-#define LIBVMDK_DEPRECATED	__declspec(deprecated)
 #else
-#define LIBVMDK_DEPRECATED
-#endif
+
+/* If libtool DLL support is enabled set LIBCLOCALE_DLL_IMPORT
+ * before including libclocale.h
+ */
+#if defined( _WIN32 ) && defined( DLL_IMPORT )
+#define LIBCLOCALE_DLL_IMPORT
 #endif
 
-#endif /* !defined( _LIBVMDK_FEATURES_H ) */
+#include <libclocale.h>
+
+#endif /* defined( HAVE_LOCAL_LIBCLOCALE ) */
+
+#endif /* !defined( _VMDK_TEST_LIBCLOCALE_H ) */
 

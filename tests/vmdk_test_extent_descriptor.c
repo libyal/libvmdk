@@ -1,5 +1,5 @@
 /*
- * Library get version test program
+ * Library extent_descriptor type testing program
  *
  * Copyright (C) 2009-2016, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -20,40 +20,55 @@
  */
 
 #include <common.h>
+#include <file_stream.h>
+#include <types.h>
 
 #if defined( HAVE_STDLIB_H ) || defined( WINAPI )
 #include <stdlib.h>
 #endif
 
+#include "vmdk_test_libcerror.h"
 #include "vmdk_test_libcstring.h"
 #include "vmdk_test_libvmdk.h"
 #include "vmdk_test_macros.h"
+#include "vmdk_test_memory.h"
 #include "vmdk_test_unused.h"
 
-/* Tests retrieving the library version
+/* Tests the libvmdk_extent_descriptor_free function
  * Returns 1 if successful or 0 if not
  */
-int vmdk_test_get_version(
+int vmdk_test_extent_descriptor_free(
      void )
 {
-	const char *version_string = NULL;
-	int result                 = 0;
+	libcerror_error_t *error = NULL;
+	int result               = 0;
 
-	version_string = libvmdk_get_version();
-
-	result = libcstring_narrow_string_compare(
-	          version_string,
-	          LIBVMDK_VERSION_STRING,
-	          9 );
+	/* Test error cases
+	 */
+	result = libvmdk_extent_descriptor_free(
+	          NULL,
+	          &error );
 
 	VMDK_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 0 );
+	 -1 );
+
+        VMDK_TEST_ASSERT_IS_NOT_NULL(
+         "error",
+         error );
+
+	libcerror_error_free(
+	 &error );
 
 	return( 1 );
 
 on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
 	return( 0 );
 }
 
@@ -73,8 +88,8 @@ int main(
 	VMDK_TEST_UNREFERENCED_PARAMETER( argv )
 
 	VMDK_TEST_RUN(
-	 "libvmdk_get_version",
-	 vmdk_test_get_version() )
+	 "libvmdk_extent_descriptor_free",
+	 vmdk_test_extent_descriptor_free );
 
 	return( EXIT_SUCCESS );
 

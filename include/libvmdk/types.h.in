@@ -208,5 +208,5 @@ typedef intptr_t libvmdk_handle_t;
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_TYPES_H ) */
 

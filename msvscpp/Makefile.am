@@ -18,10 +18,13 @@ MSVSCPP_FILES = \
 	libvmdk/libvmdk.vcproj \
 	pyvmdk/pyvmdk.vcproj \
 	vmdk_test_error/vmdk_test_error.vcproj \
-	vmdk_test_get_version/vmdk_test_get_version.vcproj \
+	vmdk_test_extent_descriptor/vmdk_test_extent_descriptor.vcproj \
+	vmdk_test_handle/vmdk_test_handle.vcproj \
+	vmdk_test_notify/vmdk_test_notify.vcproj \
 	vmdk_test_open_close/vmdk_test_open_close.vcproj \
 	vmdk_test_read/vmdk_test_read.vcproj \
 	vmdk_test_seek/vmdk_test_seek.vcproj \
+	vmdk_test_support/vmdk_test_support.vcproj \
 	vmdkinfo/vmdkinfo.vcproj \
 	vmdkmount/vmdkmount.vcproj \
 	zlib/zlib.vcproj \

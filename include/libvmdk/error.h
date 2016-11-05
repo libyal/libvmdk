@@ -39,7 +39,7 @@ enum LIBVMDK_ERROR_DOMAINS
 	LIBVMDK_ERROR_DOMAIN_INPUT			= (int) 'i',
 	LIBVMDK_ERROR_DOMAIN_MEMORY			= (int) 'm',
 	LIBVMDK_ERROR_DOMAIN_OUTPUT			= (int) 'o',
-	LIBVMDK_ERROR_DOMAIN_RUNTIME			= (int) 'r',
+	LIBVMDK_ERROR_DOMAIN_RUNTIME			= (int) 'r'
 };
 
 /* The argument error codes
@@ -208,6 +208,17 @@ enum LIBVMDK_MEMORY_ERROR
 	LIBVMDK_MEMORY_ERROR_SET_FAILED			= 3
 };
 
+/* The output error codes
+ */
+enum LIBVMDK_OUTPUT_ERROR
+{
+	LIBVMDK_OUTPUT_ERROR_GENERIC			= 0,
+
+	/* There is insuficient space to write the output
+	 */
+	LIBVMDK_OUTPUT_ERROR_INSUFFICIENT_SPACE		= 1
+};
+
 /* The runtime error codes
  * to signify errors regarding runtime processing
  */
@@ -276,16 +287,5 @@ enum LIBVMDK_RUNTIME_ERROR
 	LIBVMDK_RUNTIME_ERROR_ABORT_REQUESTED		= 15
 };
 
-/* The output error codes
- */
-enum LIBVMDK_OUTPUT_ERROR
-{
-	LIBVMDK_OUTPUT_ERROR_GENERIC			= 0,
-
-	/* There is insuficient space to write the output
-	 */
-	LIBVMDK_OUTPUT_ERROR_INSUFFICIENT_SPACE		= 1
-};
-
-#endif
+#endif /* !defined( _LIBVMDK_ERROR_H ) */
 

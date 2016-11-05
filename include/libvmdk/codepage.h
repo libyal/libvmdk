@@ -118,5 +118,5 @@ enum LIBVMDK_CODEPAGES
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_CODEPAGE_H ) */
 

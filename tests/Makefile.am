@@ -23,6 +23,7 @@ endif
 
 TESTS = \
 	test_api_functions.sh \
+	test_api_types.sh \
 	test_vmdkinfo.sh \
 	$(TESTS_PYVMDK)
 
@@ -32,6 +33,7 @@ check_SCRIPTS = \
 	pyvmdk_test_read.py \
 	pyvmdk_test_seek.py \
 	test_api_functions.sh \
+	test_api_types.sh \
 	test_python_functions.sh \
 	test_runner.sh \
 	test_vmdkinfo.sh
@@ -41,10 +43,13 @@ EXTRA_DIST = \
 
 check_PROGRAMS = \
 	vmdk_test_error \
-	vmdk_test_get_version \
+	vmdk_test_extent_descriptor \
+	vmdk_test_handle \
+	vmdk_test_notify \
 	vmdk_test_open_close \
 	vmdk_test_read \
-	vmdk_test_seek
+	vmdk_test_seek \
+	vmdk_test_support
 
 vmdk_test_error_SOURCES = \
 	vmdk_test_error.c \
@@ -57,14 +62,50 @@ vmdk_test_error_LDADD = \
 	../libvmdk/libvmdk.la \
 	@LIBCSTRING_LIBADD@
 
-vmdk_test_get_version_SOURCES = \
-	vmdk_test_get_version.c \
+vmdk_test_extent_descriptor_SOURCES = \
+	vmdk_test_extent_descriptor.c \
+	vmdk_test_libcerror.h \
 	vmdk_test_libcstring.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
 	vmdk_test_unused.h
 
-vmdk_test_get_version_LDADD = \
+vmdk_test_extent_descriptor_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@
+
+vmdk_test_handle_SOURCES = \
+	vmdk_test_handle.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libclocale.h \
+	vmdk_test_libcstring.h \
+	vmdk_test_libcsystem.h \
+	vmdk_test_libuna.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
+
+vmdk_test_handle_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@
+
+vmdk_test_notify_SOURCES = \
+	vmdk_test_libcstring.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_notify.c \
+	vmdk_test_unused.h
+
+vmdk_test_notify_LDADD = \
 	../libvmdk/libvmdk.la \
 	@LIBCSTRING_LIBADD@
 
@@ -118,6 +159,27 @@ vmdk_test_seek_LDADD = \
 	@LIBCERROR_LIBADD@ \
 	@LIBCSTRING_LIBADD@ \
 	@PTHREAD_LIBADD@
+
+vmdk_test_support_SOURCES = \
+	vmdk_test_libcerror.h \
+	vmdk_test_libclocale.h \
+	vmdk_test_libcstring.h \
+	vmdk_test_libcsystem.h \
+	vmdk_test_libuna.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_support.c \
+	vmdk_test_unused.h
+
+vmdk_test_support_LDADD = \
+	@LIBCSYSTEM_LIBADD@ \
+	@LIBUNA_LIBADD@ \
+	@LIBCNOTIFY_LIBADD@ \
+	@LIBCLOCALE_LIBADD@ \
+	@LIBCDATA_LIBADD@ \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@ \
+	@LIBCSTRING_LIBADD@
 
 MAINTAINERCLEANFILES = \
 	Makefile.in
