@@ -19,8 +19,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBVMDK_INTERNAL_HANDLE_H )
-#define _LIBVMDK_INTERNAL_HANDLE_H
+#if !defined( _LIBVMDK_HANDLE_H )
+#define _LIBVMDK_HANDLE_H
 
 #include <common.h>
 #include <types.h>
@@ -172,13 +172,6 @@ int libvmdk_handle_open_extent_data_file_wide(
 
 #endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
-int libvmdk_handle_open_extent_data_file_io_handle(
-     libvmdk_internal_handle_t *internal_handle,
-     libbfio_pool_t *file_io_pool,
-     int extent_index,
-     libbfio_handle_t *file_io_handle,
-     libcerror_error_t **error );
-
 LIBVMDK_EXTERN \
 int libvmdk_handle_close(
      libvmdk_handle_t *handle,
@@ -277,5 +270,5 @@ int libvmdk_handle_set_parent_handle(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_HANDLE_H ) */
 

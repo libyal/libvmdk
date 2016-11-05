@@ -100,5 +100,5 @@ int libvmdk_handle_get_extent_descriptor(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_METADATA_H ) */
 
