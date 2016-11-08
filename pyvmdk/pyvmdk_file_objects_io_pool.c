@@ -27,7 +27,6 @@
 #include "pyvmdk_integer.h"
 #include "pyvmdk_libbfio.h"
 #include "pyvmdk_libcerror.h"
-#include "pyvmdk_libcstring.h"
 #include "pyvmdk_python.h"
 
 /* Initializes the file objects IO pool

@@ -28,7 +28,6 @@
 #include "libvmdk_extern.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcsplit.h"
-#include "libvmdk_libcstring.h"
 #include "libvmdk_types.h"
 
 #if defined( __cplusplus )
@@ -41,7 +40,7 @@ struct libvmdk_internal_extent_descriptor
 {
 	/* The filename
 	 */
-	libcstring_system_character_t *filename;
+	system_character_t *filename;
 
 	/* The filename size
 	 */
@@ -49,7 +48,7 @@ struct libvmdk_internal_extent_descriptor
 
 	/* The alternate filename
 	 */
-	libcstring_system_character_t *alternate_filename;
+	system_character_t *alternate_filename;
 
 	/* The alternate filename size
 	 */

@@ -29,7 +29,6 @@
 #include "vmdktools_libcdata.h"
 #include "vmdktools_libcerror.h"
 #include "vmdktools_libcnotify.h"
-#include "vmdktools_libcstring.h"
 #include "vmdktools_libvmdk.h"
 
 #if defined( __cplusplus )
@@ -42,7 +41,7 @@ struct mount_handle
 {
 	/* The basename
 	 */
-	libcstring_system_character_t *basename;
+	system_character_t *basename;
 
 	/* The basename size
 	 */
@@ -71,12 +70,12 @@ int mount_handle_signal_abort(
 
 int mount_handle_set_format(
      mount_handle_t *mount_handle,
-     const libcstring_system_character_t *string,
+     const system_character_t *string,
      libcerror_error_t **error );
 
 int mount_handle_open_input(
      mount_handle_t *mount_handle,
-     libcstring_system_character_t * const * filenames,
+     system_character_t * const * filenames,
      int number_of_filenames,
      libcerror_error_t **error );
 
@@ -116,7 +115,7 @@ int mount_handle_get_number_of_input_handles(
 
 int mount_handle_set_basename(
      mount_handle_t *mount_handle,
-     const libcstring_system_character_t *basename,
+     const system_character_t *basename,
      size_t basename_size,
      libcerror_error_t **error );
 

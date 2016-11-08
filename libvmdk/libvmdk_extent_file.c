@@ -32,7 +32,6 @@
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcnotify.h"
-#include "libvmdk_libcstring.h"
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
 #include "libvmdk_types.h"

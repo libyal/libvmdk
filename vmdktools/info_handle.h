@@ -28,7 +28,6 @@
 
 #include "vmdktools_libcerror.h"
 #include "vmdktools_libcnotify.h"
-#include "vmdktools_libcstring.h"
 #include "vmdktools_libvmdk.h"
 
 #if defined( __cplusplus )
@@ -62,7 +61,7 @@ int info_handle_signal_abort(
 
 int info_handle_open_input(
      info_handle_t *info_handle,
-     libcstring_system_character_t * const * filenames,
+     system_character_t * const * filenames,
      int number_of_filenames,
      libcerror_error_t **error );
 

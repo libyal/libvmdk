@@ -31,7 +31,6 @@
 #include "pyvmdk_handle.h"
 #include "pyvmdk_integer.h"
 #include "pyvmdk_libcerror.h"
-#include "pyvmdk_libcstring.h"
 #include "pyvmdk_libvmdk.h"
 #include "pyvmdk_python.h"
 #include "pyvmdk_unused.h"

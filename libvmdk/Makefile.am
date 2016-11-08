@@ -2,7 +2,6 @@ AM_CPPFLAGS = \
 	-DLOCALEDIR=\"$(datadir)/locale\" \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
-	@LIBCSTRING_CPPFLAGS@ \
 	@LIBCERROR_CPPFLAGS@ \
 	@LIBCTHREADS_CPPFLAGS@ \
 	@LIBCDATA_CPPFLAGS@ \
@@ -45,7 +44,6 @@ libvmdk_la_SOURCES = \
 	libvmdk_libcnotify.h \
 	libvmdk_libcpath.h \
 	libvmdk_libcsplit.h \
-	libvmdk_libcstring.h \
 	libvmdk_libcthreads.h \
 	libvmdk_libfcache.h \
 	libvmdk_libfdata.h \
@@ -61,7 +59,6 @@ libvmdk_la_SOURCES = \
 	vmdk_sparse_file_header.h
 
 libvmdk_la_LIBADD = \
-	@LIBCSTRING_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
 	@LIBCTHREADS_LIBADD@ \
 	@LIBCDATA_LIBADD@ \

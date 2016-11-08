@@ -22,6 +22,7 @@
 #include <common.h>
 #include <file_stream.h>
 #include <memory.h>
+#include <narrow_string.h>
 #include <types.h>
 
 #include "libvmdk_definitions.h"
@@ -32,7 +33,6 @@
 #include "libvmdk_libclocale.h"
 #include "libvmdk_libcnotify.h"
 #include "libvmdk_libcsplit.h"
-#include "libvmdk_libcstring.h"
 #include "libvmdk_libfvalue.h"
 #include "libvmdk_libuna.h"
 
@@ -579,7 +579,7 @@ int libvmdk_descriptor_file_read_signature(
 			if( line_string_segment[ line_string_segment_index ] == '#' )
 			{
 				if( ( line_string_segment_size == 22 )
-				 && ( libcstring_narrow_string_compare_no_case(
+				 && ( narrow_string_compare_no_case(
 				       &( line_string_segment[ line_string_segment_index ] ),
 				       vmdk_descriptor_file_signature,
 				       21 ) == 0 ) )
@@ -743,7 +743,7 @@ int libvmdk_descriptor_file_read_header(
 		{
 			/* Check for the end of the header
 			 */
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     &( line_string_segment[ line_string_segment_index ] ),
 			     vmdk_descriptor_file_extent_section_signature,
 			     20 ) == 0 )
@@ -858,7 +858,7 @@ int libvmdk_descriptor_file_read_header(
 
 		if( value_identifier_length == 3 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     value_identifier,
 			     "CID",
 			     3 ) == 0 )
@@ -905,7 +905,7 @@ int libvmdk_descriptor_file_read_header(
 		}
 		else if( value_identifier_length == 7 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     value_identifier,
 			     "version",
 			     7 ) == 0 )
@@ -952,7 +952,7 @@ int libvmdk_descriptor_file_read_header(
 		}
 		else if( value_identifier_length == 8 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     value_identifier,
 			     "encoding",
 			     8 ) == 0 )
@@ -995,7 +995,7 @@ int libvmdk_descriptor_file_read_header(
 		}
 		else if( value_identifier_length == 9 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     value_identifier,
 			     "parentCID",
 			     9 ) == 0 )
@@ -1043,7 +1043,7 @@ int libvmdk_descriptor_file_read_header(
 		}
 		else if( value_identifier_length == 10 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     value_identifier,
 			     "createType",
 			     10 ) == 0 )
@@ -1059,7 +1059,7 @@ int libvmdk_descriptor_file_read_header(
 #endif
 				if( value_length == 4 )
 				{
-					if( libcstring_narrow_string_compare_no_case(
+					if( narrow_string_compare_no_case(
 					     value,
 					     "vmfs",
 					     4 ) == 0 )
@@ -1069,7 +1069,7 @@ int libvmdk_descriptor_file_read_header(
 				}
 				else if( value_length == 6 )
 				{
-					if( libcstring_narrow_string_compare_no_case(
+					if( narrow_string_compare_no_case(
 					     value,
 					     "custom",
 					     6 ) == 0 )
@@ -1079,14 +1079,14 @@ int libvmdk_descriptor_file_read_header(
 				}
 				else if( value_length == 7 )
 				{
-					if( libcstring_narrow_string_compare_no_case(
+					if( narrow_string_compare_no_case(
 					     value,
 					     "vmfsRaw",
 					     7 ) == 0 )
 					{
 						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_RAW;
 					}
-					else if( libcstring_narrow_string_compare_no_case(
+					else if( narrow_string_compare_no_case(
 					          value,
 					          "vmfsRDM",
 					          7 ) == 0 )
@@ -1096,14 +1096,14 @@ int libvmdk_descriptor_file_read_header(
 				}
 				else if( value_length == 8 )
 				{
-					if( libcstring_narrow_string_compare_no_case(
+					if( narrow_string_compare_no_case(
 					     value,
 					     "vmfsRDMP",
 					     8 ) == 0 )
 					{
 						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_RDMP;
 					}
-					else if( libcstring_narrow_string_compare_no_case(
+					else if( narrow_string_compare_no_case(
 					          value,
 					          "vmfsThin",
 					          8 ) == 0 )
@@ -1113,14 +1113,14 @@ int libvmdk_descriptor_file_read_header(
 				}
 				else if( value_length == 10 )
 				{
-					if( libcstring_narrow_string_compare_no_case(
+					if( narrow_string_compare_no_case(
 					     value,
 					     "fullDevice",
 					     10 ) == 0 )
 					{
 						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_DEVICE;
 					}
-					else if( libcstring_narrow_string_compare_no_case(
+					else if( narrow_string_compare_no_case(
 					          value,
 					          "vmfsSparse",
 					          10 ) == 0 )
@@ -1130,7 +1130,7 @@ int libvmdk_descriptor_file_read_header(
 				}
 				else if( value_length == 14 )
 				{
-					if( libcstring_narrow_string_compare_no_case(
+					if( narrow_string_compare_no_case(
 					     value,
 					     "monolithicFlat",
 					     14 ) == 0 )
@@ -1140,7 +1140,7 @@ int libvmdk_descriptor_file_read_header(
 				}
 				else if( value_length == 15 )
 				{
-					if( libcstring_narrow_string_compare_no_case(
+					if( narrow_string_compare_no_case(
 					     value,
 					     "streamOptimized",
 					     15 ) == 0 )
@@ -1150,28 +1150,28 @@ int libvmdk_descriptor_file_read_header(
 				}
 				else if( value_length == 16 )
 				{
-					if( libcstring_narrow_string_compare_no_case(
+					if( narrow_string_compare_no_case(
 					     value,
 					     "2GbMaxExtentFlat",
 					     16 ) == 0 )
 					{
 						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT;
 					}
-					else if( libcstring_narrow_string_compare_no_case(
+					else if( narrow_string_compare_no_case(
 					          value,
 					          "monolithicSparse",
 					          16 ) == 0 )
 					{
 						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE;
 					}
-					else if( libcstring_narrow_string_compare_no_case(
+					else if( narrow_string_compare_no_case(
 					          value,
 					          "vmfsPreallocated",
 					          16 ) == 0 )
 					{
 						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED;
 					}
-					else if( libcstring_narrow_string_compare_no_case(
+					else if( narrow_string_compare_no_case(
 					          value,
 					          "vmfsRawDeviceMap",
 					          16 ) == 0 )
@@ -1181,7 +1181,7 @@ int libvmdk_descriptor_file_read_header(
 				}
 				else if( value_length == 17 )
 				{
-					if( libcstring_narrow_string_compare_no_case(
+					if( narrow_string_compare_no_case(
 					     value,
 					     "partitionedDevice",
 					     17 ) == 0 )
@@ -1191,14 +1191,14 @@ int libvmdk_descriptor_file_read_header(
 				}
 				else if( value_length == 18 )
 				{
-					if( libcstring_narrow_string_compare_no_case(
+					if( narrow_string_compare_no_case(
 					     value,
 					     "2GbMaxExtentSparse",
 					     18 ) == 0 )
 					{
 						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE;
 					}
-					else if( libcstring_narrow_string_compare_no_case(
+					else if( narrow_string_compare_no_case(
 					          value,
 					          "twoGbMaxExtentFlat",
 					          18 ) == 0 )
@@ -1208,14 +1208,14 @@ int libvmdk_descriptor_file_read_header(
 				}
 				else if( value_length == 20 )
 				{
-					if( libcstring_narrow_string_compare_no_case(
+					if( narrow_string_compare_no_case(
 					     value,
 					     "twoGbMaxExtentSparse",
 					     20 ) == 0 )
 					{
 						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE;
 					}
-					else if( libcstring_narrow_string_compare_no_case(
+					else if( narrow_string_compare_no_case(
 					          value,
 					          "vmfsEagerZeroedThick",
 					          20 ) == 0 )
@@ -1225,7 +1225,7 @@ int libvmdk_descriptor_file_read_header(
 				}
 				else if( value_length == 27 )
 				{
-					if( libcstring_narrow_string_compare_no_case(
+					if( narrow_string_compare_no_case(
 					     value,
 					     "vmfsPassthroughRawDeviceMap",
 					     27 ) == 0 )
@@ -1237,7 +1237,7 @@ int libvmdk_descriptor_file_read_header(
 		}
 		else if( value_identifier_length == 18 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     value_identifier,
 			     "parentFileNameHint",
 			     18 ) == 0 )
@@ -1455,7 +1455,7 @@ int libvmdk_descriptor_file_read_extents(
 		line_string_segment_index++;
 	}
 	if( ( ( line_string_segment_size - line_string_segment_index ) != 21 )
-	 || ( libcstring_narrow_string_compare_no_case(
+	 || ( narrow_string_compare_no_case(
 	       &( line_string_segment[ line_string_segment_index ] ),
 	       vmdk_descriptor_file_extent_section_signature,
 	       20 ) != 0 ) )
@@ -1566,7 +1566,7 @@ int libvmdk_descriptor_file_read_extents(
 		{
 			/* Check for the end of the section
 			 */
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     &( line_string_segment[ line_string_segment_index ] ),
 			     vmdk_descriptor_file_disk_database_section_signature,
 			     20 ) == 0 )
@@ -1576,7 +1576,7 @@ int libvmdk_descriptor_file_read_extents(
 		}
 		else if( ( line_string_segment_size - line_string_segment_index ) == 23 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     &( line_string_segment[ line_string_segment_index ] ),
 			     vmdk_descriptor_file_change_tracking_file_signature,
 			     22 ) == 0 )
@@ -1785,7 +1785,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		line_string_segment_index++;
 	}
 	if( ( ( line_string_segment_size - line_string_segment_index ) != 23 )
-	 || ( libcstring_narrow_string_compare_no_case(
+	 || ( narrow_string_compare_no_case(
 	       &( line_string_segment[ line_string_segment_index ] ),
 	       vmdk_descriptor_file_change_tracking_file_signature,
 	       22 ) != 0 ) )
@@ -1873,7 +1873,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		{
 			/* Check for the end of the section
 			 */
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     &( line_string_segment[ line_string_segment_index ] ),
 			     vmdk_descriptor_file_disk_database_section_signature,
 			     20 ) == 0 )
@@ -1988,7 +1988,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 
 		if( value_identifier_length == 15 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     value_identifier,
 			     "changeTrackPath",
 			     15 ) == 0 )
@@ -2148,7 +2148,7 @@ int libvmdk_descriptor_file_read_disk_database(
 		line_string_segment_index++;
 	}
 	if( ( ( line_string_segment_size - line_string_segment_index ) != 21 )
-	 || ( libcstring_narrow_string_compare_no_case(
+	 || ( narrow_string_compare_no_case(
 	       &( line_string_segment[ line_string_segment_index ] ),
 	       vmdk_descriptor_file_disk_database_section_signature,
 	       20 ) != 0 ) )
@@ -2346,7 +2346,7 @@ int libvmdk_descriptor_file_read_disk_database(
 
 		if( value_identifier_length == 15 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     value_identifier,
 			     "ddb.adapterType",
 			     15 ) == 0 )
@@ -2356,7 +2356,7 @@ int libvmdk_descriptor_file_read_disk_database(
 		}
 		else if( value_identifier_length == 16 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     value_identifier,
 			     "ddb.toolsVersion",
 			     16 ) == 0 )
@@ -2366,7 +2366,7 @@ int libvmdk_descriptor_file_read_disk_database(
 		}
 		else if( value_identifier_length == 18 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     value_identifier,
 			     "ddb.geometry.heads",
 			     18 ) == 0 )
@@ -2376,14 +2376,14 @@ int libvmdk_descriptor_file_read_disk_database(
 		}
 		else if( value_identifier_length == 20 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     value_identifier,
 			     "ddb.geometry.sectors",
 			     20 ) == 0 )
 			{
 /* TODO */
 			}
-			else if( libcstring_narrow_string_compare_no_case(
+			else if( narrow_string_compare_no_case(
 			          value_identifier,
 			          "ddb.virtualHWVersion",
 			          20 ) == 0 )
@@ -2393,7 +2393,7 @@ int libvmdk_descriptor_file_read_disk_database(
 		}
 		else if( value_identifier_length == 22 )
 		{
-			if( libcstring_narrow_string_compare_no_case(
+			if( narrow_string_compare_no_case(
 			     value_identifier,
 			     "ddb.geometry.cylinders",
 			     22 ) == 0 )

@@ -21,15 +21,17 @@
 
 #include <common.h>
 #include <memory.h>
+#include <narrow_string.h>
+#include <system_string.h>
 #include <types.h>
+#include <wide_string.h>
 
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libclocale.h"
-#include "libvmdk_libcstring.h"
 #include "libvmdk_libuna.h"
 #include "libvmdk_system_string.h"
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) && SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
 #error Unsupported size of wchar_t
 #endif
 
@@ -37,18 +39,18 @@
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_system_string_size_to_narrow_string(
-     const libcstring_system_character_t *system_string,
+     const system_character_t *system_string,
      size_t system_string_size,
      size_t *narrow_string_size,
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_system_string_size_to_narrow_string";
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	int result            = 0;
 #endif
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libclocale_codepage == 0 )
 	{
 #if SIZEOF_WCHAR_T == 4
@@ -130,7 +132,7 @@ int libvmdk_system_string_size_to_narrow_string(
 	}
 	*narrow_string_size = system_string_size;
 
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
 
 	return( 1 );
 }
@@ -139,7 +141,7 @@ int libvmdk_system_string_size_to_narrow_string(
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_system_string_copy_to_narrow_string(
-     const libcstring_system_character_t *system_string,
+     const system_character_t *system_string,
      size_t system_string_size,
      char *narrow_string,
      size_t narrow_string_size,
@@ -147,11 +149,11 @@ int libvmdk_system_string_copy_to_narrow_string(
 {
 	static char *function = "libvmdk_system_string_copy_to_narrow_string";
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	int result            = 0;
 #endif
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libclocale_codepage == 0 )
 	{
 #if SIZEOF_WCHAR_T == 4
@@ -257,7 +259,7 @@ int libvmdk_system_string_copy_to_narrow_string(
 
 		return( -1 );
 	}
-	if( libcstring_system_string_copy(
+	if( system_string_copy(
 	     narrow_string,
 	     system_string,
 	     system_string_size ) == NULL )
@@ -273,7 +275,7 @@ int libvmdk_system_string_copy_to_narrow_string(
 	}
 	narrow_string[ system_string_size - 1 ] = 0;
 
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
 
 	return( 1 );
 }
@@ -289,11 +291,11 @@ int libvmdk_system_string_size_from_narrow_string(
 {
 	static char *function = "libvmdk_system_string_size_from_narrow_string";
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	int result            = 0;
 #endif
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libclocale_codepage == 0 )
 	{
 #if SIZEOF_WCHAR_T == 4
@@ -375,7 +377,7 @@ int libvmdk_system_string_size_from_narrow_string(
 	}
 	*system_string_size = narrow_string_size;
 
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
 
 	return( 1 );
 }
@@ -384,7 +386,7 @@ int libvmdk_system_string_size_from_narrow_string(
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_system_string_copy_from_narrow_string(
-     libcstring_system_character_t *system_string,
+     system_character_t *system_string,
      size_t system_string_size,
      const char *narrow_string,
      size_t narrow_string_size,
@@ -392,11 +394,11 @@ int libvmdk_system_string_copy_from_narrow_string(
 {
 	static char *function = "libvmdk_system_string_copy_from_narrow_string";
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	int result            = 0;
 #endif
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libclocale_codepage == 0 )
 	{
 #if SIZEOF_WCHAR_T == 4
@@ -502,7 +504,7 @@ int libvmdk_system_string_copy_from_narrow_string(
 
 		return( -1 );
 	}
-	if( libcstring_system_string_copy(
+	if( system_string_copy(
 	     system_string,
 	     narrow_string,
 	     narrow_string_size ) == NULL )
@@ -518,7 +520,7 @@ int libvmdk_system_string_copy_from_narrow_string(
 	}
 	system_string[ narrow_string_size - 1 ] = 0;
 
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
 
 	return( 1 );
 }
@@ -529,18 +531,18 @@ int libvmdk_system_string_copy_from_narrow_string(
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_system_string_size_to_wide_string(
-     const libcstring_system_character_t *system_string,
+     const system_character_t *system_string,
      size_t system_string_size,
      size_t *wide_string_size,
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_system_string_size_to_wide_string";
 
-#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if !defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	int result            = 0;
 #endif
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( system_string == NULL )
 	{
 		libcerror_error_set(
@@ -621,7 +623,7 @@ int libvmdk_system_string_size_to_wide_string(
 
 		return( -1 );
 	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
 
 	return( 1 );
 }
@@ -630,7 +632,7 @@ int libvmdk_system_string_size_to_wide_string(
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_system_string_copy_to_wide_string(
-     const libcstring_system_character_t *system_string,
+     const system_character_t *system_string,
      size_t system_string_size,
      wchar_t *wide_string,
      size_t wide_string_size,
@@ -638,11 +640,11 @@ int libvmdk_system_string_copy_to_wide_string(
 {
 	static char *function = "libvmdk_system_string_copy_to_wide_string";
 
-#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if !defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	int result            = 0;
 #endif
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( system_string == NULL )
 	{
 		libcerror_error_set(
@@ -698,7 +700,7 @@ int libvmdk_system_string_copy_to_wide_string(
 
 		return( -1 );
 	}
-	if( libcstring_system_string_copy(
+	if( system_string_copy(
 	     wide_string,
 	     system_string,
 	     system_string_size ) == NULL )
@@ -763,7 +765,7 @@ int libvmdk_system_string_copy_to_wide_string(
 
 		return( -1 );
 	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
 
 	return( 1 );
 }
@@ -779,11 +781,11 @@ int libvmdk_system_string_size_from_wide_string(
 {
 	static char *function = "libvmdk_system_string_size_from_wide_string";
 
-#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if !defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	int result            = 0;
 #endif
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( wide_string == NULL )
 	{
 		libcerror_error_set(
@@ -817,7 +819,7 @@ int libvmdk_system_string_size_from_wide_string(
 
 		return( -1 );
 	}
-	system_string_size = wide_string_size;
+	*system_string_size = wide_string_size;
 #else
 	if( libclocale_codepage == 0 )
 	{
@@ -825,13 +827,13 @@ int libvmdk_system_string_size_from_wide_string(
 		result = libuna_utf8_string_size_from_utf32(
 		          (libuna_utf32_character_t *) wide_string,
 		          wide_string_size,
-		          &( system_string_size ),
+		          system_string_size,
 		          error );
 #elif SIZEOF_WCHAR_T == 2
 		result = libuna_utf8_string_size_from_utf16(
 		          (libuna_utf16_character_t *) wide_string,
 		          wide_string_size,
-		          &( system_string_size ),
+		          system_string_size,
 		          error );
 #endif /* SIZEOF_WCHAR_T */
 	}
@@ -842,14 +844,14 @@ int libvmdk_system_string_size_from_wide_string(
 		          (libuna_utf32_character_t *) wide_string,
 		          wide_string_size,
 		          libclocale_codepage,
-		          &( system_string_size ),
+		          system_string_size,
 		          error );
 #elif SIZEOF_WCHAR_T == 2
 		result = libuna_byte_stream_size_from_utf16(
 		          (libuna_utf16_character_t *) wide_string,
 		          wide_string_size,
 		          libclocale_codepage,
-		          &( system_string_size ),
+		          system_string_size,
 		          error );
 #endif /* SIZEOF_WCHAR_T */
 	}
@@ -864,7 +866,7 @@ int libvmdk_system_string_size_from_wide_string(
 
 		return( -1 );
 	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
 
 	return( 1 );
 }
@@ -873,7 +875,7 @@ int libvmdk_system_string_size_from_wide_string(
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_system_string_copy_from_wide_string(
-     libcstring_system_character_t *system_string,
+     system_character_t *system_string,
      size_t system_string_size,
      const wchar_t *wide_string,
      size_t wide_string_size,
@@ -881,11 +883,11 @@ int libvmdk_system_string_copy_from_wide_string(
 {
 	static char *function = "libvmdk_system_string_copy_from_wide_string";
 
-#if !defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if !defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	int result            = 0;
 #endif
 
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( system_string == NULL )
 	{
 		libcerror_error_set(
@@ -941,7 +943,7 @@ int libvmdk_system_string_copy_from_wide_string(
 
 		return( -1 );
 	}
-	if( libcstring_system_string_copy(
+	if( system_string_copy(
 	     system_string,
 	     wide_string,
 	     wide_string_size ) == NULL )
@@ -1006,7 +1008,7 @@ int libvmdk_system_string_copy_from_wide_string(
 
 		return( -1 );
 	}
-#endif /* defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER ) */
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
 
 	return( 1 );
 }

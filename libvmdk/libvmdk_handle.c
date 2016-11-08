@@ -21,7 +21,10 @@
 
 #include <common.h>
 #include <memory.h>
+#include <narrow_string.h>
+#include <system_string.h>
 #include <types.h>
+#include <wide_string.h>
 
 #include "libvmdk_debug.h"
 #include "libvmdk_definitions.h"
@@ -37,7 +40,6 @@
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libcnotify.h"
 #include "libvmdk_libcpath.h"
-#include "libvmdk_libcstring.h"
 #include "libvmdk_libcthreads.h"
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
@@ -373,7 +375,7 @@ int libvmdk_handle_open(
 
 		return( -1 );
 	}
-	filename_length = libcstring_narrow_string_length(
+	filename_length = narrow_string_length(
 	                   filename );
 
 	if( libbfio_file_initialize(
@@ -514,7 +516,7 @@ int libvmdk_handle_open(
 					goto on_error;
 				}
 				if( ( extent_descriptor->alternate_filename_size > (size_t) SSIZE_MAX )
-				 || ( ( sizeof( libcstring_system_character_t ) * extent_descriptor->alternate_filename_size ) > (size_t) SSIZE_MAX ) )
+				 || ( ( sizeof( system_character_t ) * extent_descriptor->alternate_filename_size ) > (size_t) SSIZE_MAX ) )
 				{
 					libcerror_error_set(
 					 error,
@@ -525,7 +527,7 @@ int libvmdk_handle_open(
 
 					goto on_error;
 				}
-				extent_descriptor->alternate_filename = libcstring_system_string_allocate(
+				extent_descriptor->alternate_filename = system_string_allocate(
 				                                         extent_descriptor->alternate_filename_size );
 
 				if( extent_descriptor->alternate_filename == NULL )
@@ -559,7 +561,7 @@ int libvmdk_handle_open(
 				if( libcnotify_verbose != 0 )
 				{
 					libcnotify_printf(
-					 "%s: alternate filename\t\t\t: %" PRIs_LIBCSTRING_SYSTEM "\n",
+					 "%s: alternate filename\t\t\t: %" PRIs_SYSTEM "\n",
 					 function,
 					 extent_descriptor->alternate_filename );
 				}
@@ -567,7 +569,7 @@ int libvmdk_handle_open(
 			}
 		}
 	}
-	basename_end = libcstring_narrow_string_search_character_reverse(
+	basename_end = narrow_string_search_character_reverse(
 	                filename,
 	                (int) LIBCPATH_SEPARATOR,
 	                filename_length + 1 );
@@ -704,7 +706,7 @@ int libvmdk_handle_open_wide(
 
 		return( -1 );
 	}
-	filename_length = libcstring_wide_string_length(
+	filename_length = wide_string_length(
 	                   filename );
 
 	if( libbfio_file_initialize(
@@ -845,7 +847,7 @@ int libvmdk_handle_open_wide(
 					goto on_error;
 				}
 				if( ( extent_descriptor->alternate_filename_size > (size_t) SSIZE_MAX )
-				 || ( ( sizeof( libcstring_system_character_t ) * extent_descriptor->alternate_filename_size ) > (size_t) SSIZE_MAX ) )
+				 || ( ( sizeof( system_character_t ) * extent_descriptor->alternate_filename_size ) > (size_t) SSIZE_MAX ) )
 				{
 					libcerror_error_set(
 					 error,
@@ -856,7 +858,7 @@ int libvmdk_handle_open_wide(
 
 					goto on_error;
 				}
-				extent_descriptor->alternate_filename = libcstring_system_string_allocate(
+				extent_descriptor->alternate_filename = system_string_allocate(
 				                                         extent_descriptor->alternate_filename_size );
 
 				if( extent_descriptor->alternate_filename == NULL )
@@ -890,7 +892,7 @@ int libvmdk_handle_open_wide(
 				if( libcnotify_verbose != 0 )
 				{
 					libcnotify_printf(
-					 "%s: alternate filename\t\t\t: %" PRIs_LIBCSTRING_SYSTEM "\n",
+					 "%s: alternate filename\t\t\t: %" PRIs_SYSTEM "\n",
 					 function,
 					 extent_descriptor->alternate_filename );
 				}
@@ -899,7 +901,7 @@ int libvmdk_handle_open_wide(
 		}
 	}
 /* TODO does this work for UTF-16 ? */
-	basename_end = libcstring_wide_string_search_character_reverse(
+	basename_end = wide_string_search_character_reverse(
 	                filename,
 	                (wint_t) LIBCPATH_SEPARATOR,
 	                filename_length + 1 );
@@ -1381,17 +1383,17 @@ int libvmdk_handle_open_extent_data_files(
      libvmdk_handle_t *handle,
      libcerror_error_t **error )
 {
-	libcstring_system_character_t *extent_data_file_location  = NULL;
-	libcstring_system_character_t *extent_data_filename_start = NULL;
-        libbfio_pool_t *file_io_pool                              = NULL;
-	libvmdk_internal_extent_descriptor_t *extent_descriptor   = NULL;
-	libvmdk_internal_handle_t *internal_handle                = NULL;
-	static char *function                                     = "libvmdk_handle_open_extent_data_files";
-	size_t extent_data_file_location_size                     = 0;
-	size_t extent_data_filename_size                          = 0;
-	int extent_index                                          = 0;
-	int number_of_extents                                     = 0;
-	int result                                                = 0;
+	libbfio_pool_t *file_io_pool                            = NULL;
+	libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
+	libvmdk_internal_handle_t *internal_handle              = NULL;
+	system_character_t *extent_data_file_location           = NULL;
+	system_character_t *extent_data_filename_start          = NULL;
+	static char *function                                   = "libvmdk_handle_open_extent_data_files";
+	size_t extent_data_file_location_size                   = 0;
+	size_t extent_data_filename_size                        = 0;
+	int extent_index                                        = 0;
+	int number_of_extents                                   = 0;
+	int result                                              = 0;
 
 	if( handle == NULL )
 	{
@@ -1553,13 +1555,13 @@ int libvmdk_handle_open_extent_data_files(
 
 				goto on_error;
 			}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
-			extent_data_filename_start = libcstring_wide_string_search_character_reverse(
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+			extent_data_filename_start = wide_string_search_character_reverse(
 			                              extent_descriptor->filename,
 			                              (wint_t) LIBCPATH_SEPARATOR,
 			                              extent_descriptor->filename_size );
 #else
-			extent_data_filename_start = libcstring_narrow_string_search_character_reverse(
+			extent_data_filename_start = narrow_string_search_character_reverse(
 			                              extent_descriptor->filename,
 			                              (int) LIBCPATH_SEPARATOR,
 			                              extent_descriptor->filename_size );
@@ -1581,7 +1583,7 @@ int libvmdk_handle_open_extent_data_files(
 /* TODO refactor to a function in extent table */
 			if( internal_handle->extent_table->basename != NULL )
 			{
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 				if( libcpath_path_join_wide(
 				     &extent_data_file_location,
 				     &extent_data_file_location_size,
@@ -1619,7 +1621,7 @@ int libvmdk_handle_open_extent_data_files(
 /* TODO add support for alternate extent file name */
 			/* Note that the open extent data file function will initialize extent_data_file_io_pool
 			 */
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libvmdk_handle_open_extent_data_file_wide(
 				  internal_handle,
 				  file_io_pool,
@@ -1640,7 +1642,7 @@ int libvmdk_handle_open_extent_data_files(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_IO,
 				 LIBCERROR_IO_ERROR_OPEN_FAILED,
-				 "%s: unable to open extent data file: %" PRIs_LIBCSTRING_SYSTEM ".",
+				 "%s: unable to open extent data file: %" PRIs_SYSTEM ".",
 				 function,
 				 extent_data_file_location );
 
@@ -1911,7 +1913,7 @@ int libvmdk_handle_open_extent_data_file(
                 goto on_error;
 	}
 #endif
-	filename_length = libcstring_narrow_string_length(
+	filename_length = narrow_string_length(
 	                   filename );
 
 	if( libbfio_file_set_name(
@@ -2044,7 +2046,7 @@ int libvmdk_handle_open_extent_data_file_wide(
                 goto on_error;
 	}
 #endif
-	filename_length = libcstring_wide_string_length(
+	filename_length = wide_string_length(
 	                   filename );
 
 	if( libbfio_file_set_name_wide(

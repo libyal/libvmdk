@@ -21,14 +21,15 @@
 
 #include <common.h>
 #include <memory.h>
+#include <narrow_string.h>
 #include <types.h>
+#include <wide_string.h>
 
 #include "libvmdk_definitions.h"
 #include "libvmdk_extent_file.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libclocale.h"
-#include "libvmdk_libcstring.h"
 #include "libvmdk_support.h"
 
 #if !defined( HAVE_LOCAL_LIBVMDK )
@@ -126,7 +127,7 @@ int libvmdk_check_file_signature(
 
 		return( -1 );
 	}
-	filename_length = libcstring_narrow_string_length(
+	filename_length = narrow_string_length(
 	                   filename );
 
 	if( filename_length == 0 )
@@ -233,7 +234,7 @@ int libvmdk_check_file_signature_wide(
 
 		return( -1 );
 	}
-	filename_length = libcstring_wide_string_length(
+	filename_length = wide_string_length(
 	                   filename );
 
 	if( filename_length == 0 )

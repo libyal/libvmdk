@@ -20,6 +20,8 @@
  */
 
 #include <common.h>
+#include <file_stream.h>
+#include <types.h>
 
 #if defined( HAVE_STDLIB_H ) || defined( WINAPI )
 #include <stdlib.h>
@@ -90,7 +92,7 @@ int vmdk_test_notify_stream_close(
 
 /* The main program
  */
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 int wmain(
      int argc VMDK_TEST_ATTRIBUTE_UNUSED,
      wchar_t * const argv[] VMDK_TEST_ATTRIBUTE_UNUSED )

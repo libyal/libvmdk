@@ -1,7 +1,6 @@
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
-	@LIBCSTRING_CPPFLAGS@ \
 	@LIBCERROR_CPPFLAGS@ \
 	@LIBCTHREADS_CPPFLAGS@ \
 	@LIBCDATA_CPPFLAGS@ \
@@ -53,19 +52,16 @@ check_PROGRAMS = \
 
 vmdk_test_error_SOURCES = \
 	vmdk_test_error.c \
-	vmdk_test_libcstring.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
 	vmdk_test_unused.h
 
 vmdk_test_error_LDADD = \
-	../libvmdk/libvmdk.la \
-	@LIBCSTRING_LIBADD@
+	../libvmdk/libvmdk.la
 
 vmdk_test_extent_descriptor_SOURCES = \
 	vmdk_test_extent_descriptor.c \
 	vmdk_test_libcerror.h \
-	vmdk_test_libcstring.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
 	vmdk_test_memory.c vmdk_test_memory.h \
@@ -73,14 +69,12 @@ vmdk_test_extent_descriptor_SOURCES = \
 
 vmdk_test_extent_descriptor_LDADD = \
 	../libvmdk/libvmdk.la \
-	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@
+	@LIBCERROR_LIBADD@
 
 vmdk_test_handle_SOURCES = \
 	vmdk_test_handle.c \
 	vmdk_test_libcerror.h \
 	vmdk_test_libclocale.h \
-	vmdk_test_libcstring.h \
 	vmdk_test_libcsystem.h \
 	vmdk_test_libuna.h \
 	vmdk_test_libvmdk.h \
@@ -95,23 +89,19 @@ vmdk_test_handle_LDADD = \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
 	../libvmdk/libvmdk.la \
-	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@
+	@LIBCERROR_LIBADD@
 
 vmdk_test_notify_SOURCES = \
-	vmdk_test_libcstring.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
 	vmdk_test_notify.c \
 	vmdk_test_unused.h
 
 vmdk_test_notify_LDADD = \
-	../libvmdk/libvmdk.la \
-	@LIBCSTRING_LIBADD@
+	../libvmdk/libvmdk.la
 
 vmdk_test_open_close_SOURCES = \
 	vmdk_test_libcerror.h \
-	vmdk_test_libcstring.h \
 	vmdk_test_libcsystem.h \
 	vmdk_test_libcthreads.h \
 	vmdk_test_libvmdk.h \
@@ -122,13 +112,11 @@ vmdk_test_open_close_LDADD = \
 	@LIBCSYSTEM_LIBADD@ \
 	../libvmdk/libvmdk.la \
 	@LIBCTHREADS_LIBADD@ \
-	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@ \
+	@LIBCERROR_LIBADD@
 	@PTHREAD_LIBADD@
 
 vmdk_test_read_SOURCES = \
 	vmdk_test_libcerror.h \
-	vmdk_test_libcstring.h \
 	vmdk_test_libcsystem.h \
 	vmdk_test_libcthreads.h \
 	vmdk_test_libvmdk.h \
@@ -139,13 +127,11 @@ vmdk_test_read_LDADD = \
 	@LIBCSYSTEM_LIBADD@ \
 	../libvmdk/libvmdk.la \
 	@LIBCTHREADS_LIBADD@ \
-	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@ \
+	@LIBCERROR_LIBADD@
 	@PTHREAD_LIBADD@
 
 vmdk_test_seek_SOURCES = \
 	vmdk_test_libcerror.h \
-	vmdk_test_libcstring.h \
 	vmdk_test_libcsystem.h \
 	vmdk_test_libcthreads.h \
 	vmdk_test_libvmdk.h \
@@ -156,14 +142,12 @@ vmdk_test_seek_LDADD = \
 	@LIBCSYSTEM_LIBADD@ \
 	../libvmdk/libvmdk.la \
 	@LIBCTHREADS_LIBADD@ \
-	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@ \
+	@LIBCERROR_LIBADD@
 	@PTHREAD_LIBADD@
 
 vmdk_test_support_SOURCES = \
 	vmdk_test_libcerror.h \
 	vmdk_test_libclocale.h \
-	vmdk_test_libcstring.h \
 	vmdk_test_libcsystem.h \
 	vmdk_test_libuna.h \
 	vmdk_test_libvmdk.h \
@@ -178,8 +162,7 @@ vmdk_test_support_LDADD = \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
 	../libvmdk/libvmdk.la \
-	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@
+	@LIBCERROR_LIBADD@
 
 MAINTAINERCLEANFILES = \
 	Makefile.in

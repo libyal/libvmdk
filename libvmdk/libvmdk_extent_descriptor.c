@@ -21,7 +21,10 @@
 
 #include <common.h>
 #include <memory.h>
+#include <narrow_string.h>
+#include <system_string.h>
 #include <types.h>
+#include <wide_string.h>
 
 #include "libvmdk_definitions.h"
 #include "libvmdk_extent_descriptor.h"
@@ -399,7 +402,7 @@ int libvmdk_extent_descriptor_read(
 	}
 #endif
 	if( ( value_string_segment_size == 3 )
-	 && ( libcstring_narrow_string_compare(
+	 && ( narrow_string_compare(
 	       value_string_segment,
 	       "RW",
 	       2 ) == 0 ) )
@@ -407,7 +410,7 @@ int libvmdk_extent_descriptor_read(
 		extent_descriptor->access = LIBVMDK_EXTENT_ACCESS_READ_WRITE;
 	}
 	else if( ( value_string_segment_size == 7 )
-	      && ( libcstring_narrow_string_compare(
+	      && ( narrow_string_compare(
 		    value_string_segment,
 		    "RDONLY",
 		    6 ) == 0 ) )
@@ -415,7 +418,7 @@ int libvmdk_extent_descriptor_read(
 		extent_descriptor->access = LIBVMDK_EXTENT_ACCESS_READ;
 	}
 	else if( ( value_string_segment_size == 9 )
-	      && ( libcstring_narrow_string_compare(
+	      && ( narrow_string_compare(
 		    value_string_segment,
 		    "NOACCESS",
 		    8 ) == 0 ) )
@@ -540,7 +543,7 @@ int libvmdk_extent_descriptor_read(
 	}
 #endif
 	if( ( value_string_segment_size == 5 )
-	 && ( libcstring_narrow_string_compare(
+	 && ( narrow_string_compare(
 	       value_string_segment,
 	       "FLAT",
 	       4 ) == 0 ) )
@@ -548,7 +551,7 @@ int libvmdk_extent_descriptor_read(
 		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_FLAT;
 	}
 	else if( ( value_string_segment_size == 5 )
-	      && ( libcstring_narrow_string_compare(
+	      && ( narrow_string_compare(
 		    value_string_segment,
 		    "VMFS",
 		    4 ) == 0 ) )
@@ -556,7 +559,7 @@ int libvmdk_extent_descriptor_read(
 		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS_FLAT;
 	}
 	else if( ( value_string_segment_size == 5 )
-	      && ( libcstring_narrow_string_compare(
+	      && ( narrow_string_compare(
 		    value_string_segment,
 		    "ZERO",
 		    4 ) == 0 ) )
@@ -564,7 +567,7 @@ int libvmdk_extent_descriptor_read(
 		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_ZERO;
 	}
 	else if( ( value_string_segment_size == 7 )
-	      && ( libcstring_narrow_string_compare(
+	      && ( narrow_string_compare(
 		    value_string_segment,
 		    "SPARSE",
 		    6 ) == 0 ) )
@@ -572,7 +575,7 @@ int libvmdk_extent_descriptor_read(
 		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_SPARSE;
 	}
 	else if( ( value_string_segment_size == 8 )
-	      && ( libcstring_narrow_string_compare(
+	      && ( narrow_string_compare(
 		    value_string_segment,
 		    "VMFSRAW",
 		    7 ) == 0 ) )
@@ -580,7 +583,7 @@ int libvmdk_extent_descriptor_read(
 		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS_RAW;
 	}
 	else if( ( value_string_segment_size == 8 )
-	      && ( libcstring_narrow_string_compare(
+	      && ( narrow_string_compare(
 		    value_string_segment,
 		    "VMFSRDM",
 		    7 ) == 0 ) )
@@ -588,7 +591,7 @@ int libvmdk_extent_descriptor_read(
 		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS_RDM;
 	}
 	else if( ( value_string_segment_size == 11 )
-	      && ( libcstring_narrow_string_compare(
+	      && ( narrow_string_compare(
 		    value_string_segment,
 		    "VMFSSPARSE",
 		    10 ) == 0 ) )
@@ -637,7 +640,7 @@ int libvmdk_extent_descriptor_read(
 		 */
 		if( encoding != 0 )
 		{
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libuna_utf16_string_size_from_byte_stream(
 			          (uint8_t *) filename,
 			          filename_length + 1,
@@ -655,7 +658,7 @@ int libvmdk_extent_descriptor_read(
 		}
 		else
 		{
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libuna_utf16_string_size_from_utf8_stream(
 			          (uint8_t *) filename,
 			          filename_length + 1,
@@ -680,7 +683,7 @@ int libvmdk_extent_descriptor_read(
 
 			goto on_error;
 		}
-		extent_descriptor->filename = libcstring_system_string_allocate(
+		extent_descriptor->filename = system_string_allocate(
 		                               extent_descriptor->filename_size );
 
 		if( extent_descriptor->filename == NULL )
@@ -696,7 +699,7 @@ int libvmdk_extent_descriptor_read(
 		}
 		if( encoding != 0 )
 		{
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libuna_utf16_string_copy_from_byte_stream(
 			          (uint16_t *) extent_descriptor->filename,
 			          extent_descriptor->filename_size,
@@ -716,7 +719,7 @@ int libvmdk_extent_descriptor_read(
 		}
 		else
 		{
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libuna_utf16_string_copy_from_utf8_stream(
 			          (uint16_t *) extent_descriptor->filename,
 			          extent_descriptor->filename_size,
@@ -747,7 +750,7 @@ int libvmdk_extent_descriptor_read(
 		if( libcnotify_verbose != 0 )
 		{
 			libcnotify_printf(
-			 "%s: filename\t\t\t\t: %" PRIs_LIBCSTRING_SYSTEM "\n",
+			 "%s: filename\t\t\t\t: %" PRIs_SYSTEM "\n",
 			 function,
 			 extent_descriptor->filename );
 		}
@@ -1090,7 +1093,7 @@ int libvmdk_extent_descriptor_get_utf8_filename_size(
 	{
 		return( 0 );
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libuna_utf8_string_size_from_utf16(
 	     (uint16_t *) internal_extent_descriptor->filename,
 	     internal_extent_descriptor->filename_size,
@@ -1153,7 +1156,7 @@ int libvmdk_extent_descriptor_get_utf8_filename(
 	{
 		return( 0 );
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libuna_utf8_string_copy_from_utf16(
 	     utf8_string,
 	     utf8_string_size,
@@ -1204,7 +1207,7 @@ int libvmdk_extent_descriptor_get_utf8_filename(
 
 		return( -1 );
 	}
-	if( libcstring_narrow_string_copy(
+	if( narrow_string_copy(
 	     utf8_string,
 	     internal_extent_descriptor->filename,
 	     internal_extent_descriptor->filename_size ) == NULL )
@@ -1251,7 +1254,7 @@ int libvmdk_extent_descriptor_get_utf16_filename_size(
 	{
 		return( 0 );
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( utf16_string_size == NULL )
 	{
 		libcerror_error_set(
@@ -1314,7 +1317,7 @@ int libvmdk_extent_descriptor_get_utf16_filename(
 	{
 		return( 0 );
 	}
-#if defined( LIBCSTRING_HAVE_WIDE_SYSTEM_CHARACTER )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( utf16_string == NULL )
 	{
 		libcerror_error_set(
@@ -1348,7 +1351,7 @@ int libvmdk_extent_descriptor_get_utf16_filename(
 
 		return( -1 );
 	}
-	if( libcstring_wide_string_copy(
+	if( wide_string_copy(
 	     utf16_string,
 	     internal_extent_descriptor->filename,
 	     internal_extent_descriptor->filename_size ) == NULL )

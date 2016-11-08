@@ -21,7 +21,10 @@
 
 #include <common.h>
 #include <memory.h>
+#include <narrow_string.h>
+#include <system_string.h>
 #include <types.h>
+#include <wide_string.h>
 
 #include "libvmdk_definitions.h"
 #include "libvmdk_extent_descriptor.h"
@@ -30,7 +33,6 @@
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
-#include "libvmdk_libcstring.h"
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
 #include "libvmdk_system_string.h"
@@ -333,7 +335,7 @@ int libvmdk_extent_table_clone(
 	}
 	if( source_extent_table->basename != NULL )
 	{
-		( *destination_extent_table )->basename = libcstring_system_string_allocate(
+		( *destination_extent_table )->basename = system_string_allocate(
 					                    source_extent_table->basename_size );
 
 		if( *destination_extent_table == NULL )
@@ -350,7 +352,7 @@ int libvmdk_extent_table_clone(
 		if( memory_copy(
 		     ( *destination_extent_table )->basename,
 		     source_extent_table->basename,
-		     sizeof( libcstring_system_character_t ) * source_extent_table->basename_size ) == NULL )
+		     sizeof( system_character_t ) * source_extent_table->basename_size ) == NULL )
 		{
 			libcerror_error_set(
 			 error,
@@ -617,7 +619,7 @@ int libvmdk_extent_table_set_basename(
 
 		goto on_error;
 	}
-	extent_table->basename = libcstring_system_string_allocate(
+	extent_table->basename = system_string_allocate(
 	                          extent_table->basename_size );
 
 	if( extent_table->basename == NULL )
@@ -857,7 +859,7 @@ int libvmdk_extent_table_set_basename_wide(
 
 		goto on_error;
 	}
-	extent_table->basename = libcstring_system_string_allocate(
+	extent_table->basename = system_string_allocate(
 	                           extent_table->basename_size );
 
 	if( extent_table->basename == NULL )

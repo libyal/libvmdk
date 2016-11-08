@@ -8,7 +8,6 @@ if HAVE_PYTHON3
 AM_CFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
-	@LIBCSTRING_CPPFLAGS@ \
 	@LIBCERROR_CPPFLAGS@ \
 	@LIBCDATA_CPPFLAGS@ \
 	@LIBCLOCALE_CPPFLAGS@ \
@@ -32,7 +31,6 @@ BUILT_SOURCES = \
 	pyvmdk_libbfio.h \
 	pyvmdk_libcerror.h \
 	pyvmdk_libclocale.h \
-	pyvmdk_libcstring.h \
 	pyvmdk_libvmdk.h \
 	pyvmdk_metadata.c pyvmdk_metadata.h \
 	pyvmdk_python.h \
@@ -43,7 +41,6 @@ pyexec_LTLIBRARIES = pyvmdk.la
 nodist_pyvmdk_la_SOURCES = $(BUILT_SOURCES)
 
 pyvmdk_la_LIBADD = \
-	@LIBCSTRING_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
 	../libvmdk/libvmdk.la \
 	@LIBCDATA_LIBADD@ \

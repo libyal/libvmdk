@@ -26,20 +26,19 @@
 #include <types.h>
 
 #include "libvmdk_libcerror.h"
-#include "libvmdk_libcstring.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
 int libvmdk_system_string_size_to_narrow_string(
-     const libcstring_system_character_t *system_string,
+     const system_character_t *system_string,
      size_t system_string_size,
      size_t *narrow_string_size,
      libcerror_error_t **error );
 
 int libvmdk_system_string_copy_to_narrow_string(
-     const libcstring_system_character_t *system_string,
+     const system_character_t *system_string,
      size_t system_string_size,
      char *narrow_string,
      size_t narrow_string_size,
@@ -52,7 +51,7 @@ int libvmdk_system_string_size_from_narrow_string(
      libcerror_error_t **error );
 
 int libvmdk_system_string_copy_from_narrow_string(
-     libcstring_system_character_t *system_string,
+     system_character_t *system_string,
      size_t system_string_size,
      const char *narrow_string,
      size_t narrow_string_size,
@@ -61,13 +60,13 @@ int libvmdk_system_string_copy_from_narrow_string(
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
 int libvmdk_system_string_size_to_wide_string(
-     const libcstring_system_character_t *system_string,
+     const system_character_t *system_string,
      size_t system_string_size,
      size_t *wide_string_size,
      libcerror_error_t **error );
 
 int libvmdk_system_string_copy_to_wide_string(
-     const libcstring_system_character_t *system_string,
+     const system_character_t *system_string,
      size_t system_string_size,
      wchar_t *wide_string,
      size_t wide_string_size,
@@ -80,7 +79,7 @@ int libvmdk_system_string_size_from_wide_string(
      libcerror_error_t **error );
 
 int libvmdk_system_string_copy_from_wide_string(
-     libcstring_system_character_t *system_string,
+     system_character_t *system_string,
      size_t system_string_size,
      const wchar_t *wide_string,
      size_t wide_string_size,

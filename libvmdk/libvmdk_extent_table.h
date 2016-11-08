@@ -30,7 +30,6 @@
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
-#include "libvmdk_libcstring.h"
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
 
@@ -48,7 +47,7 @@ struct libvmdk_extent_table
 
 	/* The basename
 	 */
-	libcstring_system_character_t *basename;
+	system_character_t *basename;
 
 	/* The basename size
 	 */

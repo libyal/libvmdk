@@ -1,7 +1,6 @@
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include \
 	-I$(top_srcdir)/common \
-	@LIBCSTRING_CPPFLAGS@ \
 	@LIBCERROR_CPPFLAGS@ \
 	@LIBCDATA_CPPFLAGS@ \
 	@LIBCLOCALE_CPPFLAGS@ \
@@ -33,7 +32,6 @@ vmdkinfo_SOURCES = \
 	vmdktools_libcerror.h \
 	vmdktools_libclocale.h \
 	vmdktools_libcnotify.h \
-	vmdktools_libcstring.h \
 	vmdktools_libcsystem.h \
 	vmdktools_libfvalue.h \
 	vmdktools_libuna.h \
@@ -45,7 +43,6 @@ vmdkinfo_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@ \
 	@LIBINTL@
 
 vmdkmount_SOURCES = \
@@ -58,7 +55,6 @@ vmdkmount_SOURCES = \
 	vmdktools_libclocale.h \
 	vmdktools_libcnotify.h \
 	vmdktools_libcpath.h \
-	vmdktools_libcstring.h \
 	vmdktools_libcsystem.h \
 	vmdktools_libfvalue.h \
 	vmdktools_libuna.h \
@@ -74,7 +70,6 @@ vmdkmount_LDADD = \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
-	@LIBCSTRING_LIBADD@ \
 	@LIBINTL@
 
 MAINTAINERCLEANFILES = \
