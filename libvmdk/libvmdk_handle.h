@@ -36,14 +36,6 @@
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
 
-#if defined( _MSC_VER ) || defined( __BORLANDC__ ) || defined( __MINGW32_VERSION ) || defined( __MINGW64_VERSION_MAJOR )
-
-/* This inclusion is needed otherwise some linkers
- * mess up exporting the metadata functions
- */
-#include "libvmdk_metadata.h"
-#endif
-
 #if defined( __cplusplus )
 extern "C" {
 #endif
@@ -264,6 +256,69 @@ LIBVMDK_EXTERN \
 int libvmdk_handle_set_parent_handle(
      libvmdk_handle_t *handle,
      libvmdk_handle_t *parent_handle,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_disk_type(
+     libvmdk_handle_t *handle,
+     int *disk_type,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_media_size(
+     libvmdk_handle_t *handle,
+     size64_t *media_size,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_content_identifier(
+     libvmdk_handle_t *handle,
+     uint32_t *content_identifier,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_parent_content_identifier(
+     libvmdk_handle_t *handle,
+     uint32_t *parent_content_identifier,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_utf8_parent_filename_size(
+     libvmdk_handle_t *handle,
+     size_t *utf8_string_size,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_utf8_parent_filename(
+     libvmdk_handle_t *handle,
+     uint8_t *utf8_string,
+     size_t utf8_string_size,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_utf16_parent_filename_size(
+     libvmdk_handle_t *handle,
+     size_t *utf16_string_size,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_utf16_parent_filename(
+     libvmdk_handle_t *handle,
+     uint16_t *utf16_string,
+     size_t utf16_string_size,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_number_of_extents(
+     libvmdk_handle_t *handle,
+     int *number_of_extents,
+     libcerror_error_t **error );
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_get_extent_descriptor(
+     libvmdk_handle_t *handle,
+     int extent_index,
+     libvmdk_extent_descriptor_t **extent_descriptor,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

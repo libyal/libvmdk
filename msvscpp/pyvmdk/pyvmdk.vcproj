@@ -201,10 +201,6 @@
 				RelativePath="..\..\pyvmdk\pyvmdk_integer.c"
 				>
 			</File>
-			<File
-				RelativePath="..\..\pyvmdk\pyvmdk_metadata.c"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -257,10 +253,6 @@
 			</File>
 			<File
 				RelativePath="..\..\pyvmdk\pyvmdk_libvmdk.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\pyvmdk\pyvmdk_metadata.h"
 				>
 			</File>
 			<File

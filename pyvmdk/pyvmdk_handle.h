@@ -127,6 +127,43 @@ PyObject *pyvmdk_handle_get_offset(
            pyvmdk_handle_t *pyvmdk_handle,
            PyObject *arguments );
 
+PyObject *pyvmdk_handle_get_disk_type(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments );
+
+PyObject *pyvmdk_handle_get_media_size(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments );
+
+PyObject *pyvmdk_handle_get_content_identifier(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments );
+
+PyObject *pyvmdk_handle_get_parent_content_identifier(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments );
+
+PyObject *pyvmdk_handle_get_parent_filename(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments );
+
+PyObject *pyvmdk_handle_get_number_of_extents(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments );
+
+PyObject *pyvmdk_handle_get_extent_descriptor_by_index(
+           pyvmdk_handle_t *pyvmdk_handle,
+           int extent_index );
+
+PyObject *pyvmdk_handle_get_extent_descriptor(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments,
+           PyObject *keywords );
+
+PyObject *pyvmdk_handle_get_extent_descriptors(
+           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *arguments );
+
 #if defined( __cplusplus )
 }
 #endif

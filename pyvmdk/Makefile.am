@@ -26,7 +26,6 @@ pyvmdk_la_SOURCES = \
 	pyvmdk_libcerror.h \
 	pyvmdk_libclocale.h \
 	pyvmdk_libvmdk.h \
-	pyvmdk_metadata.c pyvmdk_metadata.h \
 	pyvmdk_python.h \
 	pyvmdk_unused.h
 

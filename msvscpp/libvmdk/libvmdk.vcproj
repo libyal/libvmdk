@@ -226,10 +226,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\libvmdk\libvmdk_metadata.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\libvmdk\libvmdk_notify.c"
 				>
 			</File>
@@ -357,10 +353,6 @@
 			</File>
 			<File
 				RelativePath="..\..\libvmdk\libvmdk_libuna.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\libvmdk\libvmdk_metadata.h"
 				>
 			</File>
 			<File
