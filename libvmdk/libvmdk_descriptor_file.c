@@ -1338,12 +1338,12 @@ int libvmdk_descriptor_file_read_extents(
      int *line_index,
      libcerror_error_t **error )
 {
-	libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
-	char *line_string_segment                               = NULL;
-	static char *function                                   = "libvmdk_descriptor_file_read_extents";
-	size_t line_string_segment_index                        = 0;
-	size_t line_string_segment_size                         = 0;
-	int entry_index                                         = 0;
+	libvmdk_extent_descriptor_t *extent_descriptor = NULL;
+	static char *function                          = "libvmdk_descriptor_file_read_extents";
+	char *line_string_segment                      = NULL;
+	size_t line_string_segment_index               = 0;
+	size_t line_string_segment_size                = 0;
+	int entry_index                                = 0;
 
 	if( descriptor_file == NULL )
 	{
@@ -1618,7 +1618,8 @@ int libvmdk_descriptor_file_read_extents(
 
 			goto on_error;
 		}
-		descriptor_file->media_size += extent_descriptor->size;
+/* TODO refactor by get_size function */
+		descriptor_file->media_size += ( (libvmdk_internal_extent_descriptor_t *) extent_descriptor )->size;
 
 		if( libcdata_array_append_entry(
 		     descriptor_file->extents_array,
@@ -1645,7 +1646,7 @@ on_error:
 	if( extent_descriptor != NULL )
 	{
 		libvmdk_internal_extent_descriptor_free(
-		 &extent_descriptor,
+		 (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 		 NULL );
 	}
 	libcdata_array_empty(

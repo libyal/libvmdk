@@ -138,5 +138,5 @@ int libvmdk_deflate_decompress(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_DEFLATE_COMPRESSION_H ) */
 

@@ -1,4 +1,4 @@
-.Dd May 27, 2016
+.Dd November  8, 2016
 .Dt libvmdk 3
 .Os libvmdk
 .Sh NAME
@@ -76,6 +76,8 @@ Handle functions
 .Fn libvmdk_handle_seek_offset "libvmdk_handle_t *handle, off64_t offset, int whence, libvmdk_error_t **error"
 .Ft int
 .Fn libvmdk_handle_get_offset "libvmdk_handle_t *handle, off64_t *offset, libvmdk_error_t **error"
+.Ft int
+.Fn libvmdk_handle_set_maximum_number_of_open_handles "libvmdk_handle_t *handle, int maximum_number_of_open_handles, libvmdk_error_t **error"
 .Ft int
 .Fn libvmdk_handle_set_parent_handle "libvmdk_handle_t *handle, libvmdk_handle_t *parent_handle, libvmdk_error_t **error"
 .Pp

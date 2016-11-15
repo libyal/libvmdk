@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #endif
 
-#include "vmdk_test_libcerror.h"
 #include "vmdk_test_libvmdk.h"
 #include "vmdk_test_macros.h"
 #include "vmdk_test_unused.h"

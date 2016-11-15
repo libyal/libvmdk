@@ -40,10 +40,11 @@
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_extent_descriptor_initialize(
-     libvmdk_internal_extent_descriptor_t **extent_descriptor,
+     libvmdk_extent_descriptor_t **extent_descriptor,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_extent_descriptor_initialize";
+	libvmdk_internal_extent_descriptor_t *internal_extent_descriptor = NULL;
+	static char *function                                            = "libvmdk_extent_descriptor_initialize";
 
 	if( extent_descriptor == NULL )
 	{
@@ -67,10 +68,10 @@ int libvmdk_extent_descriptor_initialize(
 
 		return( -1 );
 	}
-	*extent_descriptor = memory_allocate_structure(
-	                      libvmdk_internal_extent_descriptor_t );
+	internal_extent_descriptor = memory_allocate_structure(
+	                              libvmdk_internal_extent_descriptor_t );
 
-	if( *extent_descriptor == NULL )
+	if( internal_extent_descriptor == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -82,7 +83,7 @@ int libvmdk_extent_descriptor_initialize(
 		goto on_error;
 	}
 	if( memory_set(
-	     *extent_descriptor,
+	     internal_extent_descriptor,
 	     0,
 	     sizeof( libvmdk_internal_extent_descriptor_t ) ) == NULL )
 	{
@@ -95,15 +96,15 @@ int libvmdk_extent_descriptor_initialize(
 
 		goto on_error;
 	}
+	*extent_descriptor = (libvmdk_extent_descriptor_t *) internal_extent_descriptor;
+
 	return( 1 );
 
 on_error:
-	if( *extent_descriptor != NULL )
+	if( internal_extent_descriptor != NULL )
 	{
 		memory_free(
-		 *extent_descriptor );
-
-		*extent_descriptor = NULL;
+		 internal_extent_descriptor );
 	}
 	return( -1 );
 }
@@ -139,12 +140,12 @@ int libvmdk_extent_descriptor_free(
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_internal_extent_descriptor_free(
-     libvmdk_internal_extent_descriptor_t **extent_descriptor,
+     libvmdk_internal_extent_descriptor_t **internal_extent_descriptor,
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_internal_extent_descriptor_free";
 
-	if( extent_descriptor == NULL )
+	if( internal_extent_descriptor == NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -155,22 +156,22 @@ int libvmdk_internal_extent_descriptor_free(
 
 		return( -1 );
 	}
-	if( *extent_descriptor != NULL )
+	if( *internal_extent_descriptor != NULL )
 	{
-		if( ( *extent_descriptor )->filename != NULL )
+		if( ( *internal_extent_descriptor )->filename != NULL )
 		{
 			memory_free(
-			 ( *extent_descriptor )->filename );
+			 ( *internal_extent_descriptor )->filename );
 		}
-		if( ( *extent_descriptor )->alternate_filename != NULL )
+		if( ( *internal_extent_descriptor )->alternate_filename != NULL )
 		{
 			memory_free(
-			 ( *extent_descriptor )->alternate_filename );
+			 ( *internal_extent_descriptor )->alternate_filename );
 		}
 		memory_free(
-		 *extent_descriptor );
+		 *internal_extent_descriptor );
 
-		*extent_descriptor = NULL;
+		*internal_extent_descriptor = NULL;
 	}
 	return( 1 );
 }
@@ -179,23 +180,24 @@ int libvmdk_internal_extent_descriptor_free(
  * Returns the number of bytes read if successful, or -1 on error
  */
 int libvmdk_extent_descriptor_read(
-     libvmdk_internal_extent_descriptor_t *extent_descriptor,
+     libvmdk_extent_descriptor_t *extent_descriptor,
      char *value_string,
      size_t value_string_size,
      int encoding,
      libcerror_error_t **error )
 {
-	libcsplit_narrow_split_string_t *values     = NULL;
-	char *filename                              = NULL;
-	char *value_string_segment                  = NULL;
-	static char *function                       = "libvmdk_extent_descriptor_read";
-	size_t filename_length                      = 0;
-	size_t value_string_index                   = 0;
-	size_t value_string_length                  = 0;
-	size_t value_string_segment_size            = 0;
-	uint64_t value_64bit                        = 0;
-	int number_of_values                        = 0;
-	int result                                  = 0;
+	libcsplit_narrow_split_string_t *values                          = NULL;
+	libvmdk_internal_extent_descriptor_t *internal_extent_descriptor = NULL;
+	char *filename                                                   = NULL;
+	static char *function                                            = "libvmdk_extent_descriptor_read";
+	char *value_string_segment                                       = NULL;
+	size_t filename_length                                           = 0;
+	size_t value_string_index                                        = 0;
+	size_t value_string_length                                       = 0;
+	size_t value_string_segment_size                                 = 0;
+	uint64_t value_64bit                                             = 0;
+	int number_of_values                                             = 0;
+	int result                                                       = 0;
 
 	if( extent_descriptor == NULL )
 	{
@@ -208,7 +210,9 @@ int libvmdk_extent_descriptor_read(
 
 		return( -1 );
 	}
-	if( extent_descriptor->filename != NULL )
+	internal_extent_descriptor = (libvmdk_internal_extent_descriptor_t *) extent_descriptor;
+
+	if( internal_extent_descriptor->filename != NULL )
 	{
 		libcerror_error_set(
 		 error,
@@ -285,6 +289,7 @@ int libvmdk_extent_descriptor_read(
 	{
 		value_string_length = value_string_index - 1;
 
+/* TODO replace this and define value_string as const */
 		value_string[ value_string_length ] = 0;
 
 		value_string_index++;
@@ -407,7 +412,7 @@ int libvmdk_extent_descriptor_read(
 	       "RW",
 	       2 ) == 0 ) )
 	{
-		extent_descriptor->access = LIBVMDK_EXTENT_ACCESS_READ_WRITE;
+		internal_extent_descriptor->access = LIBVMDK_EXTENT_ACCESS_READ_WRITE;
 	}
 	else if( ( value_string_segment_size == 7 )
 	      && ( narrow_string_compare(
@@ -415,7 +420,7 @@ int libvmdk_extent_descriptor_read(
 		    "RDONLY",
 		    6 ) == 0 ) )
 	{
-		extent_descriptor->access = LIBVMDK_EXTENT_ACCESS_READ;
+		internal_extent_descriptor->access = LIBVMDK_EXTENT_ACCESS_READ;
 	}
 	else if( ( value_string_segment_size == 9 )
 	      && ( narrow_string_compare(
@@ -423,7 +428,7 @@ int libvmdk_extent_descriptor_read(
 		    "NOACCESS",
 		    8 ) == 0 ) )
 	{
-		extent_descriptor->access = LIBVMDK_EXTENT_ACCESS_NONE;
+		internal_extent_descriptor->access = LIBVMDK_EXTENT_ACCESS_NONE;
 	}
 	else
 	{
@@ -502,7 +507,7 @@ int libvmdk_extent_descriptor_read(
 
 		goto on_error;
 	}
-	extent_descriptor->size = (size64_t) value_64bit * 512;
+	internal_extent_descriptor->size = (size64_t) value_64bit * 512;
 
 	/* The extent value: 2 contains the type
 	 */
@@ -548,7 +553,7 @@ int libvmdk_extent_descriptor_read(
 	       "FLAT",
 	       4 ) == 0 ) )
 	{
-		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_FLAT;
+		internal_extent_descriptor->type = LIBVMDK_EXTENT_TYPE_FLAT;
 	}
 	else if( ( value_string_segment_size == 5 )
 	      && ( narrow_string_compare(
@@ -556,7 +561,7 @@ int libvmdk_extent_descriptor_read(
 		    "VMFS",
 		    4 ) == 0 ) )
 	{
-		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS_FLAT;
+		internal_extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS_FLAT;
 	}
 	else if( ( value_string_segment_size == 5 )
 	      && ( narrow_string_compare(
@@ -564,7 +569,7 @@ int libvmdk_extent_descriptor_read(
 		    "ZERO",
 		    4 ) == 0 ) )
 	{
-		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_ZERO;
+		internal_extent_descriptor->type = LIBVMDK_EXTENT_TYPE_ZERO;
 	}
 	else if( ( value_string_segment_size == 7 )
 	      && ( narrow_string_compare(
@@ -572,7 +577,7 @@ int libvmdk_extent_descriptor_read(
 		    "SPARSE",
 		    6 ) == 0 ) )
 	{
-		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_SPARSE;
+		internal_extent_descriptor->type = LIBVMDK_EXTENT_TYPE_SPARSE;
 	}
 	else if( ( value_string_segment_size == 8 )
 	      && ( narrow_string_compare(
@@ -580,7 +585,7 @@ int libvmdk_extent_descriptor_read(
 		    "VMFSRAW",
 		    7 ) == 0 ) )
 	{
-		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS_RAW;
+		internal_extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS_RAW;
 	}
 	else if( ( value_string_segment_size == 8 )
 	      && ( narrow_string_compare(
@@ -588,7 +593,7 @@ int libvmdk_extent_descriptor_read(
 		    "VMFSRDM",
 		    7 ) == 0 ) )
 	{
-		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS_RDM;
+		internal_extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS_RDM;
 	}
 	else if( ( value_string_segment_size == 11 )
 	      && ( narrow_string_compare(
@@ -596,7 +601,7 @@ int libvmdk_extent_descriptor_read(
 		    "VMFSSPARSE",
 		    10 ) == 0 ) )
 	{
-		extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS_SPARSE;
+		internal_extent_descriptor->type = LIBVMDK_EXTENT_TYPE_VMFS_SPARSE;
 	}
 	else
 	{
@@ -623,7 +628,7 @@ int libvmdk_extent_descriptor_read(
 		goto on_error;
 	}
 	if( ( filename_length == 0 )
-	 && ( extent_descriptor->type != LIBVMDK_EXTENT_TYPE_ZERO ) )
+	 && ( internal_extent_descriptor->type != LIBVMDK_EXTENT_TYPE_ZERO ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -645,14 +650,14 @@ int libvmdk_extent_descriptor_read(
 			          (uint8_t *) filename,
 			          filename_length + 1,
 			          encoding,
-			          &( extent_descriptor->filename_size ),
+			          &( internal_extent_descriptor->filename_size ),
 			          error );
 #else
 			result = libuna_utf8_string_size_from_byte_stream(
 			          (uint8_t *) filename,
 			          filename_length + 1,
 			          encoding,
-			          &( extent_descriptor->filename_size ),
+			          &( internal_extent_descriptor->filename_size ),
 			          error );
 #endif
 		}
@@ -662,13 +667,13 @@ int libvmdk_extent_descriptor_read(
 			result = libuna_utf16_string_size_from_utf8_stream(
 			          (uint8_t *) filename,
 			          filename_length + 1,
-			          &( extent_descriptor->filename_size ),
+			          &( internal_extent_descriptor->filename_size ),
 			          error );
 #else
 			result = libuna_utf8_string_size_from_utf8_stream(
 			          (uint8_t *) filename,
 			          filename_length + 1,
-			          &( extent_descriptor->filename_size ),
+			          &( internal_extent_descriptor->filename_size ),
 			          error );
 #endif
 		}
@@ -683,10 +688,10 @@ int libvmdk_extent_descriptor_read(
 
 			goto on_error;
 		}
-		extent_descriptor->filename = system_string_allocate(
-		                               extent_descriptor->filename_size );
+		internal_extent_descriptor->filename = system_string_allocate(
+		                                        internal_extent_descriptor->filename_size );
 
-		if( extent_descriptor->filename == NULL )
+		if( internal_extent_descriptor->filename == NULL )
 		{
 			libcerror_error_set(
 			 error,
@@ -701,16 +706,16 @@ int libvmdk_extent_descriptor_read(
 		{
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libuna_utf16_string_copy_from_byte_stream(
-			          (uint16_t *) extent_descriptor->filename,
-			          extent_descriptor->filename_size,
+			          (uint16_t *) internal_extent_descriptor->filename,
+			          internal_extent_descriptor->filename_size,
 			          (uint8_t *) filename,
 			          filename_length + 1,
 			          encoding,
 			          error );
 #else
 			result = libuna_utf8_string_copy_from_byte_stream(
-			          (uint8_t *) extent_descriptor->filename,
-			          extent_descriptor->filename_size,
+			          (uint8_t *) internal_extent_descriptor->filename,
+			          internal_extent_descriptor->filename_size,
 			          (uint8_t *) filename,
 			          filename_length + 1,
 			          encoding,
@@ -721,15 +726,15 @@ int libvmdk_extent_descriptor_read(
 		{
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libuna_utf16_string_copy_from_utf8_stream(
-			          (uint16_t *) extent_descriptor->filename,
-			          extent_descriptor->filename_size,
+			          (uint16_t *) internal_extent_descriptor->filename,
+			          internal_extent_descriptor->filename_size,
 			          (uint8_t *) filename,
 			          filename_length + 1,
 			          error );
 #else
 			result = libuna_utf8_string_copy_from_utf8_stream(
-			          (uint8_t *) extent_descriptor->filename,
-			          extent_descriptor->filename_size,
+			          (uint8_t *) internal_extent_descriptor->filename,
+			          internal_extent_descriptor->filename_size,
 			          (uint8_t *) filename,
 			          filename_length + 1,
 			          error );
@@ -752,7 +757,7 @@ int libvmdk_extent_descriptor_read(
 			libcnotify_printf(
 			 "%s: filename\t\t\t\t: %" PRIs_SYSTEM "\n",
 			 function,
-			 extent_descriptor->filename );
+			 internal_extent_descriptor->filename );
 		}
 #endif
 	}
@@ -854,7 +859,7 @@ int libvmdk_extent_descriptor_read(
 
 			goto on_error;
 		}
-		extent_descriptor->offset = (off64_t) value_64bit;
+		internal_extent_descriptor->offset = (off64_t) value_64bit;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
@@ -959,14 +964,14 @@ on_error:
 		 &values,
 		 NULL );
 	}
-	if( extent_descriptor->filename != NULL )
+	if( internal_extent_descriptor->filename != NULL )
 	{
 		memory_free(
-		 extent_descriptor->filename );
+		 internal_extent_descriptor->filename );
 
-		extent_descriptor->filename = NULL;
+		internal_extent_descriptor->filename = NULL;
 	}
-	extent_descriptor->filename_size = 0;
+	internal_extent_descriptor->filename_size = 0;
 
 	return( -1 );
 }

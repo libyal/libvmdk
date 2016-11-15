@@ -54,5 +54,5 @@ int byte_size_string_convert(
 }
 #endif
 
-#endif
+#endif /* !defined( _BYTE_SIZE_STRING_H ) */
 

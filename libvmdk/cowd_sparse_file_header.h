@@ -151,5 +151,5 @@ struct cowd_sparse_file_header
 }
 #endif
 
-#endif
+#endif /* !defined( _COWD_SPARSE_FILE_HEADER_H ) */
 

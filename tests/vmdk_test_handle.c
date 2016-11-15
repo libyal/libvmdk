@@ -38,12 +38,12 @@
 #include "vmdk_test_macros.h"
 #include "vmdk_test_memory.h"
 
-#if SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER ) && SIZEOF_WCHAR_T != 2 && SIZEOF_WCHAR_T != 4
 #error Unsupported size of wchar_t
 #endif
 
 /* Define to make vmdk_test_handle generate verbose output
-#define VMDK_TEST_FILE_VERBOSE
+#define VMDK_TEST_HANDLE_VERBOSE
  */
 
 /* Retrieves source as a narrow string
@@ -256,8 +256,8 @@ int vmdk_test_handle_get_wide_source(
      libcerror_error_t **error )
 {
 	static char *function   = "vmdk_test_handle_get_wide_source";
-	size_t wide_source_size = 0;
 	size_t source_length    = 0;
+	size_t wide_source_size = 0;
 
 #if !defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	int result              = 0;
@@ -516,6 +516,19 @@ int vmdk_test_handle_open_source(
 
 		goto on_error;
 	}
+	if( libvmdk_handle_open_extent_data_files(
+	     *handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_OPEN_FAILED,
+		 "%s: unable to open extent data files.",
+		 function );
+
+		goto on_error;
+	}
 	return( 1 );
 
 on_error:
@@ -584,11 +597,17 @@ int vmdk_test_handle_close_source(
 int vmdk_test_handle_initialize(
      void )
 {
-	libcerror_error_t *error = NULL;
-	libvmdk_handle_t *handle      = NULL;
-	int result               = 0;
+	libcerror_error_t *error        = NULL;
+	libvmdk_handle_t *handle        = NULL;
+	int result                      = 0;
 
-	/* Test libvmdk_handle_initialize
+#if defined( HAVE_VMDK_TEST_MEMORY )
+	int number_of_malloc_fail_tests = 1;
+	int number_of_memset_fail_tests = 1;
+	int test_number                 = 0;
+#endif
+
+	/* Test regular cases
 	 */
 	result = libvmdk_handle_initialize(
 	          &handle,
@@ -664,79 +683,89 @@ int vmdk_test_handle_initialize(
 
 #if defined( HAVE_VMDK_TEST_MEMORY )
 
-	/* Test libvmdk_handle_initialize with malloc failing
-	 */
-	vmdk_test_malloc_attempts_before_fail = 0;
-
-	result = libvmdk_handle_initialize(
-	          &handle,
-	          &error );
-
-	if( vmdk_test_malloc_attempts_before_fail != -1 )
+	for( test_number = 0;
+	     test_number < number_of_malloc_fail_tests;
+	     test_number++ )
 	{
-		vmdk_test_malloc_attempts_before_fail = -1;
+		/* Test libvmdk_handle_initialize with malloc failing
+		 */
+		vmdk_test_malloc_attempts_before_fail = test_number;
 
-		if( handle != NULL )
+		result = libvmdk_handle_initialize(
+		          &handle,
+		          &error );
+
+		if( vmdk_test_malloc_attempts_before_fail != -1 )
 		{
-			libvmdk_handle_free(
-			 &handle,
-			 NULL );
+			vmdk_test_malloc_attempts_before_fail = -1;
+
+			if( handle != NULL )
+			{
+				libvmdk_handle_free(
+				 &handle,
+				 NULL );
+			}
+		}
+		else
+		{
+			VMDK_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			VMDK_TEST_ASSERT_IS_NULL(
+			 "handle",
+			 handle );
+
+			VMDK_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
 		}
 	}
-	else
+	for( test_number = 0;
+	     test_number < number_of_memset_fail_tests;
+	     test_number++ )
 	{
-		VMDK_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+		/* Test libvmdk_handle_initialize with memset failing
+		 */
+		vmdk_test_memset_attempts_before_fail = test_number;
 
-		VMDK_TEST_ASSERT_IS_NULL(
-		 "handle",
-		 handle );
+		result = libvmdk_handle_initialize(
+		          &handle,
+		          &error );
 
-		VMDK_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
-
-		libcerror_error_free(
-		 &error );
-	}
-	/* Test libvmdk_handle_initialize with memset failing
-	 */
-	vmdk_test_memset_attempts_before_fail = 0;
-
-	result = libvmdk_handle_initialize(
-	          &handle,
-	          &error );
-
-	if( vmdk_test_memset_attempts_before_fail != -1 )
-	{
-		vmdk_test_memset_attempts_before_fail = -1;
-
-		if( handle != NULL )
+		if( vmdk_test_memset_attempts_before_fail != -1 )
 		{
-			libvmdk_handle_free(
-			 &handle,
-			 NULL );
+			vmdk_test_memset_attempts_before_fail = -1;
+
+			if( handle != NULL )
+			{
+				libvmdk_handle_free(
+				 &handle,
+				 NULL );
+			}
 		}
-	}
-	else
-	{
-		VMDK_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
+		else
+		{
+			VMDK_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
 
-		VMDK_TEST_ASSERT_IS_NULL(
-		 "handle",
-		 handle );
+			VMDK_TEST_ASSERT_IS_NULL(
+			 "handle",
+			 handle );
 
-		VMDK_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
+			VMDK_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
 
-		libcerror_error_free(
-		 &error );
+			libcerror_error_free(
+			 &error );
+		}
 	}
 #endif /* defined( HAVE_VMDK_TEST_MEMORY ) */
 
@@ -795,7 +824,7 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libvmdk_handle_open functions
+/* Tests the libvmdk_handle_open function
  * Returns 1 if successful or 0 if not
  */
 int vmdk_test_handle_open(
@@ -804,7 +833,7 @@ int vmdk_test_handle_open(
 	char narrow_source[ 256 ];
 
 	libcerror_error_t *error = NULL;
-	libvmdk_handle_t *handle      = NULL;
+	libvmdk_handle_t *handle = NULL;
 	int result               = 0;
 
 	/* Initialize test
@@ -858,21 +887,28 @@ int vmdk_test_handle_open(
          "error",
          error );
 
-	/* Clean up
+	/* Test error cases
 	 */
-	result = libvmdk_handle_close(
+	result = libvmdk_handle_open(
 	          handle,
+	          narrow_source,
+	          LIBVMDK_OPEN_READ,
 	          &error );
 
 	VMDK_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 0 );
+	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
+        VMDK_TEST_ASSERT_IS_NOT_NULL(
          "error",
          error );
 
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
 	result = libvmdk_handle_free(
 	          &handle,
 	          &error );
@@ -909,7 +945,7 @@ on_error:
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
-/* Tests the libvmdk_handle_open_wide functions
+/* Tests the libvmdk_handle_open_wide function
  * Returns 1 if successful or 0 if not
  */
 int vmdk_test_handle_open_wide(
@@ -918,7 +954,7 @@ int vmdk_test_handle_open_wide(
 	wchar_t wide_source[ 256 ];
 
 	libcerror_error_t *error = NULL;
-	libvmdk_handle_t *handle      = NULL;
+	libvmdk_handle_t *handle = NULL;
 	int result               = 0;
 
 	/* Initialize test
@@ -972,21 +1008,28 @@ int vmdk_test_handle_open_wide(
          "error",
          error );
 
-	/* Clean up
+	/* Test error cases
 	 */
-	result = libvmdk_handle_close(
+	result = libvmdk_handle_open_wide(
 	          handle,
+	          wide_source,
+	          LIBVMDK_OPEN_READ,
 	          &error );
 
 	VMDK_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
-	 0 );
+	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
+        VMDK_TEST_ASSERT_IS_NOT_NULL(
          "error",
          error );
 
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
 	result = libvmdk_handle_free(
 	          &handle,
 	          &error );
@@ -1023,19 +1066,198 @@ on_error:
 
 #endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
-/* Tests the libvmdk_handle_get_number_of_extents functions
+/* Tests the libvmdk_handle_close function
  * Returns 1 if successful or 0 if not
  */
-int vmdk_test_handle_get_number_of_extents(
+int vmdk_test_handle_close(
+     void )
+{
+	libcerror_error_t *error = NULL;
+	int result               = 0;
+
+	/* Test error cases
+	 */
+	result = libvmdk_handle_close(
+	          NULL,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+        VMDK_TEST_ASSERT_IS_NOT_NULL(
+         "error",
+         error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libvmdk_handle_open and libvmdk_handle_close functions
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_handle_open_close(
+     const system_character_t *source )
+{
+	libcerror_error_t *error = NULL;
+	libvmdk_handle_t *handle = NULL;
+	int result               = 0;
+
+	/* Initialize test
+	 */
+	result = libvmdk_handle_initialize(
+	          &handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        VMDK_TEST_ASSERT_IS_NOT_NULL(
+         "handle",
+         handle );
+
+        VMDK_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	/* Test open and close
+	 */
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libvmdk_handle_open_wide(
+	          handle,
+	          source,
+	          LIBVMDK_OPEN_READ,
+	          &error );
+#else
+	result = libvmdk_handle_open(
+	          handle,
+	          source,
+	          LIBVMDK_OPEN_READ,
+	          &error );
+#endif
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        VMDK_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	result = libvmdk_handle_close(
+	          handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
+
+        VMDK_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	/* Test open and close a second time to validate clean up on close
+	 */
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	result = libvmdk_handle_open_wide(
+	          handle,
+	          source,
+	          LIBVMDK_OPEN_READ,
+	          &error );
+#else
+	result = libvmdk_handle_open(
+	          handle,
+	          source,
+	          LIBVMDK_OPEN_READ,
+	          &error );
+#endif
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        VMDK_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	result = libvmdk_handle_close(
+	          handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 0 );
+
+        VMDK_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	/* Clean up
+	 */
+	result = libvmdk_handle_free(
+	          &handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+        VMDK_TEST_ASSERT_IS_NULL(
+         "handle",
+         handle );
+
+        VMDK_TEST_ASSERT_IS_NULL(
+         "error",
+         error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( handle != NULL )
+	{
+		libvmdk_handle_free(
+		 &handle,
+		 NULL );
+	}
+	return( 0 );
+}
+
+/* Tests the libvmdk_handle_signal_abort function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_handle_signal_abort(
      libvmdk_handle_t *handle )
 {
 	libcerror_error_t *error = NULL;
-	int number_of_extents    = 0;
 	int result               = 0;
 
-	result = libvmdk_handle_get_number_of_extents(
+	/* Test regular cases
+	 */
+	result = libvmdk_handle_signal_abort(
 	          handle,
-	          &number_of_extents,
 	          &error );
 
 	VMDK_TEST_ASSERT_EQUAL_INT(
@@ -1049,6 +1271,846 @@ int vmdk_test_handle_get_number_of_extents(
 
 	/* Test error cases
 	 */
+	result = libvmdk_handle_signal_abort(
+	          NULL,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+        VMDK_TEST_ASSERT_IS_NOT_NULL(
+         "error",
+         error );
+
+	libcerror_error_free(
+	 &error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libvmdk_handle_get_offset function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_handle_get_offset(
+     libvmdk_handle_t *handle )
+{
+	libcerror_error_t *error = NULL;
+	off64_t offset           = 0;
+	int offset_is_set        = 0;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libvmdk_handle_get_offset(
+	          handle,
+	          &offset,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	offset_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libvmdk_handle_get_offset(
+	          NULL,
+	          &offset,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( offset_is_set != 0 )
+	{
+		result = libvmdk_handle_get_offset(
+		          handle,
+		          NULL,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libvmdk_handle_get_disk_type function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_handle_get_disk_type(
+     libvmdk_handle_t *handle )
+{
+	libcerror_error_t *error = NULL;
+	int disk_type            = 0;
+	int disk_type_is_set     = 0;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libvmdk_handle_get_disk_type(
+	          handle,
+	          &disk_type,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	disk_type_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libvmdk_handle_get_disk_type(
+	          NULL,
+	          &disk_type,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( disk_type_is_set != 0 )
+	{
+		result = libvmdk_handle_get_disk_type(
+		          handle,
+		          NULL,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libvmdk_handle_get_media_size function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_handle_get_media_size(
+     libvmdk_handle_t *handle )
+{
+	libcerror_error_t *error = NULL;
+	size64_t media_size      = 0;
+	int media_size_is_set    = 0;
+	int result               = 0;
+
+	/* Test regular cases
+	 */
+	result = libvmdk_handle_get_media_size(
+	          handle,
+	          &media_size,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	media_size_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libvmdk_handle_get_media_size(
+	          NULL,
+	          &media_size,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( media_size_is_set != 0 )
+	{
+		result = libvmdk_handle_get_media_size(
+		          handle,
+		          NULL,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libvmdk_handle_get_content_identifier function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_handle_get_content_identifier(
+     libvmdk_handle_t *handle )
+{
+	libcerror_error_t *error      = NULL;
+	uint32_t content_identifier   = 0;
+	int content_identifier_is_set = 0;
+	int result                    = 0;
+
+	/* Test regular cases
+	 */
+	result = libvmdk_handle_get_content_identifier(
+	          handle,
+	          &content_identifier,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	content_identifier_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libvmdk_handle_get_content_identifier(
+	          NULL,
+	          &content_identifier,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( content_identifier_is_set != 0 )
+	{
+		result = libvmdk_handle_get_content_identifier(
+		          handle,
+		          NULL,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libvmdk_handle_get_parent_content_identifier function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_handle_get_parent_content_identifier(
+     libvmdk_handle_t *handle )
+{
+	libcerror_error_t *error             = NULL;
+	uint32_t parent_content_identifier   = 0;
+	int parent_content_identifier_is_set = 0;
+	int result                           = 0;
+
+	/* Test regular cases
+	 */
+	result = libvmdk_handle_get_parent_content_identifier(
+	          handle,
+	          &parent_content_identifier,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	parent_content_identifier_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libvmdk_handle_get_parent_content_identifier(
+	          NULL,
+	          &parent_content_identifier,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( parent_content_identifier_is_set != 0 )
+	{
+		result = libvmdk_handle_get_parent_content_identifier(
+		          handle,
+		          NULL,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libvmdk_handle_get_utf8_parent_filename_size function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_handle_get_utf8_parent_filename_size(
+     libvmdk_handle_t *handle )
+{
+	libcerror_error_t *error             = NULL;
+	size_t utf8_parent_filename_size     = 0;
+	int result                           = 0;
+	int utf8_parent_filename_size_is_set = 0;
+
+	/* Test regular cases
+	 */
+	result = libvmdk_handle_get_utf8_parent_filename_size(
+	          handle,
+	          &utf8_parent_filename_size,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	utf8_parent_filename_size_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libvmdk_handle_get_utf8_parent_filename_size(
+	          NULL,
+	          &utf8_parent_filename_size,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( utf8_parent_filename_size_is_set != 0 )
+	{
+		result = libvmdk_handle_get_utf8_parent_filename_size(
+		          handle,
+		          NULL,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libvmdk_handle_get_utf8_parent_filename function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_handle_get_utf8_parent_filename(
+     libvmdk_handle_t *handle )
+{
+	uint8_t utf8_parent_filename[ 512 ];
+
+	libcerror_error_t *error        = NULL;
+	int result                      = 0;
+	int utf8_parent_filename_is_set = 0;
+
+	/* Test regular cases
+	 */
+	result = libvmdk_handle_get_utf8_parent_filename(
+	          handle,
+	          utf8_parent_filename,
+	          512,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	utf8_parent_filename_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libvmdk_handle_get_utf8_parent_filename(
+	          NULL,
+	          utf8_parent_filename,
+	          512,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( utf8_parent_filename_is_set != 0 )
+	{
+		result = libvmdk_handle_get_utf8_parent_filename(
+		          handle,
+		          NULL,
+		          512,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+
+		result = libvmdk_handle_get_utf8_parent_filename(
+		          handle,
+		          utf8_parent_filename,
+		          0,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+	        VMDK_TEST_ASSERT_IS_NOT_NULL(
+	         "error",
+	         error );
+
+		libcerror_error_free(
+		 &error );
+
+		result = libvmdk_handle_get_utf8_parent_filename(
+		          handle,
+		          utf8_parent_filename,
+		          (size_t) SSIZE_MAX + 1,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libvmdk_handle_get_utf16_parent_filename_size function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_handle_get_utf16_parent_filename_size(
+     libvmdk_handle_t *handle )
+{
+	libcerror_error_t *error              = NULL;
+	size_t utf16_parent_filename_size     = 0;
+	int result                            = 0;
+	int utf16_parent_filename_size_is_set = 0;
+
+	/* Test regular cases
+	 */
+	result = libvmdk_handle_get_utf16_parent_filename_size(
+	          handle,
+	          &utf16_parent_filename_size,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	utf16_parent_filename_size_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libvmdk_handle_get_utf16_parent_filename_size(
+	          NULL,
+	          &utf16_parent_filename_size,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( utf16_parent_filename_size_is_set != 0 )
+	{
+		result = libvmdk_handle_get_utf16_parent_filename_size(
+		          handle,
+		          NULL,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libvmdk_handle_get_utf16_parent_filename function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_handle_get_utf16_parent_filename(
+     libvmdk_handle_t *handle )
+{
+	uint16_t utf16_parent_filename[ 512 ];
+
+	libcerror_error_t *error         = NULL;
+	int result                       = 0;
+	int utf16_parent_filename_is_set = 0;
+
+	/* Test regular cases
+	 */
+	result = libvmdk_handle_get_utf16_parent_filename(
+	          handle,
+	          utf16_parent_filename,
+	          512,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	utf16_parent_filename_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libvmdk_handle_get_utf16_parent_filename(
+	          NULL,
+	          utf16_parent_filename,
+	          512,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( utf16_parent_filename_is_set != 0 )
+	{
+		result = libvmdk_handle_get_utf16_parent_filename(
+		          handle,
+		          NULL,
+		          512,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+
+		result = libvmdk_handle_get_utf16_parent_filename(
+		          handle,
+		          utf16_parent_filename,
+		          0,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+	        VMDK_TEST_ASSERT_IS_NOT_NULL(
+	         "error",
+	         error );
+
+		libcerror_error_free(
+		 &error );
+
+		result = libvmdk_handle_get_utf16_parent_filename(
+		          handle,
+		          utf16_parent_filename,
+		          (size_t) SSIZE_MAX + 1,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	return( 0 );
+}
+
+/* Tests the libvmdk_handle_get_number_of_extents function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_handle_get_number_of_extents(
+     libvmdk_handle_t *handle )
+{
+	libcerror_error_t *error     = NULL;
+	int number_of_extents        = 0;
+	int number_of_extents_is_set = 0;
+	int result                   = 0;
+
+	/* Test regular cases
+	 */
+	result = libvmdk_handle_get_number_of_extents(
+	          handle,
+	          &number_of_extents,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	number_of_extents_is_set = result;
+
+	/* Test error cases
+	 */
 	result = libvmdk_handle_get_number_of_extents(
 	          NULL,
 	          &number_of_extents,
@@ -1059,30 +2121,32 @@ int vmdk_test_handle_get_number_of_extents(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
 
-	result = libvmdk_handle_get_number_of_extents(
-	          handle,
-	          NULL,
-	          &error );
+	if( number_of_extents_is_set != 0 )
+	{
+		result = libvmdk_handle_get_number_of_extents(
+		          handle,
+		          NULL,
+		          &error );
 
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
-	libcerror_error_free(
-	 &error );
-
+		libcerror_error_free(
+		 &error );
+	}
 	return( 1 );
 
 on_error:
@@ -1133,7 +2197,7 @@ int main(
 	{
 		source = argv[ optind ];
 	}
-#if defined( HAVE_DEBUG_OUTPUT ) && defined( VMDK_TEST_FILE_VERBOSE )
+#if defined( HAVE_DEBUG_OUTPUT ) && defined( VMDK_TEST_HANDLE_VERBOSE )
 	libvmdk_notify_set_verbose(
 	 1 );
 	libvmdk_notify_set_stream(
@@ -1172,7 +2236,14 @@ int main(
 
 #endif /* defined( LIBVMDK_HAVE_BFIO ) */
 
-		/* TODO add test for libvmdk_handle_close */
+		VMDK_TEST_RUN(
+		 "libvmdk_handle_close",
+		 vmdk_test_handle_close );
+
+		VMDK_TEST_RUN_WITH_ARGS(
+		 "libvmdk_handle_open_close",
+		 vmdk_test_handle_open_close,
+		 source );
 
 		/* Initialize test
 		 */
@@ -1195,9 +2266,91 @@ int main(
 	         error );
 
 		VMDK_TEST_RUN_WITH_ARGS(
+		 "libvmdk_handle_signal_abort",
+		 vmdk_test_handle_signal_abort,
+		 handle );
+
+		/* TODO: add tests for libvmdk_handle_open_extent_data_files */
+
+		/* TODO: add tests for libvmdk_handle_open_extent_data_files_file_io_pool */
+
+#if defined( __GNUC__ )
+
+		/* TODO: add tests for libvmdk_handle_open_extent_data_file */
+
+		/* TODO: add tests for libvmdk_handle_open_extent_data_file_wide */
+
+		/* TODO: add tests for libvmdk_handle_open_read_grain_table */
+
+		/* TODO: add tests for libvmdk_handle_open_read_signature */
+
+#endif /* defined( __GNUC__ ) */
+
+		/* TODO: add tests for libvmdk_handle_read_buffer */
+
+		/* TODO: add tests for libvmdk_handle_read_buffer_at_offset */
+
+		/* TODO: add tests for libvmdk_handle_write_buffer */
+
+		/* TODO: add tests for libvmdk_handle_write_buffer_at_offset */
+
+		/* TODO: add tests for libvmdk_handle_seek_offset */
+
+		VMDK_TEST_RUN_WITH_ARGS(
+		 "libvmdk_handle_get_offset",
+		 vmdk_test_handle_get_offset,
+		 handle );
+
+		/* TODO: add tests for libvmdk_handle_set_maximum_number_of_open_handles */
+
+		/* TODO: add tests for libvmdk_handle_set_parent_handle */
+
+		VMDK_TEST_RUN_WITH_ARGS(
+		 "libvmdk_handle_get_disk_type",
+		 vmdk_test_handle_get_disk_type,
+		 handle );
+
+		VMDK_TEST_RUN_WITH_ARGS(
+		 "libvmdk_handle_get_media_size",
+		 vmdk_test_handle_get_media_size,
+		 handle );
+
+		VMDK_TEST_RUN_WITH_ARGS(
+		 "libvmdk_handle_get_content_identifier",
+		 vmdk_test_handle_get_content_identifier,
+		 handle );
+
+		VMDK_TEST_RUN_WITH_ARGS(
+		 "libvmdk_handle_get_parent_content_identifier",
+		 vmdk_test_handle_get_parent_content_identifier,
+		 handle );
+
+		VMDK_TEST_RUN_WITH_ARGS(
+		 "libvmdk_handle_get_utf8_parent_filename_size",
+		 vmdk_test_handle_get_utf8_parent_filename_size,
+		 handle );
+
+		VMDK_TEST_RUN_WITH_ARGS(
+		 "libvmdk_handle_get_utf8_parent_filename",
+		 vmdk_test_handle_get_utf8_parent_filename,
+		 handle );
+
+		VMDK_TEST_RUN_WITH_ARGS(
+		 "libvmdk_handle_get_utf16_parent_filename_size",
+		 vmdk_test_handle_get_utf16_parent_filename_size,
+		 handle );
+
+		VMDK_TEST_RUN_WITH_ARGS(
+		 "libvmdk_handle_get_utf16_parent_filename",
+		 vmdk_test_handle_get_utf16_parent_filename,
+		 handle );
+
+		VMDK_TEST_RUN_WITH_ARGS(
 		 "libvmdk_handle_get_number_of_extents",
 		 vmdk_test_handle_get_number_of_extents,
 		 handle );
+
+		/* TODO: add tests for libvmdk_handle_get_extent_descriptor */
 
 		/* Clean up
 		 */

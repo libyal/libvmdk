@@ -16,11 +16,17 @@ MSVSCPP_FILES = \
 	libuna/libuna.vcproj \
 	libvmdk/libvmdk.vcproj \
 	pyvmdk/pyvmdk.vcproj \
+	vmdk_test_descriptor_file/vmdk_test_descriptor_file.vcproj \
 	vmdk_test_error/vmdk_test_error.vcproj \
 	vmdk_test_extent_descriptor/vmdk_test_extent_descriptor.vcproj \
+	vmdk_test_extent_file/vmdk_test_extent_file.vcproj \
+	vmdk_test_extent_table/vmdk_test_extent_table.vcproj \
+	vmdk_test_grain_data/vmdk_test_grain_data.vcproj \
+	vmdk_test_grain_group/vmdk_test_grain_group.vcproj \
+	vmdk_test_grain_table/vmdk_test_grain_table.vcproj \
 	vmdk_test_handle/vmdk_test_handle.vcproj \
+	vmdk_test_io_handle/vmdk_test_io_handle.vcproj \
 	vmdk_test_notify/vmdk_test_notify.vcproj \
-	vmdk_test_open_close/vmdk_test_open_close.vcproj \
 	vmdk_test_read/vmdk_test_read.vcproj \
 	vmdk_test_seek/vmdk_test_seek.vcproj \
 	vmdk_test_support/vmdk_test_support.vcproj \

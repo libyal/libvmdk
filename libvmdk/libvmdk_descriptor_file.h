@@ -178,5 +178,5 @@ int libvmdk_descriptor_file_get_utf16_parent_filename(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_DESCRIPTOR_FILE_H ) */
 

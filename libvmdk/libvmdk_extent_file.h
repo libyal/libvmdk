@@ -252,5 +252,5 @@ off64_t libvmdk_extent_file_seek_segment_offset(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_EXTENT_FILE_H ) */
 

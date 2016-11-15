@@ -87,5 +87,5 @@ int libvmdk_grain_data_read_element_data(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_GRAIN_DATA_H ) */
 

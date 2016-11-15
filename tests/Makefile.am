@@ -11,7 +11,11 @@ AM_CPPFLAGS = \
 	@LIBCFILE_CPPFLAGS@ \
 	@LIBCPATH_CPPFLAGS@ \
 	@LIBBFIO_CPPFLAGS@ \
+	@LIBFCACHE_CPPFLAGS@ \
+	@LIBFDATA_CPPFLAGS@ \
+	@LIBFVALUE_CPPFLAGS@ \
 	@LIBCSYSTEM_CPPFLAGS@ \
+	@ZLIB_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBVMDK_DLL_IMPORT@
 
@@ -41,14 +45,32 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	vmdk_test_descriptor_file \
 	vmdk_test_error \
 	vmdk_test_extent_descriptor \
+	vmdk_test_extent_file \
+	vmdk_test_extent_table \
+	vmdk_test_grain_data \
+	vmdk_test_grain_group \
+	vmdk_test_grain_table \
 	vmdk_test_handle \
+	vmdk_test_io_handle \
 	vmdk_test_notify \
-	vmdk_test_open_close \
 	vmdk_test_read \
 	vmdk_test_seek \
 	vmdk_test_support
+
+vmdk_test_descriptor_file_SOURCES = \
+	vmdk_test_descriptor_file.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
+
+vmdk_test_descriptor_file_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
 
 vmdk_test_error_SOURCES = \
 	vmdk_test_error.c \
@@ -71,6 +93,66 @@ vmdk_test_extent_descriptor_LDADD = \
 	../libvmdk/libvmdk.la \
 	@LIBCERROR_LIBADD@
 
+vmdk_test_extent_file_SOURCES = \
+	vmdk_test_extent_file.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
+
+vmdk_test_extent_file_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
+
+vmdk_test_extent_table_SOURCES = \
+	vmdk_test_extent_table.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
+
+vmdk_test_extent_table_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
+
+vmdk_test_grain_data_SOURCES = \
+	vmdk_test_grain_data.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
+
+vmdk_test_grain_data_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
+
+vmdk_test_grain_group_SOURCES = \
+	vmdk_test_grain_group.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
+
+vmdk_test_grain_group_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
+
+vmdk_test_grain_table_SOURCES = \
+	vmdk_test_grain_table.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
+
+vmdk_test_grain_table_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
+
 vmdk_test_handle_SOURCES = \
 	vmdk_test_handle.c \
 	vmdk_test_libcerror.h \
@@ -79,8 +161,7 @@ vmdk_test_handle_SOURCES = \
 	vmdk_test_libuna.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
-	vmdk_test_memory.c vmdk_test_memory.h \
-	vmdk_test_unused.h
+	vmdk_test_memory.c vmdk_test_memory.h
 
 vmdk_test_handle_LDADD = \
 	@LIBCSYSTEM_LIBADD@ \
@@ -88,6 +169,20 @@ vmdk_test_handle_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
+	../libvmdk/libvmdk.la \
+	@LIBCTHREADS_LIBADD@ \
+	@LIBCERROR_LIBADD@ \
+	@PTHREAD_LIBADD@
+
+vmdk_test_io_handle_SOURCES = \
+	vmdk_test_io_handle.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
+
+vmdk_test_io_handle_LDADD = \
 	../libvmdk/libvmdk.la \
 	@LIBCERROR_LIBADD@
 
@@ -99,21 +194,6 @@ vmdk_test_notify_SOURCES = \
 
 vmdk_test_notify_LDADD = \
 	../libvmdk/libvmdk.la
-
-vmdk_test_open_close_SOURCES = \
-	vmdk_test_libcerror.h \
-	vmdk_test_libcsystem.h \
-	vmdk_test_libcthreads.h \
-	vmdk_test_libvmdk.h \
-	vmdk_test_open_close.c \
-	vmdk_test_unused.h
-
-vmdk_test_open_close_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
-	../libvmdk/libvmdk.la \
-	@LIBCTHREADS_LIBADD@ \
-	@LIBCERROR_LIBADD@
-	@PTHREAD_LIBADD@
 
 vmdk_test_read_SOURCES = \
 	vmdk_test_libcerror.h \
@@ -152,8 +232,7 @@ vmdk_test_support_SOURCES = \
 	vmdk_test_libuna.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
-	vmdk_test_support.c \
-	vmdk_test_unused.h
+	vmdk_test_support.c
 
 vmdk_test_support_LDADD = \
 	@LIBCSYSTEM_LIBADD@ \

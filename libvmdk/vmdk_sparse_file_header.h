@@ -140,5 +140,5 @@ struct vmdk_sparse_file_header
 }
 #endif
 
-#endif
+#endif /* !defined( _VMDK_SPARSE_FILE_HEADER_H ) */
 

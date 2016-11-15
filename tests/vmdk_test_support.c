@@ -808,7 +808,7 @@ int main(
 
 #if defined( LIBVMDK_HAVE_BFIO )
 
-		/* TODO add test for libvmdk_file_open_file_io_handle */
+		/* TODO add test for libvmdk_check_file_file_io_handle */
 
 #endif /* defined( LIBVMDK_HAVE_BFIO ) */
 	}

@@ -81,5 +81,5 @@ int libvmdk_io_handle_clear(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_IO_HANDLE_H ) */
 

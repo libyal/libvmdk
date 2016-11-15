@@ -79,5 +79,5 @@ int libvmdk_grain_group_fill(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_GRAIN_GROUP_H ) */
 

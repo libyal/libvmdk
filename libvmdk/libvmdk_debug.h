@@ -53,5 +53,5 @@ int libvmdk_debug_print_read_offsets(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_DEBUG_H ) */
 

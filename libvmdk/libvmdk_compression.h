@@ -43,5 +43,5 @@ int libvmdk_decompress_data(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_COMPRESS_H ) */
 

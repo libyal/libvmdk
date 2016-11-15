@@ -72,7 +72,7 @@ struct libvmdk_internal_extent_descriptor
 };
 
 int libvmdk_extent_descriptor_initialize(
-     libvmdk_internal_extent_descriptor_t **extent_descriptor,
+     libvmdk_extent_descriptor_t **extent_descriptor,
      libcerror_error_t **error );
 
 LIBVMDK_EXTERN \
@@ -81,11 +81,11 @@ int libvmdk_extent_descriptor_free(
      libcerror_error_t **error );
 
 int libvmdk_internal_extent_descriptor_free(
-     libvmdk_internal_extent_descriptor_t **extent_descriptor,
+     libvmdk_internal_extent_descriptor_t **internal_extent_descriptor,
      libcerror_error_t **error );
 
 int libvmdk_extent_descriptor_read(
-     libvmdk_internal_extent_descriptor_t *extent_descriptor,
+     libvmdk_extent_descriptor_t *extent_descriptor,
      char *value_string,
      size_t value_string_size,
      int encoding,
@@ -134,5 +134,5 @@ int libvmdk_extent_descriptor_get_utf16_filename(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_INTERNAL_EXTENT_DESCRIPTOR_H ) */
 

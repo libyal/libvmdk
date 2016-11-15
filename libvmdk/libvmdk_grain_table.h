@@ -95,5 +95,5 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 }
 #endif
 
-#endif
+#endif /* !defined( _LIBVMDK_GRAIN_TABLE_H ) */
 

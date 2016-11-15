@@ -325,7 +325,7 @@ int libvmdk_check_file_signature_file_io_handle(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error )
 {
-	uint8_t signature[ 4 ];
+	uint8_t signature[ 22 ];
 
 	static char *function      = "libvmdk_check_file_signature_file_io_handle";
 	ssize_t read_count         = 0;
@@ -398,10 +398,10 @@ int libvmdk_check_file_signature_file_io_handle(
 	read_count = libbfio_handle_read_buffer(
 	              file_io_handle,
 	              signature,
-	              4,
+	              22,
 	              error );
 
-	if( read_count != 4 )
+	if( read_count != 22 )
 	{
 		libcerror_error_set(
 		 error,
@@ -445,6 +445,13 @@ int libvmdk_check_file_signature_file_io_handle(
 	          vmdk_sparse_file_signature,
 	          signature,
 	          4 ) == 0 )
+	{
+		return( 1 );
+	}
+	else if( memory_compare(
+	          "# Disk DescriptorFile\n",
+	          signature,
+	          22 ) == 0 )
 	{
 		return( 1 );
 	}
