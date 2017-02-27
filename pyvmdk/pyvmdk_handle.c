@@ -1,5 +1,5 @@
 /*
- * Python object definition of the libvmdk handle
+ * Python object wrapper of libvmdk_handle_t
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -27,6 +27,8 @@
 #endif
 
 #include "pyvmdk_error.h"
+#include "pyvmdk_extent_descriptor.h"
+#include "pyvmdk_extent_descriptors.h"
 #include "pyvmdk_file_object_io_handle.h"
 #include "pyvmdk_file_objects_io_pool.h"
 #include "pyvmdk_handle.h"
@@ -1954,7 +1956,7 @@ PyObject *pyvmdk_handle_get_number_of_extents(
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyvmdk_handle_get_extent_descriptor_by_index(
-           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *pyvmdk_handle,
            int extent_index )
 {
 	libcerror_error_t *error                       = NULL;
@@ -1975,7 +1977,7 @@ PyObject *pyvmdk_handle_get_extent_descriptor_by_index(
 	Py_BEGIN_ALLOW_THREADS
 
 	result = libvmdk_handle_get_extent_descriptor(
-	          pyvmdk_handle->handle,
+	          ( ( pyvmdk_handle_t *) pyvmdk_handle )->handle,
 	          extent_index,
 	          &extent_descriptor,
 	          &error );
@@ -1998,7 +2000,7 @@ PyObject *pyvmdk_handle_get_extent_descriptor_by_index(
 	}
 	extent_descriptor_object = pyvmdk_extent_descriptor_new(
 	                            extent_descriptor,
-	                            pyvmdk_handle );
+	                            (pyvmdk_handle_t *) pyvmdk_handle );
 
 	if( extent_descriptor_object == NULL )
 	{
@@ -2043,7 +2045,7 @@ PyObject *pyvmdk_handle_get_extent_descriptor(
 		return( NULL );
 	}
 	extent_descriptor_object = pyvmdk_handle_get_extent_descriptor_by_index(
-	                            pyvmdk_handle,
+	                            (PyObject *) pyvmdk_handle,
 	                            extent_index );
 
 	return( extent_descriptor_object );
@@ -2096,7 +2098,7 @@ PyObject *pyvmdk_handle_get_extent_descriptors(
 		return( NULL );
 	}
 	extent_descriptors_object = pyvmdk_extent_descriptors_new(
-	                             pyvmdk_handle,
+	                             (PyObject *) pyvmdk_handle,
 	                             &pyvmdk_handle_get_extent_descriptor_by_index,
 	                             number_of_extent_descriptors );
 

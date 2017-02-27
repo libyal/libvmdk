@@ -1,5 +1,5 @@
 /*
- * Library extent_descriptor type testing program
+ * Library extent_descriptor type test program
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *

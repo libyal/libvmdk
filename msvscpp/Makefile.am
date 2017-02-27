@@ -8,7 +8,6 @@ MSVSCPP_FILES = \
 	libcnotify/libcnotify.vcproj \
 	libcpath/libcpath.vcproj \
 	libcsplit/libcsplit.vcproj \
-	libcsystem/libcsystem.vcproj \
 	libcthreads/libcthreads.vcproj \
 	libfcache/libfcache.vcproj \
 	libfdata/libfdata.vcproj \
@@ -27,8 +26,6 @@ MSVSCPP_FILES = \
 	vmdk_test_handle/vmdk_test_handle.vcproj \
 	vmdk_test_io_handle/vmdk_test_io_handle.vcproj \
 	vmdk_test_notify/vmdk_test_notify.vcproj \
-	vmdk_test_read/vmdk_test_read.vcproj \
-	vmdk_test_seek/vmdk_test_seek.vcproj \
 	vmdk_test_support/vmdk_test_support.vcproj \
 	vmdkinfo/vmdkinfo.vcproj \
 	vmdkmount/vmdkmount.vcproj \

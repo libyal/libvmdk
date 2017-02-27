@@ -57,5 +57,5 @@ PyMODINIT_FUNC initpyvmdk(
 }
 #endif
 
-#endif
+#endif /* !defined( _PYVMDK_H ) */
 

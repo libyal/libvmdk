@@ -2,7 +2,7 @@ AC_PREREQ( 2.59 )
 
 AC_INIT(
  [libvmdk],
- [20161115],
+ [20170226],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -100,8 +100,8 @@ AX_ZLIB_CHECK_UNCOMPRESS
 dnl Check for library function support
 AX_LIBVMDK_CHECK_LOCAL
 
-dnl Check for enabling libcsystem for cross-platform C generic system functions
-AX_LIBCSYSTEM_CHECK_ENABLE
+dnl Check for vmdktools function support
+AX_VMDKTOOLS_CHECK_LOCAL
 
 dnl Check for libfuse Filesystem in Userspace (FUSE) support
 AX_LIBFUSE_CHECK_ENABLE
@@ -180,7 +180,7 @@ AS_IF(
  ])
 
 AS_IF(
- [test "x$ac_cv_libcsystem" = xyes || test "x$ac_cv_libfuse" != xno],
+ [test "x$ac_cv_libfuse" != xno],
  [AC_SUBST(
   [libvmdk_spec_tools_build_requires],
   [BuildRequires:])
@@ -219,7 +219,6 @@ AC_CONFIG_FILES([libfcache/Makefile])
 AC_CONFIG_FILES([libfdata/Makefile])
 AC_CONFIG_FILES([libfvalue/Makefile])
 AC_CONFIG_FILES([libvmdk/Makefile])
-AC_CONFIG_FILES([libcsystem/Makefile])
 AC_CONFIG_FILES([vmdktools/Makefile])
 AC_CONFIG_FILES([pyvmdk/Makefile])
 AC_CONFIG_FILES([pyvmdk-python2/Makefile])
@@ -264,7 +263,6 @@ Building:
    libfdata support:                          $ac_cv_libfdata
    libfvalue support:                         $ac_cv_libfvalue
    DEFLATE compression support:               $ac_cv_uncompress
-   libcsystem support:                        $ac_cv_libcsystem
    FUSE support:                              $ac_cv_libfuse
 
 Features:

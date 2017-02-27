@@ -1,5 +1,5 @@
 /*
- * Python object definition of the libvmdk extent descriptor
+ * Python object wrapper of libvmdk_extent_descriptor_t
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -83,5 +83,5 @@ PyObject *pyvmdk_extent_descriptor_get_filename(
 }
 #endif
 
-#endif
+#endif /* !defined( _PYVMDK_EXTENT_DESCRIPTOR_H ) */
 

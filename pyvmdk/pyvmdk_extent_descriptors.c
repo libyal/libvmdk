@@ -1,5 +1,5 @@
 /*
- * Python object definition of the extent descriptors sequence and iterator
+ * Python object definition of the sequence and iterator object of extent descriptors
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -26,12 +26,11 @@
 #include <stdlib.h>
 #endif
 
-#include "pyvmdk_handle.h"
+#include "pyvmdk_extent_descriptor.h"
+#include "pyvmdk_extent_descriptors.h"
 #include "pyvmdk_libcerror.h"
 #include "pyvmdk_libvmdk.h"
 #include "pyvmdk_python.h"
-#include "pyvmdk_extent_descriptor.h"
-#include "pyvmdk_extent_descriptors.h"
 
 PySequenceMethods pyvmdk_extent_descriptors_sequence_methods = {
 	/* sq_length */
@@ -98,7 +97,7 @@ PyTypeObject pyvmdk_extent_descriptors_type_object = {
 	/* tp_flags */
 	Py_TPFLAGS_DEFAULT | Py_TPFLAGS_HAVE_ITER,
 	/* tp_doc */
-	"internal pyvmdk extent descriptors sequence and iterator object",
+	"pyvmdk internal sequence and iterator object of extent descriptors",
 	/* tp_traverse */
 	0,
 	/* tp_clear */
@@ -155,122 +154,122 @@ PyTypeObject pyvmdk_extent_descriptors_type_object = {
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyvmdk_extent_descriptors_new(
-           pyvmdk_handle_t *handle_object,
-           PyObject* (*get_extent_descriptor_by_index)(
-                        pyvmdk_handle_t *handle_object,
-                        int extent_index ),
-           int number_of_extents )
+           PyObject *parent_object,
+           PyObject* (*get_item_by_index)(
+                        PyObject *parent_object,
+                        int index ),
+           int number_of_items )
 {
-	pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors = NULL;
+	pyvmdk_extent_descriptors_t *extent_descriptors_object = NULL;
 	static char *function                                  = "pyvmdk_extent_descriptors_new";
 
-	if( handle_object == NULL )
+	if( parent_object == NULL )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid handle object.",
+		 "%s: invalid parent object.",
 		 function );
 
 		return( NULL );
 	}
-	if( get_extent_descriptor_by_index == NULL )
+	if( get_item_by_index == NULL )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid get extent_descriptor by index function.",
+		 "%s: invalid get item by index function.",
 		 function );
 
 		return( NULL );
 	}
 	/* Make sure the extent descriptors values are initialized
 	 */
-	pyvmdk_extent_descriptors = PyObject_New(
+	extent_descriptors_object = PyObject_New(
 	                             struct pyvmdk_extent_descriptors,
 	                             &pyvmdk_extent_descriptors_type_object );
 
-	if( pyvmdk_extent_descriptors == NULL )
+	if( extent_descriptors_object == NULL )
 	{
 		PyErr_Format(
 		 PyExc_MemoryError,
-		 "%s: unable to initialize extent descriptors.",
+		 "%s: unable to create extent descriptors object.",
 		 function );
 
 		goto on_error;
 	}
 	if( pyvmdk_extent_descriptors_init(
-	     pyvmdk_extent_descriptors ) != 0 )
+	     extent_descriptors_object ) != 0 )
 	{
 		PyErr_Format(
 		 PyExc_MemoryError,
-		 "%s: unable to initialize extent descriptors.",
+		 "%s: unable to initialize extent descriptors object.",
 		 function );
 
 		goto on_error;
 	}
-	pyvmdk_extent_descriptors->handle_object                  = handle_object;
-	pyvmdk_extent_descriptors->get_extent_descriptor_by_index = get_extent_descriptor_by_index;
-	pyvmdk_extent_descriptors->number_of_extents              = number_of_extents;
+	extent_descriptors_object->parent_object     = parent_object;
+	extent_descriptors_object->get_item_by_index = get_item_by_index;
+	extent_descriptors_object->number_of_items   = number_of_items;
 
 	Py_IncRef(
-	 (PyObject *) pyvmdk_extent_descriptors->handle_object );
+	 (PyObject *) extent_descriptors_object->parent_object );
 
-	return( (PyObject *) pyvmdk_extent_descriptors );
+	return( (PyObject *) extent_descriptors_object );
 
 on_error:
-	if( pyvmdk_extent_descriptors != NULL )
+	if( extent_descriptors_object != NULL )
 	{
 		Py_DecRef(
-		 (PyObject *) pyvmdk_extent_descriptors );
+		 (PyObject *) extent_descriptors_object );
 	}
 	return( NULL );
 }
 
-/* Intializes a extent descriptors object
+/* Intializes an extent descriptors object
  * Returns 0 if successful or -1 on error
  */
 int pyvmdk_extent_descriptors_init(
-     pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors )
+     pyvmdk_extent_descriptors_t *extent_descriptors_object )
 {
 	static char *function = "pyvmdk_extent_descriptors_init";
 
-	if( pyvmdk_extent_descriptors == NULL )
+	if( extent_descriptors_object == NULL )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid extent descriptors.",
+		 "%s: invalid extent descriptors object.",
 		 function );
 
 		return( -1 );
 	}
 	/* Make sure the extent descriptors values are initialized
 	 */
-	pyvmdk_extent_descriptors->handle_object                  = NULL;
-	pyvmdk_extent_descriptors->get_extent_descriptor_by_index = NULL;
-	pyvmdk_extent_descriptors->extent_index                   = 0;
-	pyvmdk_extent_descriptors->number_of_extents              = 0;
+	extent_descriptors_object->parent_object     = NULL;
+	extent_descriptors_object->get_item_by_index = NULL;
+	extent_descriptors_object->current_index     = 0;
+	extent_descriptors_object->number_of_items   = 0;
 
 	return( 0 );
 }
 
-/* Frees a extent descriptors object
+/* Frees an extent descriptors object
  */
 void pyvmdk_extent_descriptors_free(
-      pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors )
+      pyvmdk_extent_descriptors_t *extent_descriptors_object )
 {
 	struct _typeobject *ob_type = NULL;
 	static char *function       = "pyvmdk_extent_descriptors_free";
 
-	if( pyvmdk_extent_descriptors == NULL )
+	if( extent_descriptors_object == NULL )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid extent descriptors.",
+		 "%s: invalid extent descriptors object.",
 		 function );
 
 		return;
 	}
 	ob_type = Py_TYPE(
-	           pyvmdk_extent_descriptors );
+	           extent_descriptors_object );
 
 	if( ob_type == NULL )
 	{
@@ -290,72 +289,72 @@ void pyvmdk_extent_descriptors_free(
 
 		return;
 	}
-	if( pyvmdk_extent_descriptors->handle_object != NULL )
+	if( extent_descriptors_object->parent_object != NULL )
 	{
 		Py_DecRef(
-		 (PyObject *) pyvmdk_extent_descriptors->handle_object );
+		 (PyObject *) extent_descriptors_object->parent_object );
 	}
 	ob_type->tp_free(
-	 (PyObject*) pyvmdk_extent_descriptors );
+	 (PyObject*) extent_descriptors_object );
 }
 
 /* The extent descriptors len() function
  */
 Py_ssize_t pyvmdk_extent_descriptors_len(
-            pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors )
+            pyvmdk_extent_descriptors_t *extent_descriptors_object )
 {
 	static char *function = "pyvmdk_extent_descriptors_len";
 
-	if( pyvmdk_extent_descriptors == NULL )
+	if( extent_descriptors_object == NULL )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid extent descriptors.",
+		 "%s: invalid extent descriptors object.",
 		 function );
 
 		return( -1 );
 	}
-	return( (Py_ssize_t) pyvmdk_extent_descriptors->number_of_extents );
+	return( (Py_ssize_t) extent_descriptors_object->number_of_items );
 }
 
 /* The extent descriptors getitem() function
  */
 PyObject *pyvmdk_extent_descriptors_getitem(
-           pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors,
+           pyvmdk_extent_descriptors_t *extent_descriptors_object,
            Py_ssize_t item_index )
 {
 	PyObject *extent_descriptor_object = NULL;
-	static char *function             = "pyvmdk_extent_descriptors_getitem";
+	static char *function              = "pyvmdk_extent_descriptors_getitem";
 
-	if( pyvmdk_extent_descriptors == NULL )
+	if( extent_descriptors_object == NULL )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid extent descriptors.",
+		 "%s: invalid extent descriptors object.",
 		 function );
 
 		return( NULL );
 	}
-	if( pyvmdk_extent_descriptors->get_extent_descriptor_by_index == NULL )
+	if( extent_descriptors_object->get_item_by_index == NULL )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid extent descriptors - missing get extent descriptor by index function.",
+		 "%s: invalid extent descriptors object - missing get item by index function.",
 		 function );
 
 		return( NULL );
 	}
-	if( pyvmdk_extent_descriptors->number_of_extents < 0 )
+	if( extent_descriptors_object->number_of_items < 0 )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid extent descriptors - invalid number of extents.",
+		 "%s: invalid extent descriptors object - invalid number of items.",
 		 function );
 
 		return( NULL );
 	}
 	if( ( item_index < 0 )
-	 || ( item_index >= (Py_ssize_t) pyvmdk_extent_descriptors->number_of_extents ) )
+	 || ( item_index >= (Py_ssize_t) extent_descriptors_object->number_of_items ) )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
@@ -364,8 +363,8 @@ PyObject *pyvmdk_extent_descriptors_getitem(
 
 		return( NULL );
 	}
-	extent_descriptor_object = pyvmdk_extent_descriptors->get_extent_descriptor_by_index(
-	                            pyvmdk_extent_descriptors->handle_object,
+	extent_descriptor_object = extent_descriptors_object->get_item_by_index(
+	                            extent_descriptors_object->parent_object,
 	                            (int) item_index );
 
 	return( extent_descriptor_object );
@@ -374,83 +373,83 @@ PyObject *pyvmdk_extent_descriptors_getitem(
 /* The extent descriptors iter() function
  */
 PyObject *pyvmdk_extent_descriptors_iter(
-           pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors )
+           pyvmdk_extent_descriptors_t *extent_descriptors_object )
 {
 	static char *function = "pyvmdk_extent_descriptors_iter";
 
-	if( pyvmdk_extent_descriptors == NULL )
+	if( extent_descriptors_object == NULL )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid extent descriptors.",
+		 "%s: invalid extent descriptors object.",
 		 function );
 
 		return( NULL );
 	}
 	Py_IncRef(
-	 (PyObject *) pyvmdk_extent_descriptors );
+	 (PyObject *) extent_descriptors_object );
 
-	return( (PyObject *) pyvmdk_extent_descriptors );
+	return( (PyObject *) extent_descriptors_object );
 }
 
 /* The extent descriptors iternext() function
  */
 PyObject *pyvmdk_extent_descriptors_iternext(
-           pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors )
+           pyvmdk_extent_descriptors_t *extent_descriptors_object )
 {
 	PyObject *extent_descriptor_object = NULL;
 	static char *function              = "pyvmdk_extent_descriptors_iternext";
 
-	if( pyvmdk_extent_descriptors == NULL )
+	if( extent_descriptors_object == NULL )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid extent descriptors.",
+		 "%s: invalid extent descriptors object.",
 		 function );
 
 		return( NULL );
 	}
-	if( pyvmdk_extent_descriptors->get_extent_descriptor_by_index == NULL )
+	if( extent_descriptors_object->get_item_by_index == NULL )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid extent descriptors - missing get extent descriptor by index function.",
+		 "%s: invalid extent descriptors object - missing get item by index function.",
 		 function );
 
 		return( NULL );
 	}
-	if( pyvmdk_extent_descriptors->extent_index < 0 )
+	if( extent_descriptors_object->current_index < 0 )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid extent descriptors - invalid extent index.",
+		 "%s: invalid extent descriptors object - invalid current index.",
 		 function );
 
 		return( NULL );
 	}
-	if( pyvmdk_extent_descriptors->number_of_extents < 0 )
+	if( extent_descriptors_object->number_of_items < 0 )
 	{
 		PyErr_Format(
 		 PyExc_ValueError,
-		 "%s: invalid extent descriptors - invalid number of extents.",
+		 "%s: invalid extent descriptors object - invalid number of items.",
 		 function );
 
 		return( NULL );
 	}
-	if( pyvmdk_extent_descriptors->extent_index >= pyvmdk_extent_descriptors->number_of_extents )
+	if( extent_descriptors_object->current_index >= extent_descriptors_object->number_of_items )
 	{
 		PyErr_SetNone(
 		 PyExc_StopIteration );
 
 		return( NULL );
 	}
-	extent_descriptor_object = pyvmdk_extent_descriptors->get_extent_descriptor_by_index(
-	                            pyvmdk_extent_descriptors->handle_object,
-	                            pyvmdk_extent_descriptors->extent_index );
+	extent_descriptor_object = extent_descriptors_object->get_item_by_index(
+	                            extent_descriptors_object->parent_object,
+	                            extent_descriptors_object->current_index );
 
 	if( extent_descriptor_object != NULL )
 	{
-		pyvmdk_extent_descriptors->extent_index++;
+		extent_descriptors_object->current_index++;
 	}
 	return( extent_descriptor_object );
 }

@@ -19,8 +19,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _PYVMDK_LIBBFIO_H )
-#define _PYVMDK_LIBBFIO_H
+#if !defined( _VMDK_TEST_LIBBFIO_H )
+#define _VMDK_TEST_LIBBFIO_H
 
 #include <common.h>
 
@@ -48,7 +48,11 @@
 
 #include <libbfio.h>
 
+#if defined( HAVE_MULTI_THREAD_SUPPORT ) && !defined( LIBBFIO_HAVE_MULTI_THREAD_SUPPORT )
+#error Multi-threading support requires libbfio with multi-threading support
+#endif
+
 #endif /* defined( HAVE_LOCAL_LIBBFIO ) */
 
-#endif /* !defined( _PYVMDK_LIBBFIO_H ) */
+#endif /* !defined( _VMDK_TEST_LIBBFIO_H ) */
 

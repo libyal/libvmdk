@@ -136,8 +136,6 @@ stamp-h[1-9]
 /tests/vmdk_test_handle
 /tests/vmdk_test_io_handle
 /tests/vmdk_test_notify
-/tests/vmdk_test_read
-/tests/vmdk_test_seek
 /tests/vmdk_test_support
 
 # Local library dependencies specific files
@@ -149,7 +147,6 @@ stamp-h[1-9]
 /libcnotify
 /libcpath
 /libcsplit
-/libcsystem
 /libcthreads
 /libfcache
 /libfdata

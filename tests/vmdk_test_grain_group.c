@@ -1,5 +1,5 @@
 /*
- * Library grain_group type testing program
+ * Library grain_group type test program
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *

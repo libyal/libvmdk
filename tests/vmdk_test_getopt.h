@@ -1,5 +1,5 @@
 /*
- * Python file objects IO pool functions
+ * GetOpt functions
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,29 +19,50 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _PYVMDK_FILE_OBJECTS_IO_POOL_H )
-#define _PYVMDK_FILE_OBJECTS_IO_POOL_H
+#if !defined( _VMDK_TEST_GETOPT_H )
+#define _VMDK_TEST_GETOPT_H
 
 #include <common.h>
 #include <types.h>
 
-#include "pyvmdk_libbfio.h"
-#include "pyvmdk_libcerror.h"
-#include "pyvmdk_python.h"
+/* unistd.h is included here to export getopt, optarg, optind and optopt
+ */
+#if defined( HAVE_UNISTD_H )
+#include <unistd.h>
+#endif
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-int pyvmdk_file_objects_pool_initialize(
-     libbfio_pool_t **pool,
-     PyObject *sequence_object,
-     int access_flags,
-     libcerror_error_t **error );
+#if defined( HAVE_GETOPT )
+#define vmdk_test_getopt( argument_count, argument_values, options_string ) \
+	getopt( argument_count, argument_values, options_string )
+
+#else
+
+#if !defined( __CYGWIN__ )
+extern int optind;
+extern system_character_t *optarg;
+extern system_integer_t optopt;
+
+#else
+int optind;
+system_character_t *optarg;
+system_integer_t optopt;
+
+#endif /* !defined( __CYGWIN__ ) */
+
+system_integer_t vmdk_test_getopt(
+                  int argument_count,
+                  system_character_t * const argument_values[],
+                  const system_character_t *options_string );
+
+#endif /* defined( HAVE_GETOPT ) */
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _PYVMDK_FILE_OBJECTS_IO_POOL_H ) */
+#endif /* !defined( _VMDK_TEST_GETOPT_H ) */
 

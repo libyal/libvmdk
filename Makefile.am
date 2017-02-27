@@ -17,7 +17,6 @@ SUBDIRS = \
 	libfdata \
 	libfvalue \
 	libvmdk \
-	libcsystem \
 	vmdktools \
 	pyvmdk \
 	pyvmdk-python2 \
@@ -122,7 +121,6 @@ splint:
 	(cd $(srcdir)/libfdata && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libfvalue && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/libvmdk && $(MAKE) splint $(AM_MAKEFLAGS))
-	(cd $(srcdir)/libcsystem && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/vmdktools && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/pyvmdk && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/po && $(MAKE) $(AM_MAKEFLAGS))

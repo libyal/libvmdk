@@ -26,9 +26,15 @@
 #include <file_stream.h>
 #include <types.h>
 
+#include "vmdktools_libcerror.h"
+
 #if defined( __cplusplus )
 extern "C" {
 #endif
+
+int vmdktools_output_initialize(
+     int stdio_mode,
+     libcerror_error_t **error );
 
 void vmdkoutput_copyright_fprint(
       FILE *stream );

@@ -1,5 +1,5 @@
 /*
- * Python object definition of the libvmdk handle
+ * Python object wrapper of libvmdk_handle_t
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,8 +19,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _PYVMDK_FILE_H )
-#define _PYVMDK_FILE_H
+#if !defined( _PYVMDK_HANDLE_H )
+#define _PYVMDK_HANDLE_H
 
 #include <common.h>
 #include <types.h>
@@ -152,7 +152,7 @@ PyObject *pyvmdk_handle_get_number_of_extents(
            PyObject *arguments );
 
 PyObject *pyvmdk_handle_get_extent_descriptor_by_index(
-           pyvmdk_handle_t *pyvmdk_handle,
+           PyObject *pyvmdk_handle,
            int extent_index );
 
 PyObject *pyvmdk_handle_get_extent_descriptor(
@@ -168,5 +168,5 @@ PyObject *pyvmdk_handle_get_extent_descriptors(
 }
 #endif
 
-#endif /* !defined( _PYVMDK_FILE_H ) */
+#endif /* !defined( _PYVMDK_HANDLE_H ) */
 

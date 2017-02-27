@@ -27,11 +27,11 @@
 /* If Cygwin libtool DLL support is enabled set LIBVMDK_DLL_IMPORT
  * before including libvmdk.h
  */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
+#if defined( _WIN32 ) && defined( DLL_IMPORT ) && !defined( HAVE_STATIC_EXECUTABLES )
 #define LIBVMDK_DLL_IMPORT
 #endif
 
 #include <libvmdk.h>
 
-#endif
+#endif /* !defined( _VMDKTOOLS_LIBVMDK_H ) */
 

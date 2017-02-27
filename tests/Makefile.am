@@ -14,30 +14,25 @@ AM_CPPFLAGS = \
 	@LIBFCACHE_CPPFLAGS@ \
 	@LIBFDATA_CPPFLAGS@ \
 	@LIBFVALUE_CPPFLAGS@ \
-	@LIBCSYSTEM_CPPFLAGS@ \
 	@ZLIB_CPPFLAGS@ \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBVMDK_DLL_IMPORT@
 
 if HAVE_PYTHON_TESTS
 TESTS_PYVMDK = \
-	test_python_functions.sh
+	test_python_module.sh
 endif
 
 TESTS = \
-	test_api_functions.sh \
-	test_api_types.sh \
+	test_library.sh \
 	test_vmdkinfo.sh \
 	$(TESTS_PYVMDK)
 
 check_SCRIPTS = \
-	pyvmdk_test_get_version.py \
-	pyvmdk_test_open_close.py \
 	pyvmdk_test_read.py \
-	pyvmdk_test_seek.py \
-	test_api_functions.sh \
-	test_api_types.sh \
-	test_python_functions.sh \
+	pyvmdk_test_support.py \
+	test_library.sh \
+	test_python_module.sh \
 	test_runner.sh \
 	test_vmdkinfo.sh
 
@@ -56,8 +51,6 @@ check_PROGRAMS = \
 	vmdk_test_handle \
 	vmdk_test_io_handle \
 	vmdk_test_notify \
-	vmdk_test_read \
-	vmdk_test_seek \
 	vmdk_test_support
 
 vmdk_test_descriptor_file_SOURCES = \
@@ -154,17 +147,16 @@ vmdk_test_grain_table_LDADD = \
 	@LIBCERROR_LIBADD@
 
 vmdk_test_handle_SOURCES = \
+	vmdk_test_getopt.c vmdk_test_getopt.h \
 	vmdk_test_handle.c \
 	vmdk_test_libcerror.h \
 	vmdk_test_libclocale.h \
-	vmdk_test_libcsystem.h \
 	vmdk_test_libuna.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
 	vmdk_test_memory.c vmdk_test_memory.h
 
 vmdk_test_handle_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
@@ -195,47 +187,20 @@ vmdk_test_notify_SOURCES = \
 vmdk_test_notify_LDADD = \
 	../libvmdk/libvmdk.la
 
-vmdk_test_read_SOURCES = \
-	vmdk_test_libcerror.h \
-	vmdk_test_libcsystem.h \
-	vmdk_test_libcthreads.h \
-	vmdk_test_libvmdk.h \
-	vmdk_test_read.c \
-	vmdk_test_unused.h
-
-vmdk_test_read_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
-	../libvmdk/libvmdk.la \
-	@LIBCTHREADS_LIBADD@ \
-	@LIBCERROR_LIBADD@
-	@PTHREAD_LIBADD@
-
-vmdk_test_seek_SOURCES = \
-	vmdk_test_libcerror.h \
-	vmdk_test_libcsystem.h \
-	vmdk_test_libcthreads.h \
-	vmdk_test_libvmdk.h \
-	vmdk_test_seek.c \
-	vmdk_test_unused.h
-
-vmdk_test_seek_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
-	../libvmdk/libvmdk.la \
-	@LIBCTHREADS_LIBADD@ \
-	@LIBCERROR_LIBADD@
-	@PTHREAD_LIBADD@
-
 vmdk_test_support_SOURCES = \
+	vmdk_test_getopt.c vmdk_test_getopt.h \
+	vmdk_test_libbfio.h \
 	vmdk_test_libcerror.h \
 	vmdk_test_libclocale.h \
-	vmdk_test_libcsystem.h \
 	vmdk_test_libuna.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
 	vmdk_test_support.c
 
 vmdk_test_support_LDADD = \
-	@LIBCSYSTEM_LIBADD@ \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \

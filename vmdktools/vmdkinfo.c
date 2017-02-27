@@ -34,12 +34,14 @@
 #endif
 
 #include "info_handle.h"
-#include "vmdkoutput.h"
+#include "vmdktools_getopt.h"
 #include "vmdktools_libcerror.h"
 #include "vmdktools_libclocale.h"
 #include "vmdktools_libcnotify.h"
-#include "vmdktools_libcsystem.h"
 #include "vmdktools_libvmdk.h"
+#include "vmdktools_output.h"
+#include "vmdktools_signal.h"
+#include "vmdktools_unused.h"
 
 info_handle_t *vmdkinfo_info_handle = NULL;
 int vmdkinfo_abort                  = 0;
@@ -68,12 +70,12 @@ void usage_fprint(
 /* Signal handler for vmdkinfo
  */
 void vmdkinfo_signal_handler(
-      libcsystem_signal_t signal LIBCSYSTEM_ATTRIBUTE_UNUSED )
+      vmdktools_signal_t signal VMDKTOOLS_ATTRIBUTE_UNUSED )
 {
 	libcerror_error_t *error = NULL;
 	static char *function   = "vmdkinfo_signal_handler";
 
-	LIBCSYSTEM_UNREFERENCED_PARAMETER( signal )
+	VMDKTOOLS_UNREFERENCED_PARAMETER( signal )
 
 	vmdkinfo_abort = 1;
 
@@ -95,8 +97,13 @@ void vmdkinfo_signal_handler(
 	}
 	/* Force stdin to close otherwise any function reading it will remain blocked
 	 */
-	if( libcsystem_file_io_close(
+#if defined( WINAPI ) && !defined( __CYGWIN__ )
+	if( _close(
 	     0 ) != 0 )
+#else
+	if( close(
+	     0 ) != 0 )
+#endif
 	{
 		libcnotify_printf(
 		 "%s: unable to close stdin.\n",
@@ -135,13 +142,13 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-        if( libcsystem_initialize(
+        if( vmdktools_output_initialize(
              _IONBF,
              &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
-		 "Unable to initialize system values.\n" );
+		 "Unable to initialize output settings.\n" );
 
 		goto on_error;
 	}
@@ -149,7 +156,7 @@ int main( int argc, char * const argv[] )
 	 stdout,
 	 program );
 
-	while( ( option = libcsystem_getopt(
+	while( ( option = vmdktools_getopt(
 	                   argc,
 	                   argv,
 	                   _SYSTEM_STRING( "hvV" ) ) ) != (system_integer_t) -1 )

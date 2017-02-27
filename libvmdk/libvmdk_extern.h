@@ -38,9 +38,9 @@
 #include <libvmdk/extern.h>
 
 #else
-#define LIBVMDK_EXTERN	extern
+#define LIBVMDK_EXTERN	/* extern */
 
-#endif
+#endif /* !defined( HAVE_LOCAL_LIBVMDK ) */
 
 #endif /* !defined( _LIBVMDK_INTERNAL_EXTERN_H ) */
 

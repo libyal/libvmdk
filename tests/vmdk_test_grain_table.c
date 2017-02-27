@@ -1,5 +1,5 @@
 /*
- * Library grain_table type testing program
+ * Library grain_table type test program
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -93,6 +93,8 @@ int main(
 	VMDK_TEST_UNREFERENCED_PARAMETER( argv )
 
 #if defined( __GNUC__ )
+
+	/* TODO: add tests for libvmdk_grain_table_initialize */
 
 	VMDK_TEST_RUN(
 	 "libvmdk_grain_table_free",

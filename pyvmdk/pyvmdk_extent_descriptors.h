@@ -1,5 +1,5 @@
 /*
- * Python object definition of the extent descriptors sequence and iterator
+ * Python object definition of the sequence and iterator object of extent descriptors
  *
  * Copyright (C) 2009-2017, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -25,7 +25,6 @@
 #include <common.h>
 #include <types.h>
 
-#include "pyvmdk_handle.h"
 #include "pyvmdk_libvmdk.h"
 #include "pyvmdk_python.h"
 
@@ -41,56 +40,56 @@ struct pyvmdk_extent_descriptors
 	 */
 	PyObject_HEAD
 
-	/* The handle object
+	/* The parent object
 	 */
-	pyvmdk_handle_t *handle_object;
+	PyObject *parent_object;
 
-	/* The get extent descriptor by index callback function
+	/* The get item by index callback function
 	 */
-	PyObject* (*get_extent_descriptor_by_index)(
-	             pyvmdk_handle_t *handle_object,
-	             int extent_index );
+	PyObject* (*get_item_by_index)(
+	             PyObject *parent_object,
+	             int index );
 
-	/* The (current) extent index
+	/* The current index
 	 */
-	int extent_index;
+	int current_index;
 
-	/* The number of extents
+	/* The number of items
 	 */
-	int number_of_extents;
+	int number_of_items;
 };
 
 extern PyTypeObject pyvmdk_extent_descriptors_type_object;
 
 PyObject *pyvmdk_extent_descriptors_new(
-           pyvmdk_handle_t *handle_object,
-           PyObject* (*get_extent_descriptor_by_index)(
-                        pyvmdk_handle_t *handle_object,
-                        int extent_index ),
-           int number_of_extents );
+           PyObject *parent_object,
+           PyObject* (*get_item_by_index)(
+                        PyObject *parent_object,
+                        int index ),
+           int number_of_items );
 
 int pyvmdk_extent_descriptors_init(
-     pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors );
+     pyvmdk_extent_descriptors_t *extent_descriptors_object );
 
 void pyvmdk_extent_descriptors_free(
-      pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors );
+      pyvmdk_extent_descriptors_t *extent_descriptors_object );
 
 Py_ssize_t pyvmdk_extent_descriptors_len(
-            pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors );
+            pyvmdk_extent_descriptors_t *extent_descriptors_object );
 
 PyObject *pyvmdk_extent_descriptors_getitem(
-           pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors,
+           pyvmdk_extent_descriptors_t *extent_descriptors_object,
            Py_ssize_t item_index );
 
 PyObject *pyvmdk_extent_descriptors_iter(
-           pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors );
+           pyvmdk_extent_descriptors_t *extent_descriptors_object );
 
 PyObject *pyvmdk_extent_descriptors_iternext(
-           pyvmdk_extent_descriptors_t *pyvmdk_extent_descriptors );
+           pyvmdk_extent_descriptors_t *extent_descriptors_object );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif
+#endif /* !defined( _PYVMDK_EXTENT_DESCRIPTORS_H ) */
 
