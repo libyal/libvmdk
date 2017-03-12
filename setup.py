@@ -11,6 +11,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import json
 
 from distutils import sysconfig
 from distutils.ccompiler import new_compiler
@@ -274,6 +275,34 @@ if platform.system() == "Windows":
       definition = "HAVE_LOCAL_{0:s}".format(library_name.upper())
 
     DEFINE_MACROS.append((definition, ""))
+elif platform.system() == 'Darwin':
+    try:
+        # make sure gettext is installed
+        gettext_info = json.loads(
+                subprocess.check_output(['brew', 'info', '--json=v1',
+                    'gettext']))
+        gettext_version = gettext_info[0]['installed'][0]['version']
+        #update system path for scripts
+        gettext_path = os.path.join(subprocess.check_output([ 'brew',
+            '--cellar', 'gettext'])[:-1], gettext_version, 'bin')
+        os.environ["PATH"] += os.pathsep + gettext_path
+    except Exception as e:
+        msg = 'Darwin homebrew detected but gettext not installed.'
+        raise Exception(msg)
+    try:
+        # make sure that libtool is installed...
+        libtool_info = json.loads(
+                subprocess.check_output(['brew', 'info', '--json=v1',
+                    'libtool']))
+        libtool_version = libtool_info[0]['installed'][0]['version']
+    except Exception as e:
+        msg = 'Darwin homebrew detected but libtool not installed.'
+        raise Exception(msg)
+    # now try running autoreconf
+    os.environ['LIBRARY_PATH'] = '/usr/local/lib'
+    os.environ['LD_LIBRARY_PATH'] = '/usr/local/lib'
+    subprocess.call(['autoreconf', '--install'])
+
 
 # Put everything inside the Python module to prevent issues with finding
 # shared libaries since pip does not integrate well with the system package
