@@ -32,13 +32,12 @@ DPKG_FILES = \
 	dpkg/compat \
 	dpkg/control \
 	dpkg/copyright \
-	dpkg/copyright.in \
 	dpkg/rules \
-	dpkg/libvmdk.docs \
-	dpkg/libvmdk-dev.docs \
-	dpkg/libvmdk-python.docs \
-	dpkg/libvmdk-python3.docs \
-	dpkg/libvmdk-tools.docs \
+	dpkg/libvmdk.install \
+	dpkg/libvmdk-dev.install \
+	dpkg/libvmdk-python.install \
+	dpkg/libvmdk-python3.install \
+	dpkg/libvmdk-tools.install \
 	dpkg/source/format
 
 GETTEXT_FILES = \
