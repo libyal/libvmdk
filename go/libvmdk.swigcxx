@@ -1,0 +1,18 @@
+%module libvmdk
+
+%{
+#include "libvmdk.hpp"
+%}
+
+// Byte buffer type
+%typemap(gotype) (go_bytebuffer *)  "[]byte"
+%typemap(in) (go_bytebuffer *)
+%{
+    go_bytebuffer _buf = { 0 };
+    _buf.buffer = (void *)$input.array;
+    _buf.size = (size_t)$input.len;
+    $1 = &_buf;
+%}
+
+%include <std_string.i>
+%include "libvmdk.hpp"

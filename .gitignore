@@ -151,3 +151,6 @@ stamp-h[1-9]
 /libfdata
 /libfvalue
 /libuna
+
+# Go generated files
+/go/libvmdk_wrap.cxx
