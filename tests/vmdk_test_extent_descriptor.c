@@ -35,7 +35,7 @@
 
 #include "../libvmdk/libvmdk_extent_descriptor.h"
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
 /* Tests the libvmdk_extent_descriptor_initialize function
  * Returns 1 if successful or 0 if not
@@ -72,8 +72,8 @@ int vmdk_test_extent_descriptor_initialize(
          "error",
          error );
 
-	result = libvmdk_extent_descriptor_free(
-	          &extent_descriptor,
+	result = libvmdk_internal_extent_descriptor_free(
+	          (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 	          &error );
 
 	VMDK_TEST_ASSERT_EQUAL_INT(
@@ -147,8 +147,8 @@ int vmdk_test_extent_descriptor_initialize(
 
 			if( extent_descriptor != NULL )
 			{
-				libvmdk_extent_descriptor_free(
-				 &extent_descriptor,
+				libvmdk_internal_extent_descriptor_free(
+				 (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 				 NULL );
 			}
 		}
@@ -189,8 +189,8 @@ int vmdk_test_extent_descriptor_initialize(
 
 			if( extent_descriptor != NULL )
 			{
-				libvmdk_extent_descriptor_free(
-				 &extent_descriptor,
+				libvmdk_internal_extent_descriptor_free(
+				 (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 				 NULL );
 			}
 		}
@@ -225,14 +225,14 @@ on_error:
 	}
 	if( extent_descriptor != NULL )
 	{
-		libvmdk_extent_descriptor_free(
-		 &extent_descriptor,
+		libvmdk_internal_extent_descriptor_free(
+		 (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 		 NULL );
 	}
 	return( 0 );
 }
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 /* Tests the libvmdk_extent_descriptor_free function
  * Returns 1 if successful or 0 if not
@@ -272,7 +272,7 @@ on_error:
 	return( 0 );
 }
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
 /* Tests the libvmdk_extent_descriptor_get_type function
  * Returns 1 if successful or 0 if not
@@ -363,8 +363,8 @@ int vmdk_test_extent_descriptor_get_type(
 	}
 	/* Clean up
 	 */
-	result = libvmdk_extent_descriptor_free(
-	          &extent_descriptor,
+	result = libvmdk_internal_extent_descriptor_free(
+	          (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 	          &error );
 
 	VMDK_TEST_ASSERT_EQUAL_INT(
@@ -390,8 +390,8 @@ on_error:
 	}
 	if( extent_descriptor != NULL )
 	{
-		libvmdk_extent_descriptor_free(
-		 &extent_descriptor,
+		libvmdk_internal_extent_descriptor_free(
+		 (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 		 NULL );
 	}
 	return( 0 );
@@ -486,8 +486,8 @@ int vmdk_test_extent_descriptor_get_utf8_filename_size(
 	}
 	/* Clean up
 	 */
-	result = libvmdk_extent_descriptor_free(
-	          &extent_descriptor,
+	result = libvmdk_internal_extent_descriptor_free(
+	          (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 	          &error );
 
 	VMDK_TEST_ASSERT_EQUAL_INT(
@@ -513,8 +513,8 @@ on_error:
 	}
 	if( extent_descriptor != NULL )
 	{
-		libvmdk_extent_descriptor_free(
-		 &extent_descriptor,
+		libvmdk_internal_extent_descriptor_free(
+		 (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 		 NULL );
 	}
 	return( 0 );
@@ -649,8 +649,8 @@ int vmdk_test_extent_descriptor_get_utf8_filename(
 	}
 	/* Clean up
 	 */
-	result = libvmdk_extent_descriptor_free(
-	          &extent_descriptor,
+	result = libvmdk_internal_extent_descriptor_free(
+	          (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 	          &error );
 
 	VMDK_TEST_ASSERT_EQUAL_INT(
@@ -676,8 +676,8 @@ on_error:
 	}
 	if( extent_descriptor != NULL )
 	{
-		libvmdk_extent_descriptor_free(
-		 &extent_descriptor,
+		libvmdk_internal_extent_descriptor_free(
+		 (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 		 NULL );
 	}
 	return( 0 );
@@ -772,8 +772,8 @@ int vmdk_test_extent_descriptor_get_utf16_filename_size(
 	}
 	/* Clean up
 	 */
-	result = libvmdk_extent_descriptor_free(
-	          &extent_descriptor,
+	result = libvmdk_internal_extent_descriptor_free(
+	          (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 	          &error );
 
 	VMDK_TEST_ASSERT_EQUAL_INT(
@@ -799,8 +799,8 @@ on_error:
 	}
 	if( extent_descriptor != NULL )
 	{
-		libvmdk_extent_descriptor_free(
-		 &extent_descriptor,
+		libvmdk_internal_extent_descriptor_free(
+		 (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 		 NULL );
 	}
 	return( 0 );
@@ -935,8 +935,8 @@ int vmdk_test_extent_descriptor_get_utf16_filename(
 	}
 	/* Clean up
 	 */
-	result = libvmdk_extent_descriptor_free(
-	          &extent_descriptor,
+	result = libvmdk_internal_extent_descriptor_free(
+	          (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 	          &error );
 
 	VMDK_TEST_ASSERT_EQUAL_INT(
@@ -962,14 +962,14 @@ on_error:
 	}
 	if( extent_descriptor != NULL )
 	{
-		libvmdk_extent_descriptor_free(
-		 &extent_descriptor,
+		libvmdk_internal_extent_descriptor_free(
+		 (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
 		 NULL );
 	}
 	return( 0 );
 }
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 /* The main program
  */
@@ -986,19 +986,19 @@ int main(
 	VMDK_TEST_UNREFERENCED_PARAMETER( argc )
 	VMDK_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
 	VMDK_TEST_RUN(
 	 "libvmdk_extent_descriptor_initialize",
 	 vmdk_test_extent_descriptor_initialize );
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 	VMDK_TEST_RUN(
 	 "libvmdk_extent_descriptor_free",
 	 vmdk_test_extent_descriptor_free );
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
 	/* TODO: add tests for libvmdk_extent_descriptor_read */
 
@@ -1024,7 +1024,7 @@ int main(
 	 "libvmdk_extent_descriptor_get_utf16_filename",
 	 vmdk_test_extent_descriptor_get_utf16_filename );
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 

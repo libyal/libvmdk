@@ -204,7 +204,8 @@ int libvmdk_handle_free(
 	{
 		internal_handle = (libvmdk_internal_handle_t *) *handle;
 
-		if( internal_handle->extent_data_file_io_pool != NULL )
+		if( ( internal_handle->extent_data_file_io_pool != NULL )
+		 || ( internal_handle->descriptor_file != NULL ) )
 		{
 			if( libvmdk_handle_close(
 			     *handle,
@@ -1047,7 +1048,7 @@ int libvmdk_handle_open_file_io_handle(
 		 "%s: unsupported access flags.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 	if( ( access_flags & LIBVMDK_ACCESS_FLAG_WRITE ) != 0 )
 	{
@@ -1322,7 +1323,7 @@ int libvmdk_handle_open_file_io_handle(
 		 "%s: unable to grab read/write lock for writing.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
 #endif
 	internal_handle->descriptor_file       = descriptor_file;

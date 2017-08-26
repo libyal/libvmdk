@@ -162,18 +162,18 @@ def pyvmdk_test_read(vmdk_handle):
 
   # Case 1: test buffer at offset read
 
-  # Test: offset: <media_size / 7> size: <media_size / 2>
-  # Expected result: offset: <media_size / 7> size: <media_size / 2>
+  # Test: offset: <media_size // 7> size: <media_size // 2>
+  # Expected result: offset: <media_size // 7> size: <media_size // 2>
   if not pyvmdk_test_seek_offset_and_read_buffer(
-      vmdk_handle, media_size / 7, os.SEEK_SET, media_size / 2,
-      media_size / 7, media_size / 2):
+      vmdk_handle, media_size // 7, os.SEEK_SET, media_size // 2,
+      media_size // 7, media_size // 2):
     return False
 
-  # Test: offset: <media_size / 7> size: <media_size / 2>
-  # Expected result: offset: <media_size / 7> size: <media_size / 2>
+  # Test: offset: <media_size // 7> size: <media_size // 2>
+  # Expected result: offset: <media_size // 7> size: <media_size // 2>
   if not pyvmdk_test_seek_offset_and_read_buffer(
-      vmdk_handle, media_size / 7, os.SEEK_SET, media_size / 2,
-      media_size / 7, media_size / 2):
+      vmdk_handle, media_size // 7, os.SEEK_SET, media_size // 2,
+      media_size // 7, media_size // 2):
     return False
 
   # Case 2: test read beyond media size
@@ -208,18 +208,18 @@ def pyvmdk_test_read(vmdk_handle):
 
   # Case 3: test buffer at offset read
 
-  # Test: offset: <media_size / 7> size: <media_size / 2>
-  # Expected result: offset: < ( media_size / 7 ) + ( media_size / 2 ) > size: <media_size / 2>
+  # Test: offset: <media_size // 7> size: <media_size // 2>
+  # Expected result: offset: < ( media_size // 7 ) + ( media_size // 2 ) > size: <media_size // 2>
   if not pyvmdk_test_read_buffer_at_offset(
-      vmdk_handle, media_size / 7, media_size / 2,
-      (media_size / 7) + (media_size / 2), media_size / 2):
+      vmdk_handle, media_size // 7, media_size // 2,
+      (media_size // 7) + (media_size // 2), media_size // 2):
     return False
 
-  # Test: offset: <media_size / 7> size: <media_size / 2>
-  # Expected result: offset: < ( media_size / 7 ) + ( media_size / 2 ) > size: <media_size / 2>
+  # Test: offset: <media_size // 7> size: <media_size // 2>
+  # Expected result: offset: < ( media_size // 7 ) + ( media_size // 2 ) > size: <media_size // 2>
   if not pyvmdk_test_read_buffer_at_offset(
-      vmdk_handle, media_size / 7, media_size / 2,
-      (media_size / 7) + (media_size / 2), media_size / 2):
+      vmdk_handle, media_size // 7, media_size // 2,
+      (media_size // 7) + (media_size // 2), media_size // 2):
     return False
 
   return True

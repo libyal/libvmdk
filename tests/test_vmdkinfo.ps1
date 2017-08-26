@@ -1,29 +1,66 @@
 # Info tool testing script
 #
-# Version: 20161101
+# Version: 20170807
 
 $ExitSuccess = 0
 $ExitFailure = 1
 $ExitIgnore = 77
 
-$TestPrefix = Split-Path -path ${Pwd}.Path -parent
-$TestPrefix = Split-Path -path ${TestPrefix} -leaf
-$TestPrefix = ${TestPrefix}.Substring(3)
-$TestSuffix = "info"
-
-$TestToolDirectory = "..\vs2010\Release"
-$TestTool = "${TestPrefix}${TestSuffix}"
-$InputDirectory = "input"
 $InputGlob = "*"
 
-$TestExecutable = "${TestToolDirectory}\${TestTool}.exe"
+$TestToolDirectory = "..\msvscpp\Release"
 
-If (-Not (Test-Path -Path "${InputDirectory}"))
+If (-Not (Test-Path ${TestToolDirectory}))
+{
+	$TestToolDirectory = "..\msvscpp\VSDebug"
+}
+If (-Not (Test-Path ${TestToolDirectory}))
+{
+	$TestToolDirectory = "..\vs2010\Release"
+}
+If (-Not (Test-Path ${TestToolDirectory}))
+{
+	$TestToolDirectory = "..\vs2010\VSDebug"
+}
+If (-Not (Test-Path ${TestToolDirectory}))
+{
+	$TestToolDirectory = "..\vs2012\Release"
+}
+If (-Not (Test-Path ${TestToolDirectory}))
+{
+	$TestToolDirectory = "..\vs2012\VSDebug"
+}
+If (-Not (Test-Path ${TestToolDirectory}))
+{
+	$TestToolDirectory = "..\vs2013\Release"
+}
+If (-Not (Test-Path ${TestToolDirectory}))
+{
+	$TestToolDirectory = "..\vs2013\VSDebug"
+}
+If (-Not (Test-Path ${TestToolDirectory}))
+{
+	$TestToolDirectory = "..\vs2015\Release"
+}
+If (-Not (Test-Path ${TestToolDirectory}))
+{
+	$TestToolDirectory = "..\vs2015\Release"
+}
+If (-Not (Test-Path ${TestToolDirectory}))
+{
+	Write-Host "Missing test tool directory." -foreground Red
+
+	Exit ${ExitFailure}
+}
+
+$TestExecutable = "${TestToolDirectory}\vmdkinfo.exe"
+
+If (-Not (Test-Path -Path "input"))
 {
 	Exit ${ExitSuccess}
 }
 
-Get-ChildItem -Path "${InputDirectory}\${InputGlob}" | Foreach-Object
+Get-ChildItem -Path "input\${InputGlob}" | Foreach-Object
 {
 	Invoke-Expression ${TestExecutable} $_
 

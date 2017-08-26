@@ -35,7 +35,7 @@
 
 #include "../libvmdk/libvmdk_descriptor_file.h"
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
 /* Tests the libvmdk_descriptor_file_initialize function
  * Returns 1 if successful or 0 if not
@@ -1088,7 +1088,7 @@ on_error:
 	return( 0 );
 }
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 /* The main program
  */
@@ -1105,7 +1105,7 @@ int main(
 	VMDK_TEST_UNREFERENCED_PARAMETER( argc )
 	VMDK_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
 	VMDK_TEST_RUN(
 	 "libvmdk_descriptor_file_initialize",
@@ -1155,7 +1155,7 @@ int main(
 	 "libvmdk_descriptor_file_get_utf16_parent_filename",
 	 vmdk_test_descriptor_file_get_utf16_parent_filename );
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 

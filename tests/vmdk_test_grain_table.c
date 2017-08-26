@@ -35,7 +35,7 @@
 
 #include "../libvmdk/libvmdk_grain_table.h"
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
 /* Tests the libvmdk_grain_table_free function
  * Returns 1 if successful or 0 if not
@@ -75,7 +75,7 @@ on_error:
 	return( 0 );
 }
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 /* The main program
  */
@@ -92,7 +92,7 @@ int main(
 	VMDK_TEST_UNREFERENCED_PARAMETER( argc )
 	VMDK_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
 	/* TODO: add tests for libvmdk_grain_table_initialize */
 
@@ -106,7 +106,7 @@ int main(
 
 	/* TODO: add tests for libvmdk_grain_table_get_grain_data_at_offset */
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 

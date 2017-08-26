@@ -1,77 +1,107 @@
 environment:
-  VisualStudioVersion: 11.0
-
-# TODO: add x64, fix issue: LNK1158: cannot run 'cvtres.exe'
-platform:
-- Win32
-
-# TODO: add VSDebug
-configuration:
-- Release
+  matrix:
+  - TARGET: vs2008
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    VisualStudioVersion: 9.0
+    platform: Win32
+    configuration: Release
+  - TARGET: vs2010
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    VisualStudioVersion: 10.0
+    platform: Win32
+    configuration: VSDebug
+  - TARGET: vs2012
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    VisualStudioVersion: 11.0
+    platform: x64
+    configuration: Release
+  - TARGET: vs2013
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    VisualStudioVersion: 12.0
+    platform: Win32
+    configuration: Release
+  - TARGET: vs2015
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    VisualStudioVersion: 14.0
+    platform: Win32
+    configuration: Release
+  - TARGET: python27
+  - TARGET: python36
+  - TARGET: cygwin
+  - TARGET: cygwin64
+  - TARGET: mingw
+  - TARGET: mingw-w64
 
 install:
-- cmd: git clone https://github.com/libyal/libyal.git && move libyal ..\
+- cmd: git clone https://github.com/libyal/vstools.git && move vstools ..\
 - ps: .\synczlib.ps1
+- cmd: if [%TARGET%]==[cygwin] (
+    C:\cygwin\setup-x86.exe -qgnNdO -l C:\cygwin\var\cache\setup -R c:\cygwin -s http://cygwin.mirror.constant.com -P python2-devel -P python3-devel )
+- cmd: if [%TARGET%]==[cygwin64] (
+    C:\cygwin64\setup-x86_64.exe -qgnNdO -l C:\cygwin64\var\cache\setup -R c:\cygwin64 -s http://cygwin.mirror.constant.com -P python2-devel -P python3-devel )
 - cmd: git clone https://github.com/joachimmetz/dokan.git && move dokan ..\
-
-before_build:
-- cmd: xcopy /q /s C:\projects\libvmdk C:\cygwin\home\appveyor\
-- cmd: xcopy /q /s C:\projects\libvmdk C:\msys64\home\appveyor\
 
 build_script:
 - ps: .\synclibs.ps1
 - ps: .\autogen.ps1
-- cmd: >-
-    rem Prepare Visual Studio 2010 build
-
-    C:\Python27\python.exe ..\libyal\scripts\msvscpp-convert.py --to 2010 msvscpp\libvmdk.sln
-
-    rem Build with Visual Studio 2010
-
-    msbuild vs2010\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-
-    rem Prepare Visual Studio 2012 build
-
-    C:\Python27\python.exe ..\libyal\scripts\msvscpp-convert.py --to 2012 msvscpp\libvmdk.sln
-
-    rem Build with Visual Studio 2012
-
-    msbuild vs2012\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-
-    rem Prepare Visual Studio 2013 build
-
-    C:\Python27\python.exe ..\libyal\scripts\msvscpp-convert.py --to 2013 msvscpp\libvmdk.sln
-
-    rem Build with Visual Studio 2013
-
-    msbuild vs2013\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll"
-
-    rem Prepare Cygwin build
-
-    C:\cygwin\bin\bash -e -l -c "cd libvmdk"
-
-    C:\cygwin\bin\bash -e -l -c "./synclibs.sh && ./autogen.sh"
-
-    rem Build with Cygwin
-
-    C:\cygwin\bin\bash -e -l -c "./configure && make -j4"
-
-    rem Prepare MinGW build
-
-    C:\msys64\usr\bin\bash -e -l -c "cd libvmdk"
-
-    C:\msys64\usr\bin\bash -e -l -c "./synclibs.sh && ./autogen.sh"
-
-    rem Build with MinGW 32-bit
-
-    C:\msys64\usr\bin\bash -e -l -c "./configure --host=i686-w64-mingw32 && make -j4"
-
-    rem Build with MinGW 64-bit
-
-    C:\msys64\usr\bin\bash -e -l -c "./configure --host=x86_64-w64-mingw32 && make -j4"
-
-    rem Run tests
+- cmd: if [%TARGET%]==[vs2008] (
+    msbuild msvscpp\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" )
+- cmd: if [%TARGET%]==[vs2010] (
+    set PYTHONPATH=..\vstools &&
+    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --to 2010 msvscpp\libvmdk.sln &&
+    msbuild vs2010\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" )
+- cmd: if [%TARGET%]==[vs2012] (
+    set PYTHONPATH=..\vstools &&
+    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --to 2012 msvscpp\libvmdk.sln &&
+    msbuild vs2012\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" )
+- cmd: if [%TARGET%]==[vs2013] (
+    set PYTHONPATH=..\vstools &&
+    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --to 2013 msvscpp\libvmdk.sln &&
+    msbuild vs2013\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" )
+- cmd: if [%TARGET%]==[vs2015] (
+    set PYTHONPATH=..\vstools &&
+    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --to 2015 msvscpp\libvmdk.sln &&
+    msbuild vs2015\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" )
+- cmd: if [%TARGET%]==[python27] (
+    C:\Python27\python.exe setup.py bdist_msi )
+- cmd: if [%TARGET%]==[python36] (
+    C:\Python36\python.exe setup.py bdist_msi )
+- cmd: if [%TARGET%]==[cygwin] (
+    xcopy /q /s C:\projects\libvmdk C:\cygwin\home\appveyor\ &&
+    C:\cygwin\bin\bash -e -l -c "cd libvmdk" &&
+    C:\cygwin\bin\bash -e -l -c "./synclibs.sh && ./autogen.sh" )
+- cmd: if [%TARGET%]==[cygwin64] (
+    xcopy /q /s C:\projects\libvmdk C:\cygwin64\home\appveyor\ &&
+    C:\cygwin64\bin\bash -e -l -c "cd libvmdk" &&
+    C:\cygwin64\bin\bash -e -l -c "./synclibs.sh && ./autogen.sh" )
+- cmd: if [%TARGET%]==[mingw] (
+    xcopy /q /s C:\projects\libvmdk C:\MinGW\msys\1.0\home\appveyor\ &&
+    C:\MinGW\msys\1.0\bin\bash -e -l -c "cd libvmdk" &&
+    C:\MinGW\msys\1.0\bin\bash -e -l -c "sed 's/@VERSION@/0.29/g' m4/pkg.m4.in > m4/pkg.m4" &&
+    C:\MinGW\msys\1.0\bin\bash -e -l -c "./synclibs.sh && ./autogen.sh" )
+- cmd: if [%TARGET%]==[mingw-w64] (
+    xcopy /q /s C:\projects\libvmdk C:\msys64\home\appveyor\ &&
+    C:\msys64\usr\bin\bash -e -l -c "cd libvmdk" &&
+    C:\msys64\usr\bin\bash -e -l -c "./synclibs.sh && ./autogen.sh" )
 
 test_script:
-- ps: .\runtests.ps1
+- cmd: rem Run tests
+- ps: if ($env:TARGET -eq "vs2008") {
+    .\runtests.ps1 }
+- ps: if ($env:TARGET -eq "vs2010") {
+    .\runtests.ps1 }
+- ps: if ($env:TARGET -eq "vs2012") {
+    .\runtests.ps1 }
+- ps: if ($env:TARGET -eq "vs2013") {
+    .\runtests.ps1 }
+- ps: if ($env:TARGET -eq "vs2015") {
+    .\runtests.ps1 }
+- cmd: if [%TARGET%]==[cygwin] (
+    C:\cygwin\bin\bash -e -l -c "./runtests.sh" )
+- cmd: if [%TARGET%]==[cygwin64] (
+    C:\cygwin64\bin\bash -e -l -c "./runtests.sh" )
+- cmd: if [%TARGET%]==[mingw] (
+    C:\MinGW\msys\1.0\bin\bash -e -l -c "./runtests.sh" )
+- cmd: if [%TARGET%]==[mingw-w64] (
+    C:\msys64\usr\bin\bash -e -l -c "./runtests.sh" )
 

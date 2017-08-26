@@ -2274,7 +2274,7 @@ int main(
 
 		/* TODO: add tests for libvmdk_handle_open_extent_data_files_file_io_pool */
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
 		/* TODO: add tests for libvmdk_handle_open_extent_data_file */
 
@@ -2284,7 +2284,7 @@ int main(
 
 		/* TODO: add tests for libvmdk_handle_open_read_signature */
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 		/* TODO: add tests for libvmdk_handle_read_buffer */
 

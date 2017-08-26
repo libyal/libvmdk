@@ -35,7 +35,7 @@
 
 #include "../libvmdk/libvmdk_grain_group.h"
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
 /* Tests the libvmdk_grain_group_initialize function
  * Returns 1 if successful or 0 if not
@@ -416,7 +416,7 @@ on_error:
 	return( 0 );
 }
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 /* The main program
  */
@@ -433,7 +433,7 @@ int main(
 	VMDK_TEST_UNREFERENCED_PARAMETER( argc )
 	VMDK_TEST_UNREFERENCED_PARAMETER( argv )
 
-#if defined( __GNUC__ )
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
 	VMDK_TEST_RUN(
 	 "libvmdk_grain_group_initialize",
@@ -449,7 +449,7 @@ int main(
 
 	/* TODO: add tests for libvmdk_grain_group_fill */
 
-#endif /* defined( __GNUC__ ) */
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 
