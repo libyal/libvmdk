@@ -57,9 +57,9 @@ int vmdk_test_extent_file_free(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );

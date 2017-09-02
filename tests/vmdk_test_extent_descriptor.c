@@ -64,13 +64,13 @@ int vmdk_test_extent_descriptor_initialize(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "extent_descriptor",
-         extent_descriptor );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "extent_descriptor",
+	 extent_descriptor );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libvmdk_internal_extent_descriptor_free(
 	          (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
@@ -81,13 +81,13 @@ int vmdk_test_extent_descriptor_initialize(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "extent_descriptor",
-         extent_descriptor );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "extent_descriptor",
+	 extent_descriptor );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -100,9 +100,9 @@ int vmdk_test_extent_descriptor_initialize(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -118,9 +118,9 @@ int vmdk_test_extent_descriptor_initialize(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -254,9 +254,9 @@ int vmdk_test_extent_descriptor_free(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );

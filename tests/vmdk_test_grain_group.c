@@ -64,13 +64,13 @@ int vmdk_test_grain_group_initialize(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "grain_group",
-         grain_group );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "grain_group",
+	 grain_group );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libvmdk_grain_group_free(
 	          &grain_group,
@@ -81,13 +81,13 @@ int vmdk_test_grain_group_initialize(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "grain_group",
-         grain_group );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "grain_group",
+	 grain_group );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -100,9 +100,9 @@ int vmdk_test_grain_group_initialize(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -118,9 +118,9 @@ int vmdk_test_grain_group_initialize(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -252,9 +252,9 @@ int vmdk_test_grain_group_free(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -292,13 +292,13 @@ int vmdk_test_grain_group_clone(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "source_grain_group",
-         source_grain_group );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "source_grain_group",
+	 source_grain_group );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test regular cases
 	 */
@@ -312,13 +312,13 @@ int vmdk_test_grain_group_clone(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "destination_grain_group",
-         destination_grain_group );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "destination_grain_group",
+	 destination_grain_group );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libvmdk_grain_group_free(
 	          &destination_grain_group,
@@ -329,13 +329,13 @@ int vmdk_test_grain_group_clone(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "destination_grain_group",
-         destination_grain_group );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "destination_grain_group",
+	 destination_grain_group );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libvmdk_grain_group_clone(
 	          &destination_grain_group,
@@ -347,13 +347,13 @@ int vmdk_test_grain_group_clone(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "destination_grain_group",
-         destination_grain_group );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "destination_grain_group",
+	 destination_grain_group );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -367,9 +367,9 @@ int vmdk_test_grain_group_clone(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -385,13 +385,13 @@ int vmdk_test_grain_group_clone(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "source_grain_group",
-         source_grain_group );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "source_grain_group",
+	 source_grain_group );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	return( 1 );
 

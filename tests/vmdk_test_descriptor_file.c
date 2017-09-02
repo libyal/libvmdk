@@ -64,13 +64,13 @@ int vmdk_test_descriptor_file_initialize(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "descriptor_file",
-         descriptor_file );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "descriptor_file",
+	 descriptor_file );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libvmdk_descriptor_file_free(
 	          &descriptor_file,
@@ -81,13 +81,13 @@ int vmdk_test_descriptor_file_initialize(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "descriptor_file",
-         descriptor_file );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "descriptor_file",
+	 descriptor_file );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -100,9 +100,9 @@ int vmdk_test_descriptor_file_initialize(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -118,9 +118,9 @@ int vmdk_test_descriptor_file_initialize(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -252,9 +252,9 @@ int vmdk_test_descriptor_file_free(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );

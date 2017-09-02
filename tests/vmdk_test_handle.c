@@ -618,13 +618,13 @@ int vmdk_test_handle_initialize(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "handle",
-         handle );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "handle",
+	 handle );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libvmdk_handle_free(
 	          &handle,
@@ -635,13 +635,13 @@ int vmdk_test_handle_initialize(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "handle",
-         handle );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "handle",
+	 handle );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -654,9 +654,9 @@ int vmdk_test_handle_initialize(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -672,9 +672,9 @@ int vmdk_test_handle_initialize(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -806,9 +806,9 @@ int vmdk_test_handle_free(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -849,9 +849,9 @@ int vmdk_test_handle_open(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libvmdk_handle_initialize(
 	          &handle,
@@ -862,13 +862,13 @@ int vmdk_test_handle_open(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "handle",
-         handle );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "handle",
+	 handle );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test open
 	 */
@@ -883,9 +883,9 @@ int vmdk_test_handle_open(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -900,9 +900,9 @@ int vmdk_test_handle_open(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -918,13 +918,13 @@ int vmdk_test_handle_open(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "handle",
-         handle );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "handle",
+	 handle );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	return( 1 );
 
@@ -970,9 +970,9 @@ int vmdk_test_handle_open_wide(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libvmdk_handle_initialize(
 	          &handle,
@@ -983,13 +983,13 @@ int vmdk_test_handle_open_wide(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "handle",
-         handle );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "handle",
+	 handle );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test open
 	 */
@@ -1004,9 +1004,9 @@ int vmdk_test_handle_open_wide(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -1021,9 +1021,9 @@ int vmdk_test_handle_open_wide(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -1039,13 +1039,13 @@ int vmdk_test_handle_open_wide(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "handle",
-         handle );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "handle",
+	 handle );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	return( 1 );
 
@@ -1086,9 +1086,9 @@ int vmdk_test_handle_close(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
@@ -1125,13 +1125,13 @@ int vmdk_test_handle_open_close(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "handle",
-         handle );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "handle",
+	 handle );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test open and close
 	 */
@@ -1154,9 +1154,9 @@ int vmdk_test_handle_open_close(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libvmdk_handle_close(
 	          handle,
@@ -1167,9 +1167,9 @@ int vmdk_test_handle_open_close(
 	 result,
 	 0 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test open and close a second time to validate clean up on close
 	 */
@@ -1192,9 +1192,9 @@ int vmdk_test_handle_open_close(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	result = libvmdk_handle_close(
 	          handle,
@@ -1205,9 +1205,9 @@ int vmdk_test_handle_open_close(
 	 result,
 	 0 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Clean up
 	 */
@@ -1220,13 +1220,13 @@ int vmdk_test_handle_open_close(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "handle",
-         handle );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "handle",
+	 handle );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	return( 1 );
 
@@ -1265,9 +1265,9 @@ int vmdk_test_handle_signal_abort(
 	 result,
 	 1 );
 
-        VMDK_TEST_ASSERT_IS_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
@@ -1280,9 +1280,9 @@ int vmdk_test_handle_signal_abort(
 	 result,
 	 -1 );
 
-        VMDK_TEST_ASSERT_IS_NOT_NULL(
-         "error",
-         error );
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
 
 	libcerror_error_free(
 	 &error );
