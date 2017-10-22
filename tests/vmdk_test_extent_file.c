@@ -34,8 +34,271 @@
 #include "vmdk_test_unused.h"
 
 #include "../libvmdk/libvmdk_extent_file.h"
+#include "../libvmdk/libvmdk_io_handle.h"
 
 #if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
+
+/* Tests the libvmdk_extent_file_initialize function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_extent_file_initialize(
+     void )
+{
+	libcerror_error_t *error           = NULL;
+	libvmdk_extent_file_t *extent_file = NULL;
+	libvmdk_io_handle_t *io_handle     = NULL;
+	int result                         = 0;
+
+#if defined( HAVE_VMDK_TEST_MEMORY )
+	int number_of_malloc_fail_tests    = 1;
+	int number_of_memset_fail_tests    = 1;
+	int test_number                    = 0;
+#endif
+
+	/* Initialize test
+	 */
+	result = libvmdk_io_handle_initialize(
+	          &io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "io_handle",
+	 io_handle );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = libvmdk_extent_file_initialize(
+	          &extent_file,
+	          io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "extent_file",
+	 extent_file );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libvmdk_extent_file_free(
+	          &extent_file,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "extent_file",
+	 extent_file );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libvmdk_extent_file_initialize(
+	          NULL,
+	          io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	extent_file = (libvmdk_extent_file_t *) 0x12345678UL;
+
+	result = libvmdk_extent_file_initialize(
+	          &extent_file,
+	          io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	extent_file = NULL;
+
+	result = libvmdk_extent_file_initialize(
+	          &extent_file,
+	          NULL,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+#if defined( HAVE_VMDK_TEST_MEMORY )
+
+	for( test_number = 0;
+	     test_number < number_of_malloc_fail_tests;
+	     test_number++ )
+	{
+		/* Test libvmdk_extent_file_initialize with malloc failing
+		 */
+		vmdk_test_malloc_attempts_before_fail = test_number;
+
+		result = libvmdk_extent_file_initialize(
+		          &extent_file,
+		          io_handle,
+		          &error );
+
+		if( vmdk_test_malloc_attempts_before_fail != -1 )
+		{
+			vmdk_test_malloc_attempts_before_fail = -1;
+
+			if( extent_file != NULL )
+			{
+				libvmdk_extent_file_free(
+				 &extent_file,
+				 NULL );
+			}
+		}
+		else
+		{
+			VMDK_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			VMDK_TEST_ASSERT_IS_NULL(
+			 "extent_file",
+			 extent_file );
+
+			VMDK_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
+		}
+	}
+	for( test_number = 0;
+	     test_number < number_of_memset_fail_tests;
+	     test_number++ )
+	{
+		/* Test libvmdk_extent_file_initialize with memset failing
+		 */
+		vmdk_test_memset_attempts_before_fail = test_number;
+
+		result = libvmdk_extent_file_initialize(
+		          &extent_file,
+		          io_handle,
+		          &error );
+
+		if( vmdk_test_memset_attempts_before_fail != -1 )
+		{
+			vmdk_test_memset_attempts_before_fail = -1;
+
+			if( extent_file != NULL )
+			{
+				libvmdk_extent_file_free(
+				 &extent_file,
+				 NULL );
+			}
+		}
+		else
+		{
+			VMDK_TEST_ASSERT_EQUAL_INT(
+			 "result",
+			 result,
+			 -1 );
+
+			VMDK_TEST_ASSERT_IS_NULL(
+			 "extent_file",
+			 extent_file );
+
+			VMDK_TEST_ASSERT_IS_NOT_NULL(
+			 "error",
+			 error );
+
+			libcerror_error_free(
+			 &error );
+		}
+	}
+#endif /* defined( HAVE_VMDK_TEST_MEMORY ) */
+
+	/* Clean up
+	 */
+	result = libvmdk_io_handle_free(
+	          &io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "io_handle",
+	 io_handle );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( extent_file != NULL )
+	{
+		libvmdk_extent_file_free(
+		 &extent_file,
+		 NULL );
+	}
+	if( io_handle != NULL )
+	{
+		libvmdk_io_handle_free(
+		 &io_handle,
+		 NULL );
+	}
+	return( 0 );
+}
 
 /* Tests the libvmdk_extent_file_free function
  * Returns 1 if successful or 0 if not
@@ -94,7 +357,9 @@ int main(
 
 #if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
-	/* TODO: add tests for libvmdk_extent_file_initialize */
+	VMDK_TEST_RUN(
+	 "libvmdk_extent_file_initialize",
+	 vmdk_test_extent_file_initialize );
 
 	VMDK_TEST_RUN(
 	 "libvmdk_extent_file_free",

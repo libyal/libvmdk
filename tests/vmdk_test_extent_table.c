@@ -666,6 +666,502 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the libvmdk_extent_table_get_data_files_path_size function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_extent_table_get_data_files_path_size(
+     void )
+{
+	libcerror_error_t *error             = NULL;
+	libvmdk_extent_table_t *extent_table = NULL;
+	libvmdk_io_handle_t *io_handle       = NULL;
+	size_t data_files_path_size          = 0;
+	int data_files_path_size_is_set      = 0;
+	int result                           = 0;
+
+	/* Initialize test
+	 */
+	result = libvmdk_io_handle_initialize(
+	          &io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "io_handle",
+	 io_handle );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libvmdk_extent_table_initialize(
+	          &extent_table,
+	          io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "extent_table",
+	 extent_table );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = libvmdk_extent_table_get_data_files_path_size(
+	          extent_table,
+	          &data_files_path_size,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	data_files_path_size_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libvmdk_extent_table_get_data_files_path_size(
+	          NULL,
+	          &data_files_path_size,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( data_files_path_size_is_set != 0 )
+	{
+		result = libvmdk_extent_table_get_data_files_path_size(
+		          extent_table,
+		          NULL,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	/* Clean up
+	 */
+	result = libvmdk_extent_table_free(
+	          &extent_table,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "extent_table",
+	 extent_table );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+	result = libvmdk_io_handle_free(
+	          &io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "io_handle",
+	 io_handle );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( extent_table != NULL )
+	{
+		libvmdk_extent_table_free(
+		 &extent_table,
+		 NULL );
+	}
+	if( io_handle != NULL )
+	{
+		libvmdk_io_handle_free(
+		 &io_handle,
+		 NULL );
+	}
+	return( 0 );
+}
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+
+/* Tests the libvmdk_extent_table_get_data_files_path_size_wide function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_extent_table_get_data_files_path_size_wide(
+     void )
+{
+	libcerror_error_t *error             = NULL;
+	libvmdk_extent_table_t *extent_table = NULL;
+	libvmdk_io_handle_t *io_handle       = NULL;
+	size_t data_files_path_size_wide     = 0;
+	int data_files_path_size_wide_is_set = 0;
+	int result                           = 0;
+
+	/* Initialize test
+	 */
+	result = libvmdk_io_handle_initialize(
+	          &io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "io_handle",
+	 io_handle );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libvmdk_extent_table_initialize(
+	          &extent_table,
+	          io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "extent_table",
+	 extent_table );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = libvmdk_extent_table_get_data_files_path_size_wide(
+	          extent_table,
+	          &data_files_path_size_wide,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	data_files_path_size_wide_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libvmdk_extent_table_get_data_files_path_size_wide(
+	          NULL,
+	          &data_files_path_size_wide,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( data_files_path_size_wide_is_set != 0 )
+	{
+		result = libvmdk_extent_table_get_data_files_path_size_wide(
+		          extent_table,
+		          NULL,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	/* Clean up
+	 */
+	result = libvmdk_extent_table_free(
+	          &extent_table,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "extent_table",
+	 extent_table );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+	result = libvmdk_io_handle_free(
+	          &io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "io_handle",
+	 io_handle );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( extent_table != NULL )
+	{
+		libvmdk_extent_table_free(
+		 &extent_table,
+		 NULL );
+	}
+	if( io_handle != NULL )
+	{
+		libvmdk_io_handle_free(
+		 &io_handle,
+		 NULL );
+	}
+	return( 0 );
+}
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
+
+/* Tests the libvmdk_extent_table_get_number_of_extents function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_extent_table_get_number_of_extents(
+     void )
+{
+	libcerror_error_t *error             = NULL;
+	libvmdk_extent_table_t *extent_table = NULL;
+	libvmdk_io_handle_t *io_handle       = NULL;
+	int number_of_extents                = 0;
+	int number_of_extents_is_set         = 0;
+	int result                           = 0;
+
+	/* Initialize test
+	 */
+	result = libvmdk_io_handle_initialize(
+	          &io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "io_handle",
+	 io_handle );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libvmdk_extent_table_initialize(
+	          &extent_table,
+	          io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "extent_table",
+	 extent_table );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = libvmdk_extent_table_get_number_of_extents(
+	          extent_table,
+	          &number_of_extents,
+	          &error );
+
+	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	number_of_extents_is_set = result;
+
+	/* Test error cases
+	 */
+	result = libvmdk_extent_table_get_number_of_extents(
+	          NULL,
+	          &number_of_extents,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	if( number_of_extents_is_set != 0 )
+	{
+		result = libvmdk_extent_table_get_number_of_extents(
+		          extent_table,
+		          NULL,
+		          &error );
+
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+	/* Clean up
+	 */
+	result = libvmdk_extent_table_free(
+	          &extent_table,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "extent_table",
+	 extent_table );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+	result = libvmdk_io_handle_free(
+	          &io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "io_handle",
+	 io_handle );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( extent_table != NULL )
+	{
+		libvmdk_extent_table_free(
+		 &extent_table,
+		 NULL );
+	}
+	if( io_handle != NULL )
+	{
+		libvmdk_io_handle_free(
+		 &io_handle,
+		 NULL );
+	}
+	return( 0 );
+}
+
 #endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 /* The main program
@@ -701,7 +1197,9 @@ int main(
 	 "libvmdk_extent_table_clone",
 	 vmdk_test_extent_table_clone );
 
-	/* TODO: add tests for libvmdk_extent_table_get_data_files_path_size */
+	VMDK_TEST_RUN(
+	 "libvmdk_extent_table_get_data_files_path_size",
+	 vmdk_test_extent_table_get_data_files_path_size );
 
 	/* TODO: add tests for libvmdk_extent_table_get_data_files_path */
 
@@ -709,7 +1207,9 @@ int main(
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
-	/* TODO: add tests for libvmdk_extent_table_get_data_files_path_size_wide */
+	VMDK_TEST_RUN(
+	 "libvmdk_extent_table_get_data_files_path_size_wide",
+	 vmdk_test_extent_table_get_data_files_path_size_wide );
 
 	/* TODO: add tests for libvmdk_extent_table_get_data_files_path_wide */
 
@@ -719,7 +1219,9 @@ int main(
 
 	/* TODO: add tests for libvmdk_extent_table_initialize_extents */
 
-	/* TODO: add tests for libvmdk_extent_table_get_number_of_extents */
+	VMDK_TEST_RUN(
+	 "libvmdk_extent_table_get_number_of_extents",
+	 vmdk_test_extent_table_get_number_of_extents );
 
 	/* TODO: add tests for libvmdk_extent_table_get_extent_by_index */
 

@@ -94,7 +94,7 @@ int main(
 
 #if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
-	/* TODO: add tests for libvmdk_grain_data_initialize */
+	/* TODO: add tests for vmdk_test_grain_data_initialize */
 
 	VMDK_TEST_RUN(
 	 "libvmdk_grain_data_free",
