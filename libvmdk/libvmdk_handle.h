@@ -259,6 +259,24 @@ int libvmdk_handle_set_parent_handle(
      libcerror_error_t **error );
 
 LIBVMDK_EXTERN \
+int libvmdk_handle_set_extent_data_files_path(
+     libvmdk_handle_t *handle,
+     const char *path,
+     size_t path_length,
+     libcerror_error_t **error );
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+
+LIBVMDK_EXTERN \
+int libvmdk_handle_set_extent_data_files_path_wide(
+     libvmdk_handle_t *handle,
+     const wchar_t *path,
+     size_t path_length,
+     libcerror_error_t **error );
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
+
+LIBVMDK_EXTERN \
 int libvmdk_handle_get_disk_type(
      libvmdk_handle_t *handle,
      int *disk_type,

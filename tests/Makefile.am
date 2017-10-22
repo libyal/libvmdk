@@ -29,6 +29,7 @@ TESTS = \
 	$(TESTS_PYVMDK)
 
 check_SCRIPTS = \
+	pyvmdk_test_handle.py \
 	pyvmdk_test_read.py \
 	pyvmdk_test_support.py \
 	test_library.sh \
@@ -147,17 +148,25 @@ vmdk_test_grain_table_LDADD = \
 	@LIBCERROR_LIBADD@
 
 vmdk_test_handle_SOURCES = \
+	vmdk_test_functions.c vmdk_test_functions.h \
 	vmdk_test_getopt.c vmdk_test_getopt.h \
 	vmdk_test_handle.c \
+	vmdk_test_libbfio.h \
 	vmdk_test_libcerror.h \
 	vmdk_test_libclocale.h \
+	vmdk_test_libcnotify.h \
 	vmdk_test_libuna.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
-	vmdk_test_memory.c vmdk_test_memory.h
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
 
 vmdk_test_handle_LDADD = \
+	@LIBBFIO_LIBADD@ \
+	@LIBCPATH_LIBADD@ \
+	@LIBCFILE_LIBADD@ \
 	@LIBUNA_LIBADD@ \
+	@LIBCSPLIT_LIBADD@ \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
@@ -188,14 +197,17 @@ vmdk_test_notify_LDADD = \
 	../libvmdk/libvmdk.la
 
 vmdk_test_support_SOURCES = \
+	vmdk_test_functions.c vmdk_test_functions.h \
 	vmdk_test_getopt.c vmdk_test_getopt.h \
 	vmdk_test_libbfio.h \
 	vmdk_test_libcerror.h \
 	vmdk_test_libclocale.h \
+	vmdk_test_libcnotify.h \
 	vmdk_test_libuna.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
-	vmdk_test_support.c
+	vmdk_test_support.c \
+	vmdk_test_unused.h
 
 vmdk_test_support_LDADD = \
 	@LIBBFIO_LIBADD@ \

@@ -270,6 +270,104 @@ on_error:
 	return( 0 );
 }
 
+/* Tests the libvmdk_io_handle_clear function
+ * Returns 1 if successful or 0 if not
+ */
+int vmdk_test_io_handle_clear(
+     void )
+{
+	libcerror_error_t *error       = NULL;
+	libvmdk_io_handle_t *io_handle = NULL;
+	int result                     = 0;
+
+	/* Initialize test
+	 */
+	result = libvmdk_io_handle_initialize(
+	          &io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "io_handle",
+	 io_handle );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test regular cases
+	 */
+	result = libvmdk_io_handle_clear(
+	          io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	/* Test error cases
+	 */
+	result = libvmdk_io_handle_clear(
+	          NULL,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 -1 );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "error",
+	 error );
+
+	libcerror_error_free(
+	 &error );
+
+	/* Clean up
+	 */
+	result = libvmdk_io_handle_free(
+	          &io_handle,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "io_handle",
+	 io_handle );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	return( 1 );
+
+on_error:
+	if( error != NULL )
+	{
+		libcerror_error_free(
+		 &error );
+	}
+	if( io_handle != NULL )
+	{
+		libvmdk_io_handle_free(
+		 &io_handle,
+		 NULL );
+	}
+	return( 0 );
+}
+
 #endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 /* The main program
@@ -297,7 +395,9 @@ int main(
 	 "libvmdk_io_handle_free",
 	 vmdk_test_io_handle_free );
 
-	/* TODO: add tests for libvmdk_io_handle_clear */
+	VMDK_TEST_RUN(
+	 "libvmdk_io_handle_clear",
+	 vmdk_test_io_handle_clear );
 
 #endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 

@@ -45,13 +45,13 @@ struct libvmdk_extent_table
 	 */
 	libvmdk_io_handle_t *io_handle;
 
-	/* The basename
+	/* The data files path
 	 */
-	system_character_t *basename;
+	system_character_t *data_files_path;
 
-	/* The basename size
+	/* The data files path size
 	 */
-	size_t basename_size;
+	size_t data_files_path_size;
 
 	/* The disk type
 	 */
@@ -100,40 +100,40 @@ int libvmdk_extent_table_clone(
      libvmdk_extent_table_t *source_extent_table,
      libcerror_error_t **error );
 
-int libvmdk_extent_table_get_basename_size(
+int libvmdk_extent_table_get_data_files_path_size(
      libvmdk_extent_table_t *extent_table,
-     size_t *basename_size,
+     size_t *path,
      libcerror_error_t **error );
 
-int libvmdk_extent_table_get_basename(
+int libvmdk_extent_table_get_data_files_path(
      libvmdk_extent_table_t *extent_table,
-     char *basename,
-     size_t basename_size,
+     char *path,
+     size_t path_size,
      libcerror_error_t **error );
 
-int libvmdk_extent_table_set_basename(
+int libvmdk_extent_table_set_data_files_path(
      libvmdk_extent_table_t *extent_table,
-     const char *basename,
-     size_t basename_length,
+     const char *path,
+     size_t path_length,
      libcerror_error_t **error );
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
-int libvmdk_extent_table_get_basename_size_wide(
+int libvmdk_extent_table_get_data_files_path_size_wide(
      libvmdk_extent_table_t *extent_table,
-     size_t *basename_size,
+     size_t *path_size,
      libcerror_error_t **error );
 
-int libvmdk_extent_table_get_basename_wide(
+int libvmdk_extent_table_get_data_files_path_wide(
      libvmdk_extent_table_t *extent_table,
-     wchar_t *basename,
-     size_t basename_size,
+     wchar_t *path,
+     size_t path_size,
      libcerror_error_t **error );
 
-int libvmdk_extent_table_set_basename_wide(
+int libvmdk_extent_table_set_data_files_path_wide(
      libvmdk_extent_table_t *extent_table,
-     const wchar_t *basename,
-     size_t basename_length,
+     const wchar_t *path,
+     size_t path_length,
      libcerror_error_t **error );
 
 #endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */

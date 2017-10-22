@@ -321,9 +321,9 @@ int libvmdk_handle_open(
 	libbfio_handle_t *file_io_handle                        = NULL;
 	libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
 	libvmdk_internal_handle_t *internal_handle              = NULL;
-	char *basename_end                                      = NULL;
+	char *data_files_path_end                               = NULL;
 	static char *function                                   = "libvmdk_handle_open";
-	size_t basename_length                                  = 0;
+	size_t data_files_path_length                           = 0;
 	size_t filename_length                                  = 0;
 	int number_of_extents                                   = 0;
 	int result                                              = 1;
@@ -569,16 +569,16 @@ int libvmdk_handle_open(
 			}
 		}
 	}
-	basename_end = narrow_string_search_character_reverse(
-	                filename,
-	                (int) LIBCPATH_SEPARATOR,
-	                filename_length + 1 );
+	data_files_path_end = narrow_string_search_character_reverse(
+	                       filename,
+	                       (int) LIBCPATH_SEPARATOR,
+	                       filename_length + 1 );
 
-	if( basename_end != NULL )
+	if( data_files_path_end != NULL )
 	{
-		basename_length = (size_t) ( basename_end - filename ) + 1;
+		data_files_path_length = (size_t) ( data_files_path_end - filename ) + 1;
 	}
-	if( basename_length > 0 )
+	if( data_files_path_length > 0 )
 	{
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 		if( libcthreads_read_write_lock_grab_for_write(
@@ -595,17 +595,17 @@ int libvmdk_handle_open(
 			return( -1 );
 		}
 #endif
-		if( libvmdk_extent_table_set_basename(
+		if( libvmdk_extent_table_set_data_files_path(
 		     internal_handle->extent_table,
 		     filename,
-		     basename_length,
+		     data_files_path_length,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set basename in extent table.",
+			 "%s: unable to set data files path in extent table.",
 			 function );
 
 			result = -1;
@@ -652,9 +652,9 @@ int libvmdk_handle_open_wide(
 	libbfio_handle_t *file_io_handle                        = NULL;
 	libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
 	libvmdk_internal_handle_t *internal_handle              = NULL;
-	wchar_t *basename_end                                   = NULL;
+	wchar_t *data_files_path_end                            = NULL;
 	static char *function                                   = "libvmdk_handle_open_wide";
-	size_t basename_length                                  = 0;
+	size_t data_files_path_length                           = 0;
 	size_t filename_length                                  = 0;
 	int number_of_extents                                   = 0;
 	int result                                              = 1;
@@ -901,16 +901,16 @@ int libvmdk_handle_open_wide(
 		}
 	}
 /* TODO does this work for UTF-16 ? */
-	basename_end = wide_string_search_character_reverse(
-	                filename,
-	                (wint_t) LIBCPATH_SEPARATOR,
-	                filename_length + 1 );
+	data_files_path_end = wide_string_search_character_reverse(
+	                       filename,
+	                       (wint_t) LIBCPATH_SEPARATOR,
+	                       filename_length + 1 );
 
-	if( basename_end != NULL )
+	if( data_files_path_end != NULL )
 	{
-		basename_length = (size_t) ( basename_end - filename ) + 1;
+		data_files_path_length = (size_t) ( data_files_path_end - filename ) + 1;
 	}
-	if( basename_length > 0 )
+	if( data_files_path_length > 0 )
 	{
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 		if( libcthreads_read_write_lock_grab_for_write(
@@ -927,17 +927,17 @@ int libvmdk_handle_open_wide(
 			return( -1 );
 		}
 #endif
-		if( libvmdk_extent_table_set_basename_wide(
+		if( libvmdk_extent_table_set_data_files_path_wide(
 		     internal_handle->extent_table,
 		     filename,
-		     basename_length,
+		     data_files_path_length,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set basename in extent table.",
+			 "%s: unable to set data files path in extent table.",
 			 function );
 
 			result = -1;
@@ -1581,14 +1581,14 @@ int libvmdk_handle_open_extent_data_files(
 				extent_data_filename_size  = extent_descriptor->filename_size;
 			}
 /* TODO refactor to a function in extent table */
-			if( internal_handle->extent_table->basename != NULL )
+			if( internal_handle->extent_table->data_files_path != NULL )
 			{
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 				if( libcpath_path_join_wide(
 				     &extent_data_file_location,
 				     &extent_data_file_location_size,
-				     internal_handle->extent_table->basename,
-				     internal_handle->extent_table->basename_size - 1,
+				     internal_handle->extent_table->data_files_path,
+				     internal_handle->extent_table->data_files_path_size - 1,
 				     extent_data_filename_start,
 				     extent_data_filename_size - 1,
 				     error ) != 1 )
@@ -1596,8 +1596,8 @@ int libvmdk_handle_open_extent_data_files(
 				if( libcpath_path_join(
 				     &extent_data_file_location,
 				     &extent_data_file_location_size,
-				     internal_handle->extent_table->basename,
-				     internal_handle->extent_table->basename_size - 1,
+				     internal_handle->extent_table->data_files_path,
+				     internal_handle->extent_table->data_files_path_size - 1,
 				     extent_data_filename_start,
 				     extent_data_filename_size - 1,
 				     error ) != 1 )
@@ -3942,6 +3942,85 @@ int libvmdk_handle_get_offset(
 	return( 1 );
 }
 
+/* Sets the maximum number of (concurrent) open file handles
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_set_maximum_number_of_open_handles(
+     libvmdk_handle_t *handle,
+     int maximum_number_of_open_handles,
+     libcerror_error_t **error )
+{
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	static char *function                      = "libvmdk_handle_set_maximum_number_of_open_handles";
+	int result                                 = 1;
+
+	if( handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid handle.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle = (libvmdk_internal_handle_t *) handle;
+
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( internal_handle->extent_data_file_io_pool != NULL )
+	{
+		result = libbfio_pool_set_maximum_number_of_open_handles(
+		          internal_handle->extent_data_file_io_pool,
+		          maximum_number_of_open_handles,
+		          error );
+
+		if( result != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set maximum number of open handles in extent data file IO pool.",
+			 function );
+		}
+	}
+	if( result == 1 )
+	{
+		internal_handle->maximum_number_of_open_handles = maximum_number_of_open_handles;
+	}
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
 /* Sets the parent handle
  * Returns 1 if successful or -1 on error
  */
@@ -4046,16 +4125,17 @@ on_error:
 	return( -1 );
 }
 
-/* Sets the maximum number of (concurrent) open file handles
+/* Sets the path to the extend data files
  * Returns 1 if successful or -1 on error
  */
-int libvmdk_handle_set_maximum_number_of_open_handles(
+int libvmdk_handle_set_extent_data_files_path(
      libvmdk_handle_t *handle,
-     int maximum_number_of_open_handles,
+     const char *path,
+     size_t path_length,
      libcerror_error_t **error )
 {
 	libvmdk_internal_handle_t *internal_handle = NULL;
-	static char *function                      = "libvmdk_handle_set_maximum_number_of_open_handles";
+	static char *function                      = "libvmdk_handle_set_extent_data_files_path";
 	int result                                 = 1;
 
 	if( handle == NULL )
@@ -4071,6 +4151,28 @@ int libvmdk_handle_set_maximum_number_of_open_handles(
 	}
 	internal_handle = (libvmdk_internal_handle_t *) handle;
 
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		return( -1 );
+	}
+	if( path_length > (size_t) ( SSIZE_MAX - 1 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid path length value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_grab_for_write(
 	     internal_handle->read_write_lock,
@@ -4086,26 +4188,20 @@ int libvmdk_handle_set_maximum_number_of_open_handles(
 		return( -1 );
 	}
 #endif
-	if( internal_handle->extent_data_file_io_pool != NULL )
+	if( libvmdk_extent_table_set_data_files_path(
+	     internal_handle->extent_table,
+	     path,
+	     path_length,
+	     error ) != 1 )
 	{
-		result = libbfio_pool_set_maximum_number_of_open_handles(
-		          internal_handle->extent_data_file_io_pool,
-		          maximum_number_of_open_handles,
-		          error );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set data files path in extent table.",
+		 function );
 
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to set maximum number of open handles in extent data file IO pool.",
-			 function );
-		}
-	}
-	if( result == 1 )
-	{
-		internal_handle->maximum_number_of_open_handles = maximum_number_of_open_handles;
+		result = -1;
 	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
@@ -4124,6 +4220,106 @@ int libvmdk_handle_set_maximum_number_of_open_handles(
 #endif
 	return( result );
 }
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+
+/* Sets the path to the extend data files
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_handle_set_extent_data_files_path_wide(
+     libvmdk_handle_t *handle,
+     const wchar_t *path,
+     size_t path_length,
+     libcerror_error_t **error )
+{
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	static char *function                      = "libvmdk_handle_set_extent_data_files_path_wide";
+	int result                                 = 1;
+
+	if( handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid handle.",
+		 function );
+
+		return( -1 );
+	}
+	internal_handle = (libvmdk_internal_handle_t *) handle;
+
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		return( -1 );
+	}
+	if( path_length > (size_t) ( SSIZE_MAX - 1 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid path length value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	if( libvmdk_extent_table_set_data_files_path_wide(
+	     internal_handle->extent_table,
+	     path,
+	     path_length,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to set data files path in extent table.",
+		 function );
+
+		result = -1;
+	}
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
+		 function );
+
+		return( -1 );
+	}
+#endif
+	return( result );
+}
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 /* Retrieves the disk type
  * Returns 1 if successful or -1 on error

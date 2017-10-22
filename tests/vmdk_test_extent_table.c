@@ -104,17 +104,17 @@ int main(
 
 	/* TODO: add tests for libvmdk_extent_table_clone */
 
-	/* TODO: add tests for libvmdk_extent_table_get_basename_size */
+	/* TODO: add tests for libvmdk_extent_table_get_data_files_path_size */
 
-	/* TODO: add tests for libvmdk_extent_table_get_basename */
+	/* TODO: add tests for libvmdk_extent_table_get_data_files_path */
 
-	/* TODO: add tests for libvmdk_extent_table_set_basename */
+	/* TODO: add tests for libvmdk_extent_table_set_data_files_path */
 
-	/* TODO: add tests for libvmdk_extent_table_get_basename_size_wide */
+	/* TODO: add tests for libvmdk_extent_table_get_data_files_path_size_wide */
 
-	/* TODO: add tests for libvmdk_extent_table_get_basename_wide */
+	/* TODO: add tests for libvmdk_extent_table_get_data_files_path_wide */
 
-	/* TODO: add tests for libvmdk_extent_table_set_basename_wide */
+	/* TODO: add tests for libvmdk_extent_table_set_data_files_path_wide */
 
 	/* TODO: add tests for libvmdk_extent_table_initialize_extents */
 

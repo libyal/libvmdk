@@ -189,13 +189,13 @@ int libvmdk_extent_table_clear(
 
 		return( -1 );
 	}
-	if( extent_table->basename != NULL )
+	if( extent_table->data_files_path != NULL )
 	{
 		memory_free(
-		 extent_table->basename );
+		 extent_table->data_files_path );
 
-		extent_table->basename      = NULL;
-		extent_table->basename_size = 0;
+		extent_table->data_files_path      = NULL;
+		extent_table->data_files_path_size = 0;
 	}
 	if( extent_table->extent_files_list != NULL )
 	{
@@ -333,10 +333,10 @@ int libvmdk_extent_table_clone(
 
 		return( -1 );
 	}
-	if( source_extent_table->basename != NULL )
+	if( source_extent_table->data_files_path != NULL )
 	{
-		( *destination_extent_table )->basename = system_string_allocate(
-					                    source_extent_table->basename_size );
+		( *destination_extent_table )->data_files_path = system_string_allocate(
+		                                                  source_extent_table->data_files_path_size );
 
 		if( *destination_extent_table == NULL )
 		{
@@ -350,20 +350,20 @@ int libvmdk_extent_table_clone(
 			goto on_error;
 		}
 		if( memory_copy(
-		     ( *destination_extent_table )->basename,
-		     source_extent_table->basename,
-		     sizeof( system_character_t ) * source_extent_table->basename_size ) == NULL )
+		     ( *destination_extent_table )->data_files_path,
+		     source_extent_table->data_files_path,
+		     sizeof( system_character_t ) * source_extent_table->data_files_path_size ) == NULL )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_MEMORY,
 			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-			 "%s: unable to copy source to destination basename.",
+			 "%s: unable to copy source to destination data files path.",
 			 function );
 
 			goto on_error;
 		}
-		( *destination_extent_table )->basename_size = source_extent_table->basename_size;
+		( *destination_extent_table )->data_files_path_size = source_extent_table->data_files_path_size;
 	}
 	if( libfdata_list_clone(
 	     &( ( *destination_extent_table )->extent_files_list ),
@@ -424,10 +424,10 @@ on_error:
 			 &( ( *destination_extent_table )->extent_files_list ),
 			 NULL );
 		}
-		if( ( *destination_extent_table )->basename != NULL )
+		if( ( *destination_extent_table )->data_files_path != NULL )
 		{
 			memory_free(
-			 ( *destination_extent_table )->basename );
+			 ( *destination_extent_table )->data_files_path );
 		}
 		memory_free(
 		 *destination_extent_table );
@@ -437,15 +437,15 @@ on_error:
 	return( -1 );
 }
 
-/* Retrieves the size of the basename
+/* Retrieves the size of the data file_path
  * Returns 1 if successful, 0 if value not present or -1 on error
  */
-int libvmdk_extent_table_get_basename_size(
+int libvmdk_extent_table_get_data_files_path_size(
      libvmdk_extent_table_t *extent_table,
-     size_t *basename_size,
+     size_t *path_size,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_extent_table_get_basename_size";
+	static char *function = "libvmdk_extent_table_get_data_files_path_size";
 
 	if( extent_table == NULL )
 	{
@@ -458,21 +458,21 @@ int libvmdk_extent_table_get_basename_size(
 
 		return( -1 );
 	}
-	if( extent_table->basename == NULL )
+	if( extent_table->data_files_path == NULL )
 	{
 		return( 0 );
 	}
 	if( libvmdk_system_string_size_to_narrow_string(
-	     extent_table->basename,
-	     extent_table->basename_size,
-	     basename_size,
+	     extent_table->data_files_path,
+	     extent_table->data_files_path_size,
+	     path_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
 		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine basename size.",
+		 "%s: unable to determine data files path size.",
 		 function );
 
 		return( -1 );
@@ -480,17 +480,17 @@ int libvmdk_extent_table_get_basename_size(
 	return( 1 );
 }
 
-/* Retrieves the basename
+/* Retrieves the data files path
  * Returns 1 if successful, 0 if value not present or -1 on error
  */
-int libvmdk_extent_table_get_basename(
+int libvmdk_extent_table_get_data_files_path(
      libvmdk_extent_table_t *extent_table,
-     char *basename,
-     size_t basename_size,
+     char *path,
+     size_t path_size,
      libcerror_error_t **error )
 {
-	static char *function       = "libvmdk_extent_table_get_basename";
-	size_t narrow_basename_size = 0;
+	static char *function   = "libvmdk_extent_table_get_data_files_path";
+	size_t narrow_path_size = 0;
 
 	if( extent_table == NULL )
 	{
@@ -503,59 +503,70 @@ int libvmdk_extent_table_get_basename(
 
 		return( -1 );
 	}
-	if( basename == NULL )
+	if( path == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid basename.",
+		 "%s: invalid path.",
 		 function );
 
 		return( -1 );
 	}
-	if( extent_table->basename == NULL )
+	if( path_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid path size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_table->data_files_path == NULL )
 	{
 		return( 0 );
 	}
 	if( libvmdk_system_string_size_to_narrow_string(
-	     extent_table->basename,
-	     extent_table->basename_size,
-	     &narrow_basename_size,
+	     extent_table->data_files_path,
+	     extent_table->data_files_path_size,
+	     &narrow_path_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
 		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine basename size.",
+		 "%s: unable to determine data files path size.",
 		 function );
 
 		return( -1 );
 	}
-	if( basename_size < narrow_basename_size )
+	if( path_size < narrow_path_size )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: basename too small.",
+		 "%s: path too small.",
 		 function );
 
 		return( -1 );
 	}
 	if( libvmdk_system_string_copy_to_narrow_string(
-	     basename,
-	     basename_size,
-	     extent_table->basename,
-	     extent_table->basename_size,
+	     extent_table->data_files_path,
+	     extent_table->data_files_path_size,
+	     path,
+	     path_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
 		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to set basename.",
+		 "%s: unable to set data files path.",
 		 function );
 
 		return( -1 );
@@ -563,16 +574,16 @@ int libvmdk_extent_table_get_basename(
 	return( 1 );
 }
 
-/* Sets the basename
+/* Sets the data files path
  * Returns 1 if successful or -1 on error
  */
-int libvmdk_extent_table_set_basename(
+int libvmdk_extent_table_set_data_files_path(
      libvmdk_extent_table_t *extent_table,
-     const char *basename,
-     size_t basename_length,
+     const char *path,
+     size_t path_length,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_extent_table_set_basename";
+	static char *function = "libvmdk_extent_table_set_data_files_path";
 
 	if( extent_table == NULL )
 	{
@@ -585,66 +596,77 @@ int libvmdk_extent_table_set_basename(
 
 		return( -1 );
 	}
-	if( basename == NULL )
+	if( path == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid basename.",
+		 "%s: invalid path.",
 		 function );
 
 		return( -1 );
 	}
-	if( extent_table->basename != NULL )
+	if( path_length > (size_t) ( SSIZE_MAX - 1 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid path length value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_table->data_files_path != NULL )
 	{
 		memory_free(
-		 extent_table->basename );
+		 extent_table->data_files_path );
 
-		extent_table->basename      = NULL;
-		extent_table->basename_size = 0;
+		extent_table->data_files_path      = NULL;
+		extent_table->data_files_path_size = 0;
 	}
 	if( libvmdk_system_string_size_from_narrow_string(
-	     basename,
-	     basename_length + 1,
-	     &( extent_table->basename_size ),
+	     path,
+	     path_length + 1,
+	     &( extent_table->data_files_path_size ),
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
 		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine basename size.",
+		 "%s: unable to determine data files path size.",
 		 function );
 
 		goto on_error;
 	}
-	extent_table->basename = system_string_allocate(
-	                          extent_table->basename_size );
+	extent_table->data_files_path = system_string_allocate(
+	                                 extent_table->data_files_path_size );
 
-	if( extent_table->basename == NULL )
+	if( extent_table->data_files_path == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create basename.",
+		 "%s: unable to create data files path.",
 		 function );
 
 		goto on_error;
 	}
 	if( libvmdk_system_string_copy_from_narrow_string(
-	     extent_table->basename,
-	     extent_table->basename_size,
-	     basename,
-	     basename_length + 1,
+	     extent_table->data_files_path,
+	     extent_table->data_files_path_size,
+	     path,
+	     path_length + 1,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
 		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to set basename.",
+		 "%s: unable to set data files path.",
 		 function );
 
 		goto on_error;
@@ -652,29 +674,29 @@ int libvmdk_extent_table_set_basename(
 	return( 1 );
 
 on_error:
-	if( extent_table->basename != NULL )
+	if( extent_table->data_files_path != NULL )
 	{
 		memory_free(
-		 extent_table->basename );
+		 extent_table->data_files_path );
 
-		extent_table->basename = NULL;
+		extent_table->data_files_path = NULL;
 	}
-	extent_table->basename_size = 0;
+	extent_table->data_files_path_size = 0;
 
 	return( -1 );
 }
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
-/* Retrieves the size of the basename
+/* Retrieves the size of the data files path
  * Returns 1 if successful, 0 if value not present or -1 on error
  */
-int libvmdk_extent_table_get_basename_size_wide(
+int libvmdk_extent_table_get_data_files_path_size_wide(
      libvmdk_extent_table_t *extent_table,
-     size_t *basename_size,
+     size_t *path_size,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_extent_table_get_basename_size_wide";
+	static char *function = "libvmdk_extent_table_get_data_files_path_size_wide";
 
 	if( extent_table == NULL )
 	{
@@ -687,32 +709,32 @@ int libvmdk_extent_table_get_basename_size_wide(
 
 		return( -1 );
 	}
-	if( basename_size == NULL )
+	if( path_size == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid basename size.",
+		 "%s: invalid path size.",
 		 function );
 
 		return( -1 );
 	}
-	if( extent_table->basename == NULL )
+	if( extent_table->data_files_path == NULL )
 	{
 		return( 0 );
 	}
 	if( libvmdk_system_string_size_to_wide_string(
-	     extent_table->basename,
-	     extent_table->basename_size,
-	     basename_size,
+	     extent_table->data_files_path,
+	     extent_table->data_files_path_size,
+	     path_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
 		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine basename size.",
+		 "%s: unable to determine data files path size.",
 		 function );
 
 		return( -1 );
@@ -720,17 +742,17 @@ int libvmdk_extent_table_get_basename_size_wide(
 	return( 1 );
 }
 
-/* Retrieves the basename
+/* Retrieves the data files path
  * Returns 1 if successful, 0 if value not present or -1 on error
  */
-int libvmdk_extent_table_get_basename_wide(
+int libvmdk_extent_table_get_data_files_path_wide(
      libvmdk_extent_table_t *extent_table,
-     wchar_t *basename,
-     size_t basename_size,
+     wchar_t *path,
+     size_t path_size,
      libcerror_error_t **error )
 {
-	static char *function     = "libvmdk_extent_table_get_basename_wide";
-	size_t wide_basename_size = 0;
+	static char *function = "libvmdk_extent_table_get_data_files_path_wide";
+	size_t wide_path_size = 0;
 
 	if( extent_table == NULL )
 	{
@@ -743,59 +765,70 @@ int libvmdk_extent_table_get_basename_wide(
 
 		return( -1 );
 	}
-	if( basename == NULL )
+	if( path == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid basename.",
+		 "%s: invalid path.",
 		 function );
 
 		return( -1 );
 	}
-	if( extent_table->basename == NULL )
+	if( path_size > (size_t) SSIZE_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid path size value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_table->data_files_path == NULL )
 	{
 		return( 0 );
 	}
 	if( libvmdk_system_string_size_to_wide_string(
-	     extent_table->basename,
-	     extent_table->basename_size,
-	     &wide_basename_size,
+	     extent_table->data_files_path,
+	     extent_table->data_files_path_size,
+	     &wide_path_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
 		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine basename size.",
+		 "%s: unable to determine data files path size.",
 		 function );
 
 		return( -1 );
 	}
-	if( basename_size < wide_basename_size )
+	if( path_size < wide_path_size )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: basename too small.",
+		 "%s: path too small.",
 		 function );
 
 		return( -1 );
 	}
 	if( libvmdk_system_string_copy_to_wide_string(
-	     basename,
-	     basename_size,
-	     extent_table->basename,
-	     extent_table->basename_size,
+	     extent_table->data_files_path,
+	     extent_table->data_files_path_size,
+	     path,
+	     path_size,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
 		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to set basename.",
+		 "%s: unable to set data files path.",
 		 function );
 
 		return( -1 );
@@ -803,16 +836,16 @@ int libvmdk_extent_table_get_basename_wide(
 	return( 1 );
 }
 
-/* Sets the basename
+/* Sets the data files path
  * Returns 1 if successful or -1 on error
  */
-int libvmdk_extent_table_set_basename_wide(
+int libvmdk_extent_table_set_data_files_path_wide(
      libvmdk_extent_table_t *extent_table,
-     const wchar_t *basename,
-     size_t basename_length,
+     const wchar_t *path,
+     size_t path_length,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_extent_table_set_basename_wide";
+	static char *function = "libvmdk_extent_table_set_data_files_path_wide";
 
 	if( extent_table == NULL )
 	{
@@ -825,66 +858,77 @@ int libvmdk_extent_table_set_basename_wide(
 
 		return( -1 );
 	}
-	if( basename == NULL )
+	if( path == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid basename.",
+		 "%s: invalid  path.",
 		 function );
 
 		return( -1 );
 	}
-	if( extent_table->basename != NULL )
+	if( path_length > (size_t) ( SSIZE_MAX - 1 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid path length value exceeds maximum.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_table->data_files_path != NULL )
 	{
 		memory_free(
-		 extent_table->basename );
+		 extent_table->data_files_path );
 
-		extent_table->basename      = NULL;
-		extent_table->basename_size = 0;
+		extent_table->data_files_path      = NULL;
+		extent_table->data_files_path_size = 0;
 	}
 	if( libvmdk_system_string_size_from_wide_string(
-	     basename,
-	     basename_length + 1,
-	     &( extent_table->basename_size ),
+	     path,
+	     path_length + 1,
+	     &( extent_table->data_files_path_size ),
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
 		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to determine basename size.",
+		 "%s: unable to determine data files path size.",
 		 function );
 
 		goto on_error;
 	}
-	extent_table->basename = system_string_allocate(
-	                           extent_table->basename_size );
+	extent_table->data_files_path = system_string_allocate(
+	                                 extent_table->data_files_path_size );
 
-	if( extent_table->basename == NULL )
+	if( extent_table->data_files_path == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_MEMORY,
 		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create basename.",
+		 "%s: unable to create data files path.",
 		 function );
 
 		goto on_error;
 	}
 	if( libvmdk_system_string_copy_from_wide_string(
-	     extent_table->basename,
-	     extent_table->basename_size,
-	     basename,
-	     basename_length + 1,
+	     extent_table->data_files_path,
+	     extent_table->data_files_path_size,
+	     path,
+	     path_length + 1,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
 		 LIBCERROR_CONVERSION_ERROR_GENERIC,
-		 "%s: unable to set basename.",
+		 "%s: unable to set data files path.",
 		 function );
 
 		goto on_error;
@@ -892,14 +936,14 @@ int libvmdk_extent_table_set_basename_wide(
 	return( 1 );
 
 on_error:
-	if( extent_table->basename != NULL )
+	if( extent_table->data_files_path != NULL )
 	{
 		memory_free(
-		 extent_table->basename );
+		 extent_table->data_files_path );
 
-		extent_table->basename = NULL;
+		extent_table->data_files_path = NULL;
 	}
-	extent_table->basename_size = 0;
+	extent_table->data_files_path_size = 0;
 
 	return( -1 );
 }
