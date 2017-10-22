@@ -2000,7 +2000,7 @@ PyObject *pyvmdk_handle_get_extent_descriptor_by_index(
 	}
 	extent_descriptor_object = pyvmdk_extent_descriptor_new(
 	                            extent_descriptor,
-	                            (pyvmdk_handle_t *) pyvmdk_handle );
+	                            pyvmdk_handle );
 
 	if( extent_descriptor_object == NULL )
 	{

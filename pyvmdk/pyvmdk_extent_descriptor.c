@@ -201,7 +201,7 @@ PyTypeObject pyvmdk_extent_descriptor_type_object = {
  */
 PyObject *pyvmdk_extent_descriptor_new(
            libvmdk_extent_descriptor_t *extent_descriptor,
-           pyvmdk_handle_t *handle_object )
+           PyObject *parent_object )
 {
 	pyvmdk_extent_descriptor_t *pyvmdk_extent_descriptor = NULL;
 	static char *function                                = "pyvmdk_extent_descriptor_new";
@@ -239,10 +239,10 @@ PyObject *pyvmdk_extent_descriptor_new(
 		goto on_error;
 	}
 	pyvmdk_extent_descriptor->extent_descriptor = extent_descriptor;
-	pyvmdk_extent_descriptor->handle_object     = handle_object;
+	pyvmdk_extent_descriptor->parent_object     = parent_object;
 
 	Py_IncRef(
-	 (PyObject *) pyvmdk_extent_descriptor->handle_object );
+	 (PyObject *) pyvmdk_extent_descriptor->parent_object );
 
 	return( (PyObject *) pyvmdk_extent_descriptor );
 
@@ -340,10 +340,10 @@ void pyvmdk_extent_descriptor_free(
 		libcerror_error_free(
 		 &error );
 	}
-	if( pyvmdk_extent_descriptor->handle_object != NULL )
+	if( pyvmdk_extent_descriptor->parent_object != NULL )
 	{
 		Py_DecRef(
-		 (PyObject *) pyvmdk_extent_descriptor->handle_object );
+		 (PyObject *) pyvmdk_extent_descriptor->parent_object );
 	}
 	ob_type->tp_free(
 	 (PyObject*) pyvmdk_extent_descriptor );

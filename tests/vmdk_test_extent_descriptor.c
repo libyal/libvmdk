@@ -604,9 +604,9 @@ int vmdk_test_extent_descriptor_get_utf8_filename(
 		 result,
 		 -1 );
 
-	        VMDK_TEST_ASSERT_IS_NOT_NULL(
-	         "error",
-	         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
 		libcerror_error_free(
 		 &error );
@@ -622,9 +622,9 @@ int vmdk_test_extent_descriptor_get_utf8_filename(
 		 result,
 		 -1 );
 
-	        VMDK_TEST_ASSERT_IS_NOT_NULL(
-	         "error",
-	         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
 		libcerror_error_free(
 		 &error );
@@ -640,9 +640,9 @@ int vmdk_test_extent_descriptor_get_utf8_filename(
 		 result,
 		 -1 );
 
-	        VMDK_TEST_ASSERT_IS_NOT_NULL(
-	         "error",
-	         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
 		libcerror_error_free(
 		 &error );
@@ -890,9 +890,9 @@ int vmdk_test_extent_descriptor_get_utf16_filename(
 		 result,
 		 -1 );
 
-	        VMDK_TEST_ASSERT_IS_NOT_NULL(
-	         "error",
-	         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
 		libcerror_error_free(
 		 &error );
@@ -908,9 +908,9 @@ int vmdk_test_extent_descriptor_get_utf16_filename(
 		 result,
 		 -1 );
 
-	        VMDK_TEST_ASSERT_IS_NOT_NULL(
-	         "error",
-	         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
 		libcerror_error_free(
 		 &error );
@@ -926,9 +926,9 @@ int vmdk_test_extent_descriptor_get_utf16_filename(
 		 result,
 		 -1 );
 
-	        VMDK_TEST_ASSERT_IS_NOT_NULL(
-	         "error",
-	         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
 		libcerror_error_free(
 		 &error );

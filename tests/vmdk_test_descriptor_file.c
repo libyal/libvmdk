@@ -723,9 +723,9 @@ int vmdk_test_descriptor_file_get_utf8_parent_filename(
 		 result,
 		 -1 );
 
-	        VMDK_TEST_ASSERT_IS_NOT_NULL(
-	         "error",
-	         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
 		libcerror_error_free(
 		 &error );
@@ -741,9 +741,9 @@ int vmdk_test_descriptor_file_get_utf8_parent_filename(
 		 result,
 		 -1 );
 
-	        VMDK_TEST_ASSERT_IS_NOT_NULL(
-	         "error",
-	         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
 		libcerror_error_free(
 		 &error );
@@ -759,9 +759,9 @@ int vmdk_test_descriptor_file_get_utf8_parent_filename(
 		 result,
 		 -1 );
 
-	        VMDK_TEST_ASSERT_IS_NOT_NULL(
-	         "error",
-	         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
 		libcerror_error_free(
 		 &error );
@@ -1009,9 +1009,9 @@ int vmdk_test_descriptor_file_get_utf16_parent_filename(
 		 result,
 		 -1 );
 
-	        VMDK_TEST_ASSERT_IS_NOT_NULL(
-	         "error",
-	         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
 		libcerror_error_free(
 		 &error );
@@ -1027,9 +1027,9 @@ int vmdk_test_descriptor_file_get_utf16_parent_filename(
 		 result,
 		 -1 );
 
-	        VMDK_TEST_ASSERT_IS_NOT_NULL(
-	         "error",
-	         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
 		libcerror_error_free(
 		 &error );
@@ -1045,9 +1045,9 @@ int vmdk_test_descriptor_file_get_utf16_parent_filename(
 		 result,
 		 -1 );
 
-	        VMDK_TEST_ASSERT_IS_NOT_NULL(
-	         "error",
-	         error );
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
 
 		libcerror_error_free(
 		 &error );

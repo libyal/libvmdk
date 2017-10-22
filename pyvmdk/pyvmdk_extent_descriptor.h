@@ -45,9 +45,9 @@ struct pyvmdk_extent_descriptor
 	 */
 	libvmdk_extent_descriptor_t *extent_descriptor;
 
-	/* The handle object
+	/* The parent object
 	 */
-	pyvmdk_handle_t *handle_object;
+	PyObject *parent_object;
 };
 
 extern PyMethodDef pyvmdk_extent_descriptor_object_methods[];
@@ -55,7 +55,7 @@ extern PyTypeObject pyvmdk_extent_descriptor_type_object;
 
 PyObject *pyvmdk_extent_descriptor_new(
            libvmdk_extent_descriptor_t *extent_descriptor,
-           pyvmdk_handle_t *handle_object );
+           PyObject *parent_object );
 
 int pyvmdk_extent_descriptor_init(
      pyvmdk_extent_descriptor_t *pyvmdk_extent_descriptor );

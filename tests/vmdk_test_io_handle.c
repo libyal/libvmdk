@@ -401,6 +401,10 @@ int main(
 
 #endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
+
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
+
 	return( EXIT_SUCCESS );
 
 on_error:
