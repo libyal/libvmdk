@@ -99,6 +99,7 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vmdk_test_notify", "vmdk_test_notify\vmdk_test_notify.vcproj", "{6348C9B1-EE8C-40A4-880C-7CF340DBB229}"
 	ProjectSection(ProjectDependencies) = postProject
 		{61A2A23F-8CD1-4481-9EA8-3B636F71DF51} = {61A2A23F-8CD1-4481-9EA8-3B636F71DF51}
+		{BD3A95FA-A3DE-4B79-A889-A7E5ECA4B69C} = {BD3A95FA-A3DE-4B79-A889-A7E5ECA4B69C}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vmdk_test_support", "vmdk_test_support\vmdk_test_support.vcproj", "{11E67B26-8525-4B7F-B0F9-E439F5423AE1}"

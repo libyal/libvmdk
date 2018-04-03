@@ -188,13 +188,15 @@ vmdk_test_io_handle_LDADD = \
 	@LIBCERROR_LIBADD@
 
 vmdk_test_notify_SOURCES = \
+	vmdk_test_libcerror.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
 	vmdk_test_notify.c \
 	vmdk_test_unused.h
 
 vmdk_test_notify_LDADD = \
-	../libvmdk/libvmdk.la
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
 
 vmdk_test_support_SOURCES = \
 	vmdk_test_functions.c vmdk_test_functions.h \
@@ -206,6 +208,7 @@ vmdk_test_support_SOURCES = \
 	vmdk_test_libuna.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
 	vmdk_test_support.c \
 	vmdk_test_unused.h
 
