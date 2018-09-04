@@ -113,6 +113,8 @@ int vmdk_test_io_handle_initialize(
 	          &io_handle,
 	          &error );
 
+	io_handle = NULL;
+
 	VMDK_TEST_ASSERT_EQUAL_INT(
 	 "result",
 	 result,
@@ -124,8 +126,6 @@ int vmdk_test_io_handle_initialize(
 
 	libcerror_error_free(
 	 &error );
-
-	io_handle = NULL;
 
 #if defined( HAVE_VMDK_TEST_MEMORY )
 
@@ -332,6 +332,36 @@ int vmdk_test_io_handle_clear(
 	libcerror_error_free(
 	 &error );
 
+#if defined( HAVE_VMDK_TEST_MEMORY )
+
+	/* Test libvmdk_io_handle_clear with memset failing
+	 */
+	vmdk_test_memset_attempts_before_fail = 0;
+
+	result = libvmdk_io_handle_clear(
+	          io_handle,
+	          &error );
+
+	if( vmdk_test_memset_attempts_before_fail != -1 )
+	{
+		vmdk_test_memset_attempts_before_fail = -1;
+	}
+	else
+	{
+		VMDK_TEST_ASSERT_EQUAL_INT(
+		 "result",
+		 result,
+		 -1 );
+
+		VMDK_TEST_ASSERT_IS_NOT_NULL(
+		 "error",
+		 error );
+
+		libcerror_error_free(
+		 &error );
+	}
+#endif /* defined( HAVE_VMDK_TEST_MEMORY ) */
+
 	/* Clean up
 	 */
 	result = libvmdk_io_handle_free(
@@ -398,10 +428,6 @@ int main(
 	VMDK_TEST_RUN(
 	 "libvmdk_io_handle_clear",
 	 vmdk_test_io_handle_clear );
-
-#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
-
-#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
 
 #endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 

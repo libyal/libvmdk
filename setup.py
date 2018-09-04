@@ -1,17 +1,20 @@
 #!/usr/bin/env python
 #
 # Script to build and install Python-bindings.
-# Version: 20180317
+# Version: 20180728
 
 from __future__ import print_function
 import glob
+import gzip
 import platform
 import os
 import shlex
 import shutil
 import subprocess
 import sys
+import tarfile
 
+from distutils import dist
 from distutils import sysconfig
 from distutils.ccompiler import new_compiler
 from distutils.command.build_ext import build_ext
@@ -57,18 +60,16 @@ class custom_build_ext(build_ext):
     """Runs the command."""
     arguments = shlex.split(command)
     process = subprocess.Popen(
-        arguments, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        arguments, stderr=subprocess.PIPE, stdout=subprocess.PIPE,
+        universal_newlines=True)
     if not process:
       raise RuntimeError("Running: {0:s} failed.".format(command))
 
     output, error = process.communicate()
     if process.returncode != 0:
-      error = "\n".join(error.split(b"\n")[-5:])
-      if sys.version_info[0] >= 3:
-        error = error.decode("ascii", errors="replace")
-      raise RuntimeError(
-          "Running: {0:s} failed with error:\n{1:s}.".format(
-              command, error))
+      error = "\n".join(error.split("\n")[-5:])
+      raise RuntimeError("Running: {0:s} failed with error:\n{1:s}.".format(
+          command, error))
 
     return output
 
@@ -94,32 +95,28 @@ class custom_build_ext(build_ext):
 
       # We want to build as much as possible self contained Python binding.
       configure_arguments = []
-      for line in output.split(b"\n"):
+      for line in output.split("\n"):
         line = line.strip()
-        line, _, _ = line.rpartition(b"[=DIR]")
-        if line.startswith(b"--with-lib") and not line.endswith(b"-prefix"):
-          if sys.version_info[0] >= 3:
-            line = line.decode("ascii")
+        line, _, _ = line.rpartition("[=DIR]")
+        if line.startswith("--with-lib") and not line.endswith("-prefix"):
           configure_arguments.append("{0:s}=no".format(line))
-        elif line == b"--with-bzip2":
+        elif line == "--with-bzip2":
           configure_arguments.append("--with-bzip2=no")
-        elif line == b"--with-openssl":
+        elif line == "--with-openssl":
           configure_arguments.append("--with-openssl=no")
-        elif line == b"--with-zlib":
+        elif line == "--with-zlib":
           configure_arguments.append("--with-zlib=no")
 
       command = "sh configure {0:s}".format(" ".join(configure_arguments))
       output = self._RunCommand(command)
 
       print_line = False
-      for line in output.split(b"\n"):
+      for line in output.split("\n"):
         line = line.rstrip()
-        if line == b"configure:":
+        if line == "configure:":
           print_line = True
 
         if print_line:
-          if sys.version_info[0] >= 3:
-            line = line.decode("ascii")
           print(line)
 
       self.define = [
@@ -160,12 +157,27 @@ class custom_sdist(sdist):
     sdist_package_file = os.path.join("dist", sdist_package_file)
     os.rename(source_package_file, sdist_package_file)
 
+    # Create and add the PKG-INFO file to the source package.
+    with gzip.open(sdist_package_file, 'rb') as input_file:
+      with open(sdist_package_file[:-3], 'wb') as output_file:
+        shutil.copyfileobj(input_file, output_file)
+    os.remove(sdist_package_file)
+
+    self.distribution.metadata.write_pkg_info(".")
+    pkg_info_path = "{0:s}-{1:s}/PKG-INFO".format(
+        source_package_prefix, source_package_suffix[:-7])
+    with tarfile.open(sdist_package_file[:-3], "a:") as tar_file:
+      tar_file.add("PKG-INFO", arcname=pkg_info_path)
+    os.remove("PKG-INFO")
+
+    with open(sdist_package_file[:-3], 'rb') as input_file:
+      with gzip.open(sdist_package_file, 'wb') as output_file:
+        shutil.copyfileobj(input_file, output_file)
+    os.remove(sdist_package_file[:-3])
+
     # Inform distutils what files were created.
     dist_files = getattr(self.distribution, "dist_files", [])
     dist_files.append(("sdist", "", sdist_package_file))
-
-    # Make sure PKG-INFO is generated.
-    sdist.run(self)
 
 
 class ProjectInformation(object):

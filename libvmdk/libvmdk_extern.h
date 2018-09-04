@@ -28,17 +28,13 @@
  */
 #if !defined( HAVE_LOCAL_LIBVMDK )
 
-/* If libtool DLL support is enabled set LIBVMDK_DLL_EXPORT
- * before including libvmdk/extern.h
- */
-#if defined( _WIN32 ) && defined( DLL_EXPORT )
-#define LIBVMDK_DLL_EXPORT
-#endif
-
 #include <libvmdk/extern.h>
 
+#define LIBVMDK_EXTERN_VARIABLE	LIBVMDK_EXTERN
+
 #else
-#define LIBVMDK_EXTERN	/* extern */
+#define LIBVMDK_EXTERN		/* extern */
+#define LIBVMDK_EXTERN_VARIABLE	extern
 
 #endif /* !defined( HAVE_LOCAL_LIBVMDK ) */
 
