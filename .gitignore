@@ -107,6 +107,14 @@ stamp-h[1-9]
 /test-driver
 /ylwrap
 
+# tag file
+tags
+TAGS
+cscope.*
+
+# IDE files
+.idea/
+
 # Project specific files
 /common/config.h
 /common/config.h.in
