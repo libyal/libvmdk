@@ -22,9 +22,11 @@ am_pyvmdk_la_rpath = -rpath $(pyexecdir3)
 
 BUILT_SOURCES = \
 	pyvmdk.c pyvmdk.h \
+	pyvmdk_disk_types.c pyvmdk_disk_types.h \
 	pyvmdk_error.c pyvmdk_error.h \
 	pyvmdk_extent_descriptor.c pyvmdk_extent_descriptor.h \
 	pyvmdk_extent_descriptors.c pyvmdk_extent_descriptors.h \
+	pyvmdk_extent_types.c pyvmdk_extent_types.h \
 	pyvmdk_file_object_io_handle.c pyvmdk_file_object_io_handle.h \
 	pyvmdk_file_objects_io_pool.c pyvmdk_file_objects_io_pool.h \
 	pyvmdk_handle.c pyvmdk_handle.h \

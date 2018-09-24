@@ -1,5 +1,4 @@
 MSVSCPP_FILES = \
-	dokan/dokan.vcproj \
 	libbfio/libbfio.vcproj \
 	libcdata/libcdata.vcproj \
 	libcerror/libcerror.vcproj \

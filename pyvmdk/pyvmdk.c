@@ -28,8 +28,10 @@
 #endif
 
 #include "pyvmdk.h"
+#include "pyvmdk_disk_types.h"
 #include "pyvmdk_extent_descriptor.h"
 #include "pyvmdk_extent_descriptors.h"
+#include "pyvmdk_extent_types.h"
 #include "pyvmdk_error.h"
 #include "pyvmdk_libcerror.h"
 #include "pyvmdk_libvmdk.h"
@@ -39,11 +41,13 @@
 #include "pyvmdk_unused.h"
 
 #if !defined( LIBVMDK_HAVE_BFIO )
+
 LIBVMDK_EXTERN \
 int libvmdk_check_file_signature_file_io_handle(
      libbfio_handle_t *file_io_handle,
      libvmdk_error_t **error );
-#endif
+
+#endif /* !defined( LIBVMDK_HAVE_BFIO ) */
 
 /* The pyvmdk module methods
  */
@@ -70,14 +74,14 @@ PyMethodDef pyvmdk_module_methods[] = {
 	  "Checks if a file has a VMware Virtual Disk (VMDK) file signature using a file-like object." },
 
 	{ "open",
-	  (PyCFunction) pyvmdk_handle_new_open,
+	  (PyCFunction) pyvmdk_open_new_handle,
 	  METH_VARARGS | METH_KEYWORDS,
 	  "open(filename, mode='r') -> Object\n"
 	  "\n"
 	  "Opens a VMDK image handle using the descriptor file." },
 
 	{ "open_file_object",
-	  (PyCFunction) pyvmdk_handle_new_open_file_object,
+	  (PyCFunction) pyvmdk_open_new_handle_with_file_object,
 	  METH_VARARGS | METH_KEYWORDS,
 	  "open(file_object, mode='r') -> Object\n"
 	  "\n"
@@ -414,6 +418,52 @@ on_error:
 	return( NULL );
 }
 
+/* Creates a new handle object and opens it
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyvmdk_open_new_handle(
+           PyObject *self PYVMDK_ATTRIBUTE_UNUSED,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+	PyObject *pyvmdk_handle = NULL;
+
+	PYVMDK_UNREFERENCED_PARAMETER( self )
+
+	pyvmdk_handle_init(
+	 (pyvmdk_handle_t *) pyvmdk_handle );
+
+	pyvmdk_handle_open(
+	 (pyvmdk_handle_t *) pyvmdk_handle,
+	 arguments,
+	 keywords );
+
+	return( pyvmdk_handle );
+}
+
+/* Creates a new handle object and opens it using a file-like object
+ * Returns a Python object if successful or NULL on error
+ */
+PyObject *pyvmdk_open_new_handle_with_file_object(
+           PyObject *self PYVMDK_ATTRIBUTE_UNUSED,
+           PyObject *arguments,
+           PyObject *keywords )
+{
+	PyObject *pyvmdk_handle = NULL;
+
+	PYVMDK_UNREFERENCED_PARAMETER( self )
+
+	pyvmdk_handle_init(
+	 (pyvmdk_handle_t *) pyvmdk_handle );
+
+	pyvmdk_handle_open_file_object(
+	 (pyvmdk_handle_t *) pyvmdk_handle,
+	 arguments,
+	 keywords );
+
+	return( pyvmdk_handle );
+}
+
 #if PY_MAJOR_VERSION >= 3
 
 /* The pyvmdk module definition
@@ -451,11 +501,8 @@ PyMODINIT_FUNC initpyvmdk(
                 void )
 #endif
 {
-	PyObject *module                             = NULL;
-	PyTypeObject *extent_descriptor_type_object  = NULL;
-	PyTypeObject *extent_descriptors_type_object = NULL;
-	PyTypeObject *handle_type_object             = NULL;
-	PyGILState_STATE gil_state                   = 0;
+	PyObject *module           = NULL;
+	PyGILState_STATE gil_state = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
 	libvmdk_notify_set_stream(
@@ -490,6 +537,74 @@ PyMODINIT_FUNC initpyvmdk(
 
 	gil_state = PyGILState_Ensure();
 
+	/* Setup the disk_types type object
+	 */
+	pyvmdk_disk_types_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyvmdk_disk_types_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyvmdk_disk_types_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "disk_types",
+	 (PyObject *) &pyvmdk_disk_types_type_object );
+
+	/* Setup the extent_descriptor type object
+	 */
+	pyvmdk_extent_descriptor_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyvmdk_extent_descriptor_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyvmdk_extent_descriptor_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "extent_descriptor",
+	 (PyObject *) &pyvmdk_extent_descriptor_type_object );
+
+	/* Setup the extent_descriptors type object
+	 */
+	pyvmdk_extent_descriptors_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyvmdk_extent_descriptors_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyvmdk_extent_descriptors_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "extent_descriptors",
+	 (PyObject *) &pyvmdk_extent_descriptors_type_object );
+
+	/* Setup the extent_types type object
+	 */
+	pyvmdk_extent_types_type_object.tp_new = PyType_GenericNew;
+
+	if( PyType_Ready(
+	     &pyvmdk_extent_types_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+	Py_IncRef(
+	 (PyObject *) &pyvmdk_extent_types_type_object );
+
+	PyModule_AddObject(
+	 module,
+	 "extent_types",
+	 (PyObject *) &pyvmdk_extent_types_type_object );
+
 	/* Setup the handle type object
 	 */
 	pyvmdk_handle_type_object.tp_new = PyType_GenericNew;
@@ -502,50 +617,10 @@ PyMODINIT_FUNC initpyvmdk(
 	Py_IncRef(
 	 (PyObject *) &pyvmdk_handle_type_object );
 
-	handle_type_object = &pyvmdk_handle_type_object;
-
 	PyModule_AddObject(
 	 module,
 	 "handle",
-	 (PyObject *) handle_type_object );
-
-	/* Setup the extent descriptors type object
-	 */
-	pyvmdk_extent_descriptors_type_object.tp_new = PyType_GenericNew;
-
-	if( PyType_Ready(
-	     &pyvmdk_extent_descriptors_type_object ) < 0 )
-	{
-		goto on_error;
-	}
-	Py_IncRef(
-	 (PyObject *) &pyvmdk_extent_descriptors_type_object );
-
-	extent_descriptors_type_object = &pyvmdk_extent_descriptors_type_object;
-
-	PyModule_AddObject(
-	 module,
-	 "_extent_descriptors",
-	 (PyObject *) extent_descriptors_type_object );
-
-	/* Setup the extent descriptor type object
-	 */
-	pyvmdk_extent_descriptor_type_object.tp_new = PyType_GenericNew;
-
-	if( PyType_Ready(
-	     &pyvmdk_extent_descriptor_type_object ) < 0 )
-	{
-		goto on_error;
-	}
-	Py_IncRef(
-	 (PyObject *) &pyvmdk_extent_descriptor_type_object );
-
-	extent_descriptor_type_object = &pyvmdk_extent_descriptor_type_object;
-
-	PyModule_AddObject(
-	 module,
-	 "extent_descriptor",
-	 (PyObject *) extent_descriptor_type_object );
+	 (PyObject *) &pyvmdk_handle_type_object );
 
 	PyGILState_Release(
 	 gil_state );

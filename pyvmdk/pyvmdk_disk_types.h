@@ -1,5 +1,5 @@
 /*
- * Python bindings for libvmdk (pyvmdk)
+ * Python object definition of the libvmdk disk types
  *
  * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -19,53 +19,45 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _PYVMDK_H )
-#define _PYVMDK_H
+#if !defined( _PYVMDK_DISK_TYPES_H )
+#define _PYVMDK_DISK_TYPES_H
 
 #include <common.h>
 #include <types.h>
 
+#include "pyvmdk_libvmdk.h"
 #include "pyvmdk_python.h"
 
 #if defined( __cplusplus )
 extern "C" {
 #endif
 
-PyObject *pyvmdk_get_version(
-           PyObject *self,
-           PyObject *arguments );
+typedef struct pyvmdk_disk_types pyvmdk_disk_types_t;
 
-PyObject *pyvmdk_check_file_signature(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
+struct pyvmdk_disk_types
+{
+	/* Python object initialization
+	 */
+	PyObject_HEAD
+};
 
-PyObject *pyvmdk_check_file_signature_file_object(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
+extern PyTypeObject pyvmdk_disk_types_type_object;
 
-PyObject *pyvmdk_open_new_handle(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
+int pyvmdk_disk_types_init_type(
+     PyTypeObject *type_object );
 
-PyObject *pyvmdk_open_new_handle_with_file_object(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
+PyObject *pyvmdk_disk_types_new(
+           void );
 
-#if PY_MAJOR_VERSION >= 3
-PyMODINIT_FUNC PyInit_pyvmdk(
-                void );
-#else
-PyMODINIT_FUNC initpyvmdk(
-                void );
-#endif
+int pyvmdk_disk_types_init(
+     pyvmdk_disk_types_t *definitions_object );
+
+void pyvmdk_disk_types_free(
+      pyvmdk_disk_types_t *definitions_object );
 
 #if defined( __cplusplus )
 }
 #endif
 
-#endif /* !defined( _PYVMDK_H ) */
+#endif /* !defined( _PYVMDK_DISK_TYPES_H ) */
 
