@@ -214,6 +214,16 @@ class ProjectInformation(object):
     """The project URL."""
     return "https://github.com/libyal/{0:s}/".format(self.library_name)
 
+  @property
+  def python_modules_dir(self):
+    return os.path.join(self.module_name, "pymodules")
+
+  @property
+  def python_modules(self):
+    """List of all the python modules of the package"""
+    python_files = glob.glob(os.path.join(self.python_modules_dir, "*.py"))
+    return [os.path.basename(p).rpartition('.')[0] for p in python_files]
+
   def _ReadConfigureAc(self):
     """Reads configure.ac to initialize the project information."""
     file_object = open("configure.ac", "rb")
@@ -354,6 +364,8 @@ setup(
         "bdist_rpm": custom_bdist_rpm,
         "sdist": custom_sdist,
     },
+    package_dir={'': project_information.python_modules_dir},
+    py_modules=project_information.python_modules,
     ext_modules=[
         Extension(
             project_information.module_name,
