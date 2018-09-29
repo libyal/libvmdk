@@ -153,7 +153,7 @@ int pyvmdk_disk_types_init_type(
 #endif
 	if( PyDict_SetItemString(
 	     type_object->tp_dict,
-	     "2GB_EXTENT_FLAT",
+	     "TWO_GB_EXTENT_FLAT",
 	     value_object ) != 0 )
 	{
 		goto on_error;
@@ -167,7 +167,7 @@ int pyvmdk_disk_types_init_type(
 #endif
 	if( PyDict_SetItemString(
 	     type_object->tp_dict,
-	     "2GB_EXTENT_SPARSE",
+	     "TWO_GB_EXTENT_SPARSE",
 	     value_object ) != 0 )
 	{
 		goto on_error;

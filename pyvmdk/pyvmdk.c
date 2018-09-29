@@ -546,6 +546,12 @@ PyMODINIT_FUNC initpyvmdk(
 	{
 		goto on_error;
 	}
+
+	if( pyvmdk_disk_types_init_type(
+	     &pyvmdk_disk_types_type_object) < 0 )
+	{
+		goto on_error;
+	}
 	Py_IncRef(
 	 (PyObject *) &pyvmdk_disk_types_type_object );
 
@@ -594,6 +600,12 @@ PyMODINIT_FUNC initpyvmdk(
 
 	if( PyType_Ready(
 	     &pyvmdk_extent_types_type_object ) < 0 )
+	{
+		goto on_error;
+	}
+
+	if( pyvmdk_extent_types_init_type(
+	     &pyvmdk_extent_types_type_object) < 0 )
 	{
 		goto on_error;
 	}
