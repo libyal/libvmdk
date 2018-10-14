@@ -19,8 +19,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBCPATH_LIBCPATH_H )
-#define _LIBCPATH_LIBCPATH_H
+#if !defined( _LIBVMDK_LIBCPATH_H )
+#define _LIBVMDK_LIBCPATH_H
 
 #include <common.h>
 
@@ -42,7 +42,7 @@
 
 #include <libcpath.h>
 
-#endif
+#endif /* defined( HAVE_LOCAL_LIBCPATH ) */
 
-#endif
+#endif /* !defined( _LIBVMDK_LIBCPATH_H ) */
 

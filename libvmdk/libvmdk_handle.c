@@ -2917,7 +2917,7 @@ on_error:
 	return( -1 );
 }
 
-/* Reads (media) data from the last current into a buffer using a Basic File IO (bfio) pool
+/* Reads (media) data at the current offset into a buffer using a Basic File IO (bfio) pool
  * This function is not multi-thread safe acquire write lock before call
  * Returns the number of bytes read or -1 on error
  */
@@ -3268,7 +3268,7 @@ ssize_t libvmdk_internal_handle_read_buffer_from_file_io_pool(
 	return( (ssize_t) buffer_offset );
 }
 
-/* Reads (media) data from the last current into a buffer
+/* Reads (media) data at the current offset into a buffer
  * Returns the number of bytes read or -1 on error
  */
 ssize_t libvmdk_handle_read_buffer(
@@ -3327,7 +3327,7 @@ ssize_t libvmdk_handle_read_buffer(
 		      buffer_size,
 		      error );
 
-	if( read_count == -1 )
+	if( read_count < 0 )
 	{
 		libcerror_error_set(
 		 error,
