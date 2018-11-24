@@ -1050,7 +1050,7 @@ int libvmdk_extent_table_initialize_extents(
 		          (intptr_t *) extent_table->io_handle,
 		          NULL,
 		          NULL,
-		          (int (*)(intptr_t *, intptr_t *, libfdata_list_element_t *, libfcache_cache_t *, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libvmdk_extent_file_read_element_data,
+		          (int (*)(intptr_t *, intptr_t *, libfdata_list_element_t *, libfdata_cache_t *, int, off64_t, size64_t, uint32_t, uint8_t, libcerror_error_t **)) &libvmdk_extent_file_read_element_data,
 		          NULL,
 		          LIBFDATA_DATA_HANDLE_FLAG_NON_MANAGED,
 		          error );
@@ -1317,7 +1317,7 @@ int libvmdk_extent_table_get_extent_file_by_index(
 	if( libfdata_list_get_element_value_by_index(
 	     extent_table->extent_files_list,
 	     (intptr_t *) file_io_pool,
-	     extent_table->extent_files_cache,
+	     (libfdata_cache_t *) extent_table->extent_files_cache,
 	     extent_index,
 	     (intptr_t **) extent_file,
 	     0,
@@ -1365,7 +1365,7 @@ int libvmdk_extent_table_get_extent_file_at_offset(
 	result = libfdata_list_get_element_value_at_offset(
 	          extent_table->extent_files_list,
 	          (intptr_t *) file_io_pool,
-	          extent_table->extent_files_cache,
+	          (libfdata_cache_t *) extent_table->extent_files_cache,
 	          offset,
 	          extent_index,
 	          extent_file_data_offset,
@@ -1414,7 +1414,7 @@ int libvmdk_extent_table_set_extent_file_by_index(
 	if( libfdata_list_set_element_value_by_index(
 	     extent_table->extent_files_list,
 	     (intptr_t *) file_io_pool,
-	     extent_table->extent_files_cache,
+	     (libfdata_cache_t *) extent_table->extent_files_cache,
 	     extent_index,
 	     (intptr_t *) extent_file,
 	     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_file_free,

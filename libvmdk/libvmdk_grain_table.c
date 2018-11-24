@@ -474,7 +474,7 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 	result = libfdata_list_get_element_value_at_offset(
 		  grains_list,
 		  (intptr_t *) file_io_pool,
-		  grains_cache,
+		  (libfdata_cache_t *) grains_cache,
 		  grain_group_data_offset,
 		  &grains_list_index,
 		  grain_data_offset,

@@ -27,7 +27,6 @@
 
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libcerror.h"
-#include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
 
 #if defined( __cplusplus )
@@ -75,7 +74,7 @@ int libvmdk_grain_data_read_element_data(
      libvmdk_io_handle_t *io_handle,
      libbfio_pool_t *file_io_pool,
      libfdata_list_element_t *element,
-     libfcache_cache_t *cache,
+     libfdata_cache_t *cache,
      int file_io_pool_entry,
      off64_t grain_data_offset,
      size64_t grain_data_size,
