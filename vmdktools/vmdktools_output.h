@@ -19,8 +19,8 @@
  * along with this software.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#if !defined( _VMDKOUTPUT_H )
-#define _VMDKOUTPUT_H
+#if !defined( _VMDKTOOLS_OUTPUT_H )
+#define _VMDKTOOLS_OUTPUT_H
 
 #include <common.h>
 #include <file_stream.h>
@@ -36,14 +36,14 @@ int vmdktools_output_initialize(
      int stdio_mode,
      libcerror_error_t **error );
 
-void vmdkoutput_copyright_fprint(
+void vmdktools_output_copyright_fprint(
       FILE *stream );
 
-void vmdkoutput_version_fprint(
+void vmdktools_output_version_fprint(
       FILE *stream,
       const char *program );
 
-void vmdkoutput_version_detailed_fprint(
+void vmdktools_output_version_detailed_fprint(
       FILE *stream,
       const char *program );
 
@@ -51,5 +51,5 @@ void vmdkoutput_version_detailed_fprint(
 }
 #endif
 
-#endif /* !defined( _VMDKOUTPUT_H ) */
+#endif /* !defined( _VMDKTOOLS_OUTPUT_H ) */
 

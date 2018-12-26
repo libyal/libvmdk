@@ -158,7 +158,7 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-	vmdkoutput_version_fprint(
+	vmdktools_output_version_fprint(
 	 stdout,
 	 program );
 
@@ -193,7 +193,7 @@ int main( int argc, char * const argv[] )
 				break;
 
 			case (system_integer_t) 'V':
-				vmdkoutput_copyright_fprint(
+				vmdktools_output_copyright_fprint(
 				 stdout );
 
 				return( EXIT_SUCCESS );

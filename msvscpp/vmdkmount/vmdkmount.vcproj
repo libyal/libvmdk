@@ -58,7 +58,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\..\dokan\msvscpp\$(Configuration)\dokan.lib"
+				AdditionalDependencies="..\..\..\dokan\msvscpp\$(ConfigurationName)\dokan.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;"
 				SubSystem="1"
@@ -135,7 +135,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\..\..\dokan\msvscpp\$(Configuration)\dokan.lib"
+				AdditionalDependencies="..\..\..\dokan\msvscpp\$(ConfigurationName)\dokan.lib"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="&quot;$(OutDir)&quot;"
 				GenerateDebugInformation="true"
@@ -178,6 +178,22 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\vmdktools\mount_dokan.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\vmdktools\mount_file_entry.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\vmdktools\mount_file_system.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\vmdktools\mount_fuse.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\vmdktools\mount_handle.c"
 				>
 			</File>
@@ -203,6 +219,22 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\..\vmdktools\mount_dokan.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\vmdktools\mount_file_entry.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\vmdktools\mount_file_system.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\vmdktools\mount_fuse.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\vmdktools\mount_handle.h"
 				>
