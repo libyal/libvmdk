@@ -9,6 +9,8 @@ Homepage: https://github.com/libyal/libvmdk
 Package: libvmdk
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libvmdk1
+Replaces: libvmdk1
 Suggests: libvmdk-dbg
 Description: Library to access the VMware Virtual Disk (VMDK) format
  libvmdk is a library to access the VMware Virtual Disk (VMDK) format.
@@ -31,6 +33,8 @@ Package: libvmdk-tools
 Section: utils
 Architecture: any
 Depends: libvmdk (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: libvmdk-utils
+Replaces: libvmdk-utils
 Description: Several tools for reading VMware Virtual Disk (VMDK) files
  Several tools for reading VMware Virtual Disk (VMDK) files.
 
@@ -45,6 +49,8 @@ Package: libvmdk-python
 Section: python
 Architecture: any
 Depends: libvmdk (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: python-libvmdk
+Replaces: python-libvmdk
 Suggests: libvmdk-python-dbg
 Description: Python 2 bindings for libvmdk
  Python 2 bindings for libvmdk.
@@ -60,6 +66,8 @@ Package: libvmdk-python3
 Section: python
 Architecture: any
 Depends: libvmdk (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Conflicts: python3-libvmdk
+Replaces: python3-libvmdk
 Suggests: libvmdk-python3-dbg
 Description: Python 3 bindings for libvmdk
  Python 3 bindings for libvmdk.
