@@ -1,7 +1,7 @@
 /*
  * Mounts a VMware Virtual Disk (VMDK) image file
  *
- * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -161,7 +161,7 @@ int main( int argc, char * const argv[] )
 	 1 );
 
 	if( libclocale_initialize(
-             "vmdktools",
+	     "vmdktools",
 	     &error ) != 1 )
 	{
 		fprintf(
@@ -171,8 +171,8 @@ int main( int argc, char * const argv[] )
 		goto on_error;
 	}
 	if( vmdktools_output_initialize(
-             _IONBF,
-             &error ) != 1 )
+	     _IONBF,
+	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
@@ -230,7 +230,7 @@ int main( int argc, char * const argv[] )
 	{
 		fprintf(
 		 stderr,
-		 "Missing source images(s).\n" );
+		 "Missing source image(s).\n" );
 
 		usage_fprint(
 		 stdout );
@@ -387,7 +387,7 @@ int main( int argc, char * const argv[] )
 	                         &vmdkmount_fuse_operations,
 	                         sizeof( struct fuse_operations ),
 	                         vmdkmount_mount_handle );
-	
+
 	if( vmdkmount_fuse_handle == NULL )
 	{
 		fprintf(
@@ -576,13 +576,15 @@ int main( int argc, char * const argv[] )
 			break;
 	}
 	return( EXIT_SUCCESS );
+
 #else
 	fprintf(
 	 stderr,
 	 "No sub system to mount VMDK format.\n" );
 
 	return( EXIT_FAILURE );
-#endif
+
+#endif /* defined( HAVE_LIBFUSE ) || defined( HAVE_LIBOSXFUSE ) */
 
 on_error:
 	if( error != NULL )

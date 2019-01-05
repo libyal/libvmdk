@@ -1,7 +1,7 @@
 /*
  * Handle functions
  *
- * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -145,7 +145,7 @@ int libvmdk_handle_initialize(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to intialize read/write lock.",
+		 "%s: unable to initialize read/write lock.",
 		 function );
 
 		goto on_error;
@@ -4125,7 +4125,7 @@ on_error:
 	return( -1 );
 }
 
-/* Sets the path to the extend data files
+/* Sets the path to the extent data files
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_set_extent_data_files_path(
@@ -4223,7 +4223,7 @@ int libvmdk_handle_set_extent_data_files_path(
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
-/* Sets the path to the extend data files
+/* Sets the path to the extent data files
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_handle_set_extent_data_files_path_wide(

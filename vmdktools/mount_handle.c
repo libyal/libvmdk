@@ -1,7 +1,7 @@
 /*
  * Mount handle
  *
- * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -175,10 +175,7 @@ int mount_handle_signal_abort(
      mount_handle_t *mount_handle,
      libcerror_error_t **error )
 {
-	libvmdk_handle_t *handle = NULL;
-	static char *function    = "mount_handle_signal_abort";
-	int handle_index         = 0;
-	int number_of_handles    = 0;
+	static char *function = "mount_handle_signal_abort";
 
 	if( mount_handle == NULL )
 	{
@@ -191,54 +188,18 @@ int mount_handle_signal_abort(
 
 		return( -1 );
 	}
-	if( mount_file_system_get_number_of_handles(
+	if( mount_file_system_signal_abort(
 	     mount_handle->file_system,
-	     &number_of_handles,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of handles.",
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to signal file system to abort.",
 		 function );
 
 		return( -1 );
-	}
-	for( handle_index = number_of_handles - 1;
-	     handle_index > 0;
-	     handle_index-- )
-	{
-		if( mount_file_system_get_handle_by_index(
-		     mount_handle->file_system,
-		     handle_index,
-		     &handle,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve handle: %d.",
-			 function,
-			 handle_index );
-
-			return( -1 );
-		}
-		if( libvmdk_handle_signal_abort(
-		     handle,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-			 "%s: unable to signal handle: %d to abort.",
-			 function,
-			 handle_index );
-
-			return( -1 );
-		}
 	}
 	return( 1 );
 }
@@ -404,7 +365,7 @@ int mount_handle_open(
      int number_of_filenames,
      libcerror_error_t **error )
 {
-	libvmdk_handle_t *handle           = NULL;
+	libvmdk_handle_t *vmdk_handle      = NULL;
 	system_character_t *basename_end   = NULL;
 	static char *function              = "mount_handle_open";
 	size_t basename_length             = 0;
@@ -477,7 +438,7 @@ int mount_handle_open(
 		}
 	}
 	if( libvmdk_handle_initialize(
-	     &handle,
+	     &vmdk_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -491,13 +452,13 @@ int mount_handle_open(
 	}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libvmdk_handle_open_wide(
-	          handle,
+	          vmdk_handle,
 	          filenames[ 0 ],
 	          LIBVMDK_OPEN_READ,
 	          error );
 #else
 	result = libvmdk_handle_open(
-	          handle,
+	          vmdk_handle,
 	          filenames[ 0 ],
 	          LIBVMDK_OPEN_READ,
 	          error );
@@ -514,7 +475,7 @@ int mount_handle_open(
 		goto on_error;
 	}
 	if( libvmdk_handle_get_disk_type(
-	     handle,
+	     vmdk_handle,
 	     &disk_type,
 	     error ) != 1 )
 	{
@@ -544,7 +505,7 @@ int mount_handle_open(
 	else
 	{
 		result = libvmdk_handle_get_parent_content_identifier(
-			  handle,
+			  vmdk_handle,
 			  &parent_content_identifier,
 			  error );
 
@@ -564,7 +525,7 @@ int mount_handle_open(
 		{
 			result = mount_handle_open_parent(
 			          mount_handle,
-			          handle,
+			          vmdk_handle,
 			          error );
 
 			if( result == -1 )
@@ -587,7 +548,7 @@ int mount_handle_open(
 	if( result == 0 )
 	{
 		if( libvmdk_handle_close(
-		     handle,
+		     vmdk_handle,
 		     error ) != 0 )
 		{
 			libcerror_error_set(
@@ -600,7 +561,7 @@ int mount_handle_open(
 			goto on_error;
 		}
 		if( libvmdk_handle_free(
-		     &handle,
+		     &vmdk_handle,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -627,7 +588,7 @@ int mount_handle_open(
 		goto on_error;
 	}
 	result = libvmdk_handle_open_extent_data_files(
-		  handle,
+		  vmdk_handle,
 		  error );
 
 	if( result != 1 )
@@ -643,7 +604,7 @@ int mount_handle_open(
 	}
 	if( mount_file_system_append_handle(
 	     mount_handle->file_system,
-	     handle,
+	     vmdk_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -658,10 +619,10 @@ int mount_handle_open(
 	return( 1 );
 
 on_error:
-	if( handle != NULL )
+	if( vmdk_handle != NULL )
 	{
 		libvmdk_handle_free(
-		 &handle,
+		 &vmdk_handle,
 		 NULL );
 	}
 	return( -1 );
@@ -672,18 +633,18 @@ on_error:
  */
 int mount_handle_open_parent(
      mount_handle_t *mount_handle,
-     libvmdk_handle_t *handle,
+     libvmdk_handle_t *vmdk_handle,
      libcerror_error_t **error )
 {
-	libvmdk_handle_t *parent_handle     = NULL;
-	system_character_t *parent_filename = NULL;
-	system_character_t *parent_path     = NULL;
-	static char *function               = "mount_handle_open_parent";
-	size_t parent_filename_size         = 0;
-	size_t parent_path_size             = 0;
-	uint32_t parent_content_identifier  = 0;
-	int parent_disk_type                = 0;
-	int result                          = 0;
+	libvmdk_handle_t *parent_vmdk_handle = NULL;
+	system_character_t *parent_filename  = NULL;
+	system_character_t *parent_path      = NULL;
+	static char *function                = "mount_handle_open_parent";
+	size_t parent_filename_size          = 0;
+	size_t parent_path_size              = 0;
+	uint32_t parent_content_identifier   = 0;
+	int parent_disk_type                 = 0;
+	int result                           = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -698,12 +659,12 @@ int mount_handle_open_parent(
 	}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libvmdk_handle_get_utf16_parent_filename_size(
-		  handle,
+		  vmdk_handle,
 		  &parent_filename_size,
 		  error );
 #else
 	result = libvmdk_handle_get_utf8_parent_filename_size(
-		  handle,
+		  vmdk_handle,
 		  &parent_filename_size,
 		  error );
 #endif
@@ -756,13 +717,13 @@ int mount_handle_open_parent(
 	}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libvmdk_handle_get_utf16_parent_filename(
-		  handle,
+		  vmdk_handle,
 		  (uint16_t *) parent_filename,
 		  parent_filename_size,
 		  error );
 #else
 	result = libvmdk_handle_get_utf8_parent_filename(
-		  handle,
+		  vmdk_handle,
 		  (uint8_t *) parent_filename,
 		  parent_filename_size,
 		  error );
@@ -816,7 +777,7 @@ int mount_handle_open_parent(
 		}
 	}
 	if( libvmdk_handle_initialize(
-	     &parent_handle,
+	     &parent_vmdk_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -830,13 +791,13 @@ int mount_handle_open_parent(
 	}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	if( libvmdk_handle_open_wide(
-	     parent_handle,
+	     parent_vmdk_handle,
 	     parent_path,
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
 #else
 	if( libvmdk_handle_open(
-	     parent_handle,
+	     parent_vmdk_handle,
 	     parent_path,
 	     LIBVMDK_OPEN_READ,
 	     error ) != 1 )
@@ -869,7 +830,7 @@ int mount_handle_open_parent(
 		parent_filename = NULL;
 	}
 	if( libvmdk_handle_get_disk_type(
-	     parent_handle,
+	     parent_vmdk_handle,
 	     &parent_disk_type,
 	     error ) != 1 )
 	{
@@ -899,7 +860,7 @@ int mount_handle_open_parent(
 	else
 	{
 		result = libvmdk_handle_get_parent_content_identifier(
-			  parent_handle,
+			  parent_vmdk_handle,
 			  &parent_content_identifier,
 			  error );
 
@@ -919,7 +880,7 @@ int mount_handle_open_parent(
 		{
 			result = mount_handle_open_parent(
 				  mount_handle,
-				  parent_handle,
+				  parent_vmdk_handle,
 				  error );
 
 			if( result == -1 )
@@ -942,7 +903,7 @@ int mount_handle_open_parent(
 	if( result == 0 )
 	{
 		if( libvmdk_handle_close(
-		     parent_handle,
+		     parent_vmdk_handle,
 		     error ) != 0 )
 		{
 			libcerror_error_set(
@@ -955,7 +916,7 @@ int mount_handle_open_parent(
 			goto on_error;
 		}
 		if( libvmdk_handle_free(
-		     &parent_handle,
+		     &parent_vmdk_handle,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -970,7 +931,7 @@ int mount_handle_open_parent(
 		return( 0 );
 	}
 	if( libvmdk_handle_open_extent_data_files(
-	     parent_handle,
+	     parent_vmdk_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -983,8 +944,8 @@ int mount_handle_open_parent(
 		goto on_error;
 	}
 	if( libvmdk_handle_set_parent_handle(
-	     handle,
-	     parent_handle,
+	     vmdk_handle,
+	     parent_vmdk_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -998,7 +959,7 @@ int mount_handle_open_parent(
 	}
 	if( mount_file_system_append_handle(
 	     mount_handle->file_system,
-	     parent_handle,
+	     parent_vmdk_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -1013,10 +974,10 @@ int mount_handle_open_parent(
 	return( 1 );
 
 on_error:
-	if( parent_handle != NULL )
+	if( parent_vmdk_handle != NULL )
 	{
 		libvmdk_handle_free(
-		 &parent_handle,
+		 &parent_vmdk_handle,
 		 NULL );
 	}
 	if( ( parent_path != NULL )
@@ -1131,11 +1092,12 @@ int mount_handle_get_file_entry_by_path(
      mount_file_entry_t **file_entry,
      libcerror_error_t **error )
 {
-	libvmdk_handle_t *handle           = NULL;
+	libvmdk_handle_t *vmdk_handle      = NULL;
 	const system_character_t *filename = NULL;
 	static char *function              = "mount_handle_get_file_entry_by_path";
+	size_t filename_length             = 0;
+	size_t path_index                  = 0;
 	size_t path_length                 = 0;
-	int handle_index                   = 0;
 	int result                         = 0;
 
 	if( mount_handle == NULL )
@@ -1172,13 +1134,40 @@ int mount_handle_get_file_entry_by_path(
 		 "%s: invalid path length value out of bounds.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-	result = mount_file_system_get_handle_index_from_path(
+	if( ( path_length >= 2 )
+	 && ( path[ path_length - 1 ] == LIBCPATH_SEPARATOR ) )
+	{
+		path_length--;
+	}
+	path_index = path_length;
+
+	while( path_index > 0 )
+	{
+		if( path[ path_index ] == LIBCPATH_SEPARATOR )
+		{
+			break;
+		}
+		path_index--;
+	}
+	/* Ignore the name of the root item
+	 */
+	if( path_length == 0 )
+	{
+		filename        = _SYSTEM_STRING( "" );
+		filename_length = 0;
+	}
+	else
+	{
+		filename        = &( path[ path_index + 1 ] );
+		filename_length = path_length - ( path_index + 1 );
+	}
+	result = mount_file_system_get_handle_by_path(
 	          mount_handle->file_system,
 	          path,
 	          path_length,
-	          &handle_index,
+	          &vmdk_handle,
 	          error );
 
 	if( result == -1 )
@@ -1187,64 +1176,34 @@ int mount_handle_get_file_entry_by_path(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve handle index.",
+		 "%s: unable to retrieve handle.",
 		 function );
 
-		return( -1 );
+		goto on_error;
 	}
-	else if( result == 0 )
+	else if( result != 0 )
 	{
-		return( 0 );
-	}
-	if( handle_index != -1 )
-	{
-		if( mount_file_system_get_handle_by_index(
+		if( mount_file_entry_initialize(
+		     file_entry,
 		     mount_handle->file_system,
-		     handle_index,
-		     &handle,
+		     filename,
+		     filename_length,
+		     vmdk_handle,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve handle: %d.",
-			 function,
-			 handle_index );
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to initialize file entry.",
+			 function );
 
-			return( -1 );
+			goto on_error;
 		}
-		if( handle == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing handle: %d.",
-			 function,
-			 handle_index );
-
-			return( -1 );
-		}
-		filename = &( path[ 0 ] );
 	}
-	if( mount_file_entry_initialize(
-	     file_entry,
-	     mount_handle->file_system,
-	     handle_index,
-	     filename,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to initialize file entry for handle: %d.",
-		 function,
-		 handle_index );
+	return( result );
 
-		return( -1 );
-	}
-	return( 1 );
+on_error:
+	return( -1 );
 }
 

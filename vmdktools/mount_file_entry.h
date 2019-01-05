@@ -1,7 +1,7 @@
 /*
  * Mount file entry
  *
- * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -37,28 +37,29 @@ typedef struct mount_file_entry mount_file_entry_t;
 
 struct mount_file_entry
 {
-	/* The name
-	 */
-	system_character_t *name;
-
 	/* The file system
 	 */
 	mount_file_system_t *file_system;
 
 	/* The name
 	 */
+	system_character_t *name;
+
+	/* The name size
+	 */
 	size_t name_size;
 
-	/* The handle index
+	/* The handle
 	 */
-	int handle_index;
+	libvmdk_handle_t *vmdk_handle;
 };
 
 int mount_file_entry_initialize(
      mount_file_entry_t **file_entry,
      mount_file_system_t *file_system,
-     int handle_index,
      const system_character_t *name,
+     size_t name_length,
+     libvmdk_handle_t *vmdk_handle,
      libcerror_error_t **error );
 
 int mount_file_entry_free(

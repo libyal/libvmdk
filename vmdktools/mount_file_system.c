@@ -1,7 +1,7 @@
 /*
  * Mount file system
  *
- * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -53,7 +53,9 @@ int mount_file_system_initialize(
      libcerror_error_t **error )
 {
 #if defined( WINAPI )
+	FILETIME filetime;
 	SYSTEMTIME systemtime;
+
 #elif defined( HAVE_CLOCK_GETTIME )
 	struct timespec time_structure;
 #endif
@@ -62,7 +64,6 @@ int mount_file_system_initialize(
 
 #if defined( WINAPI )
 	DWORD error_code      = 0;
-	uint64_t timestamp    = 0;
 #else
 	int64_t timestamp     = 0;
 #endif
@@ -156,7 +157,7 @@ int mount_file_system_initialize(
 
 	if( SystemTimeToFileTime(
 	     &systemtime,
-	     &timestamp ) == 0 )
+	     &filetime ) == 0 )
 	{
 		error_code = GetLastError();
 
@@ -170,6 +171,8 @@ int mount_file_system_initialize(
 
 		goto on_error;
 	}
+	( *file_system )->mounted_timestamp = ( (uint64_t) filetime.dwHighDateTime << 32 ) | filetime.dwLowDateTime;
+
 #elif defined( HAVE_CLOCK_GETTIME )
 	if( clock_gettime(
 	     CLOCK_REALTIME,
@@ -185,6 +188,8 @@ int mount_file_system_initialize(
 		goto on_error;
 	}
 	timestamp = ( (int64_t) time_structure.tv_sec * 1000000000 ) + time_structure.tv_nsec;
+
+	( *file_system )->mounted_timestamp = (uint64_t) timestamp;
 
 #else
 	timestamp = (int64_t) time( NULL );
@@ -202,9 +207,9 @@ int mount_file_system_initialize(
 	}
 	timestamp *= 1000000000;
 
-#endif /* defined( HAVE_CLOCK_GETTIME ) */
-
 	( *file_system )->mounted_timestamp = (uint64_t) timestamp;
+
+#endif /* defined( HAVE_CLOCK_GETTIME ) */
 
 	return( 1 );
 
@@ -267,6 +272,81 @@ int mount_file_system_free(
 		*file_system = NULL;
 	}
 	return( result );
+}
+
+/* Signals the file system to abort
+ * Returns 1 if successful or -1 on error
+ */
+int mount_file_system_signal_abort(
+     mount_file_system_t *file_system,
+     libcerror_error_t **error )
+{
+	libvmdk_handle_t *vmdk_handle = NULL;
+	static char *function         = "mount_file_system_signal_abort";
+	int handle_index              = 0;
+	int number_of_handles         = 0;
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_number_of_entries(
+	     file_system->handles_array,
+	     &number_of_handles,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of handles.",
+		 function );
+
+		return( -1 );
+	}
+	for( handle_index = number_of_handles - 1;
+	     handle_index > 0;
+	     handle_index-- )
+	{
+		if( libcdata_array_get_entry_by_index(
+		     file_system->handles_array,
+		     handle_index,
+		     (intptr_t **) &vmdk_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve handle: %d.",
+			 function,
+			 handle_index );
+
+			return( -1 );
+		}
+		if( libvmdk_handle_signal_abort(
+		     vmdk_handle,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to signal handle: %d to abort.",
+			 function,
+			 handle_index );
+
+			return( -1 );
+		}
+	}
+	return( 1 );
 }
 
 /* Sets the path prefix
@@ -382,44 +462,6 @@ on_error:
 	return( -1 );
 }
 
-/* Retrieves the number of handles
- * Returns 1 if successful or -1 on error
- */
-int mount_file_system_get_number_of_handles(
-     mount_file_system_t *file_system,
-     int *number_of_handles,
-     libcerror_error_t **error )
-{
-	static char *function = "mount_file_system_get_number_of_handles";
-
-	if( file_system == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file system.",
-		 function );
-
-		return( -1 );
-	}
-	if( libcdata_array_get_number_of_entries(
-	     file_system->handles_array,
-	     number_of_handles,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of handles.",
-		 function );
-
-		return( -1 );
-	}
-	return( 1 );
-}
-
 /* Retrieves the mounted timestamp
  * On Windows the timestamp is an unsigned 64-bit FILETIME timestamp
  * otherwise the timestamp is a signed 64-bit POSIX date and time value in number of nanoseconds
@@ -459,13 +501,51 @@ int mount_file_system_get_mounted_timestamp(
 	return( 1 );
 }
 
+/* Retrieves the number of handles
+ * Returns 1 if successful or -1 on error
+ */
+int mount_file_system_get_number_of_handles(
+     mount_file_system_t *file_system,
+     int *number_of_handles,
+     libcerror_error_t **error )
+{
+	static char *function = "mount_file_system_get_number_of_handles";
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_get_number_of_entries(
+	     file_system->handles_array,
+	     number_of_handles,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve number of handles.",
+		 function );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
 /* Retrieves a specific handle
  * Returns 1 if successful or -1 on error
  */
 int mount_file_system_get_handle_by_index(
      mount_file_system_t *file_system,
      int handle_index,
-     libvmdk_handle_t **handle,
+     libvmdk_handle_t **vmdk_handle,
      libcerror_error_t **error )
 {
 	static char *function = "mount_file_system_get_handle_by_index";
@@ -484,7 +564,7 @@ int mount_file_system_get_handle_by_index(
 	if( libcdata_array_get_entry_by_index(
 	     file_system->handles_array,
 	     handle_index,
-	     (intptr_t **) handle,
+	     (intptr_t **) vmdk_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -500,60 +580,20 @@ int mount_file_system_get_handle_by_index(
 	return( 1 );
 }
 
-/* Appends a handle to the file system
- * Returns 1 if successful or -1 on error
+/* Retrieves the handle for a specific path
+ * Returns 1 if successful, 0 if no such handle or -1 on error
  */
-int mount_file_system_append_handle(
-     mount_file_system_t *file_system,
-     libvmdk_handle_t *handle,
-     libcerror_error_t **error )
-{
-	static char *function = "mount_file_system_append_handle";
-	int entry_index       = 0;
-
-	if( file_system == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid file system.",
-		 function );
-
-		return( -1 );
-	}
-	if( libcdata_array_append_entry(
-	     file_system->handles_array,
-	     &entry_index,
-	     (intptr_t *) handle,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-		 "%s: unable to append handle to array.",
-		 function );
-
-		return( -1 );
-	}
-	return( 1 );
-}
-
-/* Retrieves the handle index from a path
- * Returns 1 if successful, 0 if no such handle index or -1 on error
- */
-int mount_file_system_get_handle_index_from_path(
+int mount_file_system_get_handle_by_path(
      mount_file_system_t *file_system,
      const system_character_t *path,
      size_t path_length,
-     int *handle_index,
+     libvmdk_handle_t **vmdk_handle,
      libcerror_error_t **error )
 {
-	static char *function        = "mount_file_system_get_handle_index_from_path";
+	static char *function        = "mount_file_system_get_handle_by_path";
 	system_character_t character = 0;
 	size_t path_index            = 0;
-	int handle_number            = 0;
+	int handle_index             = 0;
 	int result                   = 0;
 
 	if( file_system == NULL )
@@ -600,13 +640,13 @@ int mount_file_system_get_handle_index_from_path(
 
 		return( -1 );
 	}
-	if( handle_index == NULL )
+	if( vmdk_handle == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid handle index.",
+		 "%s: invalid handle.",
 		 function );
 
 		return( -1 );
@@ -617,7 +657,7 @@ int mount_file_system_get_handle_index_from_path(
 	if( ( path_length == 1 )
 	 && ( path[ 0 ] == file_system->path_prefix[ 0 ] ) )
 	{
-		*handle_index = -1;
+		*vmdk_handle = NULL;
 
 		return( 1 );
 	}
@@ -641,7 +681,7 @@ int mount_file_system_get_handle_index_from_path(
 	{
 		return( 0 );
 	}
-	handle_number = 0;
+	handle_index = 0;
 
 	path_index = file_system->path_prefix_size - 1;
 
@@ -654,11 +694,67 @@ int mount_file_system_get_handle_index_from_path(
 		{
 			return( 0 );
 		}
-		handle_number *= 10;
-		handle_number += character - (system_character_t) '0';
+		handle_index *= 10;
+		handle_index += character - (system_character_t) '0';
 	}
-	*handle_index = handle_number - 1;
+	handle_index -= 1;
 
+	if( libcdata_array_get_entry_by_index(
+	     file_system->handles_array,
+	     handle_index,
+	     (intptr_t **) vmdk_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve handle: %d.",
+		 function,
+		 handle_index );
+
+		return( -1 );
+	}
+	return( 1 );
+}
+
+/* Appends a handle to the file system
+ * Returns 1 if successful or -1 on error
+ */
+int mount_file_system_append_handle(
+     mount_file_system_t *file_system,
+     libvmdk_handle_t *vmdk_handle,
+     libcerror_error_t **error )
+{
+	static char *function = "mount_file_system_append_handle";
+	int entry_index       = 0;
+
+	if( file_system == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	if( libcdata_array_append_entry(
+	     file_system->handles_array,
+	     &entry_index,
+	     (intptr_t *) vmdk_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
+		 "%s: unable to append handle to array.",
+		 function );
+
+		return( -1 );
+	}
 	return( 1 );
 }
 

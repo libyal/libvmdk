@@ -1,7 +1,7 @@
 /*
  * The file header definition of a sparse VMware Virtual Disk (VMDK) file
  *
- * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *

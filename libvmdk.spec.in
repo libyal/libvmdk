@@ -13,6 +13,14 @@ BuildRequires: gcc @ax_libbfio_spec_build_requires@ @ax_libcdata_spec_build_requ
 %description -n libvmdk
 Library to access the VMware Virtual Disk (VMDK) format
 
+%package -n libvmdk-static
+Summary: Library to access the VMware Virtual Disk (VMDK) format
+Group: Development/Libraries
+Requires: libvmdk = %{version}-%{release}
+
+%description -n libvmdk-static
+Static library version of libvmdk.
+
 %package -n libvmdk-devel
 Summary: Header files and libraries for developing applications for libvmdk
 Group: Development/Libraries
@@ -74,11 +82,16 @@ rm -rf %{buildroot}
 %doc AUTHORS README
 %attr(755,root,root) %{_libdir}/*.so.*
 
+%files -n libvmdk-static
+%defattr(644,root,root,755)
+%license COPYING
+%doc AUTHORS README
+%attr(755,root,root) %{_libdir}/*.a
+
 %files -n libvmdk-devel
 %defattr(644,root,root,755)
 %license COPYING
-%doc AUTHORS README ChangeLog
-%{_libdir}/*.a
+%doc AUTHORS README
 %{_libdir}/*.la
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/libvmdk.pc

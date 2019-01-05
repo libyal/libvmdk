@@ -1,7 +1,7 @@
 /*
  * Mount file entry
  *
- * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -50,12 +50,12 @@
 int mount_file_entry_initialize(
      mount_file_entry_t **file_entry,
      mount_file_system_t *file_system,
-     int handle_index,
      const system_character_t *name,
+     size_t name_length,
+     libvmdk_handle_t *vmdk_handle,
      libcerror_error_t **error )
 {
 	static char *function = "mount_file_entry_initialize";
-	size_t name_length    = 0;
 
 	if( file_entry == NULL )
 	{
@@ -86,6 +86,17 @@ int mount_file_entry_initialize(
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
 		 "%s: invalid file system.",
+		 function );
+
+		return( -1 );
+	}
+	if( name_length > (size_t) ( SSIZE_MAX - 1 ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
+		 "%s: invalid name length value exceeds maximum.",
 		 function );
 
 		return( -1 );
@@ -123,16 +134,10 @@ int mount_file_entry_initialize(
 
 		return( -1 );
 	}
-	if( name == NULL )
-	{
-		( *file_entry )->name      = NULL;
-		( *file_entry )->name_size = 0;
-	}
-	else
-	{
-		name_length = system_string_length(
-		               name );
+	( *file_entry )->file_system = file_system;
 
+	if( name != NULL )
+	{
 		( *file_entry )->name = system_string_allocate(
 		                         name_length + 1 );
 
@@ -147,27 +152,28 @@ int mount_file_entry_initialize(
 
 			goto on_error;
 		}
-		if( system_string_copy(
-		     ( *file_entry )->name,
-		     name,
-		     name_length ) == NULL )
+		if( name_length > 0 )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-			 "%s: unable to copy name.",
-			 function );
+			if( system_string_copy(
+			     ( *file_entry )->name,
+			     name,
+			     name_length ) == NULL )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+				 "%s: unable to copy name.",
+				 function );
 
-			goto on_error;
+				goto on_error;
+			}
 		}
 		( *file_entry )->name[ name_length ] = 0;
 
 		( *file_entry )->name_size = name_length + 1;
 	}
-	( *file_entry )->file_system = file_system;
-
-	( *file_entry )->handle_index = handle_index;
+	( *file_entry )->vmdk_handle = vmdk_handle;
 
 	return( 1 );
 
@@ -265,13 +271,14 @@ int mount_file_entry_get_parent_file_entry(
 
 		return( -1 );
 	}
-	if( file_entry->handle_index != -1 )
+	if( file_entry->vmdk_handle != NULL )
 	{
 		if( mount_file_entry_initialize(
 		     parent_file_entry,
 		     file_entry->file_system,
-		     -1,
-		     "",
+		     _SYSTEM_STRING( "" ),
+		     0,
+		     NULL,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -480,7 +487,7 @@ int mount_file_entry_get_file_mode(
 
 		return( -1 );
 	}
-	if( file_entry->handle_index == -1 )
+	if( file_entry->vmdk_handle == NULL )
 	{
 		*file_mode = S_IFDIR | 0555;
 	}
@@ -648,7 +655,7 @@ int mount_file_entry_get_number_of_sub_file_entries(
 
 		return( -1 );
 	}
-	if( file_entry->handle_index == -1 )
+	if( file_entry->vmdk_handle == NULL )
 	{
 		if( mount_file_system_get_number_of_handles(
 		     file_entry->file_system,
@@ -693,7 +700,9 @@ int mount_file_entry_get_sub_file_entry_by_index(
 {
 	system_character_t path[ 32 ];
 
+	libvmdk_handle_t *vmdk_handle  = NULL;
 	static char *function          = "mount_file_entry_get_sub_file_entry_by_index";
+	size_t path_length             = 0;
 	int number_of_sub_file_entries = 0;
 
 	if( file_entry == NULL )
@@ -772,11 +781,43 @@ int mount_file_entry_get_sub_file_entry_by_index(
 
 		return( -1 );
 	}
+	if( mount_file_system_get_handle_by_index(
+	     file_entry->file_system,
+	     sub_file_entry_index,
+	     &vmdk_handle,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve handle: %d from file system.",
+		 function,
+		 sub_file_entry_index );
+
+		return( -1 );
+	}
+	if( vmdk_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: missing handle: %d.",
+		 function,
+		 sub_file_entry_index );
+
+		return( -1 );
+	}
+	path_length = system_string_length(
+	               path );
+
 	if( mount_file_entry_initialize(
 	     sub_file_entry,
 	     file_entry->file_system,
-	     sub_file_entry_index,
 	     &( path[ 1 ] ),
+	     path_length - 1,
+	     vmdk_handle,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -802,9 +843,8 @@ ssize_t mount_file_entry_read_buffer_at_offset(
          off64_t offset,
          libcerror_error_t **error )
 {
-	libvmdk_handle_t *handle = NULL;
-	static char *function    = "mount_file_entry_read_buffer_at_offset";
-	ssize_t read_count       = 0;
+	static char *function = "mount_file_entry_read_buffer_at_offset";
+	ssize_t read_count    = 0;
 
 	if( file_entry == NULL )
 	{
@@ -817,24 +857,8 @@ ssize_t mount_file_entry_read_buffer_at_offset(
 
 		return( -1 );
 	}
-	if( mount_file_system_get_handle_by_index(
-	     file_entry->file_system,
-	     file_entry->handle_index,
-	     &handle,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve handle: %d from file system.",
-		 function,
-		 file_entry->handle_index );
-
-		return( -1 );
-	}
 	read_count = libvmdk_handle_read_buffer_at_offset(
-	              handle,
+	              file_entry->vmdk_handle,
 	              buffer,
 	              buffer_size,
 	              offset,
@@ -846,11 +870,10 @@ ssize_t mount_file_entry_read_buffer_at_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read buffer at offset: %" PRIi64 " (0x%08" PRIx64 ") from handle: %d.",
+		 "%s: unable to read buffer at offset: %" PRIi64 " (0x%08" PRIx64 ") from handle.",
 		 function,
 		 offset,
-		 offset,
-		 file_entry->handle_index );
+		 offset );
 
 		return( -1 );
 	}
@@ -865,8 +888,7 @@ int mount_file_entry_get_size(
      size64_t *size,
      libcerror_error_t **error )
 {
-	libvmdk_handle_t *handle = NULL;
-	static char *function    = "mount_file_entry_get_size";
+	static char *function = "mount_file_entry_get_size";
 
 	if( file_entry == NULL )
 	{
@@ -879,7 +901,7 @@ int mount_file_entry_get_size(
 
 		return( -1 );
 	}
-	if( file_entry->handle_index == -1 )
+	if( file_entry->vmdk_handle == NULL )
 	{
 		if( size == NULL )
 		{
@@ -896,24 +918,8 @@ int mount_file_entry_get_size(
 	}
 	else
 	{
-		if( mount_file_system_get_handle_by_index(
-		     file_entry->file_system,
-		     file_entry->handle_index,
-		     &handle,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve handle: %d from file system.",
-			 function,
-			 file_entry->handle_index );
-
-			return( -1 );
-		}
 		if( libvmdk_handle_get_media_size(
-		     handle,
+		     file_entry->vmdk_handle,
 		     size,
 		     error ) != 1 )
 		{
@@ -921,9 +927,8 @@ int mount_file_entry_get_size(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve media size from handle: %d.",
-			 function,
-			 file_entry->handle_index );
+			 "%s: unable to retrieve media size from handle.",
+			 function );
 
 			return( -1 );
 		}

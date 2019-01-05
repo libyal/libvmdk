@@ -1,7 +1,7 @@
 /*
  * Mount file system
  *
- * Copyright (C) 2009-2018, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -36,6 +36,10 @@ typedef struct mount_file_system mount_file_system_t;
 
 struct mount_file_system
 {
+	/* The mounted timestamp
+	 */
+	uint64_t mounted_timestamp;
+
 	/* The path prefix
 	 */
 	system_character_t *path_prefix;
@@ -43,10 +47,6 @@ struct mount_file_system
 	/* The path prefix size
 	 */
 	size_t path_prefix_size;
-
-	/* The mounted timestamp
-	 */
-	uint64_t mounted_timestamp;
 
 	/* The handles array
 	 */
@@ -59,6 +59,10 @@ int mount_file_system_initialize(
 
 int mount_file_system_free(
      mount_file_system_t **file_system,
+     libcerror_error_t **error );
+
+int mount_file_system_signal_abort(
+     mount_file_system_t *file_system,
      libcerror_error_t **error );
 
 int mount_file_system_set_path_prefix(
@@ -80,19 +84,19 @@ int mount_file_system_get_number_of_handles(
 int mount_file_system_get_handle_by_index(
      mount_file_system_t *file_system,
      int handle_index,
-     libvmdk_handle_t **handle,
+     libvmdk_handle_t **vmdk_handle,
+     libcerror_error_t **error );
+
+int mount_file_system_get_handle_by_path(
+     mount_file_system_t *file_system,
+     const system_character_t *path,
+     size_t path_length,
+     libvmdk_handle_t **vmdk_handle,
      libcerror_error_t **error );
 
 int mount_file_system_append_handle(
      mount_file_system_t *file_system,
-     libvmdk_handle_t *handle,
-     libcerror_error_t **error );
-
-int mount_file_system_get_handle_index_from_path(
-     mount_file_system_t *file_system,
-     const system_character_t *path,
-     size_t path_length,
-     int *handle_index,
+     libvmdk_handle_t *vmdk_handle,
      libcerror_error_t **error );
 
 int mount_file_system_get_path_from_handle_index(
