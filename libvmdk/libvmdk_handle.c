@@ -2158,7 +2158,7 @@ int libvmdk_handle_close(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_CLOSE_FAILED,
-			 "%s: unable to close all files.",
+			 "%s: unable to close all files in extent data file IO pool.",
 			 function );
 
 			result = -1;
@@ -2171,7 +2171,7 @@ int libvmdk_handle_close(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to extent data free file IO pool.",
+			 "%s: unable to free extent data file IO pool.",
 			 function );
 
 			result = -1;
