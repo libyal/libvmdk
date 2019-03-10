@@ -25,6 +25,7 @@ endif
 
 TESTS = \
 	test_library.sh \
+	test_manpage.sh \
 	test_vmdkinfo.sh \
 	$(TESTS_PYVMDK)
 
@@ -33,6 +34,7 @@ check_SCRIPTS = \
 	pyvmdk_test_read.py \
 	pyvmdk_test_support.py \
 	test_library.sh \
+	test_manpage.sh \
 	test_python_module.sh \
 	test_runner.sh \
 	test_vmdkinfo.sh
@@ -41,6 +43,7 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	vmdk_test_deflate \
 	vmdk_test_descriptor_file \
 	vmdk_test_error \
 	vmdk_test_extent_descriptor \
@@ -53,6 +56,19 @@ check_PROGRAMS = \
 	vmdk_test_io_handle \
 	vmdk_test_notify \
 	vmdk_test_support
+
+vmdk_test_deflate_SOURCES = \
+	vmdk_test_deflate.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libcnotify.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_unused.h
+
+vmdk_test_deflate_LDADD = \
+	@LIBCNOTIFY_LIBADD@ \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
 
 vmdk_test_descriptor_file_SOURCES = \
 	vmdk_test_descriptor_file.c \

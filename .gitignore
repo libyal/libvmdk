@@ -127,6 +127,7 @@ stamp-h[1-9]
 /tests/*.exe
 /tests/input
 /tests/tmp*
+/tests/vmdk_test_deflate
 /tests/vmdk_test_descriptor_file
 /tests/vmdk_test_error
 /tests/vmdk_test_extent_descriptor

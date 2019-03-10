@@ -14,6 +14,7 @@ MSVSCPP_FILES = \
 	libuna/libuna.vcproj \
 	libvmdk/libvmdk.vcproj \
 	pyvmdk/pyvmdk.vcproj \
+	vmdk_test_deflate/vmdk_test_deflate.vcproj \
 	vmdk_test_descriptor_file/vmdk_test_descriptor_file.vcproj \
 	vmdk_test_error/vmdk_test_error.vcproj \
 	vmdk_test_extent_descriptor/vmdk_test_extent_descriptor.vcproj \
