@@ -973,6 +973,14 @@ int libvmdk_descriptor_file_read_header(
 				{
 					descriptor_file->encoding = LIBUNA_CODEPAGE_WINDOWS_936;
 				}
+				else if( ( value_length == 4 )
+				      && ( value[ 0 ] == 'B' )
+				      && ( value[ 1 ] == 'i' )
+				      && ( value[ 2 ] == 'g' )
+				      && ( value[ 3 ] == '5' ) )
+				{
+					descriptor_file->encoding = LIBUNA_CODEPAGE_WINDOWS_950;
+				}
 				else if( ( value_length == 5 )
 				      && ( value[ 0 ] == 'U' )
 				      && ( value[ 1 ] == 'T' )
