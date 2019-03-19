@@ -966,12 +966,19 @@ int libvmdk_descriptor_file_read_header(
 					 value );
 				}
 #endif
-				if( ( value_length == 5 )
-				 && ( value[ 0 ] == 'U' )
-				 && ( value[ 1 ] == 'T' )
-				 && ( value[ 2 ] == 'F' )
-				 && ( value[ 3 ] == '-' )
-				 && ( value[ 4 ] == '8' ) )
+				if( ( value_length == 3 )
+				 && ( value[ 0 ] == 'G' )
+				 && ( value[ 1 ] == 'B' )
+				 && ( value[ 2 ] == 'K' ) )
+				{
+					descriptor_file->encoding = LIBUNA_CODEPAGE_WINDOWS_936;
+				}
+				else if( ( value_length == 5 )
+				      && ( value[ 0 ] == 'U' )
+				      && ( value[ 1 ] == 'T' )
+				      && ( value[ 2 ] == 'F' )
+				      && ( value[ 3 ] == '-' )
+				      && ( value[ 4 ] == '8' ) )
 				{
 					descriptor_file->encoding = 0;
 				}
