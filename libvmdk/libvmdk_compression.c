@@ -195,7 +195,7 @@ int libvmdk_decompress_data(
 			result = -1;
 		}
 #else
-		result = libvmdk_deflate_decompress(
+		result = libvmdk_deflate_decompress_zlib(
 		          compressed_data,
 		          compressed_data_size,
 		          uncompressed_data,
