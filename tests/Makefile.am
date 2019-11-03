@@ -31,7 +31,6 @@ TESTS = \
 
 check_SCRIPTS = \
 	pyvmdk_test_handle.py \
-	pyvmdk_test_read.py \
 	pyvmdk_test_support.py \
 	test_library.sh \
 	test_manpage.sh \

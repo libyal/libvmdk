@@ -1,4 +1,6 @@
 environment:
+  pypi_token:
+    secure: VHuZiUWgTqTciKE2nsv/LoLP8ouDmPjIMgnsuPtr8vWz0URFT4+aVTsCC6xyAD0q2VD/Uw09mz3r7eEfAKdZDSdswAwWiFqmXdQZfvvRZNg19Pi8iHBARXUOgYM7kCDeWBisgjR349kN6UhSIyq24nMukdtrum1RutN4ATNH9yxIPIEZ6ueIM4z3y7p0lwxGlY1m2CE7RpYqlgdqpS5BkOLhKILqeuHdv5T68d3k2fydAWW9T72BtSahdBsezBD9pWZgs0m5JV1MRnWX+S7ENA==
   matrix:
   - TARGET: vs2008
     BUILD_ENVIRONMENT: msbuild
@@ -41,12 +43,12 @@ environment:
   - TARGET: python27-x64
     BUILD_ENVIRONMENT: python
     PYTHON: "C:\\Python27-x64"
-  - TARGET: python36
+  - TARGET: python37
     BUILD_ENVIRONMENT: python
-    PYTHON: "C:\\Python36"
-  - TARGET: python36-x64
+    PYTHON: "C:\\Python37"
+  - TARGET: python37-x64
     BUILD_ENVIRONMENT: python
-    PYTHON: "C:\\Python36-x64"
+    PYTHON: "C:\\Python37-x64"
   - TARGET: cygwin-gcc
     BUILD_ENVIRONMENT: cygwin
     CONFIGURE_OPTIONS: ""
@@ -266,4 +268,11 @@ after_test:
 - cmd: if [%TARGET%]==[mingw-gcc-no-optimization] (
     copy C:\projects\codecov-bash\codecov C:\MinGW\msys\1.0\home\appveyor\libvmdk\codecov.sh &&
     C:\MinGW\msys\1.0\bin\bash -e -l -c "cd libvmdk && chmod a+x ./codecov.sh && sed -i 's/-execdir /-exec /' ./codecov.sh && ./codecov.sh -n ${TARGET} -y .codecov.yml" )
+
+artifacts:
+- path: dist\*.whl
+
+deploy_script:
+- ps: If ($env:APPVEYOR_REPO_TAG -eq "true") {
+    Invoke-Expression "${env:PYTHON}\\python.exe -m twine upload dist/*.whl --username __token__ --password ${env:PYPI_TOKEN} --skip-existing" }
 
