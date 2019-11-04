@@ -25,7 +25,6 @@ endif
 
 TESTS = \
 	test_library.sh \
-	test_manpage.sh \
 	test_vmdkinfo.sh \
 	$(TESTS_PYVMDK)
 
