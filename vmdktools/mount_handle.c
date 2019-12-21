@@ -587,11 +587,9 @@ int mount_handle_open(
 
 		goto on_error;
 	}
-	result = libvmdk_handle_open_extent_data_files(
-		  vmdk_handle,
-		  error );
-
-	if( result != 1 )
+	if( libvmdk_handle_open_extent_data_files(
+	     vmdk_handle,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
