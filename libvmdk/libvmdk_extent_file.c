@@ -1,7 +1,7 @@
 /*
  * Extent file functions
  *
- * Copyright (C) 2009-2019, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -654,7 +654,7 @@ int libvmdk_extent_file_read_file_header_data(
 	size64_t grain_table_size = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint64_t value_64bit  = 0;
+	uint64_t value_64bit      = 0;
 #endif
 
 	if( extent_file == NULL )
@@ -965,13 +965,14 @@ int libvmdk_extent_file_read_file_header_data(
 		}
 	}
 #endif
-	if( extent_file->grain_size == 0 )
+	if( ( extent_file->grain_size == 0 )
+	 || ( extent_file->grain_size > (uint64_t) ( INT64_MAX / 512 ) ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
-		 "%s: unsupported grain number of sectors value is 0.",
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid grain number of sectors value out of bounds.",
 		 function );
 
 		return( -1 );
