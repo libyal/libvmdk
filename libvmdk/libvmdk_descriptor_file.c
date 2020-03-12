@@ -990,6 +990,19 @@ int libvmdk_descriptor_file_read_header(
 				{
 					descriptor_file->encoding = 0;
 				}
+				else if( ( value_length == 9 )
+					  && ( value[ 0 ] == 'S' )
+					  && ( value[ 1 ] == 'h' )
+					  && ( value[ 2 ] == 'i' )
+					  && ( value[ 3 ] == 'f' )
+					  && ( value[ 4 ] == 't' )
+					  && ( value[ 5 ] == '_' )
+					  && ( value[ 6 ] == 'J' )
+					  && ( value[ 7 ] == 'I' )
+					  && ( value[ 8 ] == 'S' ) )
+				{
+					descriptor_file->encoding = LIBUNA_CODEPAGE_WINDOWS_932;
+				}
 				else if( libclocale_codepage_copy_from_string(
 				          &( descriptor_file->encoding ),
 				          value,
@@ -2743,4 +2756,3 @@ int libvmdk_descriptor_file_get_utf16_parent_filename(
 	}
 	return( 1 );
 }
-
