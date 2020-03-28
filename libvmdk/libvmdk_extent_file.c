@@ -873,7 +873,7 @@ int libvmdk_extent_file_read_file_header_data(
 			 extent_file->number_of_grain_table_entries );
 
 			if( ( extent_file->secondary_grain_directory_offset >= 0 )
-			 && ( extent_file->secondary_grain_directory_offset <= (off64_t) ( INT64_MAX / 512 ) ) )
+			 && ( extent_file->secondary_grain_directory_offset <= ( (off64_t) INT64_MAX / 512 ) ) )
 			{
 				libcnotify_printf(
 				 "%s: secondary grain directory sector number\t: %" PRIu64 "\n",
@@ -889,7 +889,7 @@ int libvmdk_extent_file_read_file_header_data(
 			}
 		}
 		if( ( extent_file->primary_grain_directory_offset >= 0 )
-		 && ( extent_file->primary_grain_directory_offset <= (off64_t) ( INT64_MAX / 512 ) ) )
+		 && ( extent_file->primary_grain_directory_offset <= ( (off64_t) INT64_MAX / 512 ) ) )
 		{
 			libcnotify_printf(
 			 "%s: primary grain directory sector number\t: %" PRIu64 "\n",
@@ -964,9 +964,10 @@ int libvmdk_extent_file_read_file_header_data(
 			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 		}
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	if( ( extent_file->grain_size == 0 )
-	 || ( extent_file->grain_size > (uint64_t) ( INT64_MAX / 512 ) ) )
+	 || ( extent_file->grain_size > ( (uint64_t) INT64_MAX / 512 ) ) )
 	{
 		libcerror_error_set(
 		 error,
