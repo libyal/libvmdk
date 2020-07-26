@@ -1,5 +1,5 @@
 /*
- * Python bindings for libvmdk (pyvmdk)
+ * Python bindings module for libvmdk (pyvmdk)
  *
  * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
  *

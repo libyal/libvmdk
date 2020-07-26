@@ -867,6 +867,46 @@ PyObject *pyvmdk_handle_open_file_object(
 
 		return( NULL );
 	}
+	PyErr_Clear();
+
+	result = PyObject_HasAttrString(
+	          file_object,
+	          "read" );
+
+	if( result != 1 )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: unsupported file object - missing read attribute.",
+		 function );
+
+		return( NULL );
+	}
+	PyErr_Clear();
+
+	result = PyObject_HasAttrString(
+	          file_object,
+	          "seek" );
+
+	if( result != 1 )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: unsupported file object - missing seek attribute.",
+		 function );
+
+		return( NULL );
+	}
+	if( pyvmdk_handle->file_io_handle != NULL )
+	{
+		pyvmdk_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: invalid handle - file IO handle already set.",
+		 function );
+
+		goto on_error;
+	}
 	if( pyvmdk_file_object_initialize(
 	     &( pyvmdk_handle->file_io_handle ),
 	     file_object,

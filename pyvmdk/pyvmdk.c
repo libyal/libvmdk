@@ -29,14 +29,15 @@
 
 #include "pyvmdk.h"
 #include "pyvmdk_disk_types.h"
+#include "pyvmdk_error.h"
 #include "pyvmdk_extent_descriptor.h"
 #include "pyvmdk_extent_descriptors.h"
 #include "pyvmdk_extent_types.h"
-#include "pyvmdk_error.h"
-#include "pyvmdk_libcerror.h"
-#include "pyvmdk_libvmdk.h"
 #include "pyvmdk_file_object_io_handle.h"
 #include "pyvmdk_handle.h"
+#include "pyvmdk_libbfio.h"
+#include "pyvmdk_libcerror.h"
+#include "pyvmdk_libvmdk.h"
 #include "pyvmdk_python.h"
 #include "pyvmdk_unused.h"
 
@@ -69,7 +70,7 @@ PyMethodDef pyvmdk_module_methods[] = {
 	{ "check_file_signature_file_object",
 	  (PyCFunction) pyvmdk_check_file_signature_file_object,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "check_file_signature(file_object) -> Boolean\n"
+	  "check_file_signature_file_object(file_object) -> Boolean\n"
 	  "\n"
 	  "Checks if a file has a VMware Virtual Disk (VMDK) file signature using a file-like object." },
 
@@ -78,12 +79,12 @@ PyMethodDef pyvmdk_module_methods[] = {
 	  METH_VARARGS | METH_KEYWORDS,
 	  "open(filename, mode='r') -> Object\n"
 	  "\n"
-	  "Opens a VMDK image handle using the descriptor file." },
+	  "Opens VMDK image handle using the descriptor file." },
 
 	{ "open_file_object",
 	  (PyCFunction) pyvmdk_open_new_handle_with_file_object,
 	  METH_VARARGS | METH_KEYWORDS,
-	  "open(file_object, mode='r') -> Object\n"
+	  "open_file_object(file_object, mode='r') -> Object\n"
 	  "\n"
 	  "Opens a VMDK image handle using a file-like object of the descriptor file." },
 
@@ -124,7 +125,7 @@ PyObject *pyvmdk_get_version(
 	         errors ) );
 }
 
-/* Checks if the file has a VMware Virtual Disk (VMDK) file signature
+/* Checks if a file has a VMware Virtual Disk (VMDK) file signature
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyvmdk_check_file_signature(
@@ -132,12 +133,12 @@ PyObject *pyvmdk_check_file_signature(
            PyObject *arguments,
            PyObject *keywords )
 {
-	PyObject *string_object      = NULL;
-	libcerror_error_t *error     = NULL;
-	static char *function        = "pyvmdk_check_file_signature";
-	static char *keyword_list[]  = { "filename", NULL };
-	const char *filename_narrow  = NULL;
-	int result                   = 0;
+	PyObject *string_object     = NULL;
+	libcerror_error_t *error    = NULL;
+	const char *filename_narrow = NULL;
+	static char *function       = "pyvmdk_check_file_signature";
+	static char *keyword_list[] = { "filename", NULL };
+	int result                  = 0;
 
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	const wchar_t *filename_wide = NULL;
@@ -155,7 +156,7 @@ PyObject *pyvmdk_check_file_signature(
 	if( PyArg_ParseTupleAndKeywords(
 	     arguments,
 	     keywords,
-	     "|O",
+	     "O|",
 	     keyword_list,
 	     &string_object ) == 0 )
 	{
@@ -170,8 +171,8 @@ PyObject *pyvmdk_check_file_signature(
 	if( result == -1 )
 	{
 		pyvmdk_error_fetch_and_raise(
-	         PyExc_RuntimeError,
-		 "%s: unable to determine if string object is of type unicode.",
+		 PyExc_RuntimeError,
+		 "%s: unable to determine if string object is of type Unicode.",
 		 function );
 
 		return( NULL );
@@ -198,17 +199,17 @@ PyObject *pyvmdk_check_file_signature(
 		{
 			pyvmdk_error_fetch_and_raise(
 			 PyExc_RuntimeError,
-			 "%s: unable to convert unicode string to UTF-8.",
+			 "%s: unable to convert Unicode string to UTF-8.",
 			 function );
 
 			return( NULL );
 		}
 #if PY_MAJOR_VERSION >= 3
 		filename_narrow = PyBytes_AsString(
-				   utf8_string_object );
+		                   utf8_string_object );
 #else
 		filename_narrow = PyString_AsString(
-				   utf8_string_object );
+		                   utf8_string_object );
 #endif
 		Py_BEGIN_ALLOW_THREADS
 
@@ -220,7 +221,9 @@ PyObject *pyvmdk_check_file_signature(
 
 		Py_DecRef(
 		 utf8_string_object );
-#endif
+
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
+
 		if( result == -1 )
 		{
 			pyvmdk_error_raise(
@@ -250,17 +253,17 @@ PyObject *pyvmdk_check_file_signature(
 
 #if PY_MAJOR_VERSION >= 3
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyBytes_Type );
+	          string_object,
+	          (PyObject *) &PyBytes_Type );
 #else
 	result = PyObject_IsInstance(
-		  string_object,
-		  (PyObject *) &PyString_Type );
+	          string_object,
+	          (PyObject *) &PyString_Type );
 #endif
 	if( result == -1 )
 	{
 		pyvmdk_error_fetch_and_raise(
-	         PyExc_RuntimeError,
+		 PyExc_RuntimeError,
 		 "%s: unable to determine if string object is of type string.",
 		 function );
 
@@ -272,10 +275,10 @@ PyObject *pyvmdk_check_file_signature(
 
 #if PY_MAJOR_VERSION >= 3
 		filename_narrow = PyBytes_AsString(
-				   string_object );
+		                   string_object );
 #else
 		filename_narrow = PyString_AsString(
-				   string_object );
+		                   string_object );
 #endif
 		Py_BEGIN_ALLOW_THREADS
 
@@ -318,7 +321,7 @@ PyObject *pyvmdk_check_file_signature(
 	return( NULL );
 }
 
-/* Checks if the file has a VMware Virtual Disk (VMDK) file signature using a file-like object
+/* Checks if a file has a VMware Virtual Disk (VMDK) file signature using a file-like object
  * Returns a Python object if successful or NULL on error
  */
 PyObject *pyvmdk_check_file_signature_file_object(
@@ -326,9 +329,9 @@ PyObject *pyvmdk_check_file_signature_file_object(
            PyObject *arguments,
            PyObject *keywords )
 {
-	libcerror_error_t *error         = NULL;
-	libbfio_handle_t *file_io_handle = NULL;
 	PyObject *file_object            = NULL;
+	libbfio_handle_t *file_io_handle = NULL;
+	libcerror_error_t *error         = NULL;
 	static char *function            = "pyvmdk_check_file_signature_file_object";
 	static char *keyword_list[]      = { "file_object", NULL };
 	int result                       = 0;
@@ -426,19 +429,47 @@ PyObject *pyvmdk_open_new_handle(
            PyObject *arguments,
            PyObject *keywords )
 {
-	PyObject *pyvmdk_handle = NULL;
+	pyvmdk_handle_t *pyvmdk_handle = NULL;
+	static char *function          = "pyvmdk_open_new_handle";
 
 	PYVMDK_UNREFERENCED_PARAMETER( self )
 
-	pyvmdk_handle_init(
-	 (pyvmdk_handle_t *) pyvmdk_handle );
+	/* PyObject_New does not invoke tp_init
+	 */
+	pyvmdk_handle = PyObject_New(
+	                 struct pyvmdk_handle,
+	                 &pyvmdk_handle_type_object );
 
-	pyvmdk_handle_open(
-	 (pyvmdk_handle_t *) pyvmdk_handle,
-	 arguments,
-	 keywords );
+	if( pyvmdk_handle == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create handle.",
+		 function );
 
-	return( pyvmdk_handle );
+		goto on_error;
+	}
+	if( pyvmdk_handle_init(
+	     pyvmdk_handle ) != 0 )
+	{
+		goto on_error;
+	}
+	if( pyvmdk_handle_open(
+	     pyvmdk_handle,
+	     arguments,
+	     keywords ) == NULL )
+	{
+		goto on_error;
+	}
+	return( (PyObject *) pyvmdk_handle );
+
+on_error:
+	if( pyvmdk_handle != NULL )
+	{
+		Py_DecRef(
+		 (PyObject *) pyvmdk_handle );
+	}
+	return( NULL );
 }
 
 /* Creates a new handle object and opens it using a file-like object
@@ -449,19 +480,47 @@ PyObject *pyvmdk_open_new_handle_with_file_object(
            PyObject *arguments,
            PyObject *keywords )
 {
-	PyObject *pyvmdk_handle = NULL;
+	pyvmdk_handle_t *pyvmdk_handle = NULL;
+	static char *function          = "pyvmdk_open_new_handle_with_file_object";
 
 	PYVMDK_UNREFERENCED_PARAMETER( self )
 
-	pyvmdk_handle_init(
-	 (pyvmdk_handle_t *) pyvmdk_handle );
+	/* PyObject_New does not invoke tp_init
+	 */
+	pyvmdk_handle = PyObject_New(
+	                 struct pyvmdk_handle,
+	                 &pyvmdk_handle_type_object );
 
-	pyvmdk_handle_open_file_object(
-	 (pyvmdk_handle_t *) pyvmdk_handle,
-	 arguments,
-	 keywords );
+	if( pyvmdk_handle == NULL )
+	{
+		PyErr_Format(
+		 PyExc_MemoryError,
+		 "%s: unable to create handle.",
+		 function );
 
-	return( pyvmdk_handle );
+		goto on_error;
+	}
+	if( pyvmdk_handle_init(
+	     pyvmdk_handle ) != 0 )
+	{
+		goto on_error;
+	}
+	if( pyvmdk_handle_open_file_object(
+	     pyvmdk_handle,
+	     arguments,
+	     keywords ) == NULL )
+	{
+		goto on_error;
+	}
+	return( (PyObject *) pyvmdk_handle );
+
+on_error:
+	if( pyvmdk_handle != NULL )
+	{
+		Py_DecRef(
+		 (PyObject *) pyvmdk_handle );
+	}
+	return( NULL );
 }
 
 #if PY_MAJOR_VERSION >= 3
@@ -541,6 +600,11 @@ PyMODINIT_FUNC initpyvmdk(
 	 */
 	pyvmdk_disk_types_type_object.tp_new = PyType_GenericNew;
 
+	if( pyvmdk_disk_types_init_type(
+	     &pyvmdk_disk_types_type_object ) != 1 )
+	{
+		goto on_error;
+	}
 	if( PyType_Ready(
 	     &pyvmdk_disk_types_type_object ) < 0 )
 	{
@@ -592,6 +656,11 @@ PyMODINIT_FUNC initpyvmdk(
 	 */
 	pyvmdk_extent_types_type_object.tp_new = PyType_GenericNew;
 
+	if( pyvmdk_extent_types_init_type(
+	     &pyvmdk_extent_types_type_object ) != 1 )
+	{
+		goto on_error;
+	}
 	if( PyType_Ready(
 	     &pyvmdk_extent_types_type_object ) < 0 )
 	{
