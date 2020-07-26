@@ -1195,13 +1195,13 @@ int libvmdk_handle_open_file_io_handle(
 
 					goto on_error;
 				}
-				if( extent_file->descriptor_size > (size64_t) SSIZE_MAX )
+				if( extent_file->descriptor_size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-					 "%s: invalid extent file - descriptor size value exceeds maximum.",
+					 "%s: invalid extent file - descriptor size value exceeds maximum allocation size.",
 					 function );
 
 					goto on_error;

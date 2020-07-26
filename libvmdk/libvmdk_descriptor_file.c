@@ -216,13 +216,14 @@ int libvmdk_descriptor_file_read(
 
 		goto on_error;
 	}
-	if( file_size > (size64_t) SSIZE_MAX )
+	if( ( file_size == 0 )
+	 || ( file_size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid file size value exceeds maximum.",
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid file size value out of bounds.",
 		 function );
 
 		goto on_error;
@@ -1264,6 +1265,17 @@ int libvmdk_descriptor_file_read_header(
 
 					descriptor_file->parent_filename      = NULL;
 					descriptor_file->parent_filename_size = 0;
+				}
+				if( value_length > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+					 "%s: invalid parent filename length exceeds maximum allocation size.",
+					 function );
+
+					goto on_error;
 				}
 				descriptor_file->parent_filename = (uint8_t *) memory_allocate(
 				                                                sizeof( uint8_t ) * ( value_length + 1 ) );

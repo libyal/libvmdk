@@ -1148,6 +1148,17 @@ int libvmdk_extent_file_read_file_header_data(
 	{
 		grain_table_size = (size64_t) extent_file->number_of_grain_table_entries * extent_file->grain_size;
 
+		if( grain_table_size == 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid grain table size value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
 		extent_file->number_of_grain_directory_entries = (uint32_t) ( extent_file->maximum_data_size / grain_table_size );
 
 		if( ( extent_file->maximum_data_size % grain_table_size ) != 0 )
@@ -1595,6 +1606,18 @@ int libvmdk_extent_file_read_grain_directory(
 
 		return( -1 );
 	}
+	if( ( extent_file->grain_directory_size == 0 )
+	 || ( extent_file->grain_directory_size > (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid extent file - grain directory size value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -1857,6 +1880,18 @@ int libvmdk_extent_file_read_backup_grain_directory(
 		 function );
 
 		return( -1 );
+	}
+	if( ( extent_file->grain_directory_size == 0 )
+	 || ( extent_file->grain_directory_size > (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid extent file - grain directory size value out of bounds.",
+		 function );
+
+		goto on_error;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -2274,7 +2309,7 @@ int libvmdk_extent_file_read_grain_group_element_data(
 		return( -1 );
 	}
 	if( ( grain_group_data_size == 0 )
-	 || ( grain_group_data_size > (size64_t) SSIZE_MAX ) )
+	 || ( grain_group_data_size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(
 		 error,
