@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>libvmdk</id>
+    <version>20200810</version>
+    <authors>Joachim Metz</authors>
+    <owners>joachimmetz</owners>
+    <licenseUrl>https://raw.githubusercontent.com/libyal/libvmdk/master/COPYING.LESSER</licenseUrl>
+    <projectUrl>https://github.com/libyal/libvmdk</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <title>libvmdk</title>
+    <description>Library to access the VMware Virtual Disk (VMDK) format</description>
+    <releaseNotes>Release of libvmdk 20200810</releaseNotes>
+    <copyright>Copyright (C) 2009-2020</copyright>
+    <tags>native</tags>
+  </metadata>
+  <files>
+    <file src="include\*.h" target="lib\native\include\" />
+    <file src="include\libvmdk\*.h" target="lib\native\include\libvmdk\" />
+    <file src="msvscpp\Release\Win32\libvmdk.dll" target="lib\native\lib\Win32\" />
+    <file src="msvscpp\Release\Win32\libvmdk.lib" target="lib\native\lib\Win32\" />
+    <file src="msvscpp\Release\Win32\libvmdk.pdb" target="lib\native\lib\Win32\" />
+    <file src="msvscpp\Release\x64\libvmdk.dll" target="lib\native\lib\x64\" />
+    <file src="msvscpp\Release\x64\libvmdk.lib" target="lib\native\lib\x64\" />
+    <file src="msvscpp\Release\x64\libvmdk.pdb" target="lib\native\lib\x64\" />
+  </files>
+</package>
