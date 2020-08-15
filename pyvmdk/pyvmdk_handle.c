@@ -455,7 +455,7 @@ PyObject *pyvmdk_handle_new_open_file_object(
 	return( pyvmdk_handle );
 }
 
-/* Intializes a handle object
+/* Initializes a handle object
  * Returns 0 if successful or -1 on error
  */
 int pyvmdk_handle_init(
