@@ -15,13 +15,14 @@
     <tags>native</tags>
   </metadata>
   <files>
-    <file src="include\*.h" target="lib\native\include\" />
-    <file src="include\libvmdk\*.h" target="lib\native\include\libvmdk\" />
-    <file src="msvscpp\Release\Win32\libvmdk.dll" target="lib\native\lib\Win32\" />
-    <file src="msvscpp\Release\Win32\libvmdk.lib" target="lib\native\lib\Win32\" />
-    <file src="msvscpp\Release\Win32\libvmdk.pdb" target="lib\native\lib\Win32\" />
-    <file src="msvscpp\Release\x64\libvmdk.dll" target="lib\native\lib\x64\" />
-    <file src="msvscpp\Release\x64\libvmdk.lib" target="lib\native\lib\x64\" />
-    <file src="msvscpp\Release\x64\libvmdk.pdb" target="lib\native\lib\x64\" />
+    <file src="libvmdk.targets" target="build\native\libvmdk.targets"/>
+    <file src="include\*.h" target="build\native\include\" />
+    <file src="include\libvmdk\*.h" target="build\native\include\libvmdk\" />
+    <file src="msvscpp\Release\Win32\libvmdk.dll" target="build\native\lib\Win32\" />
+    <file src="msvscpp\Release\Win32\libvmdk.lib" target="build\native\lib\Win32\" />
+    <file src="msvscpp\Release\Win32\libvmdk.pdb" target="build\native\lib\Win32\" />
+    <file src="msvscpp\Release\x64\libvmdk.dll" target="build\native\lib\x64\" />
+    <file src="msvscpp\Release\x64\libvmdk.lib" target="build\native\lib\x64\" />
+    <file src="msvscpp\Release\x64\libvmdk.pdb" target="build\native\lib\x64\" />
   </files>
 </package>

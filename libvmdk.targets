@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- general -->
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(MSBuildThisFileDirectory)lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>	
+
+  <ItemDefinitionGroup Condition="'$(Platform)' == 'win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>	
+	<Link>
+      <AdditionalLibraryDirectories>$(MSBuildThisFileDirectory)lib\Win32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <!-- static libraries -->
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>libvmdk.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+
+  <ItemGroup>
+      <LibVmdkDlls Include="$(MSBuildThisFileDirectory)\lib\x64\*.dll" Condition="'$(Platform)' == 'x64'"/>
+      <LibVmdkDlls Include="$(MSBuildThisFileDirectory)\lib\Win32\*.dll" Condition="'$(Platform)' == 'Win32'"/>
+  </ItemGroup>
+
+  <!-- dynamic libraries -->
+  <Target Name="libvmdk_AfterBuild" AfterTargets="AfterBuild">
+    <Copy SourceFiles="@(LibVmdkDlls)"    DestinationFolder="$(TargetDir)"    SkipUnchangedFiles="true" />
+  </Target>
+</Project>
