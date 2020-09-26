@@ -215,7 +215,7 @@ on_error:
 	return( NULL );
 }
 
-/* Intializes an extent descriptors sequence and iterator object
+/* Initializes an extent descriptors sequence and iterator object
  * Returns 0 if successful or -1 on error
  */
 int pyvmdk_extent_descriptors_init(
