@@ -201,32 +201,6 @@ ssize_t libvmdk_handle_read_buffer_at_offset(
          off64_t offset,
          libcerror_error_t **error );
 
-#ifdef TODO_WRITE_SUPPORT
-
-ssize_t libvmdk_internal_handle_write_buffer_to_file_io_pool(
-         libvmdk_internal_handle_t *internal_handle,
-         libbfio_pool_t *file_io_pool,
-         void *buffer,
-         size_t buffer_size,
-         libcerror_error_t **error );
-
-LIBVMDK_EXTERN \
-ssize_t libvmdk_handle_write_buffer(
-         libvmdk_handle_t *handle,
-         const void *buffer,
-         size_t buffer_size,
-         libcerror_error_t **error );
-
-LIBVMDK_EXTERN \
-ssize_t libvmdk_handle_write_buffer_at_offset(
-         libvmdk_handle_t *handle,
-         const void *buffer,
-         size_t buffer_size,
-         off64_t offset,
-         libcerror_error_t **error );
-
-#endif /* TODO_WRITE_SUPPORT */
-
 off64_t libvmdk_internal_handle_seek_offset(
          libvmdk_internal_handle_t *internal_handle,
          off64_t offset,
