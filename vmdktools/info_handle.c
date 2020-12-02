@@ -384,13 +384,13 @@ int info_handle_file_fprint(
 
 	switch( disk_type )
 	{
-		case LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT:
+		case LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT:
 			fprintf(
 			 info_handle->notify_stream,
 			 "2GB extent flat" );
 			break;
 
-		case LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE:
+		case LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT:
 			fprintf(
 			 info_handle->notify_stream,
 			 "2GB extent sparse" );

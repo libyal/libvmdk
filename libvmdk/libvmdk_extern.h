@@ -30,7 +30,11 @@
 
 #include <libvmdk/extern.h>
 
+#if defined( __CYGWIN__ )
+#define LIBVMDK_EXTERN_VARIABLE	extern
+#else
 #define LIBVMDK_EXTERN_VARIABLE	LIBVMDK_EXTERN
+#endif
 
 #else
 #define LIBVMDK_EXTERN		/* extern */

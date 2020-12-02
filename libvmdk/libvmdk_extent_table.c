@@ -973,9 +973,9 @@ int libvmdk_extent_table_initialize_extents(
 
 		return( -1 );
 	}
-	if( ( disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
+	if( ( disk_type != LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT )
-	 && ( disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
+	 && ( disk_type != LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT )
@@ -993,7 +993,7 @@ int libvmdk_extent_table_initialize_extents(
 
 		return( -1 );
 	}
-	if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
+	if( ( disk_type == LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
@@ -1038,7 +1038,7 @@ int libvmdk_extent_table_initialize_extents(
 			goto on_error;
 		}
 	}
-	else if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
+	else if( ( disk_type == LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT )
 	      || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 	      || ( disk_type == LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
 	      || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE )
@@ -1487,7 +1487,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 	{
 		if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
 		{
-			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
+			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT ) )
 			{
 				libcerror_error_set(
@@ -1502,7 +1502,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 		}
 		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
 		{
-			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
+			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED ) )
 			{

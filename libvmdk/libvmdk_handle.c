@@ -1727,6 +1727,7 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 {
 	libvmdk_internal_handle_t *internal_handle = NULL;
 	static char *function                      = "libvmdk_handle_open_extent_data_files_file_io_pool";
+	int result                                 = 1;
 
 	if( handle == NULL )
 	{
@@ -1813,10 +1814,12 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
                  "%s: unable to read grain table.",
                  function );
 
-                goto on_error;
+                result = -1;
 	}
-	internal_handle->extent_data_file_io_pool = file_io_pool;
-
+	else
+	{
+		internal_handle->extent_data_file_io_pool = file_io_pool;
+	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_handle->read_write_lock,
@@ -1832,15 +1835,7 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 		return( -1 );
 	}
 #endif
-	return( 1 );
-
-on_error:
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_write(
-	 internal_handle->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
+	return( result );
 }
 
 /* Opens a specific extent data file

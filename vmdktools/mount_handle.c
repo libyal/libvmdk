@@ -488,8 +488,8 @@ int mount_handle_open(
 
 		goto on_error;
 	}
-	if( ( disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
-	 && ( disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
+	if( ( disk_type != LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT )
+	 && ( disk_type != LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT )
@@ -841,8 +841,8 @@ int mount_handle_open_parent(
 
 		goto on_error;
 	}
-	if( ( parent_disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
-	 && ( parent_disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
+	if( ( parent_disk_type != LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT )
+	 && ( parent_disk_type != LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT )
 	 && ( parent_disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 	 && ( parent_disk_type != LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
 	 && ( parent_disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT )

@@ -99,7 +99,12 @@ int libvmdk_descriptor_file_initialize(
 		 "%s: unable to clear descriptor file.",
 		 function );
 
-		goto on_error;
+		memory_free(
+		 *descriptor_file );
+
+		*descriptor_file = NULL;
+
+		return( -1 );
 	}
 	if( libcdata_array_initialize(
 	     &( ( *descriptor_file )->extents_array ),
@@ -1187,7 +1192,7 @@ int libvmdk_descriptor_file_read_header(
 					     "2GbMaxExtentFlat",
 					     16 ) == 0 )
 					{
-						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT;
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT;
 					}
 					else if( narrow_string_compare_no_case(
 					          value,
@@ -1228,14 +1233,14 @@ int libvmdk_descriptor_file_read_header(
 					     "2GbMaxExtentSparse",
 					     18 ) == 0 )
 					{
-						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE;
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT;
 					}
 					else if( narrow_string_compare_no_case(
 					          value,
 					          "twoGbMaxExtentFlat",
 					          18 ) == 0 )
 					{
-						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT;
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT;
 					}
 				}
 				else if( value_length == 20 )
@@ -1245,7 +1250,7 @@ int libvmdk_descriptor_file_read_header(
 					     "twoGbMaxExtentSparse",
 					     20 ) == 0 )
 					{
-						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE;
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT;
 					}
 					else if( narrow_string_compare_no_case(
 					          value,

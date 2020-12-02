@@ -2,15 +2,15 @@
 <package >
   <metadata>
     <id>libvmdk</id>
-    <version>20201004</version>
+    <version>20201202</version>
     <authors>Joachim Metz</authors>
     <owners>joachimmetz</owners>
-    <licenseUrl>https://raw.githubusercontent.com/libyal/libvmdk/master/COPYING.LESSER</licenseUrl>
+    <license type="expression">LGPL-3.0-or-later</license>
     <projectUrl>https://github.com/libyal/libvmdk</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <title>libvmdk</title>
     <description>Library to access the VMware Virtual Disk (VMDK) format</description>
-    <releaseNotes>Release of libvmdk 20201004</releaseNotes>
+    <releaseNotes>Release of libvmdk 20201202</releaseNotes>
     <copyright>Copyright (C) 2009-2020</copyright>
     <tags>native</tags>
   </metadata>

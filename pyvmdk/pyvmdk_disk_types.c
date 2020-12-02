@@ -146,28 +146,28 @@ int pyvmdk_disk_types_init_type(
 	}
 #if PY_MAJOR_VERSION >= 3
 	value_object = PyLong_FromLong(
-	                LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT );
+	                LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT );
 #else
 	value_object = PyInt_FromLong(
-	                LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT );
+	                LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT );
 #endif
 	if( PyDict_SetItemString(
 	     type_object->tp_dict,
-	     "2GB_EXTENT_FLAT",
+	     "FLAT_2GB_EXTENT",
 	     value_object ) != 0 )
 	{
 		goto on_error;
 	}
 #if PY_MAJOR_VERSION >= 3
 	value_object = PyLong_FromLong(
-	                LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE );
+	                LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT );
 #else
 	value_object = PyInt_FromLong(
-	                LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE );
+	                LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT );
 #endif
 	if( PyDict_SetItemString(
 	     type_object->tp_dict,
-	     "2GB_EXTENT_SPARSE",
+	     "SPARSE_2GB_EXTENT",
 	     value_object ) != 0 )
 	{
 		goto on_error;

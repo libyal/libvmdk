@@ -80,7 +80,7 @@ struct libvmdk_internal_handle
 	 */
 	int access_flags;
 
-	/* The maximum number of open handles in the pool
+	/* The maximum number of open handles in the file IO pool
 	 */
 	int maximum_number_of_open_handles;
 
