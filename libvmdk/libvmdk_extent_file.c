@@ -350,33 +350,6 @@ int libvmdk_extent_file_read_file_header_file_io_handle(
 
 		return( -1 );
 	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-	 	 "%s: reading file header at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
-		 function,
-		 file_offset,
-		 file_offset );
-	}
-#endif
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     file_offset,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek file header offset: %" PRIi64 " (0x%08" PRIx64 ").",
-		 function,
-		 file_offset,
-		 file_offset );
-
-		goto on_error;
-	}
 	file_header_data = (uint8_t *) memory_allocate(
 	                                sizeof( uint8_t ) * 2048 );
 
@@ -391,10 +364,21 @@ int libvmdk_extent_file_read_file_header_file_io_handle(
 
 		goto on_error;
 	}
-	read_count = libbfio_handle_read_buffer(
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+	 	 "%s: reading file header at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+		 function,
+		 file_offset,
+		 file_offset );
+	}
+#endif
+	read_count = libbfio_handle_read_buffer_at_offset(
 	              file_io_handle,
 	              file_header_data,
 	              4,
+	              file_offset,
 	              error );
 
 	if( read_count != (ssize_t) 4 )
@@ -403,8 +387,10 @@ int libvmdk_extent_file_read_file_header_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read file header data.",
-		 function );
+		 "%s: unable to read file header data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 function,
+		 file_offset,
+		 file_offset );
 
 		goto on_error;
 	}
@@ -1364,26 +1350,11 @@ int libvmdk_extent_file_read_descriptor_data_file_io_handle(
 		 extent_file->descriptor_offset );
 	}
 #endif
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     extent_file->descriptor_offset,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek descriptor offset: %" PRIi64 ".",
-		 function,
-		 extent_file->descriptor_offset );
-
-		return( -1 );
-	}
-	read_count = libbfio_handle_read_buffer(
+	read_count = libbfio_handle_read_buffer_at_offset(
 	              file_io_handle,
 	              descriptor_data,
 	              (size_t) extent_file->descriptor_size,
+	              extent_file->descriptor_offset,
 	              error );
 
 	if( read_count != (ssize_t) extent_file->descriptor_size )
@@ -1392,8 +1363,10 @@ int libvmdk_extent_file_read_descriptor_data_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read descriptor data.",
-		 function );
+		 "%s: unable to read descriptor data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 function,
+		 extent_file->descriptor_offset,
+		 extent_file->descriptor_offset );
 
 		return( -1 );
 	}

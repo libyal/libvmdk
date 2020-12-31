@@ -30,7 +30,7 @@
 
 #include <libvmdk/extern.h>
 
-#if defined( __CYGWIN__ )
+#if defined( __CYGWIN__ ) || defined( __MINGW32__ )
 #define LIBVMDK_EXTERN_VARIABLE	extern
 #else
 #define LIBVMDK_EXTERN_VARIABLE	LIBVMDK_EXTERN

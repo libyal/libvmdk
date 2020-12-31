@@ -2771,25 +2771,11 @@ int libvmdk_handle_open_read_signature(
 
 		goto on_error;
 	}
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     0,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek offset: 0.",
-		 function );
-
-		goto on_error;
-	}
-	read_count = libbfio_handle_read_buffer(
+	read_count = libbfio_handle_read_buffer_at_offset(
 	              file_io_handle,
 	              signature,
 	              32,
+	              0,
 	              error );
 
 	if( read_count != (ssize_t) 32 )
@@ -2798,7 +2784,7 @@ int libvmdk_handle_open_read_signature(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read signature.",
+		 "%s: unable to read signature at offset: 0 (0x00000000).",
 		 function );
 
 		goto on_error;
@@ -3034,32 +3020,18 @@ ssize_t libvmdk_internal_handle_read_buffer_from_file_io_pool(
 	}
 	if( internal_handle->extent_table->extent_files_stream != NULL )
 	{
-		if( libfdata_stream_seek_offset(
-		     internal_handle->extent_table->extent_files_stream,
-		     internal_handle->current_offset,
-		     SEEK_SET,
-		     error ) == -1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to seek offset in extent files stream.",
-			 function );
-
-			return( -1 );
-		}
 		read_size = buffer_size;
 
 		if( (size64_t) ( internal_handle->current_offset + read_size ) > internal_handle->io_handle->media_size )
 		{
 			read_size = (size_t) ( internal_handle->io_handle->media_size - internal_handle->current_offset );
 		}
-		read_count = libfdata_stream_read_buffer(
+		read_count = libfdata_stream_read_buffer_at_offset(
 		              internal_handle->extent_table->extent_files_stream,
 			      (intptr_t *) file_io_pool,
 			      (uint8_t *) buffer,
 			      read_size,
+			      internal_handle->current_offset,
 			      0,
 			      error );
 
@@ -3069,8 +3041,10 @@ ssize_t libvmdk_internal_handle_read_buffer_from_file_io_pool(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read buffer from extent files stream.",
-			 function );
+			 "%s: unable to read buffer from extent files stream at offset: %" PRIi64 " (0x%" PRIx64 ").",
+			 function,
+			 internal_handle->current_offset,
+			 internal_handle->current_offset );
 
 			return( -1 );
 		}

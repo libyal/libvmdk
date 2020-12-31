@@ -258,7 +258,7 @@ int mount_handle_set_basename(
 
 		goto on_error;
 	}
-	if( basename_size > (size_t) ( SSIZE_MAX / sizeof( system_character_t ) ) )
+	if( basename_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE / sizeof( system_character_t ) ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -657,14 +657,14 @@ int mount_handle_open_parent(
 	}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libvmdk_handle_get_utf16_parent_filename_size(
-		  vmdk_handle,
-		  &parent_filename_size,
-		  error );
+	          vmdk_handle,
+	          &parent_filename_size,
+	          error );
 #else
 	result = libvmdk_handle_get_utf8_parent_filename_size(
-		  vmdk_handle,
-		  &parent_filename_size,
-		  error );
+	          vmdk_handle,
+	          &parent_filename_size,
+	          error );
 #endif
 	if( result != 1 )
 	{
@@ -688,7 +688,7 @@ int mount_handle_open_parent(
 
 		goto on_error;
 	}
-	if( parent_filename_size > (size_t) ( SSIZE_MAX / sizeof( system_character_t ) ) )
+	if( parent_filename_size > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE / sizeof( system_character_t ) ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -700,7 +700,7 @@ int mount_handle_open_parent(
 		goto on_error;
 	}
 	parent_filename = system_string_allocate(
-			   parent_filename_size );
+	                   parent_filename_size );
 
 	if( parent_filename == NULL )
 	{
@@ -715,16 +715,16 @@ int mount_handle_open_parent(
 	}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libvmdk_handle_get_utf16_parent_filename(
-		  vmdk_handle,
-		  (uint16_t *) parent_filename,
-		  parent_filename_size,
-		  error );
+	          vmdk_handle,
+	          (uint16_t *) parent_filename,
+	          parent_filename_size,
+	          error );
 #else
 	result = libvmdk_handle_get_utf8_parent_filename(
-		  vmdk_handle,
-		  (uint8_t *) parent_filename,
-		  parent_filename_size,
-		  error );
+	          vmdk_handle,
+	          (uint8_t *) parent_filename,
+	          parent_filename_size,
+	          error );
 #endif
 	if( result != 1 )
 	{
@@ -999,10 +999,11 @@ int mount_handle_close(
      mount_handle_t *mount_handle,
      libcerror_error_t **error )
 {
-	libvmdk_handle_t *handle = NULL;
-	static char *function    = "mount_handle_close";
-	int handle_index         = 0;
-	int number_of_handles    = 0;
+	libvmdk_handle_t *vmdk_handle = NULL;
+	static char *function         = "mount_handle_close";
+	int handle_index              = 0;
+	int number_of_handles         = 0;
+	int result                    = 0;
 
 	if( mount_handle == NULL )
 	{
@@ -1036,7 +1037,7 @@ int mount_handle_close(
 		if( mount_file_system_get_handle_by_index(
 		     mount_handle->file_system,
 		     handle_index,
-		     &handle,
+		     &vmdk_handle,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1047,10 +1048,10 @@ int mount_handle_close(
 			 function,
 			 handle_index );
 
-			return( -1 );
+			result = -1;
 		}
 		if( libvmdk_handle_close(
-		     handle,
+		     vmdk_handle,
 		     error ) != 0 )
 		{
 			libcerror_error_set(
@@ -1061,10 +1062,10 @@ int mount_handle_close(
 			 function,
 			 handle_index );
 
-			return( -1 );
+			result = -1;
 		}
 		if( libvmdk_handle_free(
-		     &handle,
+		     &vmdk_handle,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -1075,10 +1076,10 @@ int mount_handle_close(
 			 function,
 			 handle_index );
 
-			return( -1 );
+			result = -1;
 		}
 	}
-	return( 0 );
+	return( result );
 }
 
 /* Retrieves a file entry for a specific path
