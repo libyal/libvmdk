@@ -143,6 +143,9 @@ stamp-h[1-9]
 /tests/vmdk_test_io_handle
 /tests/vmdk_test_notify
 /tests/vmdk_test_support
+/tests/vmdk_test_tools_info_handle
+/tests/vmdk_test_tools_output
+/tests/vmdk_test_tools_signal
 
 # Local library dependencies specific files
 /libbfio

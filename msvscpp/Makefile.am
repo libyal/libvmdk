@@ -27,6 +27,9 @@ MSVSCPP_FILES = \
 	vmdk_test_io_handle/vmdk_test_io_handle.vcproj \
 	vmdk_test_notify/vmdk_test_notify.vcproj \
 	vmdk_test_support/vmdk_test_support.vcproj \
+	vmdk_test_tools_info_handle/vmdk_test_tools_info_handle.vcproj \
+	vmdk_test_tools_output/vmdk_test_tools_output.vcproj \
+	vmdk_test_tools_signal/vmdk_test_tools_signal.vcproj \
 	vmdkinfo/vmdkinfo.vcproj \
 	vmdkmount/vmdkmount.vcproj \
 	zlib/zlib.vcproj \
