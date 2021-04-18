@@ -1,7 +1,7 @@
 /*
  * Tools output functions test program
  *
- * Copyright (C) 2014-2021, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2021, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -39,7 +39,7 @@
 
 #include "../vmdktools/vmdktools_output.h"
 
-/* Tests the vmdktools_output_initialize and function
+/* Tests the vmdktools_output_initialize function
  * Returns 1 if successful or 0 if not
  */
 int vmdk_test_tools_output_initialize(

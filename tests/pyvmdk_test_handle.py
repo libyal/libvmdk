@@ -39,15 +39,16 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_open(self):
     """Tests the open function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     vmdk_handle = pyvmdk.handle()
 
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
 
     with self.assertRaises(IOError):
-      vmdk_handle.open(unittest.source)
+      vmdk_handle.open(test_source)
 
     vmdk_handle.close()
 
@@ -55,19 +56,20 @@ class HandleTypeTests(unittest.TestCase):
       vmdk_handle.open(None)
 
     with self.assertRaises(ValueError):
-      vmdk_handle.open(unittest.source, mode="w")
+      vmdk_handle.open(test_source, mode="w")
 
   def test_open_file_object(self):
     """Tests the open_file_object function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
-    if not os.path.isfile(unittest.source):
+    if not os.path.isfile(test_source):
       raise unittest.SkipTest("source not a regular file")
 
     vmdk_handle = pyvmdk.handle()
 
-    with open(unittest.source, "rb") as file_object:
+    with open(test_source, "rb") as file_object:
 
       vmdk_handle.open_file_object(file_object)
 
@@ -84,7 +86,8 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_close(self):
     """Tests the close function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     vmdk_handle = pyvmdk.handle()
@@ -94,21 +97,22 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_open_close(self):
     """Tests the open and close functions."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       return
 
     vmdk_handle = pyvmdk.handle()
 
     # Test open and close.
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
     vmdk_handle.close()
 
     # Test open and close a second time to validate clean up on close.
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
     vmdk_handle.close()
 
-    if os.path.isfile(unittest.source):
-      with open(unittest.source, "rb") as file_object:
+    if os.path.isfile(test_source):
+      with open(test_source, "rb") as file_object:
 
         # Test open_file_object and close.
         vmdk_handle.open_file_object(file_object)
@@ -125,12 +129,13 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_read_buffer(self):
     """Tests the read_buffer function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     vmdk_handle = pyvmdk.handle()
 
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
     vmdk_handle.open_extent_data_files()
 
     media_size = vmdk_handle.get_media_size()
@@ -204,13 +209,14 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_read_buffer_file_object(self):
     """Tests the read_buffer function on a file-like object."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
-    if not os.path.isfile(unittest.source):
+    if not os.path.isfile(test_source):
       raise unittest.SkipTest("source not a regular file")
 
-    with open(unittest.source, "rb") as file_object:
+    with open(test_source, "rb") as file_object:
       vmdk_handle = pyvmdk.handle()
 
       vmdk_handle.open_file_object(file_object)
@@ -218,7 +224,7 @@ class HandleTypeTests(unittest.TestCase):
       extent_data_file_objects = []
       for extent_descriptor in vmdk_handle.extent_descriptors:
         extend_data_file_path = os.path.join(
-          os.path.dirname(unittest.source), extent_descriptor.filename)
+          os.path.dirname(test_source), extent_descriptor.filename)
         extend_data_file_object = open(extend_data_file_path, "rb")
         extent_data_file_objects.append(extend_data_file_object)
 
@@ -240,12 +246,13 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_read_buffer_at_offset(self):
     """Tests the read_buffer_at_offset function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     vmdk_handle = pyvmdk.handle()
 
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
     vmdk_handle.open_extent_data_files()
 
     media_size = vmdk_handle.get_media_size()
@@ -308,12 +315,13 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_seek_offset(self):
     """Tests the seek_offset function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     vmdk_handle = pyvmdk.handle()
 
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
     vmdk_handle.open_extent_data_files()
 
     media_size = vmdk_handle.get_media_size()
@@ -368,12 +376,13 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_get_offset(self):
     """Tests the get_offset function."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     vmdk_handle = pyvmdk.handle()
 
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
     vmdk_handle.open_extent_data_files()
 
     offset = vmdk_handle.get_offset()
@@ -383,12 +392,13 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_get_disk_type(self):
     """Tests the get_disk_type function and disk_type property."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     vmdk_handle = pyvmdk.handle()
 
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
 
     disk_type = vmdk_handle.get_disk_type()
     self.assertIsNotNone(disk_type)
@@ -399,12 +409,13 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_get_media_size(self):
     """Tests the get_media_size function and media_size property."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     vmdk_handle = pyvmdk.handle()
 
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
 
     media_size = vmdk_handle.get_media_size()
     self.assertIsNotNone(media_size)
@@ -415,12 +426,13 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_get_content_identifier(self):
     """Tests the get_content_identifier function and content_identifier property."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     vmdk_handle = pyvmdk.handle()
 
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
 
     content_identifier = vmdk_handle.get_content_identifier()
     self.assertIsNotNone(content_identifier)
@@ -431,12 +443,13 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_get_parent_content_identifier(self):
     """Tests the get_parent_content_identifier function and parent_content_identifier property."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     vmdk_handle = pyvmdk.handle()
 
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
 
     parent_content_identifier = vmdk_handle.get_parent_content_identifier()
     self.assertIsNotNone(parent_content_identifier)
@@ -447,12 +460,13 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_get_parent_filename(self):
     """Tests the get_parent_filename function and parent_filename property."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     vmdk_handle = pyvmdk.handle()
 
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
 
     _ = vmdk_handle.get_parent_filename()
 
@@ -462,12 +476,13 @@ class HandleTypeTests(unittest.TestCase):
 
   def test_get_number_of_extents(self):
     """Tests the get_number_of_extents function and number_of_extents property."""
-    if not unittest.source:
+    test_source = unittest.source
+    if not test_source:
       raise unittest.SkipTest("missing source")
 
     vmdk_handle = pyvmdk.handle()
 
-    vmdk_handle.open(unittest.source)
+    vmdk_handle.open(test_source)
 
     number_of_extents = vmdk_handle.get_number_of_extents()
     self.assertIsNotNone(number_of_extents)
