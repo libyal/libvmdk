@@ -544,24 +544,37 @@ void pyvmdk_handle_free(
 
 		return;
 	}
-	Py_BEGIN_ALLOW_THREADS
-
-	result = libvmdk_handle_free(
-	          &( pyvmdk_handle->handle ),
-	          &error );
-
-	Py_END_ALLOW_THREADS
-
-	if( result != 1 )
+	if( ( pyvmdk_handle->file_io_handle != NULL )
+	 || ( pyvmdk_handle->file_io_pool != NULL ) )
 	{
-		pyvmdk_error_raise(
-		 error,
-		 PyExc_MemoryError,
-		 "%s: unable to free libvmdk handle.",
-		 function );
+		if( pyvmdk_handle_close(
+		     pyvmdk_handle,
+		     NULL ) == NULL )
+		{
+			return;
+		}
+	}
+	if( pyvmdk_handle->handle != NULL )
+	{
+		Py_BEGIN_ALLOW_THREADS
 
-		libcerror_error_free(
-		 &error );
+		result = libvmdk_handle_free(
+		          &( pyvmdk_handle->handle ),
+		          &error );
+
+		Py_END_ALLOW_THREADS
+
+		if( result != 1 )
+		{
+			pyvmdk_error_raise(
+			 error,
+			 PyExc_MemoryError,
+			 "%s: unable to free libvmdk handle.",
+			 function );
+
+			libcerror_error_free(
+			 &error );
+		}
 	}
 	ob_type->tp_free(
 	 (PyObject*) pyvmdk_handle );
