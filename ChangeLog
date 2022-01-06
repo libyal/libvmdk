@@ -1,4 +1,6 @@
 TODO
+* wrap extent descriptor in thread safe structure
+
 * vmdkmount empty array on close not on free
 * add thread-safety in
   - extent_descriptor API functions?

@@ -1,7 +1,7 @@
 /*
  * Extent descriptor functions
  *
- * Copyright (C) 2009-2021, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -19,8 +19,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#if !defined( _LIBVMDK_INTERNAL_EXTENT_DESCRIPTOR_H )
-#define _LIBVMDK_INTERNAL_EXTENT_DESCRIPTOR_H
+#if !defined( _LIBVMDK_EXTENT_DESCRIPTOR_H )
+#define _LIBVMDK_EXTENT_DESCRIPTOR_H
 
 #include <common.h>
 #include <types.h>
@@ -134,5 +134,5 @@ int libvmdk_extent_descriptor_get_utf16_filename(
 }
 #endif
 
-#endif /* !defined( _LIBVMDK_INTERNAL_EXTENT_DESCRIPTOR_H ) */
+#endif /* !defined( _LIBVMDK_EXTENT_DESCRIPTOR_H ) */
 

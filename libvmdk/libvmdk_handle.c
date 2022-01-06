@@ -1,7 +1,7 @@
 /*
  * Handle functions
  *
- * Copyright (C) 2009-2021, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -3739,12 +3739,10 @@ int libvmdk_handle_set_maximum_number_of_open_handles(
 #endif
 	if( internal_handle->extent_data_file_io_pool != NULL )
 	{
-		result = libbfio_pool_set_maximum_number_of_open_handles(
-		          internal_handle->extent_data_file_io_pool,
-		          maximum_number_of_open_handles,
-		          error );
-
-		if( result != 1 )
+		if( libbfio_pool_set_maximum_number_of_open_handles(
+		     internal_handle->extent_data_file_io_pool,
+		     maximum_number_of_open_handles,
+		     error ) != -1 )
 		{
 			libcerror_error_set(
 			 error,
@@ -3752,6 +3750,8 @@ int libvmdk_handle_set_maximum_number_of_open_handles(
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
 			 "%s: unable to set maximum number of open handles in extent data file IO pool.",
 			 function );
+
+			result = -1;
 		}
 	}
 	if( result == 1 )
@@ -4747,6 +4747,7 @@ int libvmdk_handle_get_number_of_extents(
 {
 	libvmdk_internal_handle_t *internal_handle = NULL;
 	static char *function                      = "libvmdk_handle_get_number_of_extents";
+	int result                                 = 1;
 
 	if( handle == NULL )
 	{
@@ -4799,7 +4800,7 @@ int libvmdk_handle_get_number_of_extents(
 		 "%s: unable to retrieve number of extents.",
 		 function );
 
-		goto on_error;
+		result = -1;
 	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -4816,15 +4817,7 @@ int libvmdk_handle_get_number_of_extents(
 		return( -1 );
 	}
 #endif
-	return( 1 );
-
-on_error:
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_read(
-	 internal_handle->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
+	return( result );
 }
 
 /* Retrieves a specific extent descriptor
@@ -4838,6 +4831,7 @@ int libvmdk_handle_get_extent_descriptor(
 {
 	libvmdk_internal_handle_t *internal_handle = NULL;
 	static char *function                      = "libvmdk_handle_get_extent_descriptor";
+	int result                                 = 1;
 
 	if( handle == NULL )
 	{
@@ -4914,19 +4908,7 @@ int libvmdk_handle_get_extent_descriptor(
 		 function,
 		 extent_index );
 
-		goto on_error;
-	}
-	if( *extent_descriptor == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing extent descriptor: %d.",
-		 function,
-		 extent_index );
-
-		goto on_error;
+		result = -1;
 	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -4943,14 +4925,6 @@ int libvmdk_handle_get_extent_descriptor(
 		return( -1 );
 	}
 #endif
-	return( 1 );
-
-on_error:
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_read(
-	 internal_handle->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
+	return( result );
 }
 
