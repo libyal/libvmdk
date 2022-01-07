@@ -27,9 +27,9 @@
 #include <wide_string.h>
 
 #include "libvmdk_definitions.h"
-#include "libvmdk_extent_descriptor.h"
 #include "libvmdk_extent_file.h"
 #include "libvmdk_extent_table.h"
+#include "libvmdk_extent_values.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
@@ -1434,12 +1434,12 @@ int libvmdk_extent_table_set_extent_file_by_index(
 	return( 1 );
 }
 
-/* Sets an extent in the extent table based on the extent descriptor
+/* Sets an extent in the extent table based on the extent values
  * Returns 1 if successful or -1 on error
  */
-int libvmdk_extent_table_set_extent_by_extent_descriptor(
+int libvmdk_extent_table_set_extent_by_extent_values(
      libvmdk_extent_table_t *extent_table,
-     libvmdk_internal_extent_descriptor_t *extent_descriptor,
+     libvmdk_extent_values_t *extent_values,
      int extent_index,
      int file_io_pool_entry,
      size64_t extent_file_size,
@@ -1447,7 +1447,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
      size64_t extent_size,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_extent_table_set_extent_by_extent_descriptor";
+	static char *function = "libvmdk_extent_table_set_extent_by_extent_values";
 
 	if( extent_table == NULL )
 	{
@@ -1460,13 +1460,13 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 
 		return( -1 );
 	}
-	if( extent_descriptor == NULL )
+	if( extent_values == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid extent descriptor.",
+		 "%s: invalid extent values.",
 		 function );
 
 		return( -1 );
@@ -1485,7 +1485,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 	}
 	if( extent_index == 0 )
 	{
-		if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
+		if( extent_values->type == LIBVMDK_EXTENT_TYPE_FLAT )
 		{
 			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT ) )
@@ -1500,7 +1500,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 				return( -1 );
 			}
 		}
-		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+		else if( extent_values->type == LIBVMDK_EXTENT_TYPE_SPARSE )
 		{
 			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
@@ -1516,7 +1516,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 				return( -1 );
 			}
 		}
-		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_FLAT )
+		else if( extent_values->type == LIBVMDK_EXTENT_TYPE_VMFS_FLAT )
 		{
 			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
@@ -1532,7 +1532,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 				return( -1 );
 			}
 		}
-		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE )
+		else if( extent_values->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE )
 		{
 			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_SPARSE )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN ) )
@@ -1558,9 +1558,9 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 
 			return( -1 );
 		}
-		extent_table->extent_type = extent_descriptor->type;
+		extent_table->extent_type = extent_values->type;
 	}
-	else if( extent_table->extent_type != extent_descriptor->type )
+	else if( extent_table->extent_type != extent_values->type )
 	{
 		libcerror_error_set(
 		 error,
@@ -1571,8 +1571,8 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 
 		return( -1 );
 	}
-	if( ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
-	 || ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_FLAT ) )
+	if( ( extent_values->type == LIBVMDK_EXTENT_TYPE_FLAT )
+	 || ( extent_values->type == LIBVMDK_EXTENT_TYPE_VMFS_FLAT ) )
 	{
 		if( ( extent_offset < 0 )
 		 || ( (size64_t) extent_offset > extent_file_size ) )
@@ -1617,8 +1617,8 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 			return( -1 );
 		}
 	}
-	else if( ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
-	      || ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE ) )
+	else if( ( extent_values->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+	      || ( extent_values->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE ) )
 	{
 		if( extent_offset != 0 )
 		{

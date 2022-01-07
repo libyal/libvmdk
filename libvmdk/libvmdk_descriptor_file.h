@@ -26,7 +26,7 @@
 #include <file_stream.h>
 #include <types.h>
 
-#include "libvmdk_extent_descriptor.h"
+#include "libvmdk_extent_values.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
@@ -144,7 +144,7 @@ int libvmdk_descriptor_file_get_number_of_extents(
 int libvmdk_descriptor_file_get_extent_by_index(
      libvmdk_descriptor_file_t *descriptor_file,
      int extent_index,
-     libvmdk_internal_extent_descriptor_t **extent_descriptor,
+     libvmdk_extent_values_t **extent_values,
      libcerror_error_t **error );
 
 int libvmdk_descriptor_file_get_parent_content_identifier(

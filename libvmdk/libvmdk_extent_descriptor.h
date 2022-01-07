@@ -26,8 +26,9 @@
 #include <types.h>
 
 #include "libvmdk_extern.h"
+#include "libvmdk_extent_values.h"
 #include "libvmdk_libcerror.h"
-#include "libvmdk_libcsplit.h"
+#include "libvmdk_libcthreads.h"
 #include "libvmdk_types.h"
 
 #if defined( __cplusplus )
@@ -38,57 +39,25 @@ typedef struct libvmdk_internal_extent_descriptor libvmdk_internal_extent_descri
 
 struct libvmdk_internal_extent_descriptor
 {
-	/* The filename
+	/* The extent values
 	 */
-	system_character_t *filename;
+	libvmdk_extent_values_t *extent_values;
 
-	/* The filename size
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
+	/* The read/write lock
 	 */
-	size_t filename_size;
-
-	/* The alternate filename
-	 */
-	system_character_t *alternate_filename;
-
-	/* The alternate filename size
-	 */
-	size_t alternate_filename_size;
-
-	/* The extent offset
-	 */
-	off64_t offset;
-
-	/* The extent size
-	 */
-	size64_t size;
-
-	/* The type
-	 */
-	int type;
-
-	/* The access
-	 */
-	int access;
+	libcthreads_read_write_lock_t *read_write_lock;
+#endif
 };
 
 int libvmdk_extent_descriptor_initialize(
      libvmdk_extent_descriptor_t **extent_descriptor,
+     libvmdk_extent_values_t *extent_values,
      libcerror_error_t **error );
 
 LIBVMDK_EXTERN \
 int libvmdk_extent_descriptor_free(
      libvmdk_extent_descriptor_t **extent_descriptor,
-     libcerror_error_t **error );
-
-int libvmdk_internal_extent_descriptor_free(
-     libvmdk_internal_extent_descriptor_t **internal_extent_descriptor,
-     libcerror_error_t **error );
-
-int libvmdk_extent_descriptor_read(
-     libvmdk_extent_descriptor_t *extent_descriptor,
-     char *value_string,
-     size_t value_string_size,
-     int encoding,
      libcerror_error_t **error );
 
 LIBVMDK_EXTERN \

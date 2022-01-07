@@ -25,8 +25,8 @@
 #include <common.h>
 #include <types.h>
 
-#include "libvmdk_extent_descriptor.h"
 #include "libvmdk_extent_file.h"
+#include "libvmdk_extent_values.h"
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcerror.h"
@@ -192,9 +192,9 @@ int libvmdk_extent_table_set_extent_file_by_index(
      libvmdk_extent_file_t *extent_file,
      libcerror_error_t **error );
 
-int libvmdk_extent_table_set_extent_by_extent_descriptor(
+int libvmdk_extent_table_set_extent_by_extent_values(
      libvmdk_extent_table_t *extent_table,
-     libvmdk_internal_extent_descriptor_t *extent_descriptor,
+     libvmdk_extent_values_t *extent_values,
      int extent_index,
      int file_io_pool_entry,
      size64_t extent_file_size,

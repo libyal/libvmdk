@@ -49,6 +49,7 @@ check_PROGRAMS = \
 	vmdk_test_extent_descriptor \
 	vmdk_test_extent_file \
 	vmdk_test_extent_table \
+	vmdk_test_extent_values \
 	vmdk_test_grain_data \
 	vmdk_test_grain_group \
 	vmdk_test_grain_table \
@@ -127,6 +128,18 @@ vmdk_test_extent_table_SOURCES = \
 	vmdk_test_unused.h
 
 vmdk_test_extent_table_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
+
+vmdk_test_extent_values_SOURCES = \
+	vmdk_test_extent_values.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
+
+vmdk_test_extent_values_LDADD = \
 	../libvmdk/libvmdk.la \
 	@LIBCERROR_LIBADD@
 

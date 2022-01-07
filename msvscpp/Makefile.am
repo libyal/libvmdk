@@ -20,6 +20,7 @@ MSVSCPP_FILES = \
 	vmdk_test_extent_descriptor/vmdk_test_extent_descriptor.vcproj \
 	vmdk_test_extent_file/vmdk_test_extent_file.vcproj \
 	vmdk_test_extent_table/vmdk_test_extent_table.vcproj \
+	vmdk_test_extent_values/vmdk_test_extent_values.vcproj \
 	vmdk_test_grain_data/vmdk_test_grain_data.vcproj \
 	vmdk_test_grain_group/vmdk_test_grain_group.vcproj \
 	vmdk_test_grain_table/vmdk_test_grain_table.vcproj \
