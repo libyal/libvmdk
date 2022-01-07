@@ -336,11 +336,11 @@ int info_handle_file_fprint(
 	system_character_t byte_size_string[ 16 ];
 
 	libvmdk_extent_descriptor_t *extent_descriptor = NULL;
-	system_character_t *filename                   = NULL;
+	system_character_t *value_string               = NULL;
 	static char *function                          = "info_handle_file_fprint";
 	size64_t extent_size                           = 0;
 	size64_t media_size                            = 0;
-	size_t filename_size                           = 0;
+	size_t value_string_size                       = 0;
 	off64_t extent_offset                          = 0;
 	uint32_t content_identifier                    = 0;
 	int disk_type                                  = 0;
@@ -380,7 +380,7 @@ int info_handle_file_fprint(
 	}
 	fprintf(
 	 info_handle->notify_stream,
-	 "\tDisk type:\t\t\t" );
+	 "\tDisk type\t\t\t: " );
 
 	switch( disk_type )
 	{
@@ -515,7 +515,7 @@ int info_handle_file_fprint(
 	{
 		fprintf(
 		 info_handle->notify_stream,
-		 "\tMedia size:\t\t\t%" PRIs_SYSTEM " (%" PRIu64 " bytes)\n",
+		 "\tMedia size\t\t\t: %" PRIs_SYSTEM " (%" PRIu64 " bytes)\n",
 		 byte_size_string,
 		 media_size );
 	}
@@ -523,7 +523,7 @@ int info_handle_file_fprint(
 	{
 		fprintf(
 		 info_handle->notify_stream,
-		 "\tMedia size:\t\t\t%" PRIu64 " bytes\n",
+		 "\tMedia size\t\t\t: %" PRIu64 " bytes\n",
 		 media_size );
 	}
 	if( libvmdk_handle_get_content_identifier(
@@ -542,7 +542,7 @@ int info_handle_file_fprint(
 	}
 	fprintf(
 	 info_handle->notify_stream,
-	 "\tContent identifier:\t\t0x%08" PRIx32 "\n",
+	 "\tContent identifier\t\t: 0x%08" PRIx32 "\n",
 	 content_identifier );
 
 	result = libvmdk_handle_get_parent_content_identifier(
@@ -565,18 +565,18 @@ int info_handle_file_fprint(
 	{
 		fprintf(
 		 info_handle->notify_stream,
-		 "\tParent content identifier:\t0x%08" PRIx32 "\n",
+		 "\tParent content identifier\t: 0x%08" PRIx32 "\n",
 		 content_identifier );
 	}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 	result = libvmdk_handle_get_utf16_parent_filename_size(
 	          info_handle->input_handle,
-	          &filename_size,
+	          &value_string_size,
 	          error );
 #else
 	result = libvmdk_handle_get_utf8_parent_filename_size(
 	          info_handle->input_handle,
-	          &filename_size,
+	          &value_string_size,
 	          error );
 #endif
 	if( result == -1 )
@@ -592,33 +592,22 @@ int info_handle_file_fprint(
 	}
 	else if( result != 0 )
 	{
-		if( filename_size == 0 )
+		if( ( value_string_size == 0 )
+		 || ( value_string_size > ( (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE / sizeof( system_character_t ) ) ) )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing parent filename.",
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid parent filename size value out of bounds.",
 			 function );
 
 			goto on_error;
 		}
-		if( ( filename_size > (size_t) SSIZE_MAX )
-		 || ( ( sizeof( system_character_t ) * filename_size ) > (size_t) SSIZE_MAX ) )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-			 "%s: invalid parent filename size value exceeds maximum.",
-			 function );
+		value_string = system_string_allocate(
+		                value_string_size );
 
-			goto on_error;
-		}
-		filename = system_string_allocate(
-		            filename_size );
-
-		if( filename == NULL )
+		if( value_string == NULL )
 		{
 			libcerror_error_set(
 			 error,
@@ -632,14 +621,14 @@ int info_handle_file_fprint(
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 		result = libvmdk_handle_get_utf16_parent_filename(
 		          info_handle->input_handle,
-		          (uint16_t *) filename,
-		          filename_size,
+		          (uint16_t *) value_string,
+		          value_string_size,
 		          error );
 #else
 		result = libvmdk_handle_get_utf8_parent_filename(
 		          info_handle->input_handle,
-		          (uint8_t *) filename,
-		          filename_size,
+		          (uint8_t *) value_string,
+		          value_string_size,
 		          error );
 #endif
 		if( result != 1 )
@@ -655,13 +644,13 @@ int info_handle_file_fprint(
 		}
 		fprintf(
 		 info_handle->notify_stream,
-		 "\tParent filename:\t\t%" PRIs_SYSTEM "\n",
-		 filename );
+		 "\tParent filename\t\t: %" PRIs_SYSTEM "\n",
+		 value_string );
 
 		memory_free(
-		 filename );
+		 value_string );
 
-		filename = NULL;
+		value_string = NULL;
 	}
 	if( libvmdk_handle_get_number_of_extents(
 	     info_handle->input_handle,
@@ -679,7 +668,7 @@ int info_handle_file_fprint(
 	}
 	fprintf(
 	 info_handle->notify_stream,
-	 "\tNumber of extents:\t\t%d\n",
+	 "\tNumber of extents\t\t: %d\n",
 	 number_of_extents );
 
 	fprintf(
@@ -714,12 +703,12 @@ int info_handle_file_fprint(
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 		result = libvmdk_extent_descriptor_get_utf16_filename_size(
 		          extent_descriptor,
-		          &filename_size,
+		          &value_string_size,
 		          error );
 #else
 		result = libvmdk_extent_descriptor_get_utf8_filename_size(
 		          extent_descriptor,
-		          &filename_size,
+		          &value_string_size,
 		          error );
 #endif
 		if( result == -1 )
@@ -736,33 +725,22 @@ int info_handle_file_fprint(
 		}
 		else if( result != 0 )
 		{
-			if( filename_size == 0 )
+			if( ( value_string_size == 0 )
+			 || ( value_string_size > ( (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE / sizeof( system_character_t ) ) ) )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-				 "%s: missing filename.",
+				 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+				 "%s: invalid filename size value out of bounds.",
 				 function );
 
 				goto on_error;
 			}
-			if( ( filename_size > (size_t) SSIZE_MAX )
-			 || ( ( sizeof( system_character_t ) * filename_size ) > (size_t) SSIZE_MAX ) )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-				 "%s: invalid filename size value exceeds maximum.",
-				 function );
+			value_string = system_string_allocate(
+			                value_string_size );
 
-				goto on_error;
-			}
-			filename = system_string_allocate(
-			            filename_size );
-
-			if( filename == NULL )
+			if( value_string == NULL )
 			{
 				libcerror_error_set(
 				 error,
@@ -776,14 +754,14 @@ int info_handle_file_fprint(
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libvmdk_extent_descriptor_get_utf16_filename(
 			          extent_descriptor,
-				  (uint16_t *) filename,
-				  filename_size,
+				  (uint16_t *) value_string,
+				  value_string_size,
 				  error );
 #else
 			result = libvmdk_extent_descriptor_get_utf8_filename(
 			          extent_descriptor,
-				  (uint8_t *) filename,
-				  filename_size,
+				  (uint8_t *) value_string,
+				  value_string_size,
 				  error );
 #endif
 			if( result != 1 )
@@ -800,13 +778,13 @@ int info_handle_file_fprint(
 			}
 			fprintf(
 			 info_handle->notify_stream,
-			 "\tFilename:\t\t\t%" PRIs_SYSTEM "\n",
-			 filename );
+			 "\tFilename\t\t\t: %" PRIs_SYSTEM "\n",
+			 value_string );
 
 			memory_free(
-			 filename );
+			 value_string );
 
-			filename = NULL;
+			value_string = NULL;
 		}
 		if( libvmdk_extent_descriptor_get_type(
 		     extent_descriptor,
@@ -825,7 +803,7 @@ int info_handle_file_fprint(
 		}
 		fprintf(
 		 info_handle->notify_stream,
-		 "\tType:\t\t\t\t" );
+		 "\tType\t\t\t\t: " );
 
 		switch( extent_type )
 		{
@@ -899,7 +877,7 @@ int info_handle_file_fprint(
 		}
 		fprintf(
 		 info_handle->notify_stream,
-		 "\tStart offset:\t\t\t%" PRIi64 "\n",
+		 "\tStart offset\t\t\t: %" PRIi64 "\n",
 		 extent_offset );
 
 		result = byte_size_string_create(
@@ -913,7 +891,7 @@ int info_handle_file_fprint(
 		{
 			fprintf(
 			 info_handle->notify_stream,
-			 "\tSize:\t\t\t\t%" PRIs_SYSTEM " (%" PRIu64 " bytes)\n",
+			 "\tSize\t\t\t\t: %" PRIs_SYSTEM " (%" PRIu64 " bytes)\n",
 			 byte_size_string,
 			 extent_size );
 		}
@@ -921,7 +899,7 @@ int info_handle_file_fprint(
 		{
 			fprintf(
 			 info_handle->notify_stream,
-			 "\tSize:\t\t\t\t%" PRIu64 " bytes\n",
+			 "\tSize\t\t\t\t: %" PRIu64 " bytes\n",
 			 extent_size );
 		}
 		if( libvmdk_extent_descriptor_free(
@@ -951,10 +929,10 @@ on_error:
 		 &extent_descriptor,
 		 NULL );
 	}
-	if( filename != NULL )
+	if( value_string != NULL )
 	{
 		memory_free(
-		 filename );
+		 value_string );
 	}
 	return( -1 );
 }

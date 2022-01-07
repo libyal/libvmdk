@@ -58,11 +58,6 @@ int libvmdk_grain_group_free(
      libvmdk_grain_group_t **grain_group,
      libcerror_error_t **error );
 
-int libvmdk_grain_group_clone(
-     libvmdk_grain_group_t **destination_grain_group,
-     libvmdk_grain_group_t *source_grain_group,
-     libcerror_error_t **error );
-
 int libvmdk_grain_group_fill(
      libfdata_list_t *grains_list,
      int grain_index,

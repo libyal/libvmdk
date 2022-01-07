@@ -21,20 +21,12 @@
 
 #include <common.h>
 #include <memory.h>
-#include <narrow_string.h>
-#include <system_string.h>
 #include <types.h>
-#include <wide_string.h>
 
-#include "libvmdk_definitions.h"
 #include "libvmdk_extent_descriptor.h"
 #include "libvmdk_extent_values.h"
 #include "libvmdk_libcerror.h"
-#include "libvmdk_libcnotify.h"
-#include "libvmdk_libcsplit.h"
 #include "libvmdk_libcthreads.h"
-#include "libvmdk_libfvalue.h"
-#include "libvmdk_libuna.h"
 #include "libvmdk_types.h"
 
 /* Creates an extent descriptor

@@ -95,11 +95,6 @@ int libvmdk_extent_table_clear(
      libvmdk_extent_table_t *extent_table,
      libcerror_error_t **error );
 
-int libvmdk_extent_table_clone(
-     libvmdk_extent_table_t **destination_extent_table,
-     libvmdk_extent_table_t *source_extent_table,
-     libcerror_error_t **error );
-
 int libvmdk_extent_table_get_data_files_path_size(
      libvmdk_extent_table_t *extent_table,
      size_t *path,

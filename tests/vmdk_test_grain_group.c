@@ -270,152 +270,6 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libvmdk_grain_group_clone function
- * Returns 1 if successful or 0 if not
- */
-int vmdk_test_grain_group_clone(
-     void )
-{
-	libcerror_error_t *error                       = NULL;
-	libvmdk_grain_group_t *destination_grain_group = NULL;
-	libvmdk_grain_group_t *source_grain_group      = NULL;
-	int result                                     = 0;
-
-	/* Initialize test
-	 */
-	result = libvmdk_grain_group_initialize(
-	          &source_grain_group,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "source_grain_group",
-	 source_grain_group );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Test regular cases
-	 */
-	result = libvmdk_grain_group_clone(
-	          &destination_grain_group,
-	          source_grain_group,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "destination_grain_group",
-	 destination_grain_group );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libvmdk_grain_group_free(
-	          &destination_grain_group,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "destination_grain_group",
-	 destination_grain_group );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libvmdk_grain_group_clone(
-	          &destination_grain_group,
-	          NULL,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "destination_grain_group",
-	 destination_grain_group );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Test error cases
-	 */
-	result = libvmdk_grain_group_clone(
-	          NULL,
-	          source_grain_group,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	/* Clean up
-	 */
-	result = libvmdk_grain_group_free(
-	          &source_grain_group,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "source_grain_group",
-	 source_grain_group );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	return( 1 );
-
-on_error:
-	if( error != NULL )
-	{
-		libcerror_error_free(
-		 &error );
-	}
-	if( destination_grain_group != NULL )
-	{
-		libvmdk_grain_group_free(
-		 &destination_grain_group,
-		 NULL );
-	}
-	if( source_grain_group != NULL )
-	{
-		libvmdk_grain_group_free(
-		 &source_grain_group,
-		 NULL );
-	}
-	return( 0 );
-}
-
 #endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 /* The main program
@@ -443,17 +297,17 @@ int main(
 	 "libvmdk_grain_group_free",
 	 vmdk_test_grain_group_free );
 
-	VMDK_TEST_RUN(
-	 "libvmdk_grain_group_clone",
-	 vmdk_test_grain_group_clone );
-
 	/* TODO: add tests for libvmdk_grain_group_fill */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 }
 

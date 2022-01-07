@@ -478,194 +478,6 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libvmdk_extent_table_clone function
- * Returns 1 if successful or 0 if not
- */
-int vmdk_test_extent_table_clone(
-     void )
-{
-	libcerror_error_t *error                         = NULL;
-	libvmdk_extent_table_t *destination_extent_table = NULL;
-	libvmdk_extent_table_t *source_extent_table      = NULL;
-	libvmdk_io_handle_t *io_handle                   = NULL;
-	int result                                       = 0;
-
-	/* Initialize test
-	 */
-	result = libvmdk_io_handle_initialize(
-	          &io_handle,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "io_handle",
-	 io_handle );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libvmdk_extent_table_initialize(
-	          &source_extent_table,
-	          io_handle,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "source_extent_table",
-	 source_extent_table );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Test regular cases
-	 */
-	result = libvmdk_extent_table_clone(
-	          &destination_extent_table,
-	          source_extent_table,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "destination_extent_table",
-	 destination_extent_table );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libvmdk_extent_table_free(
-	          &destination_extent_table,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "destination_extent_table",
-	 destination_extent_table );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libvmdk_extent_table_clone(
-	          &destination_extent_table,
-	          NULL,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "destination_extent_table",
-	 destination_extent_table );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Test error cases
-	 */
-	result = libvmdk_extent_table_clone(
-	          NULL,
-	          source_extent_table,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	/* Clean up
-	 */
-	result = libvmdk_extent_table_free(
-	          &source_extent_table,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "source_extent_table",
-	 source_extent_table );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libvmdk_io_handle_free(
-	          &io_handle,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "io_handle",
-	 io_handle );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	return( 1 );
-
-on_error:
-	if( error != NULL )
-	{
-		libcerror_error_free(
-		 &error );
-	}
-	if( destination_extent_table != NULL )
-	{
-		libvmdk_extent_table_free(
-		 &destination_extent_table,
-		 NULL );
-	}
-	if( source_extent_table != NULL )
-	{
-		libvmdk_extent_table_free(
-		 &source_extent_table,
-		 NULL );
-	}
-	if( io_handle != NULL )
-	{
-		libvmdk_io_handle_free(
-		 &io_handle,
-		 NULL );
-	}
-	return( 0 );
-}
-
 /* Tests the libvmdk_extent_table_get_data_files_path_size function
  * Returns 1 if successful or 0 if not
  */
@@ -1194,10 +1006,6 @@ int main(
 	 vmdk_test_extent_table_clear );
 
 	VMDK_TEST_RUN(
-	 "libvmdk_extent_table_clone",
-	 vmdk_test_extent_table_clone );
-
-	VMDK_TEST_RUN(
 	 "libvmdk_extent_table_get_data_files_path_size",
 	 vmdk_test_extent_table_get_data_files_path_size );
 
@@ -1241,7 +1049,11 @@ int main(
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 }
 
