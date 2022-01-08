@@ -22,10 +22,9 @@
 #include <common.h>
 #include <memory.h>
 #include <narrow_string.h>
-#include <system_string.h>
 #include <types.h>
-#include <wide_string.h>
 
+#include "libvmdk_debug.h"
 #include "libvmdk_definitions.h"
 #include "libvmdk_extent_values.h"
 #include "libvmdk_libcerror.h"
@@ -167,7 +166,6 @@ int libvmdk_extent_values_read(
 	size_t value_string_segment_size        = 0;
 	uint64_t value_64bit                    = 0;
 	int number_of_values                    = 0;
-	int result                              = 0;
 
 	if( extent_values == NULL )
 	{
@@ -606,110 +604,18 @@ int libvmdk_extent_values_read(
 	{
 		/* The extent value: 3 contains the filename
 		 */
-		if( encoding != 0 )
-		{
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-			result = libuna_utf16_string_size_from_byte_stream(
-			          (uint8_t *) filename,
-			          filename_length,
-			          encoding,
-			          &( extent_values->filename_size ),
-			          error );
-#else
-			result = libuna_utf8_string_size_from_byte_stream(
-			          (uint8_t *) filename,
-			          filename_length,
-			          encoding,
-			          &( extent_values->filename_size ),
-			          error );
-#endif
-		}
-		else
-		{
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-			result = libuna_utf16_string_size_from_utf8_stream(
-			          (uint8_t *) filename,
-			          filename_length,
-			          &( extent_values->filename_size ),
-			          error );
-#else
-			result = libuna_utf8_string_size_from_utf8_stream(
-			          (uint8_t *) filename,
-			          filename_length,
-			          &( extent_values->filename_size ),
-			          error );
-#endif
-		}
-		if( result != 1 )
+		if( libvmdk_extent_values_set_filename(
+		     extent_values,
+		     filename,
+		     filename_length,
+		     encoding,
+		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to determine extent filename size.",
-			 function );
-
-			goto on_error;
-		}
-		extent_values->filename = system_string_allocate(
-		                           extent_values->filename_size );
-
-		if( extent_values->filename == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create filename.",
-			 function );
-
-			goto on_error;
-		}
-		if( encoding != 0 )
-		{
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-			result = libuna_utf16_string_copy_from_byte_stream(
-			          (uint16_t *) extent_values->filename,
-			          extent_values->filename_size,
-			          (uint8_t *) filename,
-			          filename_length,
-			          encoding,
-			          error );
-#else
-			result = libuna_utf8_string_copy_from_byte_stream(
-			          (uint8_t *) extent_values->filename,
-			          extent_values->filename_size,
-			          (uint8_t *) filename,
-			          filename_length,
-			          encoding,
-			          error );
-#endif
-		}
-		else
-		{
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-			result = libuna_utf16_string_copy_from_utf8_stream(
-			          (uint16_t *) extent_values->filename,
-			          extent_values->filename_size,
-			          (uint8_t *) filename,
-			          filename_length,
-			          error );
-#else
-			result = libuna_utf8_string_copy_from_utf8_stream(
-			          (uint8_t *) extent_values->filename,
-			          extent_values->filename_size,
-			          (uint8_t *) filename,
-			          filename_length,
-			          error );
-#endif
-		}
-		if( result != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-			 "%s: unable to copy extent filename.",
+			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+			 "%s: unable to set filename.",
 			 function );
 
 			goto on_error;
@@ -717,12 +623,47 @@ int libvmdk_extent_values_read(
 #if defined( HAVE_DEBUG_OUTPUT )
 		if( libcnotify_verbose != 0 )
 		{
-			libcnotify_printf(
-			 "%s: filename\t\t\t\t\t: %" PRIs_SYSTEM "\n",
-			 function,
-			 extent_values->filename );
+			if( encoding != 0 )
+			{
+				if( libvmdk_debug_print_string_value(
+				     function,
+				     "filename\t\t\t\t\t",
+				     extent_values->filename,
+				     extent_values->filename_size,
+				     encoding,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+					 "%s: unable to print string value.",
+					 function );
+
+					goto on_error;
+				}
+			}
+			else
+			{
+				if( libvmdk_debug_print_utf8_string_value(
+				     function,
+				     "filename\t\t\t\t\t",
+				     extent_values->filename,
+				     extent_values->filename_size,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_PRINT_FAILED,
+					 "%s: unable to print UTF-8 string value.",
+					 function );
+
+					goto on_error;
+				}
+			}
 		}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
 	}
 	if( value_string_size > 0 )
 	{
@@ -940,6 +881,112 @@ on_error:
 	return( -1 );
 }
 
+/* Sets the filename
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_values_set_filename(
+     libvmdk_extent_values_t *extent_values,
+     const char *filename,
+     size_t filename_length,
+     int encoding,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_extent_values_set_filename";
+
+	if( extent_values == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent values.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_values->filename != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid extent values - filename value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid filename.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( filename_length == 0 )
+	 || ( filename_length > ( (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid filename size value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	extent_values->filename_size = filename_length + 1;
+
+	extent_values->filename = (uint8_t *) memory_allocate(
+	                                       sizeof( uint8_t ) * extent_values->filename_size );
+
+	if( extent_values->filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create filename.",
+		 function );
+
+		goto on_error;
+	}
+	if( memory_copy(
+	     extent_values->filename,
+	     filename,
+	     filename_length ) == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+		 "%s: unable to copy filename.",
+		 function );
+
+		goto on_error;
+	}
+	extent_values->filename[ filename_length ] = 0;
+
+	extent_values->filename_encoding = encoding;
+
+	return( 1 );
+
+on_error:
+	if( extent_values->filename != NULL )
+	{
+		memory_free(
+		 extent_values->filename );
+
+		extent_values->filename = NULL;
+	}
+	extent_values->filename_size = 0;
+
+	return( -1 );
+}
+
 /* Retrieves the extent type
  * Returns 1 if successful or -1 on error
  */
@@ -1037,6 +1084,7 @@ int libvmdk_extent_values_get_utf8_filename_size(
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_values_get_utf8_filename_size";
+	int result            = 0;
 
 	if( extent_values == NULL )
 	{
@@ -1049,16 +1097,29 @@ int libvmdk_extent_values_get_utf8_filename_size(
 
 		return( -1 );
 	}
-	if( extent_values->filename == NULL )
+	if( ( extent_values->filename == NULL )
+	 || ( extent_values->filename_size == 0 ) )
 	{
 		return( 0 );
 	}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libuna_utf8_string_size_from_utf16(
-	     (uint16_t *) extent_values->filename,
-	     extent_values->filename_size,
-	     utf8_string_size,
-	     error ) != 1 )
+	if( extent_values->filename_encoding != 0 )
+	{
+		result = libuna_utf8_string_size_from_byte_stream(
+		          extent_values->filename,
+		          extent_values->filename_size,
+		          extent_values->filename_encoding,
+		          utf8_string_size,
+		          error );
+	}
+	else
+	{
+		result = libuna_utf8_string_size_from_utf8_stream(
+		          extent_values->filename,
+		          extent_values->filename_size,
+		          utf8_string_size,
+		          error );
+	}
+	if( result != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -1069,22 +1130,6 @@ int libvmdk_extent_values_get_utf8_filename_size(
 
 		return( -1 );
 	}
-#else
-	if( utf8_string_size == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UTF-8 string size.",
-		 function );
-
-		return( -1 );
-	}
-	*utf8_string_size = extent_values->filename_size;
-
-#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
-
 	return( 1 );
 }
 
@@ -1099,6 +1144,7 @@ int libvmdk_extent_values_get_utf8_filename(
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_values_get_utf8_filename";
+	int result            = 0;
 
 	if( extent_values == NULL )
 	{
@@ -1111,77 +1157,41 @@ int libvmdk_extent_values_get_utf8_filename(
 
 		return( -1 );
 	}
-	if( extent_values->filename == NULL )
+	if( ( extent_values->filename == NULL )
+	 || ( extent_values->filename_size == 0 ) )
 	{
 		return( 0 );
 	}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	if( libuna_utf8_string_copy_from_utf16(
-	     utf8_string,
-	     utf8_string_size,
-	     (uint16_t *) extent_values->filename,
-	     extent_values->filename_size,
-	     error ) != 1 )
+	if( extent_values->filename_encoding != 0 )
+	{
+		result = libuna_utf8_string_copy_from_byte_stream(
+		          utf8_string,
+		          utf8_string_size,
+		          extent_values->filename,
+		          extent_values->filename_size,
+		          extent_values->filename_encoding,
+		          error );
+	}
+	else
+	{
+		result = libuna_utf8_string_copy_from_utf8_stream(
+		          utf8_string,
+		          utf8_string_size,
+		          extent_values->filename,
+		          extent_values->filename_size,
+		          error );
+	}
+	if( result != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-		 "%s: unable to copy UTF-8 string.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 string size.",
 		 function );
 
 		return( -1 );
 	}
-#else
-	if( utf8_string == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UTF-8 string.",
-		 function );
-
-		return( -1 );
-	}
-	if( utf8_string_size > (size_t) SSIZE_MAX )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid UTF-8 string size value exceeds maximum.",
-		 function );
-
-		return( -1 );
-	}
-	if( utf8_string_size < extent_values->filename_size )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: UTF-8 string is too small.",
-		 function );
-
-		return( -1 );
-	}
-	if( narrow_string_copy(
-	     utf8_string,
-	     extent_values->filename,
-	     extent_values->filename_size ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy UTF-8 string.",
-		 function );
-
-		return( -1 );
-	}
-#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
-
 	return( 1 );
 }
 
@@ -1195,6 +1205,7 @@ int libvmdk_extent_values_get_utf16_filename_size(
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_values_get_utf16_filename_size";
+	int result            = 0;
 
 	if( extent_values == NULL )
 	{
@@ -1207,41 +1218,39 @@ int libvmdk_extent_values_get_utf16_filename_size(
 
 		return( -1 );
 	}
-	if( extent_values->filename == NULL )
+	if( ( extent_values->filename == NULL )
+	 || ( extent_values->filename_size == 0 ) )
 	{
 		return( 0 );
 	}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	if( utf16_string_size == NULL )
+	if( extent_values->filename_encoding != 0 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UTF-16 string size.",
-		 function );
-
-		return( -1 );
+		result = libuna_utf16_string_size_from_byte_stream(
+		          extent_values->filename,
+		          extent_values->filename_size,
+		          extent_values->filename_encoding,
+		          utf16_string_size,
+		          error );
 	}
-	*utf16_string_size = extent_values->filename_size;
-#else
-	if( libuna_utf16_string_size_from_utf8(
-	     (uint8_t *) extent_values->filename,
-	     extent_values->filename_size,
-	     utf16_string_size,
-	     error ) != 1 )
+	else
+	{
+		result = libuna_utf16_string_size_from_utf8_stream(
+		          extent_values->filename,
+		          extent_values->filename_size,
+		          utf16_string_size,
+		          error );
+	}
+	if( result != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve UTF-16 size size.",
+		 "%s: unable to retrieve UTF-16 string size.",
 		 function );
 
 		return( -1 );
 	}
-#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
-
 	return( 1 );
 }
 
@@ -1256,6 +1265,7 @@ int libvmdk_extent_values_get_utf16_filename(
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_values_get_utf16_filename";
+	int result            = 0;
 
 	if( extent_values == NULL )
 	{
@@ -1268,77 +1278,41 @@ int libvmdk_extent_values_get_utf16_filename(
 
 		return( -1 );
 	}
-	if( extent_values->filename == NULL )
+	if( ( extent_values->filename == NULL )
+	 || ( extent_values->filename_size == 0 ) )
 	{
 		return( 0 );
 	}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	if( utf16_string == NULL )
+	if( extent_values->filename_encoding != 0 )
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid UTF-16 string.",
-		 function );
-
-		return( -1 );
+		result = libuna_utf16_string_copy_from_byte_stream(
+		          utf16_string,
+		          utf16_string_size,
+		          extent_values->filename,
+		          extent_values->filename_size,
+		          extent_values->filename_encoding,
+		          error );
 	}
-	if( utf16_string_size > (size_t) SSIZE_MAX )
+	else
 	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid UTF-16 string size value exceeds maximum.",
-		 function );
-
-		return( -1 );
+		result = libuna_utf16_string_copy_from_utf8_stream(
+		          utf16_string,
+		          utf16_string_size,
+		          extent_values->filename,
+		          extent_values->filename_size,
+		          error );
 	}
-	if( utf16_string_size < extent_values->filename_size )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_VALUE_TOO_SMALL,
-		 "%s: UTF-16 string is too small.",
-		 function );
-
-		return( -1 );
-	}
-	if( wide_string_copy(
-	     utf16_string,
-	     extent_values->filename,
-	     extent_values->filename_size ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy UTF-16 string.",
-		 function );
-
-		return( -1 );
-	}
-#else
-	if( libuna_utf16_string_copy_from_utf8(
-	     utf16_string,
-	     utf16_string_size,
-	     (uint8_t *) extent_values->filename,
-	     extent_values->filename_size,
-	     error ) != 1 )
+	if( result != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-		 "%s: unable to copy UTF-16 string.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-16 string size.",
 		 function );
 
 		return( -1 );
 	}
-#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
-
 	return( 1 );
 }
 

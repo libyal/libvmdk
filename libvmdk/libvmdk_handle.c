@@ -902,7 +902,6 @@ int libvmdk_handle_open_wide(
 			}
 		}
 	}
-/* TODO does this work for UTF-16 ? */
 	data_files_path_end = wide_string_search_character_reverse(
 	                       filename,
 	                       (wint_t) LIBCPATH_SEPARATOR,
@@ -1385,17 +1384,15 @@ int libvmdk_handle_open_extent_data_files(
      libvmdk_handle_t *handle,
      libcerror_error_t **error )
 {
-	libbfio_pool_t *file_io_pool                   = NULL;
-	libvmdk_extent_values_t *extent_values         = NULL;
-	libvmdk_internal_handle_t *internal_handle     = NULL;
-	system_character_t *extent_data_file_location  = NULL;
-	system_character_t *extent_data_filename_start = NULL;
-	static char *function                          = "libvmdk_handle_open_extent_data_files";
-	size_t extent_data_file_location_size          = 0;
-	size_t extent_data_filename_size               = 0;
-	int extent_index                               = 0;
-	int number_of_extents                          = 0;
-	int result                                     = 0;
+	libbfio_pool_t *file_io_pool                  = NULL;
+	libvmdk_extent_values_t *extent_values        = NULL;
+	libvmdk_internal_handle_t *internal_handle    = NULL;
+	system_character_t *extent_data_file_location = NULL;
+	static char *function                         = "libvmdk_handle_open_extent_data_files";
+	size_t extent_data_file_location_size         = 0;
+	int extent_index                              = 0;
+	int number_of_extents                         = 0;
+	int result                                    = 0;
 
 	if( handle == NULL )
 	{
@@ -1544,83 +1541,34 @@ int libvmdk_handle_open_extent_data_files(
 		}
 		if( extent_values->type != LIBVMDK_EXTENT_TYPE_ZERO )
 		{
-			if( ( extent_values->filename == NULL )
-			 || ( extent_values->filename_size == 0 ) )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+			result = libvmdk_extent_table_get_extent_data_file_path_wide(
+			          internal_handle->extent_table,
+			          extent_values,
+			          &extent_data_file_location,
+			          &extent_data_file_location_size,
+			          error );
+#else
+			result = libvmdk_extent_table_get_extent_data_file_path(
+			          internal_handle->extent_table,
+			          extent_values,
+			          &extent_data_file_location,
+			          &extent_data_file_location_size,
+			          error );
+#endif
+			if( result != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-				 "%s: invalid extent descriptor: %d - missing filename.",
-				 function,
-				 extent_index );
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create extent data file location.",
+				 function );
 
 				goto on_error;
 			}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-			extent_data_filename_start = wide_string_search_character_reverse(
-			                              extent_values->filename,
-			                              (wint_t) LIBCPATH_SEPARATOR,
-			                              extent_values->filename_size );
-#else
-			extent_data_filename_start = narrow_string_search_character_reverse(
-			                              extent_values->filename,
-			                              (int) LIBCPATH_SEPARATOR,
-			                              extent_values->filename_size );
-#endif
-			if( extent_data_filename_start != NULL )
-			{
-				/* Ignore the path separator itself
-				 */
-				extent_data_filename_start++;
-
-/* TODO does this work for UTF-16 ? */
-				extent_data_filename_size = (size_t) ( extent_data_filename_start - extent_values->filename );
-			}
-			else
-			{
-				extent_data_filename_start = extent_values->filename;
-				extent_data_filename_size  = extent_values->filename_size;
-			}
-/* TODO refactor to a function in extent table */
-			if( internal_handle->extent_table->data_files_path != NULL )
-			{
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				if( libcpath_path_join_wide(
-				     &extent_data_file_location,
-				     &extent_data_file_location_size,
-				     internal_handle->extent_table->data_files_path,
-				     internal_handle->extent_table->data_files_path_size - 1,
-				     extent_data_filename_start,
-				     extent_data_filename_size - 1,
-				     error ) != 1 )
-#else
-				if( libcpath_path_join(
-				     &extent_data_file_location,
-				     &extent_data_file_location_size,
-				     internal_handle->extent_table->data_files_path,
-				     internal_handle->extent_table->data_files_path_size - 1,
-				     extent_data_filename_start,
-				     extent_data_filename_size - 1,
-				     error ) != 1 )
-#endif
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-					 "%s: unable to create extent data file location.",
-					 function );
-
-					goto on_error;
-				}
-			}
-			else
-			{
-				extent_data_file_location      = extent_data_filename_start;
-				extent_data_file_location_size = extent_data_filename_size;
-			}
 /* TODO add support for alternate extent file name */
+
 			/* Note that the open extent data file function will initialize extent_data_file_io_pool
 			 */
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
@@ -1650,14 +1598,10 @@ int libvmdk_handle_open_extent_data_files(
 
 				goto on_error;
 			}
-			if( ( extent_data_file_location != NULL )
-			 && ( extent_data_file_location != extent_data_filename_start ) )
-			{
-				memory_free(
-				 extent_data_file_location );
-			}
-			extent_data_filename_start = NULL;
-			extent_data_file_location  = NULL;
+			memory_free(
+			 extent_data_file_location );
+
+			extent_data_file_location = NULL;
 		}
 	}
 	if( libvmdk_handle_open_read_grain_table(
@@ -1704,8 +1648,7 @@ on_error:
 		 &file_io_pool,
 		 NULL );
 	}
-	if( ( extent_data_file_location != NULL )
-	 && ( extent_data_file_location != extent_data_filename_start ) )
+	if( extent_data_file_location != NULL )
 	{
 		memory_free(
 		 extent_data_file_location );

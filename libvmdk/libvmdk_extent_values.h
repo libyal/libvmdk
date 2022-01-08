@@ -37,11 +37,15 @@ struct libvmdk_extent_values
 {
 	/* The filename
 	 */
-	system_character_t *filename;
+	uint8_t *filename;
 
 	/* The filename size
 	 */
 	size_t filename_size;
+
+	/* The filename encoding
+	 */
+	int filename_encoding;
 
 	/* The alternate filename
 	 */
@@ -80,6 +84,13 @@ int libvmdk_extent_values_read(
      libvmdk_extent_values_t *extent_values,
      const char *value_string,
      size_t value_string_size,
+     int encoding,
+     libcerror_error_t **error );
+
+int libvmdk_extent_values_set_filename(
+     libvmdk_extent_values_t *extent_values,
+     const char *filename,
+     size_t filename_length,
      int encoding,
      libcerror_error_t **error );
 

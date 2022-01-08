@@ -1,6 +1,4 @@
 TODO
-* change extent_values name to raw string instead of system_character_t
-
 * vmdkmount empty array on close not on free
 * check TODO in libvmdk_handle_open_wide regarding UTF-16
 

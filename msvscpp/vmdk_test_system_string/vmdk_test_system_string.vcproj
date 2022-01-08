@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9,00"
-	Name="vmdk_test_extent_table"
-	ProjectGUID="{5F7AC4FD-C4EA-4F53-89E5-F004CEABEBD3}"
-	RootNamespace="vmdk_test_extent_table"
+	Name="vmdk_test_system_string"
+	ProjectGUID="{57F2A405-A7C7-4284-8962-CDBDA971415D}"
+	RootNamespace="vmdk_test_system_string"
 	Keyword="Win32Proj"
 	TargetFrameworkVersion="131072"
 	>
@@ -176,11 +176,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\tests\vmdk_test_extent_table.c"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\vmdk_test_memory.c"
+				RelativePath="..\..\tests\vmdk_test_system_string.c"
 				>
 			</File>
 		</Filter>
@@ -194,19 +190,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\tests\vmdk_test_libcpath.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\tests\vmdk_test_libvmdk.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\tests\vmdk_test_macros.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tests\vmdk_test_memory.h"
 				>
 			</File>
 			<File

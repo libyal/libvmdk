@@ -7,7 +7,7 @@ EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
 EXIT_IGNORE=77;
 
-LIBRARY_TESTS="deflate descriptor_file error extent_descriptor extent_file extent_table extent_values grain_data grain_group grain_table io_handle notify";
+LIBRARY_TESTS="compression deflate descriptor_file error extent_descriptor extent_file extent_table extent_values grain_data grain_group grain_table io_handle notify system_string";
 LIBRARY_TESTS_WITH_INPUT="handle support";
 OPTION_SETS="";
 

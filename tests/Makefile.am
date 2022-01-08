@@ -43,6 +43,7 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	vmdk_test_compression \
 	vmdk_test_deflate \
 	vmdk_test_descriptor_file \
 	vmdk_test_error \
@@ -57,9 +58,22 @@ check_PROGRAMS = \
 	vmdk_test_io_handle \
 	vmdk_test_notify \
 	vmdk_test_support \
+	vmdk_test_system_string \
 	vmdk_test_tools_info_handle \
 	vmdk_test_tools_output \
 	vmdk_test_tools_signal
+
+vmdk_test_compression_SOURCES = \
+	vmdk_test_compression.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
+
+vmdk_test_compression_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
 
 vmdk_test_deflate_SOURCES = \
 	vmdk_test_deflate.c \
@@ -122,6 +136,7 @@ vmdk_test_extent_file_LDADD = \
 vmdk_test_extent_table_SOURCES = \
 	vmdk_test_extent_table.c \
 	vmdk_test_libcerror.h \
+	vmdk_test_libcpath.h \
 	vmdk_test_libvmdk.h \
 	vmdk_test_macros.h \
 	vmdk_test_memory.c vmdk_test_memory.h \
@@ -253,6 +268,17 @@ vmdk_test_support_LDADD = \
 	@LIBCNOTIFY_LIBADD@ \
 	@LIBCLOCALE_LIBADD@ \
 	@LIBCDATA_LIBADD@ \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
+
+vmdk_test_system_string_SOURCES = \
+	vmdk_test_libcerror.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_system_string.c \
+	vmdk_test_unused.h
+
+vmdk_test_system_string_LDADD = \
 	../libvmdk/libvmdk.la \
 	@LIBCERROR_LIBADD@
 

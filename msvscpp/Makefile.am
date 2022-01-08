@@ -14,6 +14,7 @@ MSVSCPP_FILES = \
 	libuna/libuna.vcproj \
 	libvmdk/libvmdk.vcproj \
 	pyvmdk/pyvmdk.vcproj \
+	vmdk_test_compression/vmdk_test_compression.vcproj \
 	vmdk_test_deflate/vmdk_test_deflate.vcproj \
 	vmdk_test_descriptor_file/vmdk_test_descriptor_file.vcproj \
 	vmdk_test_error/vmdk_test_error.vcproj \
@@ -28,6 +29,7 @@ MSVSCPP_FILES = \
 	vmdk_test_io_handle/vmdk_test_io_handle.vcproj \
 	vmdk_test_notify/vmdk_test_notify.vcproj \
 	vmdk_test_support/vmdk_test_support.vcproj \
+	vmdk_test_system_string/vmdk_test_system_string.vcproj \
 	vmdk_test_tools_info_handle/vmdk_test_tools_info_handle.vcproj \
 	vmdk_test_tools_output/vmdk_test_tools_output.vcproj \
 	vmdk_test_tools_signal/vmdk_test_tools_signal.vcproj \
