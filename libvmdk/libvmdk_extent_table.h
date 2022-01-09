@@ -136,11 +136,27 @@ int libvmdk_extent_table_get_extent_data_file_path(
      size_t *path_size,
      libcerror_error_t **error );
 
+int libvmdk_extent_table_join_extent_data_file_path(
+     libvmdk_extent_table_t *extent_table,
+     const char *extent_data_filename,
+     size_t extent_data_filename_size,
+     char **path,
+     size_t *path_size,
+     libcerror_error_t **error );
+
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
 int libvmdk_extent_table_get_extent_data_file_path_wide(
      libvmdk_extent_table_t *extent_table,
      libvmdk_extent_values_t *extent_values,
+     wchar_t **path,
+     size_t *path_size,
+     libcerror_error_t **error );
+
+int libvmdk_extent_table_join_extent_data_file_path_wide(
+     libvmdk_extent_table_t *extent_table,
+     const wchar_t *extent_data_filename,
+     size_t extent_data_filename_size,
      wchar_t **path,
      size_t *path_size,
      libcerror_error_t **error );

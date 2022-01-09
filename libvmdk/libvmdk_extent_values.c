@@ -22,7 +22,9 @@
 #include <common.h>
 #include <memory.h>
 #include <narrow_string.h>
+#include <system_string.h>
 #include <types.h>
+#include <wide_string.h>
 
 #include "libvmdk_debug.h"
 #include "libvmdk_definitions.h"
@@ -32,6 +34,7 @@
 #include "libvmdk_libcsplit.h"
 #include "libvmdk_libfvalue.h"
 #include "libvmdk_libuna.h"
+#include "libvmdk_system_string.h"
 
 /* Creates extent values
  * Make sure the value extent_values is referencing, is set to NULL
@@ -933,7 +936,7 @@ int libvmdk_extent_values_set_filename(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
-		 "%s: invalid filename size value out of bounds.",
+		 "%s: invalid filename length value out of bounds.",
 		 function );
 
 		return( -1 );
@@ -986,6 +989,266 @@ on_error:
 
 	return( -1 );
 }
+
+/* Sets the alternate filename
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_values_set_alternate_filename(
+     libvmdk_extent_values_t *extent_values,
+     const char *filename,
+     size_t filename_length,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_extent_values_set_alternate_filename";
+
+	if( extent_values == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent values.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_values->alternate_filename != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid extent values - alternate filename value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid filename.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( filename_length == 0 )
+	 || ( filename_length > ( (size_t) SSIZE_MAX - 1 ) ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid filename length value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( libvmdk_system_string_size_from_narrow_string(
+	     filename,
+	     filename_length + 1,
+	     &( extent_values->alternate_filename_size ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
+		 "%s: unable to determine alternate filename size.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( extent_values->alternate_filename_size == 0 )
+	 || ( extent_values->alternate_filename_size > ( (size_t) SSIZE_MAX / sizeof( system_character_t ) ) ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid file IO handle - alternate filename size value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
+	extent_values->alternate_filename = system_string_allocate(
+	                                     extent_values->alternate_filename_size );
+
+	if( extent_values->alternate_filename == NULL )
+	{
+		libcerror_error_set(
+		error,
+		LIBCERROR_ERROR_DOMAIN_MEMORY,
+		LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		"%s: unable to create alternate filename.",
+		function );
+
+		goto on_error;
+	}
+	if( libvmdk_system_string_copy_from_narrow_string(
+	     extent_values->alternate_filename,
+	     extent_values->alternate_filename_size,
+	     filename,
+	     filename_length + 1,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy alternate filename.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( extent_values->alternate_filename != NULL )
+	{
+		memory_free(
+		 extent_values->alternate_filename );
+
+		extent_values->alternate_filename = NULL;
+	}
+	extent_values->alternate_filename_size = 0;
+
+	return( -1 );
+}
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+
+/* Sets the alternate filename
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_values_set_alternate_filename_wide(
+     libvmdk_extent_values_t *extent_values,
+     const wchar_t *filename,
+     size_t filename_length,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_extent_values_set_alternate_filename_wide";
+
+	if( extent_values == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent values.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_values->alternate_filename != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid extent values - alternate filename value already set.",
+		 function );
+
+		return( -1 );
+	}
+	if( filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid filename.",
+		 function );
+
+		return( -1 );
+	}
+	if( ( filename_length == 0 )
+	 || ( filename_length > ( (size_t) SSIZE_MAX - 1 ) ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid filename length value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	if( libvmdk_system_string_size_from_wide_string(
+	     filename,
+	     filename_length + 1,
+	     &( extent_values->alternate_filename_size ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_CONVERSION,
+		 LIBCERROR_CONVERSION_ERROR_GENERIC,
+		 "%s: unable to determine alternate filename size.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( extent_values->alternate_filename_size == 0 )
+	 || ( extent_values->alternate_filename_size > ( (size_t) SSIZE_MAX / sizeof( system_character_t ) ) ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid file IO handle - alternate filename size value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
+	extent_values->alternate_filename = system_string_allocate(
+	                                     extent_values->alternate_filename_size );
+
+	if( extent_values->alternate_filename == NULL )
+	{
+		libcerror_error_set(
+		error,
+		LIBCERROR_ERROR_DOMAIN_MEMORY,
+		LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		"%s: unable to create alternate filename.",
+		function );
+
+		goto on_error;
+	}
+	if( libvmdk_system_string_copy_from_wide_string(
+	     extent_values->alternate_filename,
+	     extent_values->alternate_filename_size,
+	     filename,
+	     filename_length + 1,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
+		 "%s: unable to copy alternate filename.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( extent_values->alternate_filename != NULL )
+	{
+		memory_free(
+		 extent_values->alternate_filename );
+
+		extent_values->alternate_filename = NULL;
+	}
+	extent_values->alternate_filename_size = 0;
+
+	return( -1 );
+}
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
 /* Retrieves the extent type
  * Returns 1 if successful or -1 on error

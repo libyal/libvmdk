@@ -40,12 +40,12 @@
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libcfile.h"
 #include "libvmdk_libcnotify.h"
 #include "libvmdk_libcpath.h"
 #include "libvmdk_libcthreads.h"
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
-#include "libvmdk_system_string.h"
 
 /* Creates a handle
  * Make sure the value handle is referencing, is set to NULL
@@ -537,59 +537,17 @@ int libvmdk_handle_open(
 			}
 			if( extent_values->type == LIBVMDK_EXTENT_TYPE_SPARSE )
 			{
-				if( libvmdk_system_string_size_from_narrow_string(
+				if( libvmdk_extent_values_set_alternate_filename(
+				     extent_values,
 				     filename,
-				     filename_length + 1,
-				     &( extent_values->alternate_filename_size ),
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-					 LIBCERROR_CONVERSION_ERROR_GENERIC,
-					 "%s: unable to determine alternate filename size.",
-					 function );
-
-					goto on_error;
-				}
-				if( ( extent_values->alternate_filename_size == 0 )
-				 || ( extent_values->alternate_filename_size > ( (size_t) SSIZE_MAX / sizeof( system_character_t ) ) ) )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-					 "%s: invalid file IO handle - alternate filename size value out of bounds.",
-					 function );
-
-					goto on_error;
-				}
-				extent_values->alternate_filename = system_string_allocate(
-				                                     extent_values->alternate_filename_size );
-
-				if( extent_values->alternate_filename == NULL )
-				{
-					libcerror_error_set(
-					error,
-					LIBCERROR_ERROR_DOMAIN_MEMORY,
-					LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-					"%s: unable to create alternate filename.",
-					function );
-
-					goto on_error;
-				}
-				if( libvmdk_system_string_copy_from_narrow_string(
-				     extent_values->alternate_filename,
-				     extent_values->alternate_filename_size,
-				     filename,
-				     filename_length + 1,
+				     filename_length,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-					 "%s: unable to copy alternate filename.",
+					 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+					 "%s: unable to set alternate filename in extent values.",
 					 function );
 
 					goto on_error;
@@ -598,7 +556,7 @@ int libvmdk_handle_open(
 				if( libcnotify_verbose != 0 )
 				{
 					libcnotify_printf(
-					 "%s: alternate filename\t\t\t: %" PRIs_SYSTEM "\n",
+					 "%s: alternate filename\t\t\t\t\t: %" PRIs_SYSTEM "\n",
 					 function,
 					 extent_values->alternate_filename );
 				}
@@ -868,59 +826,17 @@ int libvmdk_handle_open_wide(
 			}
 			if( extent_values->type == LIBVMDK_EXTENT_TYPE_SPARSE )
 			{
-				if( libvmdk_system_string_size_from_wide_string(
+				if( libvmdk_extent_values_set_alternate_filename_wide(
+				     extent_values,
 				     filename,
-				     filename_length + 1,
-				     &( extent_values->alternate_filename_size ),
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-					 LIBCERROR_CONVERSION_ERROR_GENERIC,
-					 "%s: unable to determine alternate filename size.",
-					 function );
-
-					goto on_error;
-				}
-				if( ( extent_values->alternate_filename_size == 0 )
-				 || ( extent_values->alternate_filename_size > ( (size_t) SSIZE_MAX / sizeof( system_character_t ) ) ) )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-					 "%s: invalid file IO handle - alternate filename size value out of bounds.",
-					 function );
-
-					goto on_error;
-				}
-				extent_values->alternate_filename = system_string_allocate(
-				                                     extent_values->alternate_filename_size );
-
-				if( extent_values->alternate_filename == NULL )
-				{
-					libcerror_error_set(
-					error,
-					LIBCERROR_ERROR_DOMAIN_MEMORY,
-					LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-					"%s: unable to create alternate filename.",
-					function );
-
-					goto on_error;
-				}
-				if( libvmdk_system_string_copy_from_wide_string(
-				     extent_values->alternate_filename,
-				     extent_values->alternate_filename_size,
-				     filename,
-				     filename_length + 1,
+				     filename_length,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-					 "%s: unable to copy alternate filename.",
+					 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+					 "%s: unable to set alternate filename in extent values.",
 					 function );
 
 					goto on_error;
@@ -929,7 +845,7 @@ int libvmdk_handle_open_wide(
 				if( libcnotify_verbose != 0 )
 				{
 					libcnotify_printf(
-					 "%s: alternate filename\t\t\t: %" PRIs_SYSTEM "\n",
+					 "%s: alternate filename\t\t\t\t\t: %" PRIs_SYSTEM "\n",
 					 function,
 					 extent_values->alternate_filename );
 				}
@@ -1399,8 +1315,65 @@ int libvmdk_handle_open_extent_data_files(
 
 				goto on_error;
 			}
-/* TODO add support for alternate extent file name */
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+			result = libcfile_file_exists_wide(
+			          extent_data_file_location,
+			          error );
+#else
+			result = libcfile_file_exists(
+			          extent_data_file_location,
+			          error );
+#endif
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to determine if extent: %d data file exists.",
+				 function,
+				 extent_index );
 
+				goto on_error;
+			}
+			else if( ( result == 0 )
+			      && ( extent_values->alternate_filename != NULL ) )
+			{
+				memory_free(
+				 extent_data_file_location );
+
+				extent_data_file_location      = NULL;
+				extent_data_file_location_size = 0;
+
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+				result = libvmdk_extent_table_join_extent_data_file_path_wide(
+				          internal_handle->extent_table,
+				          extent_values->alternate_filename,
+				          extent_values->alternate_filename_size,
+				          &extent_data_file_location,
+				          &extent_data_file_location_size,
+				          error );
+#else
+				result = libvmdk_extent_table_join_extent_data_file_path(
+				          internal_handle->extent_table,
+				          extent_values->alternate_filename,
+				          extent_values->alternate_filename_size,
+				          &extent_data_file_location,
+				          &extent_data_file_location_size,
+				          error );
+#endif
+				if( result != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create alternate extent data file location.",
+					 function );
+
+					goto on_error;
+				}
+			}
 			/* Note that the open extent data file function will initialize extent_data_file_io_pool
 			 */
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )

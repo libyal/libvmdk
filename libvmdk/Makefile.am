@@ -42,6 +42,7 @@ libvmdk_la_SOURCES = \
 	libvmdk_libbfio.h \
 	libvmdk_libcdata.h \
 	libvmdk_libcerror.h \
+	libvmdk_libcfile.h \
 	libvmdk_libclocale.h \
 	libvmdk_libcnotify.h \
 	libvmdk_libcpath.h \

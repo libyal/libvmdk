@@ -328,6 +328,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libvmdk\libvmdk_libcfile.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libvmdk\libvmdk_libclocale.h"
 				>
 			</File>

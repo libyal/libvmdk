@@ -94,6 +94,22 @@ int libvmdk_extent_values_set_filename(
      int encoding,
      libcerror_error_t **error );
 
+int libvmdk_extent_values_set_alternate_filename(
+     libvmdk_extent_values_t *extent_values,
+     const char *filename,
+     size_t filename_length,
+     libcerror_error_t **error );
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+
+int libvmdk_extent_values_set_alternate_filename_wide(
+     libvmdk_extent_values_t *extent_values,
+     const wchar_t *filename,
+     size_t filename_length,
+     libcerror_error_t **error );
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
+
 int libvmdk_extent_values_get_type(
      libvmdk_extent_values_t *extent_values,
      int *type,
