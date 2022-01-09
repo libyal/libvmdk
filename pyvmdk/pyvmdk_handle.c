@@ -88,14 +88,6 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 	  "\n"
 	  "Opens the extent data files." },
 
-/* TODO remove */
-	{ "open_extent_data_files_file_objects",
-	  (PyCFunction) pyvmdk_handle_open_extent_data_files_as_file_objects,
-	  METH_VARARGS | METH_KEYWORDS,
-	  "open_extent_data_files_file_objects(file_objects) -> None\n"
-	  "\n"
-	  "Opens extent data files using a list of file-like objects." },
-
 	{ "open_extent_data_files_as_file_objects",
 	  (PyCFunction) pyvmdk_handle_open_extent_data_files_as_file_objects,
 	  METH_VARARGS | METH_KEYWORDS,

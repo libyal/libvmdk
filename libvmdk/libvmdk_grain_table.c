@@ -192,16 +192,14 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
 
 		return( -1 );
 	}
-	result = libvmdk_extent_table_get_extent_file_at_offset(
-	          extent_table,
-	          offset,
-	          file_io_pool,
-	          &extent_number,
-	          &extent_file_data_offset,
-	          &extent_file,
-	          error );
-
-	if( result != 1 )
+	if( libvmdk_extent_table_get_extent_file_at_offset(
+	     extent_table,
+	     offset,
+	     file_io_pool,
+	     &extent_number,
+	     &extent_file_data_offset,
+	     &extent_file,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -211,17 +209,6 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
 		 function,
 		 offset,
 		 offset );
-
-		return( -1 );
-	}
-	if( extent_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing extent file.",
-		 function );
 
 		return( -1 );
 	}
@@ -250,16 +237,14 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
 	{
 		return( 1 );
 	}
-	result = libvmdk_extent_file_get_grain_group_at_offset(
-		  extent_file,
-		  file_io_pool,
-		  extent_file_data_offset,
-		  &grain_groups_list_index,
-		  &grain_group_data_offset,
-		  &grains_list,
-		  error );
-
-	if( result != 1 )
+	if( libvmdk_extent_file_get_grain_group_at_offset(
+	     extent_file,
+	     file_io_pool,
+	     extent_file_data_offset,
+	     &grain_groups_list_index,
+	     &grain_group_data_offset,
+	     &grains_list,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -273,18 +258,16 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
 
 		return( -1 );
 	}
-	result = libfdata_list_get_element_at_offset(
-		  grains_list,
-		  grain_group_data_offset,
-		  &grains_list_index,
-		  &grain_data_offset,
-		  &grain_file_index,
-		  &grain_offset,
-		  &grain_size,
-		  &grain_flags,
-		  error );
-
-	if( result != 1 )
+	if( libfdata_list_get_element_at_offset(
+	     grains_list,
+	     grain_group_data_offset,
+	     &grains_list_index,
+	     &grain_data_offset,
+	     &grain_file_index,
+	     &grain_offset,
+	     &grain_size,
+	     &grain_flags,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -329,7 +312,6 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 	int extent_number                  = 0;
 	int grain_groups_list_index        = 0;
 	int grains_list_index              = 0;
-	int result                         = 0;
 
 	if( grain_table == NULL )
 	{
@@ -342,16 +324,14 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 
 		return( -1 );
 	}
-	result = libvmdk_extent_table_get_extent_file_at_offset(
-	          extent_table,
-	          offset,
-	          file_io_pool,
-	          &extent_number,
-	          &extent_file_data_offset,
-	          &extent_file,
-	          error );
-
-	if( result != 1 )
+	if( libvmdk_extent_table_get_extent_file_at_offset(
+	     extent_table,
+	     offset,
+	     file_io_pool,
+	     &extent_number,
+	     &extent_file_data_offset,
+	     &extent_file,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -364,27 +344,14 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 
 		return( -1 );
 	}
-	if( extent_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing extent file.",
-		 function );
-
-		return( -1 );
-	}
-	result = libvmdk_extent_file_get_grain_group_at_offset(
-		  extent_file,
-		  file_io_pool,
-		  extent_file_data_offset,
-		  &grain_groups_list_index,
-		  &grain_group_data_offset,
-		  &grains_list,
-		  error );
-
-	if( result != 1 )
+	if( libvmdk_extent_file_get_grain_group_at_offset(
+	     extent_file,
+	     file_io_pool,
+	     extent_file_data_offset,
+	     &grain_groups_list_index,
+	     &grain_group_data_offset,
+	     &grains_list,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
@@ -398,18 +365,16 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 
 		return( -1 );
 	}
-	result = libfdata_list_get_element_value_at_offset(
-		  grains_list,
-		  (intptr_t *) file_io_pool,
-		  (libfdata_cache_t *) grains_cache,
-		  grain_group_data_offset,
-		  &grains_list_index,
-		  grain_data_offset,
-		  (intptr_t **) grain_data,
-		  0,
-		  error );
-
-	if( result != 1 )
+	if( libfdata_list_get_element_value_at_offset(
+	     grains_list,
+	     (intptr_t *) file_io_pool,
+	     (libfdata_cache_t *) grains_cache,
+	     grain_group_data_offset,
+	     &grains_list_index,
+	     grain_data_offset,
+	     (intptr_t **) grain_data,
+	     0,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,

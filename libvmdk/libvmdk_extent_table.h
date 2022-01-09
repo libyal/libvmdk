@@ -76,10 +76,6 @@ struct libvmdk_extent_table
 	/* The extent files stream used for flat (non-sparse) extent files
 	 */
 	libfdata_stream_t *extent_files_stream;
-
-	/* Flags
-	 */
-	uint8_t flags;
 };
 
 int libvmdk_extent_table_initialize(

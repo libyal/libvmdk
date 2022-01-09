@@ -48,9 +48,21 @@ struct libvmdk_internal_handle
 	 */
 	off64_t current_offset;
 
+	/* The disk type
+	 */
+	int disk_type;
+
 	/* The descriptor file
 	 */
 	libvmdk_descriptor_file_t *descriptor_file;
+
+	/* The io handle
+	 */
+	libvmdk_io_handle_t *io_handle;
+
+	/* The extent values array
+	 */
+	libcdata_array_t *extent_values_array;
 
 	/* The extent (file) table
 	 */
@@ -63,10 +75,6 @@ struct libvmdk_internal_handle
 	/* The grains cache
 	 */
 	libfcache_cache_t *grains_cache;
-
-	/* The io handle
-	 */
-	libvmdk_io_handle_t *io_handle;
 
 	/* The extent data file IO pool
 	 */
@@ -169,12 +177,17 @@ int libvmdk_handle_close(
      libvmdk_handle_t *handle,
      libcerror_error_t **error );
 
-int libvmdk_handle_open_read_grain_table(
+int libvmdk_internal_handle_open_read(
+     libvmdk_internal_handle_t *internal_handle,
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error );
+
+int libvmdk_internal_handle_open_read_extent_data_files(
      libvmdk_internal_handle_t *internal_handle,
      libbfio_pool_t *file_io_pool,
      libcerror_error_t **error );
 
-int libvmdk_handle_open_read_signature(
+int libvmdk_internal_handle_open_read_signature(
      libbfio_handle_t *file_io_handle,
      uint8_t *file_type,
      libcerror_error_t **error );

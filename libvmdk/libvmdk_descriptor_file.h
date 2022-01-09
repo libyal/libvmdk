@@ -77,10 +77,6 @@ struct libvmdk_descriptor_file
 	/* The (storage) media size
 	 */
 	size64_t media_size;
-
-	/* The extents array
-	 */
-	libcdata_array_t *extents_array;
 };
 
 int libvmdk_descriptor_file_initialize(
@@ -91,15 +87,17 @@ int libvmdk_descriptor_file_free(
      libvmdk_descriptor_file_t **descriptor_file,
      libcerror_error_t **error );
 
-int libvmdk_descriptor_file_read(
+int libvmdk_descriptor_file_read_file_io_handle(
      libvmdk_descriptor_file_t *descriptor_file,
      libbfio_handle_t *file_io_handle,
+     libcdata_array_t *extents_values_array,
      libcerror_error_t **error );
 
 int libvmdk_descriptor_file_read_string(
      libvmdk_descriptor_file_t *descriptor_file,
      const char *value_string,
      size_t value_string_size,
+     libcdata_array_t *extents_values_array,
      libcerror_error_t **error );
 
 int libvmdk_descriptor_file_read_signature(
@@ -120,6 +118,7 @@ int libvmdk_descriptor_file_read_extents(
      libcsplit_narrow_split_string_t *lines,
      int number_of_lines,
      int *line_index,
+     libcdata_array_t *extents_values_array,
      libcerror_error_t **error );
 
 int libvmdk_descriptor_file_read_change_tracking_file(
@@ -134,17 +133,6 @@ int libvmdk_descriptor_file_read_disk_database(
      libcsplit_narrow_split_string_t *lines,
      int number_of_lines,
      int *line_index,
-     libcerror_error_t **error );
-
-int libvmdk_descriptor_file_get_number_of_extents(
-     libvmdk_descriptor_file_t *descriptor_file,
-     int *number_of_extents,
-     libcerror_error_t **error );
-
-int libvmdk_descriptor_file_get_extent_by_index(
-     libvmdk_descriptor_file_t *descriptor_file,
-     int extent_index,
-     libvmdk_extent_values_t **extent_values,
      libcerror_error_t **error );
 
 int libvmdk_descriptor_file_get_parent_content_identifier(
@@ -172,6 +160,16 @@ int libvmdk_descriptor_file_get_utf16_parent_filename(
      libvmdk_descriptor_file_t *descriptor_file,
      uint16_t *utf16_string,
      size_t utf16_string_size,
+     libcerror_error_t **error );
+
+int libvmdk_descriptor_file_get_disk_type(
+     libvmdk_descriptor_file_t *descriptor_file,
+     int *disk_type,
+     libcerror_error_t **error );
+
+int libvmdk_descriptor_file_get_media_size(
+     libvmdk_descriptor_file_t *descriptor_file,
+     size64_t *media_size,
      libcerror_error_t **error );
 
 #if defined( __cplusplus )

@@ -2877,9 +2877,9 @@ int main(
 
 #endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
-		/* TODO: add tests for libvmdk_handle_open_read_grain_table */
+		/* TODO: add tests for libvmdk_internal_handle_open_read_extent_data_files */
 
-		/* TODO: add tests for libvmdk_handle_open_read_signature */
+		/* TODO: add tests for libvmdk_internal_handle_open_read_signature */
 
 #endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 

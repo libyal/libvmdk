@@ -335,7 +335,7 @@ int libvmdk_extent_file_read_file_header_file_io_handle(
      libcerror_error_t **error )
 {
 	uint8_t *file_header_data = NULL;
-	static char *function     = "libvmdk_extent_file_read_file_header";
+	static char *function     = "libvmdk_extent_file_read_file_header_file_io_handle";
 	size_t read_size          = 0;
 	ssize_t read_count        = 0;
 
@@ -1760,7 +1760,8 @@ int libvmdk_extent_file_read_grain_directory(
 			libcnotify_printf(
 			 "\n" );
 		}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 		storage_media_size = (size64_t) extent_file->grain_size * number_of_grain_table_entries;
 
 		if( libfdata_list_append_element_with_mapped_size(
@@ -1815,7 +1816,8 @@ int libvmdk_extent_file_read_grain_directory(
 			}
 		}
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	memory_free(
 	 grain_directory_data );
 
@@ -2037,7 +2039,8 @@ int libvmdk_extent_file_read_backup_grain_directory(
 			libcnotify_printf(
 			 "\n" );
 		}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 		if( libfdata_list_get_element_by_index(
 		     extent_file->grain_groups_list,
 		     grain_directory_entry_index,
@@ -2091,7 +2094,8 @@ int libvmdk_extent_file_read_backup_grain_directory(
 			}
 		}
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	memory_free(
 	 grain_directory_data );
 

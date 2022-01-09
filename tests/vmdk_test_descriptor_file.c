@@ -270,129 +270,6 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libvmdk_descriptor_file_get_number_of_extents function
- * Returns 1 if successful or 0 if not
- */
-int vmdk_test_descriptor_file_get_number_of_extents(
-     void )
-{
-	libcerror_error_t *error                   = NULL;
-	libvmdk_descriptor_file_t *descriptor_file = NULL;
-	int number_of_extents                      = 0;
-	int number_of_extents_is_set               = 0;
-	int result                                 = 0;
-
-	/* Initialize test
-	 */
-	result = libvmdk_descriptor_file_initialize(
-	          &descriptor_file,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "descriptor_file",
-	 descriptor_file );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Test regular cases
-	 */
-	result = libvmdk_descriptor_file_get_number_of_extents(
-	          descriptor_file,
-	          &number_of_extents,
-	          &error );
-
-	VMDK_TEST_ASSERT_NOT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	number_of_extents_is_set = result;
-
-	/* Test error cases
-	 */
-	result = libvmdk_descriptor_file_get_number_of_extents(
-	          NULL,
-	          &number_of_extents,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	if( number_of_extents_is_set != 0 )
-	{
-		result = libvmdk_descriptor_file_get_number_of_extents(
-		          descriptor_file,
-		          NULL,
-		          &error );
-
-		VMDK_TEST_ASSERT_EQUAL_INT(
-		 "result",
-		 result,
-		 -1 );
-
-		VMDK_TEST_ASSERT_IS_NOT_NULL(
-		 "error",
-		 error );
-
-		libcerror_error_free(
-		 &error );
-	}
-	/* Clean up
-	 */
-	result = libvmdk_descriptor_file_free(
-	          &descriptor_file,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "descriptor_file",
-	 descriptor_file );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	return( 1 );
-
-on_error:
-	if( error != NULL )
-	{
-		libcerror_error_free(
-		 &error );
-	}
-	if( descriptor_file != NULL )
-	{
-		libvmdk_descriptor_file_free(
-		 &descriptor_file,
-		 NULL );
-	}
-	return( 0 );
-}
-
 /* Tests the libvmdk_descriptor_file_get_parent_content_identifier function
  * Returns 1 if successful or 0 if not
  */
@@ -1115,7 +992,7 @@ int main(
 	 "libvmdk_descriptor_file_free",
 	 vmdk_test_descriptor_file_free );
 
-	/* TODO: add tests for libvmdk_descriptor_file_read */
+	/* TODO: add tests for libvmdk_descriptor_file_read_file_io_handle */
 
 	/* TODO: add tests for libvmdk_descriptor_file_read_string */
 
@@ -1128,12 +1005,6 @@ int main(
 	/* TODO: add tests for libvmdk_descriptor_file_read_change_tracking_file */
 
 	/* TODO: add tests for libvmdk_descriptor_file_read_disk_database */
-
-	VMDK_TEST_RUN(
-	 "libvmdk_descriptor_file_get_number_of_extents",
-	 vmdk_test_descriptor_file_get_number_of_extents );
-
-	/* TODO: add tests for libvmdk_descriptor_file_get_extent_by_index */
 
 	VMDK_TEST_RUN(
 	 "libvmdk_descriptor_file_get_parent_content_identifier",
@@ -1155,11 +1026,19 @@ int main(
 	 "libvmdk_descriptor_file_get_utf16_parent_filename",
 	 vmdk_test_descriptor_file_get_utf16_parent_filename );
 
+	/* TODO: add tests for libvmdk_descriptor_file_get_disk_type */
+
+	/* TODO: add tests for libvmdk_descriptor_file_get_media_size */
+
 #endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 }
 
