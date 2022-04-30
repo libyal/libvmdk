@@ -36,7 +36,6 @@ DPKG_FILES = \
 	dpkg/rules \
 	dpkg/libvmdk.install \
 	dpkg/libvmdk-dev.install \
-	dpkg/libvmdk-python.install \
 	dpkg/libvmdk-python3.install \
 	dpkg/libvmdk-tools.install \
 	dpkg/source/format
