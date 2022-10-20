@@ -1,7 +1,7 @@
 /*
  * Library error functions test program
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #endif
 
-#include "vmdk_test_libcerror.h"
 #include "vmdk_test_libvmdk.h"
 #include "vmdk_test_macros.h"
 #include "vmdk_test_unused.h"

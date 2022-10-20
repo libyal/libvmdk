@@ -1,7 +1,7 @@
 /*
  * Grain group functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -56,11 +56,6 @@ int libvmdk_grain_group_initialize(
 
 int libvmdk_grain_group_free(
      libvmdk_grain_group_t **grain_group,
-     libcerror_error_t **error );
-
-int libvmdk_grain_group_clone(
-     libvmdk_grain_group_t **destination_grain_group,
-     libvmdk_grain_group_t *source_grain_group,
      libcerror_error_t **error );
 
 int libvmdk_grain_group_fill(

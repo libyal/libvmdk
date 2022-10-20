@@ -206,6 +206,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libvmdk\libvmdk_extent_values.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libvmdk\libvmdk_grain_data.c"
 				>
 			</File>
@@ -284,6 +288,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\libvmdk\libvmdk_extent_values.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\libvmdk\libvmdk_extern.h"
 				>
 			</File>
@@ -317,6 +325,10 @@
 			</File>
 			<File
 				RelativePath="..\..\libvmdk\libvmdk_libcerror.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\libvmdk\libvmdk_libcfile.h"
 				>
 			</File>
 			<File

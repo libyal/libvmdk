@@ -1,7 +1,7 @@
 /*
  * Debug functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -43,11 +43,26 @@ const char *libvmdk_debug_get_compression_method_description(
 const char *libvmdk_debug_get_marker_description(
              uint32_t marker );
 
+int libvmdk_debug_print_string_value(
+     const char *function_name,
+     const char *value_name,
+     const uint8_t *byte_stream,
+     size_t byte_stream_size,
+     int ascii_codepage,
+     libcerror_error_t **error );
+
+int libvmdk_debug_print_utf8_string_value(
+     const char *function_name,
+     const char *value_name,
+     const uint8_t *byte_stream,
+     size_t byte_stream_size,
+     libcerror_error_t **error );
+
 int libvmdk_debug_print_read_offsets(
      libbfio_handle_t *file_io_handle,
      libcerror_error_t **error );
 
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
 
 #if defined( __cplusplus )
 }

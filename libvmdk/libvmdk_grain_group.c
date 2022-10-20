@@ -1,7 +1,7 @@
 /*
  * Grain group functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -131,85 +131,6 @@ int libvmdk_grain_group_free(
 		*grain_group = NULL;
 	}
 	return( 1 );
-}
-
-/* Clones the grain group
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_grain_group_clone(
-     libvmdk_grain_group_t **destination_grain_group,
-     libvmdk_grain_group_t *source_grain_group,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_grain_group_clone";
-
-	if( destination_grain_group == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid destination grain group.",
-		 function );
-
-		return( -1 );
-	}
-	if( *destination_grain_group != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid destination grain group value already set.",
-		 function );
-
-		return( -1 );
-	}
-	if( source_grain_group == NULL )
-	{
-		*destination_grain_group = NULL;
-
-		return( 1 );
-	}
-	*destination_grain_group = memory_allocate_structure(
-	                            libvmdk_grain_group_t );
-
-	if( *destination_grain_group == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create destination grain group.",
-		 function );
-
-		goto on_error;
-	}
-	if( memory_copy(
-	     *destination_grain_group,
-	     source_grain_group,
-	     sizeof( libvmdk_grain_group_t ) ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy source to destination grain group.",
-		 function );
-
-		goto on_error;
-	}
-	return( 1 );
-
-on_error:
-	if( *destination_grain_group != NULL )
-	{
-		memory_free(
-		 *destination_grain_group );
-
-		*destination_grain_group = NULL;
-	}
-	return( -1 );
 }
 
 /* Fills the grain offset from the grain group

@@ -1,7 +1,7 @@
 /*
  * Error functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -388,7 +388,8 @@ void VARARGS(
 				{
 					break;
 				}
-				if( error_string[ error_string_index ] == '\n' )
+				if( ( error_string[ error_string_index ] == '\n' )
+				 || ( error_string[ error_string_index ] == '\r' ) )
 				{
 					error_string[ error_string_index ] = ' ';
 				}

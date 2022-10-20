@@ -1,7 +1,7 @@
 /*
  * Grain table functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -155,85 +155,6 @@ int libvmdk_grain_table_free(
 	return( 1 );
 }
 
-/* Clones the grain table
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_grain_table_clone(
-     libvmdk_grain_table_t **destination_grain_table,
-     libvmdk_grain_table_t *source_grain_table,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_grain_table_clone";
-
-	if( destination_grain_table == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid destination grain table.",
-		 function );
-
-		return( -1 );
-	}
-	if( *destination_grain_table != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid destination grain table value already set.",
-		 function );
-
-		return( -1 );
-	}
-	if( source_grain_table == NULL )
-	{
-		*destination_grain_table = NULL;
-
-		return( 1 );
-	}
-	*destination_grain_table = memory_allocate_structure(
-	                            libvmdk_grain_table_t );
-
-	if( *destination_grain_table == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create destination grain table.",
-		 function );
-
-		goto on_error;
-	}
-	if( memory_copy(
-	     *destination_grain_table,
-	     source_grain_table,
-	     sizeof( libvmdk_grain_table_t ) ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-		 "%s: unable to copy source to destination grain table.",
-		 function );
-
-		goto on_error;
-	}
-	return( 1 );
-
-on_error:
-	if( *destination_grain_table != NULL )
-	{
-		memory_free(
-		 *destination_grain_table );
-
-		*destination_grain_table = NULL;
-	}
-	return( -1 );
-}
-
 /* Determines if the grain at a specific offset is sparse
  * Returns 1 if the grain is sparse, 0 if not or -1 on error
  */
@@ -271,35 +192,23 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
 
 		return( -1 );
 	}
-	result = libvmdk_extent_table_get_extent_file_at_offset(
-	          extent_table,
-	          offset,
-	          file_io_pool,
-	          &extent_number,
-	          &extent_file_data_offset,
-	          &extent_file,
-	          error );
-
-	if( result != 1 )
+	if( libvmdk_extent_table_get_extent_file_at_offset(
+	     extent_table,
+	     offset,
+	     file_io_pool,
+	     &extent_number,
+	     &extent_file_data_offset,
+	     &extent_file,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve extent file at offset: %" PRIi64 " from extent table.",
+		 "%s: unable to retrieve extent file at offset: %" PRIi64 " (0x%08" PRIx64 ") from extent table.",
 		 function,
+		 offset,
 		 offset );
-
-		return( -1 );
-	}
-	if( extent_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing extent file.",
-		 function );
 
 		return( -1 );
 	}
@@ -316,9 +225,10 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve grain group from extent file: %d at offset: %" PRIi64 ".",
+		 "%s: unable to retrieve grain group from extent file: %d at offset: %" PRIi64 " (0x%08" PRIx64 ").",
 		 function,
 		 extent_number,
+		 extent_file_data_offset,
 		 extent_file_data_offset );
 
 		return( -1 );
@@ -327,50 +237,48 @@ int libvmdk_grain_table_grain_is_sparse_at_offset(
 	{
 		return( 1 );
 	}
-	result = libvmdk_extent_file_get_grain_group_at_offset(
-		  extent_file,
-		  file_io_pool,
-		  extent_file_data_offset,
-		  &grain_groups_list_index,
-		  &grain_group_data_offset,
-		  &grains_list,
-		  error );
-
-	if( result != 1 )
+	if( libvmdk_extent_file_get_grain_group_at_offset(
+	     extent_file,
+	     file_io_pool,
+	     extent_file_data_offset,
+	     &grain_groups_list_index,
+	     &grain_group_data_offset,
+	     &grains_list,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve grain group from extent file: %d at offset: %" PRIi64 ".",
+		 "%s: unable to retrieve grain group from extent file: %d at offset: %" PRIi64 " (0x%08" PRIx64 ").",
 		 function,
 		 extent_number,
+		 extent_file_data_offset,
 		 extent_file_data_offset );
 
 		return( -1 );
 	}
-	result = libfdata_list_get_element_at_offset(
-		  grains_list,
-		  grain_group_data_offset,
-		  &grains_list_index,
-		  &grain_data_offset,
-		  &grain_file_index,
-		  &grain_offset,
-		  &grain_size,
-		  &grain_flags,
-		  error );
-
-	if( result != 1 )
+	if( libfdata_list_get_element_at_offset(
+	     grains_list,
+	     grain_group_data_offset,
+	     &grains_list_index,
+	     &grain_data_offset,
+	     &grain_file_index,
+	     &grain_offset,
+	     &grain_size,
+	     &grain_flags,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve grain: %" PRIu64 " from grain group: %d in extent file: %d at offset: %" PRIi64 ".",
+		 "%s: unable to retrieve grain: %" PRIu64 " from grain group: %d in extent file: %d at offset: %" PRIi64 " (0x%08" PRIx64 ").",
 		 function,
 		 grain_index,
 		 grain_groups_list_index,
 		 extent_number,
+		 extent_file_data_offset,
 		 extent_file_data_offset );
 
 		return( -1 );
@@ -404,7 +312,6 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 	int extent_number                  = 0;
 	int grain_groups_list_index        = 0;
 	int grains_list_index              = 0;
-	int result                         = 0;
 
 	if( grain_table == NULL )
 	{
@@ -417,82 +324,68 @@ int libvmdk_grain_table_get_grain_data_at_offset(
 
 		return( -1 );
 	}
-	result = libvmdk_extent_table_get_extent_file_at_offset(
-	          extent_table,
-	          offset,
-	          file_io_pool,
-	          &extent_number,
-	          &extent_file_data_offset,
-	          &extent_file,
-	          error );
-
-	if( result != 1 )
+	if( libvmdk_extent_table_get_extent_file_at_offset(
+	     extent_table,
+	     offset,
+	     file_io_pool,
+	     &extent_number,
+	     &extent_file_data_offset,
+	     &extent_file,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve extent file at offset: %" PRIi64 " from extent table.",
+		 "%s: unable to retrieve extent file at offset: %" PRIi64 " (0x%08" PRIx64 ") from extent table.",
 		 function,
+		 offset,
 		 offset );
 
 		return( -1 );
 	}
-	if( extent_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing extent file.",
-		 function );
-
-		return( -1 );
-	}
-	result = libvmdk_extent_file_get_grain_group_at_offset(
-		  extent_file,
-		  file_io_pool,
-		  extent_file_data_offset,
-		  &grain_groups_list_index,
-		  &grain_group_data_offset,
-		  &grains_list,
-		  error );
-
-	if( result != 1 )
+	if( libvmdk_extent_file_get_grain_group_at_offset(
+	     extent_file,
+	     file_io_pool,
+	     extent_file_data_offset,
+	     &grain_groups_list_index,
+	     &grain_group_data_offset,
+	     &grains_list,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve grain group from extent file: %d at offset: %" PRIi64 ".",
+		 "%s: unable to retrieve grain group from extent file: %d at offset: %" PRIi64 " (0x%08" PRIx64 ").",
 		 function,
 		 extent_number,
+		 extent_file_data_offset,
 		 extent_file_data_offset );
 
 		return( -1 );
 	}
-	result = libfdata_list_get_element_value_at_offset(
-		  grains_list,
-		  (intptr_t *) file_io_pool,
-		  (libfdata_cache_t *) grains_cache,
-		  grain_group_data_offset,
-		  &grains_list_index,
-		  grain_data_offset,
-		  (intptr_t **) grain_data,
-		  0,
-		  error );
-
-	if( result != 1 )
+	if( libfdata_list_get_element_value_at_offset(
+	     grains_list,
+	     (intptr_t *) file_io_pool,
+	     (libfdata_cache_t *) grains_cache,
+	     grain_group_data_offset,
+	     &grains_list_index,
+	     grain_data_offset,
+	     (intptr_t **) grain_data,
+	     0,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve grain: %" PRIu64 " data from grain group: %d in extent file: %d at offset: %" PRIi64 ".",
+		 "%s: unable to retrieve grain: %" PRIu64 " data from grain group: %d in extent file: %d at offset: %" PRIi64 " (0x%08" PRIx64 ").",
 		 function,
 		 grain_index,
 		 grain_groups_list_index,
 		 extent_number,
+		 extent_file_data_offset,
 		 extent_file_data_offset );
 
 		return( -1 );

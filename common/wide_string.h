@@ -1,7 +1,7 @@
 /*
  * Wide character string functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -120,8 +120,9 @@ extern "C" {
 	(wchar_t *) wmemrchr( (void *) string, (wchar_t) character, size )
 
 #elif defined( HAVE_WCSRCHR ) || defined( WINAPI )
+/* (void)(size) is used to suppress unused variable warnings */
 #define wide_string_search_character_reverse( string, character, size ) \
-	wcsrchr( string, (wchar_t) character )
+	wcsrchr( string, (wchar_t) character ); (void)(size)
 #endif
 
 /* String sub-string search

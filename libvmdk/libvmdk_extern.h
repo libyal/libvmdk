@@ -1,7 +1,7 @@
 /*
  * The internal extern definition
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -30,7 +30,11 @@
 
 #include <libvmdk/extern.h>
 
+#if defined( __CYGWIN__ ) || defined( __MINGW32__ )
+#define LIBVMDK_EXTERN_VARIABLE	extern
+#else
 #define LIBVMDK_EXTERN_VARIABLE	LIBVMDK_EXTERN
+#endif
 
 #else
 #define LIBVMDK_EXTERN		/* extern */

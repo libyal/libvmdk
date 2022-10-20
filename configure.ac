@@ -1,8 +1,8 @@
-AC_PREREQ( 2.59 )
+AC_PREREQ([2.71])
 
 AC_INIT(
  [libvmdk],
- [20200124],
+ [20220717],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
@@ -16,16 +16,16 @@ dnl Check for host type
 AC_CANONICAL_HOST
 
 dnl Check for libtool DLL support
-AC_LIBTOOL_WIN32_DLL
+LT_INIT([win32-dll])
 
 dnl Checks for programs
 AC_PROG_CC
 AC_PROG_GCC_TRADITIONAL
+AC_PROG_CXX
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 
 dnl Check for libtool
-AC_PROG_LIBTOOL
 AC_SUBST(LIBTOOL_DEPS)
 
 dnl Check for pkg-config
@@ -33,7 +33,7 @@ AC_PATH_PROG(PKGCONFIG,[pkg-config])
 
 dnl Support of internationalization (i18n)
 AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION([0.18.1])
+AM_GNU_GETTEXT_VERSION([0.21])
 
 dnl Check for compiler language support
 AC_C_CONST
@@ -44,6 +44,9 @@ AC_SYS_LARGEFILE
 
 dnl Check if shared library support should be disabled
 AX_COMMON_CHECK_DISABLE_SHARED_LIBS
+
+dnl Check if tools should be build as static executables
+AX_COMMON_CHECK_ENABLE_STATIC_EXECUTABLES
 
 dnl Check if WINAPI support should be enabled
 AX_COMMON_CHECK_ENABLE_WINAPI
@@ -131,32 +134,12 @@ AX_LIBFUSE_CHECK_ENABLE
 dnl Check if vmdktools required headers and functions are available
 AX_VMDKTOOLS_CHECK_LOCAL
 
+dnl Check if DLL support is needed
+AX_LIBVMDK_CHECK_DLL_SUPPORT
+
 dnl Check if tests required headers and functions are available
 AX_TESTS_CHECK_LOCAL
-
-dnl Check if DLL support is needed
-AS_IF(
- [test "x$enable_shared" = xyes],
- [AS_CASE(
-  [$host],
-  [*cygwin* | *mingw* | *msys*],
-  [AC_DEFINE(
-   [HAVE_DLLMAIN],
-   [1],
-   [Define to 1 to enable the DllMain function.])
-  AC_SUBST(
-   [HAVE_DLLMAIN],
-   [1])
-
-  AC_SUBST(
-   [LIBVMDK_DLL_EXPORT],
-   ["-DLIBVMDK_DLL_EXPORT"])
-
-  AC_SUBST(
-   [LIBVMDK_DLL_IMPORT],
-   ["-DLIBVMDK_DLL_IMPORT"])
-  ])
- ])
+AX_TESTS_CHECK_OSSFUZZ
 
 dnl Set additional compiler flags
 CFLAGS="$CFLAGS -Wall";
@@ -212,6 +195,7 @@ AC_CONFIG_FILES([po/Makefile.in])
 AC_CONFIG_FILES([po/Makevars])
 AC_CONFIG_FILES([manuals/Makefile])
 AC_CONFIG_FILES([tests/Makefile])
+AC_CONFIG_FILES([ossfuzz/Makefile])
 AC_CONFIG_FILES([msvscpp/Makefile])
 dnl Generate header files
 AC_CONFIG_FILES([include/libvmdk.h])

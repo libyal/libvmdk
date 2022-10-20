@@ -1,7 +1,7 @@
 /*
  * Extent table functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -27,14 +27,17 @@
 #include <wide_string.h>
 
 #include "libvmdk_definitions.h"
-#include "libvmdk_extent_descriptor.h"
 #include "libvmdk_extent_file.h"
 #include "libvmdk_extent_table.h"
+#include "libvmdk_extent_values.h"
 #include "libvmdk_libbfio.h"
 #include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libclocale.h"
+#include "libvmdk_libcpath.h"
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
+#include "libvmdk_libuna.h"
 #include "libvmdk_system_string.h"
 
 /* Creates an extent table
@@ -260,181 +263,6 @@ int libvmdk_extent_table_clear(
 		result = -1;
 	}
 	return( result );
-}
-
-/* Clones the extent table
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_extent_table_clone(
-     libvmdk_extent_table_t **destination_extent_table,
-     libvmdk_extent_table_t *source_extent_table,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_extent_table_clone";
-
-	if( destination_extent_table == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid destination extent table.",
-		 function );
-
-		return( -1 );
-	}
-	if( *destination_extent_table != NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
-		 "%s: invalid destination extent table value already set.",
-		 function );
-
-		return( -1 );
-	}
-	if( source_extent_table == NULL )
-	{
-		*destination_extent_table = NULL;
-
-		return( 1 );
-	}
-	*destination_extent_table = memory_allocate_structure(
-	                             libvmdk_extent_table_t );
-
-	if( *destination_extent_table == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-		 "%s: unable to create destination extent table.",
-		 function );
-
-		goto on_error;
-	}
-	if( memory_set(
-	     *destination_extent_table,
-	     0,
-	     sizeof( libvmdk_extent_table_t ) ) == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_MEMORY,
-		 LIBCERROR_MEMORY_ERROR_SET_FAILED,
-		 "%s: unable to clear source to destination extent table.",
-		 function );
-
-		memory_free(
-		 *destination_extent_table );
-
-		*destination_extent_table = NULL;
-
-		return( -1 );
-	}
-	if( source_extent_table->data_files_path != NULL )
-	{
-		( *destination_extent_table )->data_files_path = system_string_allocate(
-		                                                  source_extent_table->data_files_path_size );
-
-		if( *destination_extent_table == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create destination extent table.",
-			 function );
-
-			goto on_error;
-		}
-		if( memory_copy(
-		     ( *destination_extent_table )->data_files_path,
-		     source_extent_table->data_files_path,
-		     sizeof( system_character_t ) * source_extent_table->data_files_path_size ) == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
-			 "%s: unable to copy source to destination data files path.",
-			 function );
-
-			goto on_error;
-		}
-		( *destination_extent_table )->data_files_path_size = source_extent_table->data_files_path_size;
-	}
-	if( libfdata_list_clone(
-	     &( ( *destination_extent_table )->extent_files_list ),
-	     source_extent_table->extent_files_list,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create destination extent files list.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfcache_cache_clone(
-	     &( ( *destination_extent_table )->extent_files_cache ),
-	     source_extent_table->extent_files_cache,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create destination extent files cache.",
-		 function );
-
-		goto on_error;
-	}
-	if( libfdata_stream_clone(
-	     &( ( *destination_extent_table )->extent_files_stream ),
-	     source_extent_table->extent_files_stream,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create destination extent files stream.",
-		 function );
-
-		goto on_error;
-	}
-	return( 1 );
-
-on_error:
-	if( *destination_extent_table != NULL )
-	{
-		if( ( *destination_extent_table )->extent_files_cache != NULL )
-		{
-			libfcache_cache_free(
-			 &( ( *destination_extent_table )->extent_files_cache ),
-			 NULL );
-		}
-		if( ( *destination_extent_table )->extent_files_list != NULL )
-		{
-			libfdata_list_free(
-			 &( ( *destination_extent_table )->extent_files_list ),
-			 NULL );
-		}
-		if( ( *destination_extent_table )->data_files_path != NULL )
-		{
-			memory_free(
-			 ( *destination_extent_table )->data_files_path );
-		}
-		memory_free(
-		 *destination_extent_table );
-
-		*destination_extent_table = NULL;
-	}
-	return( -1 );
 }
 
 /* Retrieves the size of the data file_path
@@ -950,6 +778,938 @@ on_error:
 
 #endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
+/* Retrieves the path of an extent data file 
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_table_get_extent_data_file_path(
+     libvmdk_extent_table_t *extent_table,
+     libvmdk_extent_values_t *extent_values,
+     char **path,
+     size_t *path_size,
+     libcerror_error_t **error )
+{
+	uint8_t *utf8_filename           = NULL;
+	char *extent_data_filename       = NULL;
+	static char *function            = "libvmdk_extent_table_get_extent_data_file_path";
+	char *narrow_filename            = NULL;
+	size_t extent_data_filename_size = 0;
+	size_t narrow_filename_size      = 0;
+	size_t utf8_filename_size        = 0;
+
+	if( extent_table == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent table.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_values == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent values.",
+		 function );
+
+		return( -1 );
+	}
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		return( -1 );
+	}
+	if( path_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path size.",
+		 function );
+
+		return( -1 );
+	}
+	if( libvmdk_extent_values_get_utf8_filename_size(
+	     extent_values,
+	     &utf8_filename_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 extent filename size.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( utf8_filename_size == 0 )
+	 || ( utf8_filename_size > MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid UTF-8 extent filename size value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
+	utf8_filename = (uint8_t *) memory_allocate(
+	                             sizeof( uint8_t ) * utf8_filename_size );
+
+	if( utf8_filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create UTF-8 extent filename.",
+		 function );
+
+		goto on_error;
+	}
+	if( libvmdk_extent_values_get_utf8_filename(
+	     extent_values,
+	     utf8_filename,
+	     utf8_filename_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 extent filename.",
+		 function );
+
+		goto on_error;
+	}
+	if( libclocale_codepage == 0 )
+	{
+		narrow_filename      = (char *) utf8_filename;
+		narrow_filename_size = utf8_filename_size;
+		utf8_filename        = NULL;
+	}
+	else
+	{
+		if( libuna_byte_stream_size_from_utf8(
+		     utf8_filename,
+		     utf8_filename_size,
+		     libclocale_codepage,
+		     &narrow_filename_size,
+		     error ) != 1)
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve narrow extent filename size.",
+			 function );
+
+			goto on_error;
+		}
+		if( ( narrow_filename_size == 0 )
+		 || ( narrow_filename_size > ( MEMORY_MAXIMUM_ALLOCATION_SIZE / sizeof( char ) ) ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid narrow extent filename size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		narrow_filename = narrow_string_allocate(
+		                   narrow_filename_size );
+
+		if( narrow_filename == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create narrow extent filename.",
+			 function );
+
+			goto on_error;
+		}
+		if( libuna_byte_stream_copy_from_utf8(
+		     (uint8_t *) narrow_filename,
+		     narrow_filename_size,
+		     libclocale_codepage,
+		     utf8_filename,
+		     utf8_filename_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve narrow extent filename.",
+			 function );
+
+			goto on_error;
+		}
+	}
+	extent_data_filename = narrow_string_search_character_reverse(
+	                        narrow_filename,
+	                        (int) LIBCPATH_SEPARATOR,
+	                        narrow_filename_size );
+
+	if( extent_data_filename != NULL )
+	{
+		/* Ignore the path separator itself
+		 */
+		extent_data_filename++;
+
+		extent_data_filename_size = (size_t) ( extent_data_filename - narrow_filename );
+	}
+	else
+	{
+		extent_data_filename      = narrow_filename;
+		extent_data_filename_size = narrow_filename_size;
+	}
+	if( libvmdk_extent_table_join_extent_data_file_path(
+	     extent_table,
+	     extent_data_filename,
+	     extent_data_filename_size,
+	     path,
+	     path_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to join extent data file path.",
+		 function );
+
+		goto on_error;
+	}
+	memory_free(
+	 narrow_filename );
+
+	return( 1 );
+
+on_error:
+	if( narrow_filename != NULL )
+	{
+		memory_free(
+		 narrow_filename );
+	}
+	if( utf8_filename != NULL )
+	{
+		memory_free(
+		 utf8_filename );
+	}
+	return( -1 );
+}
+
+/* Joins an extent data filename with the data files path
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_table_join_extent_data_file_path(
+     libvmdk_extent_table_t *extent_table,
+     const char *extent_data_filename,
+     size_t extent_data_filename_size,
+     char **path,
+     size_t *path_size,
+     libcerror_error_t **error )
+{
+	static char *function              = "libvmdk_extent_table_join_extent_data_file_path";
+	char *narrow_data_files_path       = NULL;
+	char *safe_path                    = NULL;
+	size_t narrow_data_files_path_size = 0;
+	size_t safe_path_size              = 0;
+
+	if( extent_table == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent table.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_data_filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent data filename.",
+		 function );
+
+		return( -1 );
+	}
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		return( -1 );
+	}
+	if( path_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path size.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_table->data_files_path == NULL )
+	{
+		if( ( extent_data_filename_size == 0 )
+		 || ( extent_data_filename_size > ( MEMORY_MAXIMUM_ALLOCATION_SIZE / sizeof( char ) ) ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid extent data filename size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		safe_path = narrow_string_allocate(
+		             extent_data_filename_size );
+
+		if( safe_path == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create path.",
+			 function );
+
+			goto on_error;
+		}
+		safe_path_size = extent_data_filename_size;
+
+		if( narrow_string_copy(
+		     safe_path,
+		     extent_data_filename,
+		     extent_data_filename_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+			 "%s: unable to copy path.",
+			 function );
+
+			goto on_error;
+		}
+		safe_path[ safe_path_size - 1 ] = 0;
+	}
+	else
+	{
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		if( libvmdk_extent_table_get_data_files_path_size(
+		     extent_table,
+		     &narrow_data_files_path_size,
+		     error ) != 1)
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve narrow data files path size.",
+			 function );
+
+			goto on_error;
+		}
+		if( ( narrow_data_files_path_size == 0 )
+		 || ( narrow_data_files_path_size > ( MEMORY_MAXIMUM_ALLOCATION_SIZE / sizeof( char ) ) ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid narrow data files path size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		narrow_data_files_path = narrow_string_allocate(
+		                          narrow_data_files_path_size );
+
+		if( narrow_data_files_path == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create narrow data files path.",
+			 function );
+
+			goto on_error;
+		}
+		if( libvmdk_extent_table_get_data_files_path(
+		     extent_table,
+		     narrow_data_files_path,
+		     narrow_data_files_path_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve narrow data file path.",
+			 function );
+
+			goto on_error;
+		}
+#else
+		narrow_data_files_path      = (char *) extent_table->data_files_path;
+		narrow_data_files_path_size = extent_table->data_files_path_size;
+
+#endif /* defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
+
+		if( libcpath_path_join(
+		     &safe_path,
+		     &safe_path_size,
+		     narrow_data_files_path,
+		     narrow_data_files_path_size - 1,
+		     extent_data_filename,
+		     extent_data_filename_size - 1,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create path.",
+			 function );
+
+			goto on_error;
+		}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		memory_free(
+		 narrow_data_files_path );
+#endif
+	}
+	*path      = safe_path;
+	*path_size = safe_path_size;
+
+	return( 1 );
+
+on_error:
+	if( safe_path != NULL )
+	{
+		memory_free(
+		 safe_path );
+	}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	if( narrow_data_files_path != NULL )
+	{
+		memory_free(
+		 narrow_data_files_path );
+	}
+#endif
+	return( -1 );
+}
+
+#if defined( HAVE_WIDE_CHARACTER_TYPE )
+
+/* Retrieves the path of an extent data file 
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_table_get_extent_data_file_path_wide(
+     libvmdk_extent_table_t *extent_table,
+     libvmdk_extent_values_t *extent_values,
+     wchar_t **path,
+     size_t *path_size,
+     libcerror_error_t **error )
+{
+	uint8_t *utf8_filename           = NULL;
+	wchar_t *extent_data_filename    = NULL;
+	wchar_t *wide_filename           = NULL;
+	static char *function            = "libvmdk_extent_table_get_extent_data_file_path_wide";
+	size_t extent_data_filename_size = 0;
+	size_t utf8_filename_size        = 0;
+	size_t wide_filename_size        = 0;
+	int result                       = 0;
+
+	if( extent_table == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent table.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_values == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent values.",
+		 function );
+
+		return( -1 );
+	}
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		return( -1 );
+	}
+	if( path_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path size.",
+		 function );
+
+		return( -1 );
+	}
+	if( libvmdk_extent_values_get_utf8_filename_size(
+	     extent_values,
+	     &utf8_filename_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 extent filename size.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( utf8_filename_size == 0 )
+	 || ( utf8_filename_size > MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid UTF-8 extent filename size value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
+	utf8_filename = (uint8_t *) memory_allocate(
+	                             sizeof( uint8_t ) * utf8_filename_size );
+
+	if( utf8_filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create UTF-8 extent filename.",
+		 function );
+
+		goto on_error;
+	}
+	if( libvmdk_extent_values_get_utf8_filename(
+	     extent_values,
+	     utf8_filename,
+	     utf8_filename_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve UTF-8 extent filename.",
+		 function );
+
+		goto on_error;
+	}
+#if SIZEOF_WCHAR_T == 4
+	result = libuna_utf32_string_size_from_utf8(
+	          utf8_filename,
+	          utf8_filename_size,
+	          &wide_filename_size,
+	          error );
+#elif SIZEOF_WCHAR_T == 2
+	result = libuna_utf16_string_size_from_utf8(
+	          utf8_filename,
+	          utf8_filename_size,
+	          &wide_filename_size,
+	          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve wide extent filename size.",
+		 function );
+
+		goto on_error;
+	}
+	if( ( wide_filename_size == 0 )
+	 || ( wide_filename_size > ( MEMORY_MAXIMUM_ALLOCATION_SIZE / sizeof( wchar_t ) ) ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid wide extent filename size value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
+	wide_filename = wide_string_allocate(
+	                 wide_filename_size );
+
+	if( wide_filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create wide extent filename.",
+		 function );
+
+		goto on_error;
+	}
+#if SIZEOF_WCHAR_T == 4
+	result = libuna_utf32_string_copy_from_utf8(
+	          (libuna_utf32_character_t *) wide_filename,
+	          wide_filename_size,
+	          utf8_filename,
+	          utf8_filename_size,
+	          error );
+#elif SIZEOF_WCHAR_T == 2
+	result = libuna_utf16_string_copy_from_utf8(
+	          (libuna_utf16_character_t *) wide_filename,
+	          wide_filename_size,
+	          utf8_filename,
+	          utf8_filename_size,
+	          error );
+#else
+#error Unsupported size of wchar_t
+#endif /* SIZEOF_WCHAR_T */
+
+	if( result != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve wide extent filename.",
+		 function );
+
+		goto on_error;
+	}
+	memory_free(
+	 utf8_filename );
+
+	utf8_filename = NULL;
+
+	extent_data_filename = wide_string_search_character_reverse(
+	                        wide_filename,
+	                        (wint_t) LIBCPATH_SEPARATOR,
+	                        wide_filename_size );
+
+	if( extent_data_filename != NULL )
+	{
+		/* Ignore the path separator itself
+		 */
+		extent_data_filename++;
+
+		extent_data_filename_size = (size_t) ( extent_data_filename - wide_filename );
+	}
+	else
+	{
+		extent_data_filename      = wide_filename;
+		extent_data_filename_size = wide_filename_size;
+	}
+	if( libvmdk_extent_table_join_extent_data_file_path_wide(
+	     extent_table,
+	     extent_data_filename,
+	     extent_data_filename_size,
+	     path,
+	     path_size,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to join extent data file path.",
+		 function );
+
+		goto on_error;
+	}
+	memory_free(
+	 wide_filename );
+
+	return( 1 );
+
+on_error:
+	if( wide_filename != NULL )
+	{
+		memory_free(
+		 wide_filename );
+	}
+	if( utf8_filename != NULL )
+	{
+		memory_free(
+		 utf8_filename );
+	}
+	return( -1 );
+}
+
+/* Joins an extent data filename with the data files path
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_extent_table_join_extent_data_file_path_wide(
+     libvmdk_extent_table_t *extent_table,
+     const wchar_t *extent_data_filename,
+     size_t extent_data_filename_size,
+     wchar_t **path,
+     size_t *path_size,
+     libcerror_error_t **error )
+{
+	wchar_t *safe_path               = NULL;
+	wchar_t *wide_data_files_path    = NULL;
+	static char *function            = "libvmdk_extent_table_join_extent_data_file_path_wide";
+	size_t safe_path_size            = 0;
+	size_t wide_data_files_path_size = 0;
+
+	if( extent_table == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent table.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_data_filename == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid extent data filename.",
+		 function );
+
+		return( -1 );
+	}
+	if( path == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path.",
+		 function );
+
+		return( -1 );
+	}
+	if( path_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid path size.",
+		 function );
+
+		return( -1 );
+	}
+	if( extent_table->data_files_path == NULL )
+	{
+		if( ( extent_data_filename_size == 0 )
+		 || ( extent_data_filename_size > ( MEMORY_MAXIMUM_ALLOCATION_SIZE / sizeof( wchar_t ) ) ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid extent data filename size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		safe_path = wide_string_allocate(
+		             extent_data_filename_size );
+
+		if( safe_path == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create path.",
+			 function );
+
+			goto on_error;
+		}
+		safe_path_size = extent_data_filename_size;
+
+		if( wide_string_copy(
+		     safe_path,
+		     extent_data_filename,
+		     extent_data_filename_size ) == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_COPY_FAILED,
+			 "%s: unable to copy path.",
+			 function );
+
+			goto on_error;
+		}
+		safe_path[ safe_path_size - 1 ] = 0;
+	}
+	else
+	{
+#if !defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		if( libvmdk_extent_table_get_data_files_path_size_wide(
+		     extent_table,
+		     &wide_data_files_path_size,
+		     error ) != 1)
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve wide data files path size.",
+			 function );
+
+			goto on_error;
+		}
+		if( ( wide_data_files_path_size == 0 )
+		 || ( wide_data_files_path_size > ( MEMORY_MAXIMUM_ALLOCATION_SIZE / sizeof( wchar_t ) ) ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid wide data files path size value out of bounds.",
+			 function );
+
+			goto on_error;
+		}
+		wide_data_files_path = wide_string_allocate(
+		                        wide_data_files_path_size );
+
+		if( wide_data_files_path == NULL )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_MEMORY,
+			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+			 "%s: unable to create wide data files path.",
+			 function );
+
+			goto on_error;
+		}
+		if( libvmdk_extent_table_get_data_files_path_wide(
+		     extent_table,
+		     wide_data_files_path,
+		     wide_data_files_path_size,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+			 "%s: unable to retrieve wide data file path.",
+			 function );
+
+			goto on_error;
+		}
+#else
+		wide_data_files_path      = (wchar_t *) extent_table->data_files_path;
+		wide_data_files_path_size = extent_table->data_files_path_size;
+
+#endif /* !defined( HAVE_WIDE_SYSTEM_CHARACTER ) */
+
+		if( libcpath_path_join_wide(
+		     &safe_path,
+		     &safe_path_size,
+		     wide_data_files_path,
+		     wide_data_files_path_size - 1,
+		     extent_data_filename,
+		     extent_data_filename_size - 1,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+			 "%s: unable to create path.",
+			 function );
+
+			goto on_error;
+		}
+#if !defined( HAVE_WIDE_SYSTEM_CHARACTER )
+		memory_free(
+		 wide_data_files_path );
+#endif
+	}
+	*path      = safe_path;
+	*path_size = safe_path_size;
+
+	return( 1 );
+
+on_error:
+	if( safe_path != NULL )
+	{
+		memory_free(
+		 safe_path );
+	}
+#if !defined( HAVE_WIDE_SYSTEM_CHARACTER )
+	if( wide_data_files_path != NULL )
+	{
+		memory_free(
+		 wide_data_files_path );
+	}
+#endif
+	return( -1 );
+}
+
+#endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
+
 /* Initializes the extents
  * Returns 1 if successful or -1 on error
  */
@@ -973,9 +1733,9 @@ int libvmdk_extent_table_initialize_extents(
 
 		return( -1 );
 	}
-	if( ( disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
+	if( ( disk_type != LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT )
-	 && ( disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
+	 && ( disk_type != LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
 	 && ( disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT )
@@ -986,20 +1746,19 @@ int libvmdk_extent_table_initialize_extents(
 	{
 		libcerror_error_set(
 		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_UNSUPPORTED_VALUE,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
 		 "%s: unsupported disk type.",
 		 function );
 
 		return( -1 );
 	}
-	if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
+	if( ( disk_type == LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
 	 || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_FLAT_ZEROED ) )
 	{
-/* TODO add write support ? */
 		result = libfdata_stream_initialize(
 		          &( extent_table->extent_files_stream ),
 		          (intptr_t *) extent_table->io_handle,
@@ -1038,13 +1797,12 @@ int libvmdk_extent_table_initialize_extents(
 			goto on_error;
 		}
 	}
-	else if( ( disk_type == LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
+	else if( ( disk_type == LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT )
 	      || ( disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 	      || ( disk_type == LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
 	      || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE )
 	      || ( disk_type == LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN ) )
 	{
-/* TODO add write support ? */
 		result = libfdata_list_initialize(
 		          &( extent_table->extent_files_list ),
 		          (intptr_t *) extent_table->io_handle,
@@ -1097,8 +1855,8 @@ int libvmdk_extent_table_initialize_extents(
 			goto on_error;
 		}
 	}
-	extent_table->disk_type         = disk_type;
 	extent_table->number_of_extents = number_of_extents;
+	extent_table->disk_type         = disk_type;
 
 	return( 1 );
 
@@ -1109,145 +1867,13 @@ on_error:
 		 &( extent_table->extent_files_list ),
 		 NULL );
 	}
+	if( extent_table->extent_files_stream != NULL )
+	{
+		libfdata_stream_free(
+		 &( extent_table->extent_files_stream ),
+		 NULL );
+	}
 	return( -1 );
-}
-
-/* Retrieves the number of extents
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_extent_table_get_number_of_extents(
-     libvmdk_extent_table_t *extent_table,
-     int *number_of_extents,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_extent_table_get_number_of_extents";
-
-	if( extent_table == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid extent table.",
-		 function );
-
-		return( -1 );
-	}
-	if( number_of_extents == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid number of extents.",
-		 function );
-
-		return( -1 );
-	}
-	*number_of_extents = extent_table->number_of_extents;
-
-	return( 1 );
-}
-
-/* Retrieves a specific extent from the extent table
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_extent_table_get_extent_by_index(
-     libvmdk_extent_table_t *extent_table,
-     int extent_index,
-     int *file_io_pool_entry,
-     size64_t *extent_file_size,
-     libcerror_error_t **error )
-{
-	static char *function  = "libvmdk_extent_table_get_extent_by_index";
-	off64_t element_offset = 0;
-	uint32_t element_flags = 0;
-
-	if( extent_table == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid extent table.",
-		 function );
-
-		return( -1 );
-	}
-	if( libfdata_list_get_element_by_index(
-	     extent_table->extent_files_list,
-	     extent_index,
-	     file_io_pool_entry,
-	     &element_offset,
-	     extent_file_size,
-	     &element_flags,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve element: %d from extent files list.",
-		 function,
-		 extent_index );
-
-		return( -1 );
-	}
-	return( 1 );
-}
-
-/* Retrieves an extent at a specific offset from the extent table
- * Returns 1 if successful, 0 if not or -1 on error
- */
-int libvmdk_extent_table_get_extent_at_offset(
-     libvmdk_extent_table_t *extent_table,
-     off64_t offset,
-     int *file_io_pool_entry,
-     size64_t *extent_file_size,
-     libcerror_error_t **error )
-{
-	static char *function           = "libvmdk_extent_table_get_extent_at_offset";
-	off64_t element_offset          = 0;
-	off64_t extent_file_data_offset = 0;
-	uint32_t element_flags          = 0;
-	int extent_index                = 0;
-	int result                      = 0;
-
-	if( extent_table == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid extent table.",
-		 function );
-
-		return( -1 );
-	}
-	result = libfdata_list_get_element_at_offset(
-	          extent_table->extent_files_list,
-	          offset,
-	          &extent_index,
-	          &extent_file_data_offset,
-	          file_io_pool_entry,
-	          &element_offset,
-	          extent_file_size,
-	          &element_flags,
-	          error );
-
-	if( result == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve element at offset: %" PRIi64 " from extent files list.",
-		 function,
-		 offset );
-
-		return( -1 );
-	}
-	return( result );
 }
 
 /* Sets the extent storage media size for a specific extent in the extent table
@@ -1291,53 +1917,8 @@ int libvmdk_extent_table_set_extent_storage_media_size_by_index(
 	return( 1 );
 }
 
-/* Retrieves a specific extent file from the extent table
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_extent_table_get_extent_file_by_index(
-     libvmdk_extent_table_t *extent_table,
-     int extent_index,
-     libbfio_pool_t *file_io_pool,
-     libvmdk_extent_file_t **extent_file,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_extent_table_get_extent_file_by_index";
-
-	if( extent_table == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid extent table.",
-		 function );
-
-		return( -1 );
-	}
-	if( libfdata_list_get_element_value_by_index(
-	     extent_table->extent_files_list,
-	     (intptr_t *) file_io_pool,
-	     (libfdata_cache_t *) extent_table->extent_files_cache,
-	     extent_index,
-	     (intptr_t **) extent_file,
-	     0,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve element value: %d from extent files list.",
-		 function,
-		 extent_index );
-
-		return( -1 );
-	}
-	return( 1 );
-}
-
 /* Retrieves an extent file at a specific offset from the extent table
- * Returns 1 if successful, 0 if not or -1 on error
+ * Returns 1 if successful or -1 on error
  */
 int libvmdk_extent_table_get_extent_file_at_offset(
      libvmdk_extent_table_t *extent_table,
@@ -1349,7 +1930,6 @@ int libvmdk_extent_table_get_extent_file_at_offset(
      libcerror_error_t **error )
 {
 	static char *function = "libvmdk_extent_table_get_extent_file_at_offset";
-	int result            = 0;
 
 	if( extent_table == NULL )
 	{
@@ -1362,84 +1942,37 @@ int libvmdk_extent_table_get_extent_file_at_offset(
 
 		return( -1 );
 	}
-	result = libfdata_list_get_element_value_at_offset(
-	          extent_table->extent_files_list,
-	          (intptr_t *) file_io_pool,
-	          (libfdata_cache_t *) extent_table->extent_files_cache,
-	          offset,
-	          extent_index,
-	          extent_file_data_offset,
-	          (intptr_t **) extent_file,
-	          0,
-	          error );
-
-	if( result == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve element at offset: %" PRIi64 " from extent files list.",
-		 function,
-		 offset );
-
-		return( -1 );
-	}
-	return( result );
-}
-
-/* Sets a specific extent file in the extent table
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_extent_table_set_extent_file_by_index(
-     libvmdk_extent_table_t *extent_table,
-     libbfio_pool_t *file_io_pool,
-     int extent_index,
-     libvmdk_extent_file_t *extent_file,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_extent_table_set_extent_file_by_index";
-
-	if( extent_table == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid extent table.",
-		 function );
-
-		return( -1 );
-	}
-	if( libfdata_list_set_element_value_by_index(
+	if( libfdata_list_get_element_value_at_offset(
 	     extent_table->extent_files_list,
 	     (intptr_t *) file_io_pool,
 	     (libfdata_cache_t *) extent_table->extent_files_cache,
+	     offset,
 	     extent_index,
-	     (intptr_t *) extent_file,
-	     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_file_free,
-	     LIBFDATA_LIST_ELEMENT_VALUE_FLAG_MANAGED,
+	     extent_file_data_offset,
+	     (intptr_t **) extent_file,
+	     0,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to set element value: %d extent files list.",
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve element at offset: %" PRIi64 " (0x%08" PRIx64 ") from extent files list.",
 		 function,
-		 extent_index );
+		 offset,
+		 offset );
 
 		return( -1 );
 	}
 	return( 1 );
 }
 
-/* Sets an extent in the extent table based on the extent descriptor
+/* Sets an extent in the extent table based on the extent values
  * Returns 1 if successful or -1 on error
  */
-int libvmdk_extent_table_set_extent_by_extent_descriptor(
+int libvmdk_extent_table_set_extent_by_extent_values(
      libvmdk_extent_table_t *extent_table,
-     libvmdk_internal_extent_descriptor_t *extent_descriptor,
+     libvmdk_extent_values_t *extent_values,
      int extent_index,
      int file_io_pool_entry,
      size64_t extent_file_size,
@@ -1447,7 +1980,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
      size64_t extent_size,
      libcerror_error_t **error )
 {
-	static char *function = "libvmdk_extent_table_set_extent_by_extent_descriptor";
+	static char *function = "libvmdk_extent_table_set_extent_by_extent_values";
 
 	if( extent_table == NULL )
 	{
@@ -1460,13 +1993,13 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 
 		return( -1 );
 	}
-	if( extent_descriptor == NULL )
+	if( extent_values == NULL )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
 		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid extent descriptor.",
+		 "%s: invalid extent values.",
 		 function );
 
 		return( -1 );
@@ -1485,9 +2018,9 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 	}
 	if( extent_index == 0 )
 	{
-		if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
+		if( extent_values->type == LIBVMDK_EXTENT_TYPE_FLAT )
 		{
-			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT )
+			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_FLAT ) )
 			{
 				libcerror_error_set(
@@ -1500,9 +2033,9 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 				return( -1 );
 			}
 		}
-		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+		else if( extent_values->type == LIBVMDK_EXTENT_TYPE_SPARSE )
 		{
-			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE )
+			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED ) )
 			{
@@ -1516,7 +2049,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 				return( -1 );
 			}
 		}
-		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_FLAT )
+		else if( extent_values->type == LIBVMDK_EXTENT_TYPE_VMFS_FLAT )
 		{
 			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_FLAT_PRE_ALLOCATED )
@@ -1532,7 +2065,7 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 				return( -1 );
 			}
 		}
-		else if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE )
+		else if( extent_values->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE )
 		{
 			if( ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_SPARSE )
 			 && ( extent_table->disk_type != LIBVMDK_DISK_TYPE_VMFS_SPARSE_THIN ) )
@@ -1558,9 +2091,9 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 
 			return( -1 );
 		}
-		extent_table->extent_type = extent_descriptor->type;
+		extent_table->extent_type = extent_values->type;
 	}
-	else if( extent_table->extent_type != extent_descriptor->type )
+	else if( extent_table->extent_type != extent_values->type )
 	{
 		libcerror_error_set(
 		 error,
@@ -1571,11 +2104,11 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 
 		return( -1 );
 	}
-	if( ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_FLAT )
-	 || ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_FLAT ) )
+	if( ( extent_values->type == LIBVMDK_EXTENT_TYPE_FLAT )
+	 || ( extent_values->type == LIBVMDK_EXTENT_TYPE_VMFS_FLAT ) )
 	{
 		if( ( extent_offset < 0 )
-		 || ( (size64_t) extent_offset > extent_file_size ) )
+		 || ( (size64_t) extent_offset >= extent_file_size ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -1617,8 +2150,8 @@ int libvmdk_extent_table_set_extent_by_extent_descriptor(
 			return( -1 );
 		}
 	}
-	else if( ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
-	      || ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE ) )
+	else if( ( extent_values->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+	      || ( extent_values->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE ) )
 	{
 		if( extent_offset != 0 )
 		{

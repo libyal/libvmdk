@@ -24,6 +24,7 @@ SUBDIRS = \
 	po \
 	manuals \
 	tests \
+	ossfuzz \
 	msvscpp
 
 DPKG_FILES = \
@@ -35,7 +36,6 @@ DPKG_FILES = \
 	dpkg/rules \
 	dpkg/libvmdk.install \
 	dpkg/libvmdk-dev.install \
-	dpkg/libvmdk-python.install \
 	dpkg/libvmdk-python3.install \
 	dpkg/libvmdk-tools.install \
 	dpkg/source/format
@@ -124,4 +124,5 @@ splint:
 	(cd $(srcdir)/pyvmdk && $(MAKE) splint $(AM_MAKEFLAGS))
 	(cd $(srcdir)/po && $(MAKE) $(AM_MAKEFLAGS))
 	(cd $(srcdir)/tests && $(MAKE) $(AM_MAKEFLAGS))
+	(cd $(srcdir)/ossfuzz && $(MAKE) $(AM_MAKEFLAGS))
 

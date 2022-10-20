@@ -7,22 +7,25 @@
 export SKIP_PYTHON_TESTS=1
 
 %:
-	dh $@ --with=autoreconf
+	dh $@ --buildsystem=autoconf --with=autoreconf,python3
 
 .PHONY: override_dh_auto_configure
 override_dh_auto_configure:
-	dh_auto_configure -- --enable-python2 --enable-python3 CFLAGS="-g"
+	dh_auto_configure -- --enable-python3 CFLAGS="-g"
 
 .PHONY: override_dh_install
 override_dh_install:
 	dh_install --fail-missing -X.la -X/pyvmdk.a
+
+.PHONY: override_dh_missing
+override_dh_missing:
+	dh_missing -X.la -X/pyvmdk.a --fail-missing
 
 .PHONY: override_dh_strip
 override_dh_strip:
 ifeq (,$(filter nostrip,$(DEB_BUILD_OPTIONS)))
 	dh_strip -plibvmdk --dbg-package=libvmdk-dbg
 	dh_strip -plibvmdk-tools --dbg-package=libvmdk-tools-dbg
-	dh_strip -plibvmdk-python --dbg-package=libvmdk-python-dbg
 	dh_strip -plibvmdk-python3 --dbg-package=libvmdk-python3-dbg
 endif
 

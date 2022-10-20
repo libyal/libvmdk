@@ -1,7 +1,7 @@
 /*
  * Grain data functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -67,7 +67,8 @@ int libvmdk_grain_data_initialize(
 
 		return( -1 );
 	}
-	if( data_size > (size_t) SSIZE_MAX )
+	if( ( data_size == 0 )
+	 || ( data_size > (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -106,24 +107,22 @@ int libvmdk_grain_data_initialize(
 
 		goto on_error;
 	}
-	if( data_size > 0 )
+	( *grain_data )->data = (uint8_t *) memory_allocate(
+	                                     sizeof( uint8_t ) * data_size );
+
+	if( ( *grain_data )->data == NULL )
 	{
-		( *grain_data )->data = (uint8_t *) memory_allocate(
-		                                     sizeof( uint8_t ) * data_size );
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_MEMORY,
+		 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+		 "%s: unable to create data.",
+		 function );
 
-		if( ( *grain_data )->data == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_MEMORY,
-			 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-			 "%s: unable to create data.",
-			 function );
-
-			goto on_error;
-		}
-		( *grain_data )->data_size = data_size;
+		goto on_error;
 	}
+	( *grain_data )->data_size = data_size;
+
 	return( 1 );
 
 on_error:
@@ -390,20 +389,8 @@ int libvmdk_grain_data_read_element_data(
 
 			goto on_error;
 		}
-#if SIZEOF_UINT32 <= SIZEOF_SIZE_T
-		if( grain_data->compressed_data_size > (uint32_t) SSIZE_MAX )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid grain data - compressed data size value exceeds maximum.",
-			 function );
-
-			goto on_error;
-		}
-#endif
-		if( grain_data->compressed_data_size == 0 )
+		if( ( grain_data->compressed_data_size == 0 )
+		 || ( grain_data->compressed_data_size > (uint32_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 		{
 			libcerror_error_set(
 			 error,

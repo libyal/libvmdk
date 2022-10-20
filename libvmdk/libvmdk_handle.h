@@ -1,7 +1,7 @@
 /*
  * Handle functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -48,9 +48,21 @@ struct libvmdk_internal_handle
 	 */
 	off64_t current_offset;
 
+	/* The disk type
+	 */
+	int disk_type;
+
 	/* The descriptor file
 	 */
 	libvmdk_descriptor_file_t *descriptor_file;
+
+	/* The io handle
+	 */
+	libvmdk_io_handle_t *io_handle;
+
+	/* The extent values array
+	 */
+	libcdata_array_t *extent_values_array;
 
 	/* The extent (file) table
 	 */
@@ -64,10 +76,6 @@ struct libvmdk_internal_handle
 	 */
 	libfcache_cache_t *grains_cache;
 
-	/* The io handle
-	 */
-	libvmdk_io_handle_t *io_handle;
-
 	/* The extent data file IO pool
 	 */
 	libbfio_pool_t *extent_data_file_io_pool;
@@ -80,7 +88,7 @@ struct libvmdk_internal_handle
 	 */
 	int access_flags;
 
-	/* The maximum number of open handles in the pool
+	/* The maximum number of open handles in the file IO pool
 	 */
 	int maximum_number_of_open_handles;
 
@@ -169,12 +177,17 @@ int libvmdk_handle_close(
      libvmdk_handle_t *handle,
      libcerror_error_t **error );
 
-int libvmdk_handle_open_read_grain_table(
+int libvmdk_internal_handle_open_read(
+     libvmdk_internal_handle_t *internal_handle,
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error );
+
+int libvmdk_internal_handle_open_read_extent_data_files(
      libvmdk_internal_handle_t *internal_handle,
      libbfio_pool_t *file_io_pool,
      libcerror_error_t **error );
 
-int libvmdk_handle_open_read_signature(
+int libvmdk_internal_handle_open_read_signature(
      libbfio_handle_t *file_io_handle,
      uint8_t *file_type,
      libcerror_error_t **error );
@@ -200,32 +213,6 @@ ssize_t libvmdk_handle_read_buffer_at_offset(
          size_t buffer_size,
          off64_t offset,
          libcerror_error_t **error );
-
-#ifdef TODO_WRITE_SUPPORT
-
-ssize_t libvmdk_internal_handle_write_buffer_to_file_io_pool(
-         libvmdk_internal_handle_t *internal_handle,
-         libbfio_pool_t *file_io_pool,
-         void *buffer,
-         size_t buffer_size,
-         libcerror_error_t **error );
-
-LIBVMDK_EXTERN \
-ssize_t libvmdk_handle_write_buffer(
-         libvmdk_handle_t *handle,
-         const void *buffer,
-         size_t buffer_size,
-         libcerror_error_t **error );
-
-LIBVMDK_EXTERN \
-ssize_t libvmdk_handle_write_buffer_at_offset(
-         libvmdk_handle_t *handle,
-         const void *buffer,
-         size_t buffer_size,
-         off64_t offset,
-         libcerror_error_t **error );
-
-#endif /* TODO_WRITE_SUPPORT */
 
 off64_t libvmdk_internal_handle_seek_offset(
          libvmdk_internal_handle_t *internal_handle,

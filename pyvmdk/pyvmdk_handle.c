@@ -1,7 +1,7 @@
 /*
  * Python object wrapper of libvmdk_handle_t
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -87,14 +87,6 @@ PyMethodDef pyvmdk_handle_object_methods[] = {
 	  "open_extent_data_files() -> None\n"
 	  "\n"
 	  "Opens the extent data files." },
-
-/* TODO remove */
-	{ "open_extent_data_files_file_objects",
-	  (PyCFunction) pyvmdk_handle_open_extent_data_files_as_file_objects,
-	  METH_VARARGS | METH_KEYWORDS,
-	  "open_extent_data_files_file_objects(file_objects) -> None\n"
-	  "\n"
-	  "Opens extent data files using a list of file-like objects." },
 
 	{ "open_extent_data_files_as_file_objects",
 	  (PyCFunction) pyvmdk_handle_open_extent_data_files_as_file_objects,
@@ -455,7 +447,7 @@ PyObject *pyvmdk_handle_new_open_file_object(
 	return( pyvmdk_handle );
 }
 
-/* Intializes a handle object
+/* Initializes a handle object
  * Returns 0 if successful or -1 on error
  */
 int pyvmdk_handle_init(
@@ -544,24 +536,37 @@ void pyvmdk_handle_free(
 
 		return;
 	}
-	Py_BEGIN_ALLOW_THREADS
-
-	result = libvmdk_handle_free(
-	          &( pyvmdk_handle->handle ),
-	          &error );
-
-	Py_END_ALLOW_THREADS
-
-	if( result != 1 )
+	if( ( pyvmdk_handle->file_io_handle != NULL )
+	 || ( pyvmdk_handle->file_io_pool != NULL ) )
 	{
-		pyvmdk_error_raise(
-		 error,
-		 PyExc_MemoryError,
-		 "%s: unable to free libvmdk handle.",
-		 function );
+		if( pyvmdk_handle_close(
+		     pyvmdk_handle,
+		     NULL ) == NULL )
+		{
+			return;
+		}
+	}
+	if( pyvmdk_handle->handle != NULL )
+	{
+		Py_BEGIN_ALLOW_THREADS
 
-		libcerror_error_free(
-		 &error );
+		result = libvmdk_handle_free(
+		          &( pyvmdk_handle->handle ),
+		          &error );
+
+		Py_END_ALLOW_THREADS
+
+		if( result != 1 )
+		{
+			pyvmdk_error_raise(
+			 error,
+			 PyExc_MemoryError,
+			 "%s: unable to free libvmdk handle.",
+			 function );
+
+			libcerror_error_free(
+			 &error );
+		}
 	}
 	ob_type->tp_free(
 	 (PyObject*) pyvmdk_handle );
@@ -866,6 +871,46 @@ PyObject *pyvmdk_handle_open_file_object(
 		 mode );
 
 		return( NULL );
+	}
+	PyErr_Clear();
+
+	result = PyObject_HasAttrString(
+	          file_object,
+	          "read" );
+
+	if( result != 1 )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: unsupported file object - missing read attribute.",
+		 function );
+
+		return( NULL );
+	}
+	PyErr_Clear();
+
+	result = PyObject_HasAttrString(
+	          file_object,
+	          "seek" );
+
+	if( result != 1 )
+	{
+		PyErr_Format(
+		 PyExc_TypeError,
+		 "%s: unsupported file object - missing seek attribute.",
+		 function );
+
+		return( NULL );
+	}
+	if( pyvmdk_handle->file_io_handle != NULL )
+	{
+		pyvmdk_error_raise(
+		 error,
+		 PyExc_IOError,
+		 "%s: invalid handle - file IO handle already set.",
+		 function );
+
+		goto on_error;
 	}
 	if( pyvmdk_file_object_initialize(
 	     &( pyvmdk_handle->file_io_handle ),

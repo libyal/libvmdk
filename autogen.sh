@@ -1,7 +1,7 @@
 #!/bin/sh
 # Script to generate ./configure using the autotools
 #
-# Version: 20170724
+# Version: 20220709
 
 EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
@@ -20,11 +20,6 @@ if ! test -x "${BINDIR}/aclocal";
 then
 	# Default location of MacPorts installed binaries.
 	BINDIR="/opt/local/bin";
-fi
-if ! test -x "${BINDIR}/aclocal";
-then
-	# Default location of MSYS-MinGW installed binaries.
-	BINDIR="/mingw/bin";
 fi
 if ! test -x "${BINDIR}/aclocal";
 then
@@ -68,9 +63,18 @@ then
 
 elif ! test -x "${PKGCONFIG}";
 then
-	echo "Unable to find: pkg-config";
+	if test "${BINDIR}" != "/usr/bin";
+	then
+		# On OpenBSD most of the autotools are located in
+		# /usr/local/bin while pkg-config is located in /usr/bin
+		PKGCONFIG="/usr/bin/pkg-config";
+	fi
+	if ! test -x "${PKGCONFIG}";
+	then
+		echo "Unable to find: pkg-config";
 
-	exit ${EXIT_FAILURE};
+		exit ${EXIT_FAILURE};
+	fi
 fi
 
 if test -x "${AUTORECONF}";

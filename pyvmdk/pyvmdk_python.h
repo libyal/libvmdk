@@ -1,7 +1,7 @@
 /*
  * The python header wrapper
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -42,6 +42,13 @@
 #undef HAVE_UINT64_T
 
 #endif /* PY_MAJOR_VERSION < 3 */
+
+/* Define PY_SSIZE_T_CLEAN to silence:
+ * DeprecationWarning: PY_SSIZE_T_CLEAN will be required for '#' formats
+ *
+ * PY_SSIZE_T_CLEAN was introduced in Python 2.5
+ */
+#define PY_SSIZE_T_CLEAN
 
 #include <Python.h>
 

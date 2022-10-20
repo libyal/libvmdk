@@ -1,7 +1,7 @@
 /*
  * Python object definition of the sequence and iterator object of extent descriptors
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -69,23 +69,23 @@ PyObject *pyvmdk_extent_descriptors_new(
            int number_of_items );
 
 int pyvmdk_extent_descriptors_init(
-     pyvmdk_extent_descriptors_t *extent_descriptors_object );
+     pyvmdk_extent_descriptors_t *sequence_object );
 
 void pyvmdk_extent_descriptors_free(
-      pyvmdk_extent_descriptors_t *extent_descriptors_object );
+      pyvmdk_extent_descriptors_t *sequence_object );
 
 Py_ssize_t pyvmdk_extent_descriptors_len(
-            pyvmdk_extent_descriptors_t *extent_descriptors_object );
+            pyvmdk_extent_descriptors_t *sequence_object );
 
 PyObject *pyvmdk_extent_descriptors_getitem(
-           pyvmdk_extent_descriptors_t *extent_descriptors_object,
+           pyvmdk_extent_descriptors_t *sequence_object,
            Py_ssize_t item_index );
 
 PyObject *pyvmdk_extent_descriptors_iter(
-           pyvmdk_extent_descriptors_t *extent_descriptors_object );
+           pyvmdk_extent_descriptors_t *sequence_object );
 
 PyObject *pyvmdk_extent_descriptors_iternext(
-           pyvmdk_extent_descriptors_t *extent_descriptors_object );
+           pyvmdk_extent_descriptors_t *sequence_object );
 
 #if defined( __cplusplus )
 }

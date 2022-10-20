@@ -1,7 +1,7 @@
 /*
  * Library grain_table type test program
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -338,194 +338,6 @@ on_error:
 	return( 0 );
 }
 
-/* Tests the libvmdk_grain_table_clone function
- * Returns 1 if successful or 0 if not
- */
-int vmdk_test_grain_table_clone(
-     void )
-{
-	libcerror_error_t *error                       = NULL;
-	libvmdk_grain_table_t *destination_grain_table = NULL;
-	libvmdk_grain_table_t *source_grain_table      = NULL;
-	libvmdk_io_handle_t *io_handle                 = NULL;
-	int result                                     = 0;
-
-	/* Initialize test
-	 */
-	result = libvmdk_io_handle_initialize(
-	          &io_handle,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "io_handle",
-	 io_handle );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libvmdk_grain_table_initialize(
-	          &source_grain_table,
-	          io_handle,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "source_grain_table",
-	 source_grain_table );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Test regular cases
-	 */
-	result = libvmdk_grain_table_clone(
-	          &destination_grain_table,
-	          source_grain_table,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "destination_grain_table",
-	 destination_grain_table );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libvmdk_grain_table_free(
-	          &destination_grain_table,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "destination_grain_table",
-	 destination_grain_table );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libvmdk_grain_table_clone(
-	          &destination_grain_table,
-	          NULL,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "destination_grain_table",
-	 destination_grain_table );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	/* Test error cases
-	 */
-	result = libvmdk_grain_table_clone(
-	          NULL,
-	          source_grain_table,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 -1 );
-
-	VMDK_TEST_ASSERT_IS_NOT_NULL(
-	 "error",
-	 error );
-
-	libcerror_error_free(
-	 &error );
-
-	/* Clean up
-	 */
-	result = libvmdk_grain_table_free(
-	          &source_grain_table,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "source_grain_table",
-	 source_grain_table );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	result = libvmdk_io_handle_free(
-	          &io_handle,
-	          &error );
-
-	VMDK_TEST_ASSERT_EQUAL_INT(
-	 "result",
-	 result,
-	 1 );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "io_handle",
-	 io_handle );
-
-	VMDK_TEST_ASSERT_IS_NULL(
-	 "error",
-	 error );
-
-	return( 1 );
-
-on_error:
-	if( error != NULL )
-	{
-		libcerror_error_free(
-		 &error );
-	}
-	if( destination_grain_table != NULL )
-	{
-		libvmdk_grain_table_free(
-		 &destination_grain_table,
-		 NULL );
-	}
-	if( source_grain_table != NULL )
-	{
-		libvmdk_grain_table_free(
-		 &source_grain_table,
-		 NULL );
-	}
-	if( io_handle != NULL )
-	{
-		libvmdk_io_handle_free(
-		 &io_handle,
-		 NULL );
-	}
-	return( 0 );
-}
-
 #endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 
 /* The main program
@@ -553,10 +365,6 @@ int main(
 	 "libvmdk_grain_table_free",
 	 vmdk_test_grain_table_free );
 
-	VMDK_TEST_RUN(
-	 "libvmdk_grain_table_clone",
-	 vmdk_test_grain_table_clone );
-
 	/* TODO: add tests for libvmdk_grain_table_grain_is_sparse_at_offset */
 
 	/* TODO: add tests for libvmdk_grain_table_get_grain_data_at_offset */
@@ -565,7 +373,11 @@ int main(
 
 	return( EXIT_SUCCESS );
 
+#if defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT )
+
 on_error:
 	return( EXIT_FAILURE );
+
+#endif /* defined( __GNUC__ ) && !defined( LIBVMDK_DLL_IMPORT ) */
 }
 

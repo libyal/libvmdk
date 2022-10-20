@@ -1,8 +1,9 @@
 TODO
+* fill block tree
+* replace grain table with block tree
+* replace extent table with block tree
+
 * vmdkmount empty array on close not on free
-* add thread-safety in
-  - extent_descriptor API functions?
-* check TODO in libvmdk_handle_open_wide regarding UTF-16
 
 * add support for the change tracking file?
 * make sure descriptor file data is cleaned on close - also if no data files were set!

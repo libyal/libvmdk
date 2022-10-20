@@ -1,6 +1,6 @@
 # Files to ignore by git
 #
-# Version: 20191220
+# Version: 20200912
 
 # Generic auto-generated build files
 *~
@@ -61,6 +61,7 @@ stamp-h[1-9]
 /m4/gettext.m4
 /m4/glibc21.m4
 /m4/glibc2.m4
+/m4/host-cpu-c-abi.m4
 /m4/iconv.m4
 /m4/intdiv0.m4
 /m4/intldir.m4
@@ -129,12 +130,14 @@ stamp-h[1-9]
 /tests/*.exe
 /tests/input
 /tests/tmp*
+/tests/vmdk_test_compression
 /tests/vmdk_test_deflate
 /tests/vmdk_test_descriptor_file
 /tests/vmdk_test_error
 /tests/vmdk_test_extent_descriptor
 /tests/vmdk_test_extent_file
 /tests/vmdk_test_extent_table
+/tests/vmdk_test_extent_values
 /tests/vmdk_test_grain_data
 /tests/vmdk_test_grain_group
 /tests/vmdk_test_grain_table
@@ -142,6 +145,10 @@ stamp-h[1-9]
 /tests/vmdk_test_io_handle
 /tests/vmdk_test_notify
 /tests/vmdk_test_support
+/tests/vmdk_test_system_string
+/tests/vmdk_test_tools_info_handle
+/tests/vmdk_test_tools_output
+/tests/vmdk_test_tools_signal
 
 # Local library dependencies specific files
 /libbfio

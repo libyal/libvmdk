@@ -1,7 +1,7 @@
 /*
  * Library DEFLATE decompression testing program
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -698,19 +698,29 @@ int vmdk_test_deflate_bit_stream_get_value(
 	libvmdk_deflate_bit_stream_t bit_stream;
 
 	libcerror_error_t *error = NULL;
+	void *memset_result      = NULL;
 	uint32_t value_32bit     = 0;
 	int result               = 0;
 
 	/* Initialize test
 	 */
-        bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
-        bit_stream.byte_stream_size   = 2627;
-        bit_stream.byte_stream_offset = 0;
-        bit_stream.bit_buffer         = 0;
-        bit_stream.bit_buffer_size    = 0;
+	memset_result = memory_set(
+	                 &bit_stream,
+	                 0,
+	                 sizeof( libvmdk_deflate_bit_stream_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
 
 	/* Test regular cases
 	 */
+	bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
+	bit_stream.byte_stream_size   = 2627;
+	bit_stream.byte_stream_offset = 0;
+	bit_stream.bit_buffer         = 0;
+	bit_stream.bit_buffer_size    = 0;
+
 	result = libvmdk_deflate_bit_stream_get_value(
 	          &bit_stream,
 	          0,
@@ -853,6 +863,12 @@ int vmdk_test_deflate_bit_stream_get_value(
 
 	/* Test error cases
 	 */
+	bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
+	bit_stream.byte_stream_size   = 2627;
+	bit_stream.byte_stream_offset = 0;
+	bit_stream.bit_buffer         = 0;
+	bit_stream.bit_buffer_size    = 0;
+
 	result = libvmdk_deflate_bit_stream_get_value(
 	          NULL,
 	          32,
@@ -908,7 +924,7 @@ int vmdk_test_deflate_bit_stream_get_value(
 	 &error );
 
 	bit_stream.byte_stream_offset = 2627;
-        bit_stream.bit_buffer_size    = 0;
+	bit_stream.bit_buffer_size    = 0;
 
 	result = libvmdk_deflate_bit_stream_get_value(
 	          &bit_stream,
@@ -952,6 +968,7 @@ int vmdk_test_deflate_huffman_table_construct(
 	libvmdk_deflate_huffman_table_t table;
 
 	libcerror_error_t *error        = NULL;
+	void *memset_result             = NULL;
 	uint16_t symbol                 = 0;
 	int result                      = 0;
 
@@ -962,6 +979,15 @@ int vmdk_test_deflate_huffman_table_construct(
 
 	/* Initialize test
 	 */
+	memset_result = memory_set(
+	                 &table,
+	                 0,
+	                 sizeof( libvmdk_deflate_huffman_table_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
+
 	for( symbol = 0;
 	     symbol < 318;
 	     symbol++ )
@@ -1121,16 +1147,38 @@ int vmdk_test_deflate_bit_stream_get_huffman_encoded_value(
 	libvmdk_deflate_huffman_table_t literals_table;
 
 	libcerror_error_t *error = NULL;
+	void *memset_result      = NULL;
 	uint32_t value_32bit     = 0;
 	int result               = 0;
 
 	/* Initialize test
 	 */
-        bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
-        bit_stream.byte_stream_size   = 2627;
-        bit_stream.byte_stream_offset = 2;
-        bit_stream.bit_buffer         = 0;
-        bit_stream.bit_buffer_size    = 0;
+	memset_result = memory_set(
+	                 &bit_stream,
+	                 0,
+	                 sizeof( libvmdk_deflate_bit_stream_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
+
+	memset_result = memory_set(
+	                 &distances_table,
+	                 0,
+	                 sizeof( libvmdk_deflate_huffman_table_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
+
+	memset_result = memory_set(
+	                 &literals_table,
+	                 0,
+	                 sizeof( libvmdk_deflate_huffman_table_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
 
 	result = libvmdk_deflate_initialize_fixed_huffman_tables(
 	          &literals_table,
@@ -1148,6 +1196,12 @@ int vmdk_test_deflate_bit_stream_get_huffman_encoded_value(
 
 	/* Test regular cases
 	 */
+	bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
+	bit_stream.byte_stream_size   = 2627;
+	bit_stream.byte_stream_offset = 2;
+	bit_stream.bit_buffer         = 0;
+	bit_stream.bit_buffer_size    = 0;
+
 	value_32bit = 0;
 
 	result = libvmdk_deflate_bit_stream_get_huffman_encoded_value(
@@ -1172,6 +1226,12 @@ int vmdk_test_deflate_bit_stream_get_huffman_encoded_value(
 
 	/* Test error cases
 	 */
+	bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
+	bit_stream.byte_stream_size   = 2627;
+	bit_stream.byte_stream_offset = 2;
+	bit_stream.bit_buffer         = 0;
+	bit_stream.bit_buffer_size    = 0;
+
 	value_32bit = 0;
 
 	result = libvmdk_deflate_bit_stream_get_huffman_encoded_value(
@@ -1228,8 +1288,8 @@ int vmdk_test_deflate_bit_stream_get_huffman_encoded_value(
 	libcerror_error_free(
 	 &error );
 
-        bit_stream.byte_stream_offset = 2627;
-        bit_stream.bit_buffer_size    = 0;
+	bit_stream.byte_stream_offset = 2627;
+	bit_stream.bit_buffer_size    = 0;
 
 	result = libvmdk_deflate_bit_stream_get_huffman_encoded_value(
 	          &bit_stream,
@@ -1237,7 +1297,7 @@ int vmdk_test_deflate_bit_stream_get_huffman_encoded_value(
 	          &value_32bit,
 	          &error );
 
-        bit_stream.byte_stream_offset = 2;
+	bit_stream.byte_stream_offset = 2;
 
 	VMDK_TEST_ASSERT_EQUAL_INT(
 	 "result",
@@ -1273,6 +1333,8 @@ int vmdk_test_deflate_initialize_dynamic_huffman_tables(
 	libvmdk_deflate_huffman_table_t literals_table;
 
 	libcerror_error_t *error        = NULL;
+	void *memset_result             = NULL;
+	uint32_t value_32bit            = 0;
 	int result                      = 0;
 
 #if defined( HAVE_VMDK_TEST_MEMORY )
@@ -1280,11 +1342,106 @@ int vmdk_test_deflate_initialize_dynamic_huffman_tables(
 	int test_number                 = 0;
 #endif
 
+	/* Initialize test
+	 */
+	memset_result = memory_set(
+	                 &bit_stream,
+	                 0,
+	                 sizeof( libvmdk_deflate_bit_stream_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
+
+	memset_result = memory_set(
+	                 &distances_table,
+	                 0,
+	                 sizeof( libvmdk_deflate_huffman_table_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
+
+	memset_result = memory_set(
+	                 &literals_table,
+	                 0,
+	                 sizeof( libvmdk_deflate_huffman_table_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
+
 	/* Test regular cases
 	 */
+	bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
+	bit_stream.byte_stream_size   = 2627;
+	bit_stream.byte_stream_offset = 2;
+	bit_stream.bit_buffer         = 0;
+	bit_stream.bit_buffer_size    = 0;
+
+	result = libvmdk_deflate_bit_stream_get_value(
+	          &bit_stream,
+	          3,
+	          &value_32bit,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_EQUAL_UINT32(
+	 "value_32bit",
+	 value_32bit,
+	 (uint32_t) 0x00000005UL );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libvmdk_deflate_initialize_dynamic_huffman_tables(
+	          &bit_stream,
+	          &literals_table,
+	          &distances_table,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
+	bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
+	bit_stream.byte_stream_size   = 2627;
+	bit_stream.byte_stream_offset = 2;
+	bit_stream.bit_buffer         = 0;
+	bit_stream.bit_buffer_size    = 0;
+
+	result = libvmdk_deflate_bit_stream_get_value(
+	          &bit_stream,
+	          3,
+	          &value_32bit,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_EQUAL_UINT32(
+	 "value_32bit",
+	 value_32bit,
+	 (uint32_t) 0x00000005UL );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	result = libvmdk_deflate_initialize_dynamic_huffman_tables(
 	          NULL,
 	          &literals_table,
@@ -1397,12 +1554,33 @@ int vmdk_test_deflate_initialize_fixed_huffman_tables(
 	libvmdk_deflate_huffman_table_t literals_table;
 
 	libcerror_error_t *error        = NULL;
+	void *memset_result             = NULL;
 	int result                      = 0;
 
 #if defined( HAVE_VMDK_TEST_MEMORY )
 	int number_of_memset_fail_tests = 4;
 	int test_number                 = 0;
 #endif
+
+	/* Initialize test
+	 */
+	memset_result = memory_set(
+	                 &distances_table,
+	                 0,
+	                 sizeof( libvmdk_deflate_huffman_table_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
+
+	memset_result = memory_set(
+	                 &literals_table,
+	                 0,
+	                 sizeof( libvmdk_deflate_huffman_table_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
 
 	/* Test regular cases
 	 */
@@ -1516,14 +1694,144 @@ int vmdk_test_deflate_decode_huffman(
 	libvmdk_deflate_huffman_table_t literals_table;
 
 	libcerror_error_t *error        = NULL;
+	void *memset_result             = NULL;
 	size_t uncompressed_data_offset = 0;
+	uint32_t value_32bit            = 0;
 	int result                      = 0;
+
+	/* Initialize test
+	 */
+	memset_result = memory_set(
+	                 &bit_stream,
+	                 0,
+	                 sizeof( libvmdk_deflate_bit_stream_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
+
+	memset_result = memory_set(
+	                 &distances_table,
+	                 0,
+	                 sizeof( libvmdk_deflate_huffman_table_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
+
+	memset_result = memory_set(
+	                 &literals_table,
+	                 0,
+	                 sizeof( libvmdk_deflate_huffman_table_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
 
 	/* Test regular cases
 	 */
+	bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
+	bit_stream.byte_stream_size   = 2627;
+	bit_stream.byte_stream_offset = 2;
+	bit_stream.bit_buffer         = 0;
+	bit_stream.bit_buffer_size    = 0;
+
+	result = libvmdk_deflate_bit_stream_get_value(
+	          &bit_stream,
+	          3,
+	          &value_32bit,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_EQUAL_UINT32(
+	 "value_32bit",
+	 value_32bit,
+	 (uint32_t) 0x00000005UL );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libvmdk_deflate_initialize_dynamic_huffman_tables(
+	          &bit_stream,
+	          &literals_table,
+	          &distances_table,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libvmdk_deflate_decode_huffman(
+	          &bit_stream,
+	          &literals_table,
+	          &distances_table,
+	          uncompressed_data,
+	          8192,
+	          &uncompressed_data_offset,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
 
 	/* Test error cases
 	 */
+	bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
+	bit_stream.byte_stream_size   = 2627;
+	bit_stream.byte_stream_offset = 2;
+	bit_stream.bit_buffer         = 0;
+	bit_stream.bit_buffer_size    = 0;
+
+	result = libvmdk_deflate_bit_stream_get_value(
+	          &bit_stream,
+	          3,
+	          &value_32bit,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_EQUAL_UINT32(
+	 "value_32bit",
+	 value_32bit,
+	 (uint32_t) 0x00000005UL );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
+	result = libvmdk_deflate_initialize_dynamic_huffman_tables(
+	          &bit_stream,
+	          &literals_table,
+	          &distances_table,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	result = libvmdk_deflate_decode_huffman(
 	          NULL,
 	          &literals_table,
@@ -1899,6 +2207,7 @@ int vmdk_test_deflate_read_block(
 	libvmdk_deflate_bit_stream_t bit_stream;
 
 	libcerror_error_t *error        = NULL;
+	void *memset_result             = NULL;
 	size_t uncompressed_data_offset = 0;
 	size_t uncompressed_data_size   = 7640;
 	uint8_t last_block_flag         = 0;
@@ -1906,14 +2215,23 @@ int vmdk_test_deflate_read_block(
 
 	/* Initialize test
 	 */
-        bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
-        bit_stream.byte_stream_size   = 2627;
-        bit_stream.byte_stream_offset = 2;
-        bit_stream.bit_buffer         = 0;
-        bit_stream.bit_buffer_size    = 0;
+	memset_result = memory_set(
+	                 &bit_stream,
+	                 0,
+	                 sizeof( libvmdk_deflate_bit_stream_t ) );
+
+	VMDK_TEST_ASSERT_IS_NOT_NULL(
+	 "memset_result",
+	 memset_result );
 
 	/* Test regular cases
 	 */
+	bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
+	bit_stream.byte_stream_size   = 2627;
+	bit_stream.byte_stream_offset = 2;
+	bit_stream.bit_buffer         = 0;
+	bit_stream.bit_buffer_size    = 0;
+
 	result = libvmdk_deflate_read_block(
 	          &bit_stream,
 	          uncompressed_data,
@@ -1940,6 +2258,12 @@ int vmdk_test_deflate_read_block(
 
 	/* Test error cases
 	 */
+	bit_stream.byte_stream        = vmdk_test_deflate_compressed_byte_stream;
+	bit_stream.byte_stream_size   = 2627;
+	bit_stream.byte_stream_offset = 2;
+	bit_stream.bit_buffer         = 0;
+	bit_stream.bit_buffer_size    = 0;
+
 	result = libvmdk_deflate_read_block(
 	          NULL,
 	          uncompressed_data,

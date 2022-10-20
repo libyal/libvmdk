@@ -1,5 +1,7 @@
 environment:
-  pypi_token:
+  nuget_token:
+    secure: HYYxq3O5WWQ5cjS9AMu1OxtPtevYd1f8pglgXUCrb9uK8T6C+P8cUgfCpiX/Z2YJ
+  PYPI_TOKEN:
     secure: VHuZiUWgTqTciKE2nsv/LoLP8ouDmPjIMgnsuPtr8vWz0URFT4+aVTsCC6xyAD0q2VD/Uw09mz3r7eEfAKdZDSdswAwWiFqmXdQZfvvRZNg19Pi8iHBARXUOgYM7kCDeWBisgjR349kN6UhSIyq24nMukdtrum1RutN4ATNH9yxIPIEZ6ueIM4z3y7p0lwxGlY1m2CE7RpYqlgdqpS5BkOLhKILqeuHdv5T68d3k2fydAWW9T72BtSahdBsezBD9pWZgs0m5JV1MRnWX+S7ENA==
   matrix:
   - TARGET: vs2008
@@ -37,120 +39,126 @@ environment:
     APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
     VisualStudioVersion: 15.0
     configuration: Release
+  - TARGET: vs2019
+    BUILD_ENVIRONMENT: msbuild
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    VisualStudioVersion: 16.0
+    configuration: Release
+  - TARGET: macos-x64-clang
+    BUILD_ENVIRONMENT: xcode
+    APPVEYOR_BUILD_WORKER_IMAGE: macos
+    HOMEBREW_NO_INSTALL_CLEANUP: 1
+    CC: clang
+    CONFIGURE_OPTIONS: ""
+  - TARGET: macos-x64-gcc
+    BUILD_ENVIRONMENT: xcode
+    APPVEYOR_BUILD_WORKER_IMAGE: macos
+    HOMEBREW_NO_INSTALL_CLEANUP: 1
+    CONFIGURE_OPTIONS: ""
+  - TARGET: macos-x64-gcc-python
+    BUILD_ENVIRONMENT: xcode
+    APPVEYOR_BUILD_WORKER_IMAGE: macos
+    HOMEBREW_NO_INSTALL_CLEANUP: 1
+    CONFIGURE_OPTIONS: "--enable-python"
+  - TARGET: macos-pkgbuild
+    BUILD_ENVIRONMENT: xcode
+    APPVEYOR_BUILD_WORKER_IMAGE: macos
+    HOMEBREW_NO_INSTALL_CLEANUP: 1
+    CONFIGURE_OPTIONS: "--disable-dependency-tracking --prefix=/usr/local --enable-python --with-pyprefix"
   - TARGET: python27
     BUILD_ENVIRONMENT: python
     PYTHON: "C:\\Python27\\python.exe"
   - TARGET: python27-x64
     BUILD_ENVIRONMENT: python
     PYTHON: "C:\\Python27-x64\\python.exe"
-  - TARGET: python37
+  - TARGET: python310
     BUILD_ENVIRONMENT: python
-    PYTHON: "C:\\Python37\\python.exe"
-  - TARGET: python37-x64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    PYTHON: "C:\\Python310\\python.exe"
+  - TARGET: python310-x64
     BUILD_ENVIRONMENT: python
-    PYTHON: "C:\\Python37-x64\\python.exe"
-  - TARGET: python37-x64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
+    PYTHON: "C:\\Python310-x64\\python.exe"
+  - TARGET: python39-x64
     BUILD_ENVIRONMENT: python
-    APPVEYOR_BUILD_WORKER_IMAGE: macOS-Mojave
-    PYTHON: "/usr/local/bin/python3.7"
+    APPVEYOR_BUILD_WORKER_IMAGE: macos
+    PYTHON: "/usr/local/opt/python@3.10/bin/python3"
+    HOMEBREW_NO_INSTALL_CLEANUP: 1
+    CFLAGS: "-I/usr/local/include"
+    LDFLAGS: "-L/usr/local/lib"
   - TARGET: cygwin-gcc
     BUILD_ENVIRONMENT: cygwin
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: ""
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
   - TARGET: cygwin-gcc-no-optimization
     BUILD_ENVIRONMENT: cygwin
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: "--enable-shared=no"
     CFLAGS: "--coverage -O0"
     CPPFLAGS: "-DOPTIMIZATION_DISABLED"
     LDFLAGS: "--coverage"
   - TARGET: cygwin-gcc-python
     BUILD_ENVIRONMENT: cygwin
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: "--enable-python"
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
   - TARGET: cygwin-gcc-python2
     BUILD_ENVIRONMENT: cygwin
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: "--enable-python2"
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
     PYTHON_VERSION: 2
   - TARGET: cygwin-gcc-python3
     BUILD_ENVIRONMENT: cygwin
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: "--enable-python3"
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
     PYTHON_VERSION: 3
   - TARGET: cygwin-gcc-static-executables
     BUILD_ENVIRONMENT: cygwin
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: "--enable-static-executables"
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
   - TARGET: cygwin64-gcc
     BUILD_ENVIRONMENT: cygwin64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: ""
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
   - TARGET: cygwin64-gcc-no-optimization
     BUILD_ENVIRONMENT: cygwin64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: "--enable-shared=no"
     CFLAGS: "--coverage -O0"
     CPPFLAGS: "-DOPTIMIZATION_DISABLED"
     LDFLAGS: "--coverage"
   - TARGET: cygwin64-gcc-python
     BUILD_ENVIRONMENT: cygwin64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: "--enable-python"
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
   - TARGET: cygwin64-gcc-python2
     BUILD_ENVIRONMENT: cygwin64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: "--enable-python2"
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
     PYTHON_VERSION: 2
   - TARGET: cygwin64-gcc-python3
     BUILD_ENVIRONMENT: cygwin64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: "--enable-python3"
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
     PYTHON_VERSION: 3
   - TARGET: cygwin64-gcc-static-executables
     BUILD_ENVIRONMENT: cygwin64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: "--enable-static-executables"
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
-  - TARGET: mingw-gcc
-    BUILD_ENVIRONMENT: mingw
-    CONFIGURE_OPTIONS: ""
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
-  - TARGET: mingw-gcc-no-optimization
-    BUILD_ENVIRONMENT: mingw
-    CONFIGURE_OPTIONS: "--enable-shared=no"
-    CFLAGS: "--coverage -O0"
-    CPPFLAGS: "-DOPTIMIZATION_DISABLED"
-    LDFLAGS: "--coverage"
-  - TARGET: mingw-gcc-static-executables
-    BUILD_ENVIRONMENT: mingw
-    CONFIGURE_OPTIONS: "--enable-static-executables"
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
   - TARGET: mingw-w64-gcc
     BUILD_ENVIRONMENT: mingw-w64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: ""
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
   - TARGET: mingw-w64-gcc-no-optimization
     BUILD_ENVIRONMENT: mingw-w64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: "--enable-shared=no"
     CFLAGS: "--coverage -O0"
     CPPFLAGS: "-DOPTIMIZATION_DISABLED"
     LDFLAGS: "--coverage"
   - TARGET: mingw-w64-gcc-static-executables
     BUILD_ENVIRONMENT: mingw-w64
+    APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
     CONFIGURE_OPTIONS: "--enable-static-executables"
-    CFLAGS: "--coverage"
-    LDFLAGS: "--coverage"
 
 install:
 - cmd: git clone https://github.com/codecov/codecov-bash.git ..\codecov-bash
@@ -159,7 +167,7 @@ install:
 - ps: If ($env:BUILD_ENVIRONMENT -eq "msbuild") {
     .\synczlib.ps1 }
 - ps: If ($env:BUILD_ENVIRONMENT -eq "msbuild") {
-    If ($env:TARGET -eq "vs2017") {
+    If (($env:TARGET -eq "vs2017") -Or ($env:TARGET -eq "vs2019")) {
       .\syncdokan.ps1 }
     Else {
       .\syncdokan.ps1 -UseLegacyVersion }
@@ -167,33 +175,33 @@ install:
 - cmd: if [%TARGET%]==[vs2010] (
     pushd ..\dokan &&
     set PYTHONPATH=..\vstools &&
-    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --no-python-dll --output-format 2010 msvscpp\dokan.sln &&
+    C:\Python37\python.exe ..\vstools\scripts\msvscpp-convert.py --no-python-dll --output-format 2010 msvscpp\dokan.sln &&
     rd /q /s msvscpp &&
     ren vs2010 msvscpp &&
     popd )
 - cmd: if [%TARGET%]==[vs2012] (
     pushd ..\dokan &&
     set PYTHONPATH=..\vstools &&
-    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --no-python-dll --extend-with-x64 --output-format 2012 msvscpp\dokan.sln &&
+    C:\Python37\python.exe ..\vstools\scripts\msvscpp-convert.py --no-python-dll --extend-with-x64 --output-format 2012 msvscpp\dokan.sln &&
     rd /q /s msvscpp &&
     ren vs2012 msvscpp &&
     popd )
 - cmd: if [%TARGET%]==[vs2013] (
     pushd ..\dokan &&
     set PYTHONPATH=..\vstools &&
-    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --output-format 2013 msvscpp\dokan.sln &&
+    C:\Python37\python.exe ..\vstools\scripts\msvscpp-convert.py --output-format 2013 msvscpp\dokan.sln &&
     rd /q /s msvscpp &&
     ren vs2013 msvscpp &&
     popd )
 - cmd: if [%TARGET%]==[vs2015] (
     pushd ..\dokan &&
     set PYTHONPATH=..\vstools &&
-    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --output-format 2015 msvscpp\dokan.sln &&
+    C:\Python37\python.exe ..\vstools\scripts\msvscpp-convert.py --output-format 2015 msvscpp\dokan.sln &&
     rd /q /s msvscpp &&
     ren vs2015 msvscpp &&
     popd )
 - ps: If ($env:BUILD_ENVIRONMENT -eq "msbuild") {
-    If ($env:TARGET -eq "vs2017") {
+    If (($env:TARGET -eq "vs2017") -Or ($env:TARGET -eq "vs2019")) {
       $Configuration = $env:CONFIGURATION;
       If (${Configuration} -eq "VSDebug") {
         $Configuration = "Debug" }
@@ -202,85 +210,81 @@ install:
     Else {
       .\builddokan.ps1 -UseLegacyVersion }
     }
-- sh: if test ${BUILD_ENVIRONMENT} = "python"; then brew update && brew install gettext gnu-sed && brew link --force gettext; fi
-- sh: if test ${BUILD_ENVIRONMENT} = "python"; then brew install python3 || true; fi
+- sh: if test ${BUILD_ENVIRONMENT} = "xcode" || test ${BUILD_ENVIRONMENT} = "python"; then brew update -q; fi
+- sh: if test ${BUILD_ENVIRONMENT} = "xcode" || test ${BUILD_ENVIRONMENT} = "python"; then brew install -q gettext gnu-sed || true; fi
+- sh: if test ${BUILD_ENVIRONMENT} = "python"; then brew install -q python3 || true; fi
 - ps: If ($env:BUILD_ENVIRONMENT -eq "python") {
     Invoke-Expression "${env:PYTHON} -m pip install -U pip setuptools twine wheel" }
 - cmd: if [%BUILD_ENVIRONMENT%]==[cygwin] (
-    C:\cygwin\setup-x86.exe -qgnNdO -l C:\cygwin\var\cache\setup -R c:\cygwin -s http://cygwin.mirror.constant.com -P zlib-devel -P python2-devel -P python3-devel )
+    C:\cygwin\setup-x86.exe -qgnNdO -l C:\cygwin\var\cache\setup -R c:\cygwin -s http://cygwin.mirror.constant.com -P gettext-devel -P zlib-devel -P python2-devel -P python3-devel )
 - cmd: if [%BUILD_ENVIRONMENT%]==[cygwin64] (
-    C:\cygwin64\setup-x86_64.exe -qgnNdO -l C:\cygwin64\var\cache\setup -R c:\cygwin64 -s http://cygwin.mirror.constant.com -P zlib-devel -P python2-devel -P python3-devel )
-- cmd: if [%BUILD_ENVIRONMENT%]==[mingw] (
-    C:\MinGW\bin\mingw-get install libz-dev )
+    C:\cygwin64\setup-x86_64.exe -qgnNdO -l C:\cygwin64\var\cache\setup -R c:\cygwin64 -s http://cygwin.mirror.constant.com -P gettext-devel -P zlib-devel -P python2-devel -P python3-devel )
 - cmd: if [%BUILD_ENVIRONMENT%]==[mingw-w64] (
-    C:\msys64\usr\bin\pacman -S --noconfirm --needed msys/zlib-devel )
+    C:\msys64\usr\bin\pacman -S --noconfirm --needed autoconf automake gcc gettext-devel libtool make msys/zlib-devel )
 
 build_script:
 - ps: If ($env:BUILD_ENVIRONMENT -eq "msbuild" -or ($env:BUILD_ENVIRONMENT -eq "python" -and $isWindows)) {
     .\synclibs.ps1;
     .\autogen.ps1 }
-- cmd: if [%TARGET%]==[vs2008] (
-    msbuild /verbosity:quiet msvscpp\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" )
-- cmd: if [%TARGET%]==[vs2010] (
-    set PYTHONPATH=..\vstools &&
-    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --no-python-dll --output-format 2010 msvscpp\libvmdk.sln &&
-    msbuild /verbosity:quiet vs2010\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" )
-- cmd: if [%TARGET%]==[vs2012] (
-    set PYTHONPATH=..\vstools &&
-    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --extend-with-x64 --output-format 2012 --python-path "C:\\Python27-x64" msvscpp\libvmdk.sln &&
-    msbuild /verbosity:quiet vs2012\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" )
-- cmd: if [%TARGET%]==[vs2013] (
-    set PYTHONPATH=..\vstools &&
-    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --output-format 2013 msvscpp\libvmdk.sln &&
-    msbuild /verbosity:quiet vs2013\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" )
-- cmd: if [%TARGET%]==[vs2015] (
-    set PYTHONPATH=..\vstools &&
-    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --output-format 2015 msvscpp\libvmdk.sln &&
-    msbuild /verbosity:quiet vs2015\libvmdk.sln /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" )
+- ps: If ($env:TARGET -eq "vs2008") {
+    .\build.ps1 -VisualStudioVersion 2008 -VSToolsOptions "" }
+- ps: If ($env:TARGET -eq "vs2010") {
+    .\build.ps1 -VisualStudioVersion 2010 -VSToolsOptions "--no-python-dll" }
+- ps: If ($env:TARGET -eq "vs2012") {
+    .\build.ps1 -VisualStudioVersion 2012 -VSToolsOptions "--extend-with-x64 --python-path C:\\Python27-x64" }
+- ps: If ($env:TARGET -eq "vs2013") {
+    .\build.ps1 -VisualStudioVersion 2013 -VSToolsOptions "" }
+- ps: If ($env:TARGET -eq "vs2015") {
+    .\build.ps1 -VisualStudioVersion 2015 -VSToolsOptions "" }
+- ps: If ($env:TARGET -eq "vs2017") {
+    .\build.ps1 -VisualStudioVersion 2017 -Platform Win32 -VSToolsOptions "--extend-with-x64 --no-python-dll --with-dokany";
+    .\build.ps1 -VisualStudioVersion 2017 -Platform x64 -VSToolsOptions "--extend-with-x64 --no-python-dll --with-dokany" }
 - cmd: if [%TARGET%]==[vs2017] (
-    set PYTHONPATH=..\vstools &&
-    C:\Python27\python.exe ..\vstools\scripts\msvscpp-convert.py --extend-with-x64 --no-python-dll --output-format 2017 --with-dokany msvscpp\libvmdk.sln &&
-    msbuild /verbosity:quiet vs2017\libvmdk.sln /property:Platform=Win32 /property:PlatformToolset=v141 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" &&
-    msbuild /verbosity:quiet vs2017\libvmdk.sln /property:Platform=x64 /property:PlatformToolset=v141 /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" )
+    move msvscpp vs2008 &&
+    move vs2017 msvscpp &&
+    nuget pack libvmdk.nuspec )
+- ps: If ($env:TARGET -eq "vs2019") {
+    .\build.ps1 -VisualStudioVersion 2019 -VSToolsOptions "--extend-with-x64 --no-python-dll --with-dokany" }
+- sh: if test ${BUILD_ENVIRONMENT} = "xcode" || test ${BUILD_ENVIRONMENT} = "python"; then export PATH="/usr/local/opt/gettext/bin:$PATH"; export SED="/usr/local/bin/gsed"; tests/build.sh ${CONFIGURE_OPTIONS}; fi
 - cmd: if [%BUILD_ENVIRONMENT%]==[python] (
     "%PYTHON%" setup.py bdist_msi bdist_wheel )
-- sh: if test ${BUILD_ENVIRONMENT} = "python"; then ./synclibs.sh && ./autogen.sh && ./configure ${CONFIGURE_OPTIONS} && make > /dev/null; fi
 - sh: if test ${BUILD_ENVIRONMENT} = "python"; then ${PYTHON} setup.py bdist_wheel; fi
 - cmd: if [%BUILD_ENVIRONMENT%]==[cygwin] (
     xcopy /i /q /s C:\projects\libvmdk C:\cygwin\home\appveyor\libvmdk &&
-    C:\cygwin\bin\bash -e -l -c "cd libvmdk && ./synclibs.sh --use-head && ./autogen.sh && ./configure ${CONFIGURE_OPTIONS} && make > /dev/null" )
+    C:\cygwin\bin\bash -e -l -c "cd libvmdk && tests/build.sh ${CONFIGURE_OPTIONS}" )
 - cmd: if [%BUILD_ENVIRONMENT%]==[cygwin64] (
     xcopy /i /q /s C:\projects\libvmdk C:\cygwin64\home\appveyor\libvmdk &&
-    C:\cygwin64\bin\bash -e -l -c "cd libvmdk && ./synclibs.sh --use-head && ./autogen.sh && ./configure ${CONFIGURE_OPTIONS} && make > /dev/null" )
-- cmd: if [%BUILD_ENVIRONMENT%]==[mingw] (
-    xcopy /i /q /s C:\projects\libvmdk C:\MinGW\msys\1.0\home\appveyor\libvmdk &&
-    C:\MinGW\msys\1.0\bin\bash -e -l -c "cd libvmdk && sed 's/@VERSION@/0.29/g' m4/pkg.m4.in > m4/pkg.m4 && ./synclibs.sh --use-head && ./autogen.sh && ./configure ${CONFIGURE_OPTIONS} && make > /dev/null" )
+    C:\cygwin64\bin\bash -e -l -c "cd libvmdk && tests/build.sh ${CONFIGURE_OPTIONS}" )
 - cmd: if [%BUILD_ENVIRONMENT%]==[mingw-w64] (
     xcopy /i /q /s C:\projects\libvmdk C:\msys64\home\appveyor\libvmdk &&
-    C:\msys64\usr\bin\bash -e -l -c "cd libvmdk && ./synclibs.sh --use-head && ./autogen.sh && ./configure ${CONFIGURE_OPTIONS} && make > /dev/null" )
+    C:\msys64\usr\bin\bash -e -l -c "cd libvmdk && tests/build.sh ${CONFIGURE_OPTIONS}" )
 
 test_script:
 - cmd: rem Run tests
 - ps: If ($env:BUILD_ENVIRONMENT -eq "msbuild") {
     .\runtests.ps1 }
+- sh: if test ${BUILD_ENVIRONMENT} = "xcode" && test ${TARGET} != "macos-pkgbuild"; then tests/runtests.sh; fi
+- sh: if test ${TARGET} = "macos-pkgbuild"; then tests/pkgbuild.sh; fi
 - cmd: if [%BUILD_ENVIRONMENT%]==[cygwin] (
-    C:\cygwin\bin\bash -l -c "cd libvmdk && make check CHECK_WITH_STDERR=1; RESULT=$?; if test ${RESULT} -ne 0 && test -f tests/test-suite.log; then cat tests/test-suite.log; fi; exit ${RESULT};" )
+    C:\cygwin\bin\bash -l -c "cd libvmdk && tests/runtests.sh" )
 - cmd: if [%BUILD_ENVIRONMENT%]==[cygwin64] (
-    C:\cygwin64\bin\bash -l -c "cd libvmdk && make check CHECK_WITH_STDERR=1; RESULT=$?; if test ${RESULT} -ne 0 && test -f tests/test-suite.log; then cat tests/test-suite.log; fi; exit ${RESULT};" )
-- cmd: if [%BUILD_ENVIRONMENT%]==[mingw] (
-    C:\MinGW\msys\1.0\bin\bash -l -c "cd libvmdk && make check CHECK_WITH_STDERR=1; RESULT=$?; if test ${RESULT} -ne 0 && test -f tests/test-suite.log; then cat tests/test-suite.log; fi; exit ${RESULT};" )
+    C:\cygwin64\bin\bash -l -c "cd libvmdk && tests/runtests.sh" )
 - cmd: if [%BUILD_ENVIRONMENT%]==[mingw-w64] (
-    C:\msys64\usr\bin\bash -l -c "cd libvmdk && make check CHECK_WITH_STDERR=1; RESULT=$?; if test ${RESULT} -ne 0 && test -f tests/test-suite.log; then cat tests/test-suite.log; fi; exit ${RESULT};" )
+    C:\msys64\usr\bin\bash -l -c "cd libvmdk && tests/runtests.sh" )
 
 after_test:
-- cmd: if [%TARGET%]==[mingw-gcc-no-optimization] (
-    copy C:\projects\codecov-bash\codecov C:\MinGW\msys\1.0\home\appveyor\libvmdk\codecov.sh &&
-    C:\MinGW\msys\1.0\bin\bash -e -l -c "cd libvmdk && chmod a+x ./codecov.sh && sed -i 's/-execdir /-exec /' ./codecov.sh && ./codecov.sh -n ${TARGET} -y .codecov.yml" )
+- cmd: if [%TARGET%]==[mingw-w64-gcc-no-optimization] (
+    copy C:\projects\codecov-bash\codecov C:\msys64\home\appveyor\libvmdk\codecov.sh &&
+    C:\msys64\usr\bin\bash -e -l -c "cd libvmdk && chmod a+x ./codecov.sh && ./codecov.sh -n ${TARGET}" )
 
 artifacts:
+- path: \*.nupkg
 - path: dist\*.whl
 
 deploy_script:
-- ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -and $isWindows) {
+- ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -and $isWindows -and $env:TARGET -eq "vs2017") {
+    Invoke-Expression "nuget push *.nupkg -NonInteractive -NoSymbols -Source https://api.nuget.org/v3/index.json -ApiKey ${env:NUGET_TOKEN}" }
+- ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -and $isWindows -and $env:BUILD_ENVIRONMENT -eq "python") {
     Invoke-Expression "${env:PYTHON} -m twine upload dist/*.whl --username __token__ --password ${env:PYPI_TOKEN} --skip-existing" }
+- sh: if test ${APPVEYOR_REPO_TAG} = "true" && test ${BUILD_ENVIRONMENT} = "python"; then ${PYTHON} -m twine upload dist/*.whl --username __token__ --password ${PYPI_TOKEN} --skip-existing; fi
 

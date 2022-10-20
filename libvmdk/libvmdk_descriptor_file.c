@@ -1,7 +1,7 @@
 /*
  * Descriptor file functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -27,7 +27,7 @@
 
 #include "libvmdk_definitions.h"
 #include "libvmdk_descriptor_file.h"
-#include "libvmdk_extent_descriptor.h"
+#include "libvmdk_extent_values.h"
 #include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
 #include "libvmdk_libclocale.h"
@@ -99,21 +99,12 @@ int libvmdk_descriptor_file_initialize(
 		 "%s: unable to clear descriptor file.",
 		 function );
 
-		goto on_error;
-	}
-	if( libcdata_array_initialize(
-	     &( ( *descriptor_file )->extents_array ),
-	     0,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-		 "%s: unable to create extents array.",
-		 function );
+		memory_free(
+		 *descriptor_file );
 
-		goto on_error;
+		*descriptor_file = NULL;
+
+		return( -1 );
 	}
 	return( 1 );
 
@@ -156,20 +147,6 @@ int libvmdk_descriptor_file_free(
 			memory_free(
 			 ( *descriptor_file )->parent_filename );
 		}
-		if( libcdata_array_free(
-		     &( ( *descriptor_file )->extents_array ),
-		     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_internal_extent_descriptor_free,
-		     error ) != 1 )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-			 "%s: unable to free extents array.",
-			 function );
-
-			result = -1;
-		}
 		memory_free(
 		 *descriptor_file );
 
@@ -181,13 +158,14 @@ int libvmdk_descriptor_file_free(
 /* Reads the descriptor file
  * Returns the 1 if succesful or -1 on error
  */
-int libvmdk_descriptor_file_read(
+int libvmdk_descriptor_file_read_file_io_handle(
      libvmdk_descriptor_file_t *descriptor_file,
      libbfio_handle_t *file_io_handle,
+     libcdata_array_t *extents_values_array,
      libcerror_error_t **error )
 {
 	uint8_t *descriptor_data = NULL;
-	static char *function    = "libvmdk_descriptor_file_read";
+	static char *function    = "libvmdk_descriptor_file_read_file_io_handle";
 	size64_t file_size       = 0;
 	ssize_t read_count       = 0;
 
@@ -216,28 +194,14 @@ int libvmdk_descriptor_file_read(
 
 		goto on_error;
 	}
-	if( file_size > (size64_t) SSIZE_MAX )
+	if( ( file_size == 0 )
+	 || ( file_size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-		 "%s: invalid file size value exceeds maximum.",
-		 function );
-
-		goto on_error;
-	}
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     0,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek offset: 0 in file IO handle entry.",
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid file size value out of bounds.",
 		 function );
 
 		goto on_error;
@@ -256,10 +220,11 @@ int libvmdk_descriptor_file_read(
 
 		goto on_error;
 	}
-	read_count = libbfio_handle_read_buffer(
+	read_count = libbfio_handle_read_buffer_at_offset(
 	              file_io_handle,
 	              descriptor_data,
 	              (size_t) file_size,
+	              0,
 	              error );
 
 	if( read_count != (ssize_t) file_size )
@@ -268,7 +233,7 @@ int libvmdk_descriptor_file_read(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read data of file IO handle entry.",
+		 "%s: unable to read data at offset: 0 (0x00000000).",
 		 function );
 
 		goto on_error;
@@ -277,6 +242,7 @@ int libvmdk_descriptor_file_read(
 	     descriptor_file,
 	     (char *) descriptor_data,
 	     (size_t) file_size,
+	     extents_values_array,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -311,6 +277,7 @@ int libvmdk_descriptor_file_read_string(
      libvmdk_descriptor_file_t *descriptor_file,
      const char *value_string,
      size_t value_string_size,
+     libcdata_array_t *extents_values_array,
      libcerror_error_t **error )
 {
 	libcsplit_narrow_split_string_t *lines = NULL;
@@ -396,6 +363,7 @@ int libvmdk_descriptor_file_read_string(
 	     lines,
 	     number_of_lines,
 	     &line_index,
+	     extents_values_array,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -475,11 +443,12 @@ int libvmdk_descriptor_file_read_signature(
      int *line_index,
      libcerror_error_t **error )
 {
-	char *line_string_segment        = NULL;
 	static char *function            = "libvmdk_descriptor_file_read_signature";
+	char *line_string_segment        = NULL;
 	size_t line_string_segment_index = 0;
 	size_t line_string_segment_size  = 0;
 	int result                       = 0;
+	int safe_line_index              = 0;
 
 	if( line_index == NULL )
 	{
@@ -503,13 +472,11 @@ int libvmdk_descriptor_file_read_signature(
 
 		return( -1 );
 	}
-	*line_index = 0;
-
-	while( *line_index < number_of_lines )
+	while( safe_line_index < number_of_lines )
 	{
 		if( libcsplit_narrow_split_string_get_segment_by_index(
 		     lines,
-		     *line_index,
+		     safe_line_index,
 		     &line_string_segment,
 		     &line_string_segment_size,
 		     error ) != 1 )
@@ -520,7 +487,7 @@ int libvmdk_descriptor_file_read_signature(
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 			 "%s: unable to retrieve line: %d.",
 			 function,
-			 *line_index );
+			 safe_line_index );
 
 			return( -1 );
 		}
@@ -532,9 +499,15 @@ int libvmdk_descriptor_file_read_signature(
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 			 "%s: missing line string segment: %d.",
 			 function,
-			 *line_index );
+			 safe_line_index );
 
 			return( -1 );
+		}
+		if( line_string_segment_size < 2 )
+		{
+			safe_line_index++;
+
+			continue;
 		}
 		/* Ignore trailing white space
 		 */
@@ -594,8 +567,10 @@ int libvmdk_descriptor_file_read_signature(
 				break;
 			}
 		}
-		*line_index += 1;
+		safe_line_index++;
 	}
+	*line_index = safe_line_index;
+
 	return( result );
 }
 
@@ -618,6 +593,7 @@ int libvmdk_descriptor_file_read_header(
 	size_t value_identifier_length   = 0;
 	size_t value_length              = 0;
 	uint64_t value_64bit             = 0;
+	int safe_line_index              = 0;
 
 	if( descriptor_file == NULL )
 	{
@@ -652,8 +628,10 @@ int libvmdk_descriptor_file_read_header(
 
 		return( -1 );
 	}
-	if( ( *line_index < 0 )
-	 || ( *line_index >= number_of_lines ) )
+	safe_line_index = *line_index;
+
+	if( ( safe_line_index < 0 )
+	 || ( safe_line_index >= number_of_lines ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -664,11 +642,11 @@ int libvmdk_descriptor_file_read_header(
 
 		return( -1 );
 	}
-	while( *line_index < number_of_lines )
+	while( safe_line_index < number_of_lines )
 	{
 		if( libcsplit_narrow_split_string_get_segment_by_index(
 		     lines,
-		     *line_index,
+		     safe_line_index,
 		     &line_string_segment,
 		     &line_string_segment_size,
 		     error ) != 1 )
@@ -679,7 +657,7 @@ int libvmdk_descriptor_file_read_header(
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 			 "%s: unable to retrieve line: %d.",
 			 function,
-			 *line_index );
+			 safe_line_index );
 
 			goto on_error;
 		}
@@ -691,9 +669,15 @@ int libvmdk_descriptor_file_read_header(
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 			 "%s: missing line string segment: %d.",
 			 function,
-			 *line_index );
+			 safe_line_index );
 
 			goto on_error;
+		}
+		if( line_string_segment_size < 2 )
+		{
+			safe_line_index++;
+
+			continue;
 		}
 		/* Ignore trailing white space
 		 */
@@ -735,7 +719,7 @@ int libvmdk_descriptor_file_read_header(
 		if( ( line_string_segment_index >= line_string_segment_size )
 		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
 		{
-			*line_index += 1;
+			safe_line_index++;
 
 			continue;
 		}
@@ -777,7 +761,7 @@ int libvmdk_descriptor_file_read_header(
 		if( ( line_string_segment_index >= line_string_segment_size )
 		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
 		{
-			*line_index += 1;
+			safe_line_index++;
 
 			continue;
 		}
@@ -825,7 +809,7 @@ int libvmdk_descriptor_file_read_header(
 		if( ( line_string_segment_index >= line_string_segment_size )
 		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
 		{
-			*line_index += 1;
+			safe_line_index++;
 
 			continue;
 		}
@@ -989,19 +973,6 @@ int libvmdk_descriptor_file_read_header(
 				      && ( value[ 4 ] == '8' ) )
 				{
 					descriptor_file->encoding = 0;
-				}
-				else if( ( value_length == 9 )
-					  && ( value[ 0 ] == 'S' )
-					  && ( value[ 1 ] == 'h' )
-					  && ( value[ 2 ] == 'i' )
-					  && ( value[ 3 ] == 'f' )
-					  && ( value[ 4 ] == 't' )
-					  && ( value[ 5 ] == '_' )
-					  && ( value[ 6 ] == 'J' )
-					  && ( value[ 7 ] == 'I' )
-					  && ( value[ 8 ] == 'S' ) )
-				{
-					descriptor_file->encoding = LIBUNA_CODEPAGE_WINDOWS_932;
 				}
 				else if( libclocale_codepage_copy_from_string(
 				          &( descriptor_file->encoding ),
@@ -1183,7 +1154,7 @@ int libvmdk_descriptor_file_read_header(
 					     "2GbMaxExtentFlat",
 					     16 ) == 0 )
 					{
-						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT;
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT;
 					}
 					else if( narrow_string_compare_no_case(
 					          value,
@@ -1224,14 +1195,14 @@ int libvmdk_descriptor_file_read_header(
 					     "2GbMaxExtentSparse",
 					     18 ) == 0 )
 					{
-						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE;
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT;
 					}
 					else if( narrow_string_compare_no_case(
 					          value,
 					          "twoGbMaxExtentFlat",
 					          18 ) == 0 )
 					{
-						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_FLAT;
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_FLAT_2GB_EXTENT;
 					}
 				}
 				else if( value_length == 20 )
@@ -1241,7 +1212,7 @@ int libvmdk_descriptor_file_read_header(
 					     "twoGbMaxExtentSparse",
 					     20 ) == 0 )
 					{
-						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_2GB_EXTENT_SPARSE;
+						descriptor_file->disk_type = LIBVMDK_DISK_TYPE_SPARSE_2GB_EXTENT;
 					}
 					else if( narrow_string_compare_no_case(
 					          value,
@@ -1277,6 +1248,17 @@ int libvmdk_descriptor_file_read_header(
 
 					descriptor_file->parent_filename      = NULL;
 					descriptor_file->parent_filename_size = 0;
+				}
+				if( value_length > (size_t) ( MEMORY_MAXIMUM_ALLOCATION_SIZE - 1 ) )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+					 "%s: invalid parent filename length exceeds maximum allocation size.",
+					 function );
+
+					goto on_error;
 				}
 				descriptor_file->parent_filename = (uint8_t *) memory_allocate(
 				                                                sizeof( uint8_t ) * ( value_length + 1 ) );
@@ -1327,12 +1309,12 @@ int libvmdk_descriptor_file_read_header(
 			libcnotify_printf(
 			 "%s: value: %d\t\t\t\t: %s = %s\n",
 			 function,
-			 *line_index,
+			 safe_line_index,
 			 value_identifier,
 			 value );
 		}
 #endif
-		*line_index += 1;
+		safe_line_index++;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -1341,6 +1323,8 @@ int libvmdk_descriptor_file_read_header(
 		 "\n" );
 	}
 #endif
+	*line_index = safe_line_index;
+
 	return( 1 );
 
 on_error:
@@ -1364,14 +1348,16 @@ int libvmdk_descriptor_file_read_extents(
      libcsplit_narrow_split_string_t *lines,
      int number_of_lines,
      int *line_index,
+     libcdata_array_t *extents_values_array,
      libcerror_error_t **error )
 {
-	libvmdk_extent_descriptor_t *extent_descriptor = NULL;
-	static char *function                          = "libvmdk_descriptor_file_read_extents";
-	char *line_string_segment                      = NULL;
-	size_t line_string_segment_index               = 0;
-	size_t line_string_segment_size                = 0;
-	int entry_index                                = 0;
+	libvmdk_extent_values_t *extent_values = NULL;
+	static char *function                  = "libvmdk_descriptor_file_read_extents";
+	char *line_string_segment              = NULL;
+	size_t line_string_segment_index       = 0;
+	size_t line_string_segment_size        = 0;
+	int entry_index                        = 0;
+	int safe_line_index                    = 0;
 
 	if( descriptor_file == NULL )
 	{
@@ -1406,8 +1392,10 @@ int libvmdk_descriptor_file_read_extents(
 
 		return( -1 );
 	}
-	if( ( *line_index < 0 )
-	 || ( *line_index >= number_of_lines ) )
+	safe_line_index = *line_index;
+
+	if( ( safe_line_index < 0 )
+	 || ( safe_line_index >= number_of_lines ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -1420,7 +1408,7 @@ int libvmdk_descriptor_file_read_extents(
 	}
 	if( libcsplit_narrow_split_string_get_segment_by_index(
 	     lines,
-	     *line_index,
+	     safe_line_index,
 	     &line_string_segment,
 	     &line_string_segment_size,
 	     error ) != 1 )
@@ -1431,7 +1419,7 @@ int libvmdk_descriptor_file_read_extents(
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 		 "%s: unable to retrieve line: %d.",
 		 function,
-		 *line_index );
+		 safe_line_index );
 
 		goto on_error;
 	}
@@ -1443,7 +1431,19 @@ int libvmdk_descriptor_file_read_extents(
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: missing line string segment: %d.",
 		 function,
-		 *line_index );
+		 safe_line_index );
+
+		goto on_error;
+	}
+	if( line_string_segment_size < 2 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid line string segment: %d size value out of bounds.",
+		 function,
+		 safe_line_index );
 
 		goto on_error;
 	}
@@ -1497,29 +1497,29 @@ int libvmdk_descriptor_file_read_extents(
 
 		goto on_error;
 	}
-	*line_index += 1;
+	safe_line_index++;
 
 	if( libcdata_array_empty(
-	     descriptor_file->extents_array,
-	     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_internal_extent_descriptor_free,
+	     extents_values_array,
+	     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_values_free,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-		 "%s: unable to empty extents array.",
+		 "%s: unable to empty extents values array.",
 		 function );
 
 		goto on_error;
 	}
 	descriptor_file->media_size = 0;
 
-	while( *line_index < number_of_lines )
+	while( safe_line_index < number_of_lines )
 	{
 		if( libcsplit_narrow_split_string_get_segment_by_index(
 		     lines,
-		     *line_index,
+		     safe_line_index,
 		     &line_string_segment,
 		     &line_string_segment_size,
 		     error ) != 1 )
@@ -1530,7 +1530,7 @@ int libvmdk_descriptor_file_read_extents(
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 			 "%s: unable to retrieve line: %d.",
 			 function,
-			 *line_index );
+			 safe_line_index );
 
 			goto on_error;
 		}
@@ -1542,9 +1542,15 @@ int libvmdk_descriptor_file_read_extents(
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 			 "%s: missing line string segment: %d.",
 			 function,
-			 *line_index );
+			 safe_line_index );
 
 			goto on_error;
+		}
+		if( line_string_segment_size < 2 )
+		{
+			safe_line_index++;
+
+			continue;
 		}
 		/* Ignore trailing white space
 		 */
@@ -1586,7 +1592,7 @@ int libvmdk_descriptor_file_read_extents(
 		if( ( line_string_segment_index >= line_string_segment_size )
 		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
 		{
-			*line_index += 1;
+			safe_line_index++;
 
 			continue;
 		}
@@ -1616,21 +1622,21 @@ int libvmdk_descriptor_file_read_extents(
 		 */
 		line_string_segment[ line_string_segment_size - 1 ] = 0;
 
-		if( libvmdk_extent_descriptor_initialize(
-		     &extent_descriptor,
+		if( libvmdk_extent_values_initialize(
+		     &extent_values,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-			 "%s: unable to create extent descriptor.",
+			 "%s: unable to create extent values.",
 			 function );
 
 			goto on_error;
 		}
-		if( libvmdk_extent_descriptor_read(
-		     extent_descriptor,
+		if( libvmdk_extent_values_read(
+		     extent_values,
 		     &( line_string_segment[ line_string_segment_index ] ),
 		     line_string_segment_size - line_string_segment_index,
 		     descriptor_file->encoding,
@@ -1640,46 +1646,48 @@ int libvmdk_descriptor_file_read_extents(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read extent descriptor from line: %d.",
+			 "%s: unable to read extent values from line: %d.",
 			 function,
-			 *line_index );
+			 safe_line_index );
 
 			goto on_error;
 		}
 /* TODO refactor by get_size function */
-		descriptor_file->media_size += ( (libvmdk_internal_extent_descriptor_t *) extent_descriptor )->size;
+		descriptor_file->media_size += extent_values->size;
 
 		if( libcdata_array_append_entry(
-		     descriptor_file->extents_array,
+		     extents_values_array,
 		     &entry_index,
-		     (intptr_t *) extent_descriptor,
+		     (intptr_t *) extent_values,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_APPEND_FAILED,
-			 "%s: unable to append extent descriptor to extents array.",
+			 "%s: unable to append extent values to array.",
 			 function );
 
 			goto on_error;
 		}
-		extent_descriptor = NULL;
+		extent_values = NULL;
 
-		*line_index += 1;
+		safe_line_index++;
 	}
+	*line_index = safe_line_index;
+
 	return( 1 );
 
 on_error:
-	if( extent_descriptor != NULL )
+	if( extent_values != NULL )
 	{
-		libvmdk_internal_extent_descriptor_free(
-		 (libvmdk_internal_extent_descriptor_t **) &extent_descriptor,
+		libvmdk_extent_values_free(
+		 &extent_values,
 		 NULL );
 	}
 	libcdata_array_empty(
-	 descriptor_file->extents_array,
-	 (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_internal_extent_descriptor_free,
+	 extents_values_array,
+	 (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_values_free,
 	 NULL );
 
 	return( -1 );
@@ -1703,6 +1711,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 	size_t line_string_segment_size  = 0;
 	size_t value_identifier_length   = 0;
 	size_t value_length              = 0;
+	int safe_line_index              = 0;
 
 	if( descriptor_file == NULL )
 	{
@@ -1737,8 +1746,10 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 
 		return( -1 );
 	}
-	if( ( *line_index < 0 )
-	 || ( *line_index >= number_of_lines ) )
+	safe_line_index = *line_index;
+
+	if( ( safe_line_index < 0 )
+	 || ( safe_line_index >= number_of_lines ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -1751,7 +1762,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 	}
 	if( libcsplit_narrow_split_string_get_segment_by_index(
 	     lines,
-	     *line_index,
+	     safe_line_index,
 	     &line_string_segment,
 	     &line_string_segment_size,
 	     error ) != 1 )
@@ -1762,7 +1773,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 		 "%s: unable to retrieve line: %d.",
 		 function,
-		 *line_index );
+		 safe_line_index );
 
 		return( -1 );
 	}
@@ -1774,7 +1785,19 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: missing line string segment: %d.",
 		 function,
-		 *line_index );
+		 safe_line_index );
+
+		return( -1 );
+	}
+	if( line_string_segment_size < 2 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid line string segment: %d size value out of bounds.",
+		 function,
+		 safe_line_index );
 
 		return( -1 );
 	}
@@ -1821,13 +1844,13 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 	{
 		return( 0 );
 	}
-	*line_index += 1;
+	safe_line_index++;
 
-	while( *line_index < number_of_lines )
+	while( safe_line_index < number_of_lines )
 	{
 		if( libcsplit_narrow_split_string_get_segment_by_index(
 		     lines,
-		     *line_index,
+		     safe_line_index,
 		     &line_string_segment,
 		     &line_string_segment_size,
 		     error ) != 1 )
@@ -1838,7 +1861,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 			 "%s: unable to retrieve line: %d.",
 			 function,
-			 *line_index );
+			 safe_line_index );
 
 			return( -1 );
 		}
@@ -1850,9 +1873,15 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 			 "%s: missing line string segment: %d.",
 			 function,
-			 *line_index );
+			 safe_line_index );
 
 			return( -1 );
+		}
+		if( line_string_segment_size < 2 )
+		{
+			safe_line_index++;
+
+			continue;
 		}
 		/* Ignore trailing white space
 		 */
@@ -1894,7 +1923,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		if( ( line_string_segment_index >= line_string_segment_size )
 		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
 		{
-			*line_index += 1;
+			safe_line_index++;
 
 			continue;
 		}
@@ -1936,7 +1965,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		if( ( line_string_segment_index >= line_string_segment_size )
 		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
 		{
-			*line_index += 1;
+			safe_line_index++;
 
 			continue;
 		}
@@ -1984,7 +2013,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		if( ( line_string_segment_index >= line_string_segment_size )
 		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
 		{
-			*line_index += 1;
+			safe_line_index++;
 
 			continue;
 		}
@@ -2031,12 +2060,12 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 			libcnotify_printf(
 			 "%s: value: %d\t\t\t\t: %s = %s\n",
 			 function,
-			 *line_index,
+			 safe_line_index,
 			 value_identifier,
 			 value );
 		}
 #endif
-		*line_index += 1;
+		safe_line_index++;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -2045,6 +2074,8 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		 "\n" );
 	}
 #endif
+	*line_index = safe_line_index;
+
 	return( 1 );
 }
 
@@ -2066,6 +2097,7 @@ int libvmdk_descriptor_file_read_disk_database(
 	size_t line_string_segment_size  = 0;
 	size_t value_identifier_length   = 0;
 	size_t value_length              = 0;
+	int safe_line_index              = 0;
 
 	if( descriptor_file == NULL )
 	{
@@ -2100,8 +2132,10 @@ int libvmdk_descriptor_file_read_disk_database(
 
 		return( -1 );
 	}
-	if( ( *line_index < 0 )
-	 || ( *line_index >= number_of_lines ) )
+	safe_line_index = *line_index;
+
+	if( ( safe_line_index < 0 )
+	 || ( safe_line_index >= number_of_lines ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -2114,7 +2148,7 @@ int libvmdk_descriptor_file_read_disk_database(
 	}
 	if( libcsplit_narrow_split_string_get_segment_by_index(
 	     lines,
-	     *line_index,
+	     safe_line_index,
 	     &line_string_segment,
 	     &line_string_segment_size,
 	     error ) != 1 )
@@ -2125,7 +2159,7 @@ int libvmdk_descriptor_file_read_disk_database(
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 		 "%s: unable to retrieve line: %d.",
 		 function,
-		 *line_index );
+		 safe_line_index );
 
 		return( -1 );
 	}
@@ -2137,7 +2171,19 @@ int libvmdk_descriptor_file_read_disk_database(
 		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 		 "%s: missing line string segment: %d.",
 		 function,
-		 *line_index );
+		 safe_line_index );
+
+		return( -1 );
+	}
+	if( line_string_segment_size < 2 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid line string segment: %d size value out of bounds.",
+		 function,
+		 safe_line_index );
 
 		return( -1 );
 	}
@@ -2191,13 +2237,13 @@ int libvmdk_descriptor_file_read_disk_database(
 
 		return( -1 );
 	}
-	*line_index += 1;
+	safe_line_index++;
 
-	while( *line_index < number_of_lines )
+	while( safe_line_index < number_of_lines )
 	{
 		if( libcsplit_narrow_split_string_get_segment_by_index(
 		     lines,
-		     *line_index,
+		     safe_line_index,
 		     &line_string_segment,
 		     &line_string_segment_size,
 		     error ) != 1 )
@@ -2208,7 +2254,7 @@ int libvmdk_descriptor_file_read_disk_database(
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
 			 "%s: unable to retrieve line: %d.",
 			 function,
-			 *line_index );
+			 safe_line_index );
 
 			return( -1 );
 		}
@@ -2220,9 +2266,15 @@ int libvmdk_descriptor_file_read_disk_database(
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
 			 "%s: missing line string segment: %d.",
 			 function,
-			 *line_index );
+			 safe_line_index );
 
 			return( -1 );
+		}
+		if( line_string_segment_size < 2 )
+		{
+			safe_line_index++;
+
+			continue;
 		}
 		/* Ignore trailing white space
 		 */
@@ -2264,7 +2316,7 @@ int libvmdk_descriptor_file_read_disk_database(
 		if( ( line_string_segment_index >= line_string_segment_size )
 		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
 		{
-			*line_index += 1;
+			safe_line_index++;
 
 			continue;
 		}
@@ -2294,7 +2346,7 @@ int libvmdk_descriptor_file_read_disk_database(
 		if( ( line_string_segment_index >= line_string_segment_size )
 		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
 		{
-			*line_index += 1;
+			safe_line_index++;
 
 			continue;
 		}
@@ -2342,7 +2394,7 @@ int libvmdk_descriptor_file_read_disk_database(
 		if( ( line_string_segment_index >= line_string_segment_size )
 		 || ( line_string_segment[ line_string_segment_index ] == 0 ) )
 		{
-			*line_index += 1;
+			safe_line_index++;
 
 			continue;
 		}
@@ -2436,12 +2488,12 @@ int libvmdk_descriptor_file_read_disk_database(
 			libcnotify_printf(
 			 "%s: value: %d\t\t\t: %s = %s\n",
 			 function,
-			 *line_index,
+			 safe_line_index,
 			 value_identifier,
 			 value );
 		}
 #endif
-		*line_index += 1;
+		safe_line_index++;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -2450,85 +2502,8 @@ int libvmdk_descriptor_file_read_disk_database(
 		 "\n" );
 	}
 #endif
-	return( 1 );
-}
+	*line_index = safe_line_index;
 
-/* Retrieves the number of extents
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_descriptor_file_get_number_of_extents(
-     libvmdk_descriptor_file_t *descriptor_file,
-     int *number_of_extents,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_descriptor_file_get_number_of_extents";
-
-	if( descriptor_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid descriptor file.",
-		 function );
-
-		return( -1 );
-	}
-	if( libcdata_array_get_number_of_entries(
-	     descriptor_file->extents_array,
-	     number_of_extents,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve number of entries in extents array.",
-		 function );
-
-		return( -1 );
-	}
-	return( 1 );
-}
-
-/* Retrieves a specific extent
- * Returns 1 if successful or -1 on error
- */
-int libvmdk_descriptor_file_get_extent_by_index(
-     libvmdk_descriptor_file_t *descriptor_file,
-     int extent_index,
-     libvmdk_internal_extent_descriptor_t **extent_descriptor,
-     libcerror_error_t **error )
-{
-	static char *function = "libvmdk_descriptor_file_get_extent_by_index";
-
-	if( descriptor_file == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid descriptor file.",
-		 function );
-
-		return( -1 );
-	}
-	if( libcdata_array_get_entry_by_index(
-	     descriptor_file->extents_array,
-	     extent_index,
-	     (intptr_t **) extent_descriptor,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve entry: %d from extents array.",
-		 function,
-		 extent_index );
-
-		return( -1 );
-	}
 	return( 1 );
 }
 
@@ -2756,3 +2731,78 @@ int libvmdk_descriptor_file_get_utf16_parent_filename(
 	}
 	return( 1 );
 }
+
+/* Retrieves the disk type
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_descriptor_file_get_disk_type(
+     libvmdk_descriptor_file_t *descriptor_file,
+     int *disk_type,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_descriptor_file_get_disk_type";
+
+	if( descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( disk_type == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid disk type.",
+		 function );
+
+		return( -1 );
+	}
+	*disk_type = descriptor_file->disk_type;
+
+	return( 1 );
+}
+
+/* Retrieves the media size
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_descriptor_file_get_media_size(
+     libvmdk_descriptor_file_t *descriptor_file,
+     size64_t *media_size,
+     libcerror_error_t **error )
+{
+	static char *function = "libvmdk_descriptor_file_get_media_size";
+
+	if( descriptor_file == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid descriptor file.",
+		 function );
+
+		return( -1 );
+	}
+	if( media_size == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid media size.",
+		 function );
+
+		return( -1 );
+	}
+	*media_size = descriptor_file->media_size;
+
+	return( 1 );
+}
+

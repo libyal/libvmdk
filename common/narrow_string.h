@@ -1,7 +1,7 @@
 /*
  * Narrow character string functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -122,8 +122,9 @@ extern "C" {
 	(char *) memrchr( (void *) string, (int) character, size )
 
 #elif defined( HAVE_STRRCHR ) || defined( WINAPI )
+/* (void)(size) is used to suppress unused variable warnings */
 #define narrow_string_search_character_reverse( string, character, size ) \
-	strrchr( string, (int) character )
+	strrchr( string, (int) character ); (void)(size)
 #endif
 
 /* String sub-string search

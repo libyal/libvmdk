@@ -1,7 +1,7 @@
 /*
  * Python object wrapper of libvmdk_extent_descriptor_t
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -255,7 +255,7 @@ on_error:
 	return( NULL );
 }
 
-/* Intializes an extent descriptor object
+/* Initializes an extent descriptor object
  * Returns 0 if successful or -1 on error
  */
 int pyvmdk_extent_descriptor_init(

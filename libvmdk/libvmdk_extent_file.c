@@ -1,7 +1,7 @@
 /*
  * Extent file functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -335,7 +335,7 @@ int libvmdk_extent_file_read_file_header_file_io_handle(
      libcerror_error_t **error )
 {
 	uint8_t *file_header_data = NULL;
-	static char *function     = "libvmdk_extent_file_read_file_header";
+	static char *function     = "libvmdk_extent_file_read_file_header_file_io_handle";
 	size_t read_size          = 0;
 	ssize_t read_count        = 0;
 
@@ -349,33 +349,6 @@ int libvmdk_extent_file_read_file_header_file_io_handle(
 		 function );
 
 		return( -1 );
-	}
-#if defined( HAVE_DEBUG_OUTPUT )
-	if( libcnotify_verbose != 0 )
-	{
-		libcnotify_printf(
-	 	 "%s: reading file header at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
-		 function,
-		 file_offset,
-		 file_offset );
-	}
-#endif
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     file_offset,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek file header offset: %" PRIi64 " (0x%08" PRIx64 ").",
-		 function,
-		 file_offset,
-		 file_offset );
-
-		goto on_error;
 	}
 	file_header_data = (uint8_t *) memory_allocate(
 	                                sizeof( uint8_t ) * 2048 );
@@ -391,10 +364,21 @@ int libvmdk_extent_file_read_file_header_file_io_handle(
 
 		goto on_error;
 	}
-	read_count = libbfio_handle_read_buffer(
+#if defined( HAVE_DEBUG_OUTPUT )
+	if( libcnotify_verbose != 0 )
+	{
+		libcnotify_printf(
+	 	 "%s: reading file header at offset: %" PRIi64 " (0x%08" PRIx64 ")\n",
+		 function,
+		 file_offset,
+		 file_offset );
+	}
+#endif
+	read_count = libbfio_handle_read_buffer_at_offset(
 	              file_io_handle,
 	              file_header_data,
 	              4,
+	              file_offset,
 	              error );
 
 	if( read_count != (ssize_t) 4 )
@@ -403,8 +387,10 @@ int libvmdk_extent_file_read_file_header_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read file header data.",
-		 function );
+		 "%s: unable to read file header data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 function,
+		 file_offset,
+		 file_offset );
 
 		goto on_error;
 	}
@@ -650,11 +636,14 @@ int libvmdk_extent_file_read_file_header_data(
      size_t file_header_data_size,
      libcerror_error_t **error )
 {
-	static char *function     = "libvmdk_extent_file_read_file_header_data";
-	size64_t grain_table_size = 0;
+	static char *function                          = "libvmdk_extent_file_read_file_header_data";
+	size64_t grain_table_size                      = 0;
+	uint64_t safe_descriptor_offset                = 0;
+	uint64_t safe_primary_grain_directory_offset   = 0;
+	uint64_t safe_secondary_grain_directory_offset = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
-	uint64_t value_64bit      = 0;
+	uint64_t value_64bit                           = 0;
 #endif
 
 	if( extent_file == NULL )
@@ -769,7 +758,7 @@ int libvmdk_extent_file_read_file_header_data(
 
 		byte_stream_copy_to_uint32_little_endian(
 		 ( (cowd_sparse_file_header_t *) file_header_data )->primary_grain_directory_sector_number,
-		 extent_file->primary_grain_directory_offset );
+		 safe_primary_grain_directory_offset );
 
 		byte_stream_copy_to_uint32_little_endian(
 		 ( (cowd_sparse_file_header_t *) file_header_data )->number_of_grain_directory_entries,
@@ -795,7 +784,7 @@ int libvmdk_extent_file_read_file_header_data(
 
 		byte_stream_copy_to_uint64_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header_data )->descriptor_sector_number,
-		 extent_file->descriptor_offset );
+		 safe_descriptor_offset );
 
 		byte_stream_copy_to_uint64_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header_data )->descriptor_number_of_sectors,
@@ -807,11 +796,11 @@ int libvmdk_extent_file_read_file_header_data(
 
 		byte_stream_copy_to_uint64_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header_data )->secondary_grain_directory_sector_number,
-		 extent_file->secondary_grain_directory_offset );
+		 safe_secondary_grain_directory_offset );
 
 		byte_stream_copy_to_uint64_little_endian(
 		 ( (vmdk_sparse_file_header_t *) file_header_data )->primary_grain_directory_sector_number,
-		 extent_file->primary_grain_directory_offset );
+		 safe_primary_grain_directory_offset );
 
 		extent_file->is_dirty = ( (vmdk_sparse_file_header_t *) file_header_data )->is_dirty;
 
@@ -860,7 +849,7 @@ int libvmdk_extent_file_read_file_header_data(
 			libcnotify_printf(
 			 "%s: descriptor sector number\t\t\t: %" PRIu64 "\n",
 			 function,
-			 extent_file->descriptor_offset );
+			 safe_descriptor_offset );
 
 			libcnotify_printf(
 			 "%s: descriptor number of sectors\t\t\t: %" PRIu64 "\n",
@@ -872,36 +861,34 @@ int libvmdk_extent_file_read_file_header_data(
 			 function,
 			 extent_file->number_of_grain_table_entries );
 
-			if( ( extent_file->secondary_grain_directory_offset >= 0 )
-			 && ( extent_file->secondary_grain_directory_offset <= (off64_t) ( INT64_MAX / 512 ) ) )
+			if( safe_secondary_grain_directory_offset <= ( (uint64_t) INT64_MAX / 512 ) )
 			{
 				libcnotify_printf(
 				 "%s: secondary grain directory sector number\t: %" PRIu64 "\n",
 				 function,
-				 extent_file->secondary_grain_directory_offset );
+				 safe_secondary_grain_directory_offset );
 			}
 			else
 			{
 				libcnotify_printf(
 				 "%s: secondary grain directory sector number\t: 0x%08" PRIx64 "\n",
 				 function,
-				 extent_file->secondary_grain_directory_offset );
+				 safe_secondary_grain_directory_offset );
 			}
 		}
-		if( ( extent_file->primary_grain_directory_offset >= 0 )
-		 && ( extent_file->primary_grain_directory_offset <= (off64_t) ( INT64_MAX / 512 ) ) )
+		if( safe_primary_grain_directory_offset <= ( (uint64_t) INT64_MAX / 512 ) )
 		{
 			libcnotify_printf(
 			 "%s: primary grain directory sector number\t: %" PRIu64 "\n",
 			 function,
-			 extent_file->primary_grain_directory_offset );
+			 safe_primary_grain_directory_offset );
 		}
 		else
 		{
 			libcnotify_printf(
 			 "%s: primary grain directory sector number\t: 0x%08" PRIx64 "\n",
 			 function,
-			 extent_file->primary_grain_directory_offset );
+			 safe_primary_grain_directory_offset );
 		}
 		if( extent_file->file_type == LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA )
 		{
@@ -964,9 +951,10 @@ int libvmdk_extent_file_read_file_header_data(
 			 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 		}
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	if( ( extent_file->grain_size == 0 )
-	 || ( extent_file->grain_size > (uint64_t) ( INT64_MAX / 512 ) ) )
+	 || ( extent_file->grain_size > ( (uint64_t) INT64_MAX / 512 ) ) )
 	{
 		libcerror_error_set(
 		 error,
@@ -977,8 +965,38 @@ int libvmdk_extent_file_read_file_header_data(
 
 		return( -1 );
 	}
+	if( safe_descriptor_offset > (uint64_t) INT64_MAX )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid descriptor offset value out of bounds.",
+		 function );
+
+		return( -1 );
+	}
+	extent_file->descriptor_offset = (off64_t) safe_descriptor_offset;
+
+	/* Note that the primary grain directory offsets can be -1
+	 */
+	extent_file->primary_grain_directory_offset = (off64_t) safe_primary_grain_directory_offset;
+
 	if( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 	{
+		if( safe_secondary_grain_directory_offset > ( (uint64_t) INT64_MAX / 512 ) )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid secondary grain directory offset value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
+		extent_file->secondary_grain_directory_offset = (off64_t) safe_secondary_grain_directory_offset;
+
 		if( extent_file->grain_size <= 8 )
 		{
 			libcerror_error_set(
@@ -1147,14 +1165,24 @@ int libvmdk_extent_file_read_file_header_data(
 	{
 		grain_table_size = (size64_t) extent_file->number_of_grain_table_entries * extent_file->grain_size;
 
+		if( grain_table_size == 0 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+			 "%s: invalid grain table size value out of bounds.",
+			 function );
+
+			return( -1 );
+		}
 		extent_file->number_of_grain_directory_entries = (uint32_t) ( extent_file->maximum_data_size / grain_table_size );
 
 		if( ( extent_file->maximum_data_size % grain_table_size ) != 0 )
 		{
 			extent_file->number_of_grain_directory_entries += 1;
 		}
-		if( ( extent_file->descriptor_offset < 0 )
-		 || ( extent_file->descriptor_offset > (off64_t) ( INT64_MAX / 512 ) ) )
+		if( extent_file->descriptor_offset > (off64_t) ( INT64_MAX / 512 ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -1168,18 +1196,6 @@ int libvmdk_extent_file_read_file_header_data(
 		extent_file->descriptor_offset *= 512;
 		extent_file->descriptor_size   *= 512;
 
-		if( ( extent_file->secondary_grain_directory_offset < 0 )
-		 || ( extent_file->secondary_grain_directory_offset > (off64_t) ( INT64_MAX / 512 ) ) )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
-			 "%s: invalid secondary grain directory offset value out of bounds.",
-			 function );
-
-			return( -1 );
-		}
 		extent_file->secondary_grain_directory_offset *= 512;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
@@ -1334,26 +1350,11 @@ int libvmdk_extent_file_read_descriptor_data_file_io_handle(
 		 extent_file->descriptor_offset );
 	}
 #endif
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     extent_file->descriptor_offset,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek descriptor offset: %" PRIi64 ".",
-		 function,
-		 extent_file->descriptor_offset );
-
-		return( -1 );
-	}
-	read_count = libbfio_handle_read_buffer(
+	read_count = libbfio_handle_read_buffer_at_offset(
 	              file_io_handle,
 	              descriptor_data,
 	              (size_t) extent_file->descriptor_size,
+	              extent_file->descriptor_offset,
 	              error );
 
 	if( read_count != (ssize_t) extent_file->descriptor_size )
@@ -1362,8 +1363,10 @@ int libvmdk_extent_file_read_descriptor_data_file_io_handle(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read descriptor data.",
-		 function );
+		 "%s: unable to read descriptor data at offset: %" PRIi64 " (0x%08" PRIx64 ").",
+		 function,
+		 extent_file->descriptor_offset,
+		 extent_file->descriptor_offset );
 
 		return( -1 );
 	}
@@ -1594,6 +1597,18 @@ int libvmdk_extent_file_read_grain_directory(
 
 		return( -1 );
 	}
+	if( ( extent_file->grain_directory_size == 0 )
+	 || ( extent_file->grain_directory_size > (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid extent file - grain directory size value out of bounds.",
+		 function );
+
+		goto on_error;
+	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
 	{
@@ -1745,7 +1760,8 @@ int libvmdk_extent_file_read_grain_directory(
 			libcnotify_printf(
 			 "\n" );
 		}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 		storage_media_size = (size64_t) extent_file->grain_size * number_of_grain_table_entries;
 
 		if( libfdata_list_append_element_with_mapped_size(
@@ -1800,7 +1816,8 @@ int libvmdk_extent_file_read_grain_directory(
 			}
 		}
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	memory_free(
 	 grain_directory_data );
 
@@ -1856,6 +1873,18 @@ int libvmdk_extent_file_read_backup_grain_directory(
 		 function );
 
 		return( -1 );
+	}
+	if( ( extent_file->grain_directory_size == 0 )
+	 || ( extent_file->grain_directory_size > (size_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_OUT_OF_BOUNDS,
+		 "%s: invalid extent file - grain directory size value out of bounds.",
+		 function );
+
+		goto on_error;
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -2010,7 +2039,8 @@ int libvmdk_extent_file_read_backup_grain_directory(
 			libcnotify_printf(
 			 "\n" );
 		}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 		if( libfdata_list_get_element_by_index(
 		     extent_file->grain_groups_list,
 		     grain_directory_entry_index,
@@ -2064,7 +2094,8 @@ int libvmdk_extent_file_read_backup_grain_directory(
 			}
 		}
 	}
-#endif
+#endif /* defined( HAVE_DEBUG_OUTPUT ) */
+
 	memory_free(
 	 grain_directory_data );
 
@@ -2273,7 +2304,7 @@ int libvmdk_extent_file_read_grain_group_element_data(
 		return( -1 );
 	}
 	if( ( grain_group_data_size == 0 )
-	 || ( grain_group_data_size > (size64_t) SSIZE_MAX ) )
+	 || ( grain_group_data_size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE ) )
 	{
 		libcerror_error_set(
 		 error,

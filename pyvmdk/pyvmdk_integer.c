@@ -1,7 +1,7 @@
 /*
  * Integer functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -188,6 +188,7 @@ int pyvmdk_integer_signed_copy_to_64bit(
 		}
 	}
 #endif /* PY_MAJOR_VERSION < 3 */
+
 	if( result == 0 )
 	{
 		libcerror_error_set(
@@ -333,6 +334,7 @@ int pyvmdk_integer_unsigned_copy_to_64bit(
 		}
 	}
 #endif /* PY_MAJOR_VERSION < 3 */
+
 	if( result == 0 )
 	{
 		libcerror_error_set(

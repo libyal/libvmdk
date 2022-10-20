@@ -1,7 +1,7 @@
 /*
  * Handle functions
  *
- * Copyright (C) 2009-2020, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -32,18 +32,20 @@
 #include "libvmdk_extent_descriptor.h"
 #include "libvmdk_extent_file.h"
 #include "libvmdk_extent_table.h"
+#include "libvmdk_extent_values.h"
 #include "libvmdk_handle.h"
 #include "libvmdk_grain_data.h"
 #include "libvmdk_grain_table.h"
 #include "libvmdk_io_handle.h"
 #include "libvmdk_libbfio.h"
+#include "libvmdk_libcdata.h"
 #include "libvmdk_libcerror.h"
+#include "libvmdk_libcfile.h"
 #include "libvmdk_libcnotify.h"
 #include "libvmdk_libcpath.h"
 #include "libvmdk_libcthreads.h"
 #include "libvmdk_libfcache.h"
 #include "libvmdk_libfdata.h"
-#include "libvmdk_system_string.h"
 
 /* Creates a handle
  * Make sure the value handle is referencing, is set to NULL
@@ -122,6 +124,20 @@ int libvmdk_handle_initialize(
 
 		goto on_error;
 	}
+	if( libcdata_array_initialize(
+	     &( internal_handle->extent_values_array ),
+	     0,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create extent values array.",
+		 function );
+
+		goto on_error;
+	}
 	if( libvmdk_extent_table_initialize(
 	     &( internal_handle->extent_table ),
 	     internal_handle->io_handle,
@@ -164,6 +180,13 @@ on_error:
 		{
 			libvmdk_extent_table_free(
 			 &( internal_handle->extent_table ),
+			 NULL );
+		}
+		if( internal_handle->extent_values_array != NULL )
+		{
+			libcdata_array_free(
+			 &( internal_handle->extent_values_array ),
+			 NULL,
 			 NULL );
 		}
 		if( internal_handle->io_handle != NULL )
@@ -251,6 +274,20 @@ int libvmdk_handle_free(
 
 			result = -1;
 		}
+		if( libcdata_array_free(
+		     &( internal_handle->extent_values_array ),
+		     (int (*)(intptr_t **, libcerror_error_t **)) &libvmdk_extent_values_free,
+		     error ) != 1 )
+		{
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+			 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+			 "%s: unable to free extent values array.",
+			 function );
+
+			result = -1;
+		}
 		if( libvmdk_io_handle_free(
 		     &( internal_handle->io_handle ),
 		     error ) != 1 )
@@ -318,15 +355,15 @@ int libvmdk_handle_open(
      int access_flags,
      libcerror_error_t **error )
 {
-	libbfio_handle_t *file_io_handle                        = NULL;
-	libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
-	libvmdk_internal_handle_t *internal_handle              = NULL;
-	char *data_files_path_end                               = NULL;
-	static char *function                                   = "libvmdk_handle_open";
-	size_t data_files_path_length                           = 0;
-	size_t filename_length                                  = 0;
-	int number_of_extents                                   = 0;
-	int result                                              = 1;
+	libbfio_handle_t *file_io_handle           = NULL;
+	libvmdk_extent_values_t *extent_values     = NULL;
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	char *data_files_path_end                  = NULL;
+	static char *function                      = "libvmdk_handle_open";
+	size_t data_files_path_length              = 0;
+	size_t filename_length                     = 0;
+	int number_of_extents                      = 0;
+	int result                                 = 1;
 
 	if( handle == NULL )
 	{
@@ -454,10 +491,10 @@ int libvmdk_handle_open(
 	 * the filename instead of the extent data filename in the descriptor file is used.
 	 */
 /* TODO thread lock */
-	if( internal_handle->descriptor_file->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	if( internal_handle->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 	{
-		if( libvmdk_descriptor_file_get_number_of_extents(
-		     internal_handle->descriptor_file,
+		if( libcdata_array_get_number_of_entries(
+		     internal_handle->extent_values_array,
 		     &number_of_extents,
 		     error ) != 1 )
 		{
@@ -472,87 +509,45 @@ int libvmdk_handle_open(
 		}
 		if( number_of_extents == 1 )
 		{
-			if( libvmdk_descriptor_file_get_extent_by_index(
-			     internal_handle->descriptor_file,
+			if( libcdata_array_get_entry_by_index(
+			     internal_handle->extent_values_array,
 			     0,
-			     &extent_descriptor,
+			     (intptr_t **) &extent_values,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve extent: 0 from descriptor file.",
+				 "%s: unable to retrieve extent values: 0 from array.",
 				 function );
 
 				goto on_error;
 			}
-			if( extent_descriptor == NULL )
+			if( extent_values == NULL )
 			{ 
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-				 "%s: missing extent descriptor: 0.",
+				 "%s: missing extent values: 0.",
 				 function );
 
 				goto on_error;
 			}
-			if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+			if( extent_values->type == LIBVMDK_EXTENT_TYPE_SPARSE )
 			{
-				if( libvmdk_system_string_size_from_narrow_string(
+				if( libvmdk_extent_values_set_alternate_filename(
+				     extent_values,
 				     filename,
-				     filename_length + 1,
-				     &( extent_descriptor->alternate_filename_size ),
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-					 LIBCERROR_CONVERSION_ERROR_GENERIC,
-					 "%s: unable to determine alternate filename size.",
-					 function );
-
-					goto on_error;
-				}
-				if( ( extent_descriptor->alternate_filename_size > (size_t) SSIZE_MAX )
-				 || ( ( sizeof( system_character_t ) * extent_descriptor->alternate_filename_size ) > (size_t) SSIZE_MAX ) )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-					 "%s: invalid file IO handle - alternate filename size value exceeds maximum.",
-					 function );
-
-					goto on_error;
-				}
-				extent_descriptor->alternate_filename = system_string_allocate(
-				                                         extent_descriptor->alternate_filename_size );
-
-				if( extent_descriptor->alternate_filename == NULL )
-				{
-					libcerror_error_set(
-					error,
-					LIBCERROR_ERROR_DOMAIN_MEMORY,
-					LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-					"%s: unable to create alternate filename.",
-					function );
-
-					goto on_error;
-				}
-				if( libvmdk_system_string_copy_from_narrow_string(
-				     extent_descriptor->alternate_filename,
-				     extent_descriptor->alternate_filename_size,
-				     filename,
-				     filename_length + 1,
+				     filename_length,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-					 "%s: unable to copy alternate filename.",
+					 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+					 "%s: unable to set alternate filename in extent values.",
 					 function );
 
 					goto on_error;
@@ -561,9 +556,9 @@ int libvmdk_handle_open(
 				if( libcnotify_verbose != 0 )
 				{
 					libcnotify_printf(
-					 "%s: alternate filename\t\t\t: %" PRIs_SYSTEM "\n",
+					 "%s: alternate filename\t\t\t\t\t: %" PRIs_SYSTEM "\n",
 					 function,
-					 extent_descriptor->alternate_filename );
+					 extent_values->alternate_filename );
 				}
 #endif
 			}
@@ -649,15 +644,15 @@ int libvmdk_handle_open_wide(
      int access_flags,
      libcerror_error_t **error )
 {
-	libbfio_handle_t *file_io_handle                        = NULL;
-	libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
-	libvmdk_internal_handle_t *internal_handle              = NULL;
-	wchar_t *data_files_path_end                            = NULL;
-	static char *function                                   = "libvmdk_handle_open_wide";
-	size_t data_files_path_length                           = 0;
-	size_t filename_length                                  = 0;
-	int number_of_extents                                   = 0;
-	int result                                              = 1;
+	libbfio_handle_t *file_io_handle           = NULL;
+	libvmdk_extent_values_t *extent_values     = NULL;
+	libvmdk_internal_handle_t *internal_handle = NULL;
+	wchar_t *data_files_path_end               = NULL;
+	static char *function                      = "libvmdk_handle_open_wide";
+	size_t data_files_path_length              = 0;
+	size_t filename_length                     = 0;
+	int number_of_extents                      = 0;
+	int result                                 = 1;
 
 	if( handle == NULL )
 	{
@@ -785,10 +780,10 @@ int libvmdk_handle_open_wide(
 	 * the filename instead of the extent data filename in the descriptor file is used.
 	 */
 /* TODO thread lock */
-	if( internal_handle->descriptor_file->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	if( internal_handle->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
 	{
-		if( libvmdk_descriptor_file_get_number_of_extents(
-		     internal_handle->descriptor_file,
+		if( libcdata_array_get_number_of_entries(
+		     internal_handle->extent_values_array,
 		     &number_of_extents,
 		     error ) != 1 )
 		{
@@ -803,87 +798,45 @@ int libvmdk_handle_open_wide(
 		}
 		if( number_of_extents == 1 )
 		{
-			if( libvmdk_descriptor_file_get_extent_by_index(
-			     internal_handle->descriptor_file,
+			if( libcdata_array_get_entry_by_index(
+			     internal_handle->extent_values_array,
 			     0,
-			     &extent_descriptor,
+			     (intptr_t **) &extent_values,
 			     error ) != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-				 "%s: unable to retrieve extent: 0 from descriptor file.",
+				 "%s: unable to retrieve extent values: 0 from array.",
 				 function );
 
 				goto on_error;
 			}
-			if( extent_descriptor == NULL )
+			if( extent_values == NULL )
 			{ 
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-				 "%s: missing extent descriptor: 0.",
+				 "%s: missing extent values: 0.",
 				 function );
 
 				goto on_error;
 			}
-			if( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+			if( extent_values->type == LIBVMDK_EXTENT_TYPE_SPARSE )
 			{
-				if( libvmdk_system_string_size_from_wide_string(
+				if( libvmdk_extent_values_set_alternate_filename_wide(
+				     extent_values,
 				     filename,
-				     filename_length + 1,
-				     &( extent_descriptor->alternate_filename_size ),
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_CONVERSION,
-					 LIBCERROR_CONVERSION_ERROR_GENERIC,
-					 "%s: unable to determine alternate filename size.",
-					 function );
-
-					goto on_error;
-				}
-				if( ( extent_descriptor->alternate_filename_size > (size_t) SSIZE_MAX )
-				 || ( ( sizeof( system_character_t ) * extent_descriptor->alternate_filename_size ) > (size_t) SSIZE_MAX ) )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-					 "%s: invalid file IO handle - alternate filename size value exceeds maximum.",
-					 function );
-
-					goto on_error;
-				}
-				extent_descriptor->alternate_filename = system_string_allocate(
-				                                         extent_descriptor->alternate_filename_size );
-
-				if( extent_descriptor->alternate_filename == NULL )
-				{
-					libcerror_error_set(
-					error,
-					LIBCERROR_ERROR_DOMAIN_MEMORY,
-					LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-					"%s: unable to create alternate filename.",
-					function );
-
-					goto on_error;
-				}
-				if( libvmdk_system_string_copy_from_wide_string(
-				     extent_descriptor->alternate_filename,
-				     extent_descriptor->alternate_filename_size,
-				     filename,
-				     filename_length + 1,
+				     filename_length,
 				     error ) != 1 )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_COPY_FAILED,
-					 "%s: unable to copy alternate filename.",
+					 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+					 "%s: unable to set alternate filename in extent values.",
 					 function );
 
 					goto on_error;
@@ -892,15 +845,14 @@ int libvmdk_handle_open_wide(
 				if( libcnotify_verbose != 0 )
 				{
 					libcnotify_printf(
-					 "%s: alternate filename\t\t\t: %" PRIs_SYSTEM "\n",
+					 "%s: alternate filename\t\t\t\t\t: %" PRIs_SYSTEM "\n",
 					 function,
-					 extent_descriptor->alternate_filename );
+					 extent_values->alternate_filename );
 				}
 #endif
 			}
 		}
 	}
-/* TODO does this work for UTF-16 ? */
 	data_files_path_end = wide_string_search_character_reverse(
 	                       filename,
 	                       (wint_t) LIBCPATH_SEPARATOR,
@@ -981,16 +933,12 @@ int libvmdk_handle_open_file_io_handle(
      int access_flags,
      libcerror_error_t **error )
 {
-	libvmdk_descriptor_file_t *descriptor_file = NULL;
 	libvmdk_internal_handle_t *internal_handle = NULL;
-	libvmdk_extent_file_t *extent_file         = NULL;
-	uint8_t *descriptor_data                   = NULL;
 	static char *function                      = "libvmdk_handle_open_file_io_handle";
 	int bfio_access_flags                      = 0;
-	uint8_t file_type                          = 0;
 	int file_io_handle_is_open                 = 0;
 	int file_io_handle_opened_in_library       = 0;
-	int result                                 = 0;
+	int result                                 = 1;
 
 	if( handle == NULL )
 	{
@@ -1098,202 +1046,54 @@ int libvmdk_handle_open_file_io_handle(
 		}
 		file_io_handle_opened_in_library = 1;
 	}
-	result = libvmdk_handle_open_read_signature(
-		  file_io_handle,
-		  &file_type,
-		  error );
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_grab_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to grab read/write lock for writing.",
+		 function );
 
-	if( result == -1 )
+		goto on_error;
+	}
+#endif
+	if( libvmdk_internal_handle_open_read(
+	     internal_handle,
+	     file_io_handle,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read signature.",
+		 "%s: unable to read from file IO handle.",
 		 function );
 
-		goto on_error;
+		result = -1;
 	}
-	else if( result == 0 )
+	else
 	{
-		file_type = LIBVMDK_FILE_TYPE_RAW_DATA;
+		internal_handle->access_flags = access_flags;
 	}
-	switch( file_type )
-	{
-		case LIBVMDK_FILE_TYPE_DESCRIPTOR_FILE:
-			if( libvmdk_descriptor_file_initialize(
-			     &descriptor_file,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create descriptor file.",
-				 function );
-
-				goto on_error;
-			}
-			if( libvmdk_descriptor_file_read(
-			     descriptor_file,
-			     file_io_handle,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read descriptor file.",
-				 function );
-
-				goto on_error;
-			}
-			break;
-
-		case LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA:
-			if( libvmdk_extent_file_initialize(
-			     &extent_file,
-			     internal_handle->io_handle,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-				 "%s: unable to create extent file.",
-				 function );
-
-				goto on_error;
-			}
-			if( libvmdk_extent_file_read_file_header_file_io_handle(
-			     extent_file,
-			     file_io_handle,
-			     0,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_IO,
-				 LIBCERROR_IO_ERROR_READ_FAILED,
-				 "%s: unable to read extent file header.",
-				 function );
-
-				goto on_error;
-			}
-			if( extent_file->descriptor_size > 0 )
-			{
-				if( libvmdk_descriptor_file_initialize(
-				     &descriptor_file,
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-					 "%s: unable to create descriptor file.",
-					 function );
-
-					goto on_error;
-				}
-				if( extent_file->descriptor_size > (size64_t) SSIZE_MAX )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
-					 "%s: invalid extent file - descriptor size value exceeds maximum.",
-					 function );
-
-					goto on_error;
-				}
-				descriptor_data = (uint8_t *) memory_allocate(
-							       sizeof( uint8_t ) * (size_t) extent_file->descriptor_size );
-
-				if( descriptor_data == NULL )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_MEMORY,
-					 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
-					 "%s: unable to create descriptor data.",
-					 function );
-
-					goto on_error;
-				}
-				if( libvmdk_extent_file_read_descriptor_data_file_io_handle(
-				     extent_file,
-				     file_io_handle,
-				     descriptor_data,
-				     (size_t) extent_file->descriptor_size,
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_IO,
-					 LIBCERROR_IO_ERROR_READ_FAILED,
-					 "%s: unable to read descriptor data.",
-					 function );
-
-					goto on_error;
-				}
-				if( libvmdk_descriptor_file_read_string(
-				     descriptor_file,
-				     (char *) descriptor_data,
-				     (size_t) extent_file->descriptor_size,
-				     error ) != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_IO,
-					 LIBCERROR_IO_ERROR_READ_FAILED,
-					 "%s: unable to read descriptor from string.",
-					 function );
-
-					goto on_error;
-				}
-				memory_free(
-				 descriptor_data );
-
-				descriptor_data = NULL;
-			}
-			if( libvmdk_extent_file_free(
-			     &extent_file,
-			     error ) != 1 )
-			{
-				libcerror_error_set(
-				 error,
-				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
-				 "%s: unable to free extent file.",
-				 function );
-
-				goto on_error;
-			}
-			break;
-
-		case LIBVMDK_FILE_TYPE_RAW_DATA:
-		case LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA:
-		default:
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
-			 "%s: unsupported file type.",
-			 function );
-
-			goto on_error;
-	}
-	if( descriptor_file == NULL )
+#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
+	if( libcthreads_read_write_lock_release_for_write(
+	     internal_handle->read_write_lock,
+	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing descriptor file.",
+		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
+		 "%s: unable to release read/write lock for writing.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
+#endif
 	if( file_io_handle_opened_in_library != 0 )
 	{
 		if( libbfio_handle_close(
@@ -1311,60 +1111,9 @@ int libvmdk_handle_open_file_io_handle(
 		}
 		file_io_handle_opened_in_library = 0;
 	}
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_handle->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		goto on_error;
-	}
-#endif
-	internal_handle->descriptor_file       = descriptor_file;
-	internal_handle->io_handle->media_size = descriptor_file->media_size;
-	internal_handle->access_flags          = access_flags;
-
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_handle->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( 1 );
+	return( result );
 
 on_error:
-	if( descriptor_data != NULL )
-	{
-		memory_free(
-		 descriptor_data );
-	}
-	if( extent_file != NULL )
-	{
-		libvmdk_extent_file_free(
-		 &extent_file,
-		 NULL );
-	}
-	if( descriptor_file != NULL )
-	{
-		libvmdk_descriptor_file_free(
-		 &descriptor_file,
-		 NULL );
-	}
 	if( file_io_handle_opened_in_library != 0 )
 	{
 		libbfio_handle_close(
@@ -1383,17 +1132,15 @@ int libvmdk_handle_open_extent_data_files(
      libvmdk_handle_t *handle,
      libcerror_error_t **error )
 {
-	libbfio_pool_t *file_io_pool                            = NULL;
-	libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
-	libvmdk_internal_handle_t *internal_handle              = NULL;
-	system_character_t *extent_data_file_location           = NULL;
-	system_character_t *extent_data_filename_start          = NULL;
-	static char *function                                   = "libvmdk_handle_open_extent_data_files";
-	size_t extent_data_file_location_size                   = 0;
-	size_t extent_data_filename_size                        = 0;
-	int extent_index                                        = 0;
-	int number_of_extents                                   = 0;
-	int result                                              = 0;
+	libbfio_pool_t *file_io_pool                  = NULL;
+	libvmdk_extent_values_t *extent_values        = NULL;
+	libvmdk_internal_handle_t *internal_handle    = NULL;
+	system_character_t *extent_data_file_location = NULL;
+	static char *function                         = "libvmdk_handle_open_extent_data_files";
+	size_t extent_data_file_location_size         = 0;
+	int extent_index                              = 0;
+	int number_of_extents                         = 0;
+	int result                                    = 0;
 
 	if( handle == NULL )
 	{
@@ -1468,8 +1215,8 @@ int libvmdk_handle_open_extent_data_files(
 		return( -1 );
 	}
 #endif
-	if( libvmdk_descriptor_file_get_number_of_extents(
-	     internal_handle->descriptor_file,
+	if( libcdata_array_get_number_of_entries(
+	     internal_handle->extent_values_array,
 	     &number_of_extents,
 	     error ) != 1 )
 	{
@@ -1512,113 +1259,121 @@ int libvmdk_handle_open_extent_data_files(
 	     extent_index < number_of_extents;
 	     extent_index++ )
 	{
-		if( libvmdk_descriptor_file_get_extent_by_index(
-		     internal_handle->descriptor_file,
+		if( libcdata_array_get_entry_by_index(
+		     internal_handle->extent_values_array,
 		     extent_index,
-		     &extent_descriptor,
+		     (intptr_t **) &extent_values,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve extent: %d from descriptor file.",
+			 "%s: unable to retrieve extent values: %d from array.",
 			 function,
 			 extent_index );
 
 			goto on_error;
 		}
-		if( extent_descriptor == NULL )
+		if( extent_values == NULL )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing extent descriptor: %d.",
+			 "%s: missing extent values: %d.",
 			 function,
 			 extent_index );
 
 			goto on_error;
 		}
-		if( extent_descriptor->type != LIBVMDK_EXTENT_TYPE_ZERO )
+		if( extent_values->type != LIBVMDK_EXTENT_TYPE_ZERO )
 		{
-			if( ( extent_descriptor->filename == NULL )
-			 || ( extent_descriptor->filename_size == 0 ) )
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+			result = libvmdk_extent_table_get_extent_data_file_path_wide(
+			          internal_handle->extent_table,
+			          extent_values,
+			          &extent_data_file_location,
+			          &extent_data_file_location_size,
+			          error );
+#else
+			result = libvmdk_extent_table_get_extent_data_file_path(
+			          internal_handle->extent_table,
+			          extent_values,
+			          &extent_data_file_location,
+			          &extent_data_file_location_size,
+			          error );
+#endif
+			if( result != 1 )
 			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-				 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-				 "%s: invalid extent descriptor: %d - missing filename.",
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create extent data file location.",
+				 function );
+
+				goto on_error;
+			}
+#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+			result = libcfile_file_exists_wide(
+			          extent_data_file_location,
+			          error );
+#else
+			result = libcfile_file_exists(
+			          extent_data_file_location,
+			          error );
+#endif
+			if( result == -1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+				 "%s: unable to determine if extent: %d data file exists.",
 				 function,
 				 extent_index );
 
 				goto on_error;
 			}
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-			extent_data_filename_start = wide_string_search_character_reverse(
-			                              extent_descriptor->filename,
-			                              (wint_t) LIBCPATH_SEPARATOR,
-			                              extent_descriptor->filename_size );
-#else
-			extent_data_filename_start = narrow_string_search_character_reverse(
-			                              extent_descriptor->filename,
-			                              (int) LIBCPATH_SEPARATOR,
-			                              extent_descriptor->filename_size );
-#endif
-			if( extent_data_filename_start != NULL )
+			else if( ( result == 0 )
+			      && ( extent_values->alternate_filename != NULL ) )
 			{
-				/* Ignore the path separator itself
-				 */
-				extent_data_filename_start++;
+				memory_free(
+				 extent_data_file_location );
 
-/* TODO does this work for UTF-16 ? */
-				extent_data_filename_size = (size_t) ( extent_data_filename_start - extent_descriptor->filename );
-			}
-			else
-			{
-				extent_data_filename_start = extent_descriptor->filename;
-				extent_data_filename_size  = extent_descriptor->filename_size;
-			}
-/* TODO refactor to a function in extent table */
-			if( internal_handle->extent_table->data_files_path != NULL )
-			{
+				extent_data_file_location      = NULL;
+				extent_data_file_location_size = 0;
+
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				if( libcpath_path_join_wide(
-				     &extent_data_file_location,
-				     &extent_data_file_location_size,
-				     internal_handle->extent_table->data_files_path,
-				     internal_handle->extent_table->data_files_path_size - 1,
-				     extent_data_filename_start,
-				     extent_data_filename_size - 1,
-				     error ) != 1 )
+				result = libvmdk_extent_table_join_extent_data_file_path_wide(
+				          internal_handle->extent_table,
+				          extent_values->alternate_filename,
+				          extent_values->alternate_filename_size,
+				          &extent_data_file_location,
+				          &extent_data_file_location_size,
+				          error );
 #else
-				if( libcpath_path_join(
-				     &extent_data_file_location,
-				     &extent_data_file_location_size,
-				     internal_handle->extent_table->data_files_path,
-				     internal_handle->extent_table->data_files_path_size - 1,
-				     extent_data_filename_start,
-				     extent_data_filename_size - 1,
-				     error ) != 1 )
+				result = libvmdk_extent_table_join_extent_data_file_path(
+				          internal_handle->extent_table,
+				          extent_values->alternate_filename,
+				          extent_values->alternate_filename_size,
+				          &extent_data_file_location,
+				          &extent_data_file_location_size,
+				          error );
 #endif
+				if( result != 1 )
 				{
 					libcerror_error_set(
 					 error,
 					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-					 "%s: unable to create extent data file location.",
+					 "%s: unable to create alternate extent data file location.",
 					 function );
 
 					goto on_error;
 				}
 			}
-			else
-			{
-				extent_data_file_location      = extent_data_filename_start;
-				extent_data_file_location_size = extent_data_filename_size;
-			}
-/* TODO add support for alternate extent file name */
 			/* Note that the open extent data file function will initialize extent_data_file_io_pool
 			 */
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
@@ -1648,17 +1403,13 @@ int libvmdk_handle_open_extent_data_files(
 
 				goto on_error;
 			}
-			if( ( extent_data_file_location != NULL )
-			 && ( extent_data_file_location != extent_data_filename_start ) )
-			{
-				memory_free(
-				 extent_data_file_location );
-			}
-			extent_data_filename_start = NULL;
-			extent_data_file_location  = NULL;
+			memory_free(
+			 extent_data_file_location );
+
+			extent_data_file_location = NULL;
 		}
 	}
-	if( libvmdk_handle_open_read_grain_table(
+	if( libvmdk_internal_handle_open_read_extent_data_files(
 	     internal_handle,
 	     file_io_pool,
 	     error ) != 1 )
@@ -1667,7 +1418,7 @@ int libvmdk_handle_open_extent_data_files(
                  error,
                  LIBCERROR_ERROR_DOMAIN_RUNTIME,
                  LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-                 "%s: unable to read grain table.",
+                 "%s: unable to read extent data files.",
                  function );
 
                 goto on_error;
@@ -1702,8 +1453,7 @@ on_error:
 		 &file_io_pool,
 		 NULL );
 	}
-	if( ( extent_data_file_location != NULL )
-	 && ( extent_data_file_location != extent_data_filename_start ) )
+	if( extent_data_file_location != NULL )
 	{
 		memory_free(
 		 extent_data_file_location );
@@ -1727,6 +1477,7 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 {
 	libvmdk_internal_handle_t *internal_handle = NULL;
 	static char *function                      = "libvmdk_handle_open_extent_data_files_file_io_pool";
+	int result                                 = 1;
 
 	if( handle == NULL )
 	{
@@ -1801,7 +1552,7 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 		return( -1 );
 	}
 #endif
-	if( libvmdk_handle_open_read_grain_table(
+	if( libvmdk_internal_handle_open_read_extent_data_files(
 	     internal_handle,
 	     file_io_pool,
 	     error ) != 1 )
@@ -1810,13 +1561,15 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
                  error,
                  LIBCERROR_ERROR_DOMAIN_RUNTIME,
                  LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-                 "%s: unable to read grain table.",
+                 "%s: unable to read extent data files.",
                  function );
 
-                goto on_error;
+                result = -1;
 	}
-	internal_handle->extent_data_file_io_pool = file_io_pool;
-
+	else
+	{
+		internal_handle->extent_data_file_io_pool = file_io_pool;
+	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_write(
 	     internal_handle->read_write_lock,
@@ -1832,15 +1585,7 @@ int libvmdk_handle_open_extent_data_files_file_io_pool(
 		return( -1 );
 	}
 #endif
-	return( 1 );
-
-on_error:
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_write(
-	 internal_handle->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
+	return( result );
 }
 
 /* Opens a specific extent data file
@@ -2284,21 +2029,306 @@ int libvmdk_handle_close(
 	return( result );
 }
 
-/* Reads the grain table
+/* Opens a handle for reading
  * Returns 1 if successful or -1 on error
  */
-int libvmdk_handle_open_read_grain_table(
+int libvmdk_internal_handle_open_read(
+     libvmdk_internal_handle_t *internal_handle,
+     libbfio_handle_t *file_io_handle,
+     libcerror_error_t **error )
+{
+	libvmdk_extent_file_t *extent_file = NULL;
+	uint8_t *descriptor_data           = NULL;
+	static char *function              = "libvmdk_internal_handle_open_read";
+	uint8_t file_type                  = 0;
+	int result                         = 0;
+
+	if( internal_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
+		 "%s: invalid handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->io_handle == NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
+		 "%s: invalid handle - missing IO handle.",
+		 function );
+
+		return( -1 );
+	}
+	if( internal_handle->descriptor_file != NULL )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_VALUE_ALREADY_SET,
+		 "%s: invalid handle - descriptor file already set.",
+		 function );
+
+		return( -1 );
+	}
+	result = libvmdk_internal_handle_open_read_signature(
+		  file_io_handle,
+		  &file_type,
+		  error );
+
+	if( result == -1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_IO,
+		 LIBCERROR_IO_ERROR_READ_FAILED,
+		 "%s: unable to read signature.",
+		 function );
+
+		goto on_error;
+	}
+	else if( result == 0 )
+	{
+		file_type = LIBVMDK_FILE_TYPE_RAW_DATA;
+	}
+	switch( file_type )
+	{
+		case LIBVMDK_FILE_TYPE_DESCRIPTOR_FILE:
+			if( libvmdk_descriptor_file_initialize(
+			     &( internal_handle->descriptor_file ),
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create descriptor file.",
+				 function );
+
+				goto on_error;
+			}
+			if( libvmdk_descriptor_file_read_file_io_handle(
+			     internal_handle->descriptor_file,
+			     file_io_handle,
+			     internal_handle->extent_values_array,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read descriptor file.",
+				 function );
+
+				goto on_error;
+			}
+			break;
+
+		case LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA:
+			if( libvmdk_extent_file_initialize(
+			     &extent_file,
+			     internal_handle->io_handle,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+				 "%s: unable to create extent file.",
+				 function );
+
+				goto on_error;
+			}
+			if( libvmdk_extent_file_read_file_header_file_io_handle(
+			     extent_file,
+			     file_io_handle,
+			     0,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_IO,
+				 LIBCERROR_IO_ERROR_READ_FAILED,
+				 "%s: unable to read extent file header.",
+				 function );
+
+				goto on_error;
+			}
+			if( extent_file->descriptor_size > 0 )
+			{
+				if( libvmdk_descriptor_file_initialize(
+				     &( internal_handle->descriptor_file ),
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+					 "%s: unable to create descriptor file.",
+					 function );
+
+					goto on_error;
+				}
+				if( extent_file->descriptor_size > (size64_t) MEMORY_MAXIMUM_ALLOCATION_SIZE )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+					 LIBCERROR_RUNTIME_ERROR_VALUE_EXCEEDS_MAXIMUM,
+					 "%s: invalid extent file - descriptor size value exceeds maximum allocation size.",
+					 function );
+
+					goto on_error;
+				}
+				descriptor_data = (uint8_t *) memory_allocate(
+							       sizeof( uint8_t ) * (size_t) extent_file->descriptor_size );
+
+				if( descriptor_data == NULL )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_MEMORY,
+					 LIBCERROR_MEMORY_ERROR_INSUFFICIENT,
+					 "%s: unable to create descriptor data.",
+					 function );
+
+					goto on_error;
+				}
+				if( libvmdk_extent_file_read_descriptor_data_file_io_handle(
+				     extent_file,
+				     file_io_handle,
+				     descriptor_data,
+				     (size_t) extent_file->descriptor_size,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read descriptor data.",
+					 function );
+
+					goto on_error;
+				}
+				if( libvmdk_descriptor_file_read_string(
+				     internal_handle->descriptor_file,
+				     (char *) descriptor_data,
+				     (size_t) extent_file->descriptor_size,
+				     internal_handle->extent_values_array,
+				     error ) != 1 )
+				{
+					libcerror_error_set(
+					 error,
+					 LIBCERROR_ERROR_DOMAIN_IO,
+					 LIBCERROR_IO_ERROR_READ_FAILED,
+					 "%s: unable to read descriptor from string.",
+					 function );
+
+					goto on_error;
+				}
+				memory_free(
+				 descriptor_data );
+
+				descriptor_data = NULL;
+			}
+			if( libvmdk_extent_file_free(
+			     &extent_file,
+			     error ) != 1 )
+			{
+				libcerror_error_set(
+				 error,
+				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+				 LIBCERROR_RUNTIME_ERROR_FINALIZE_FAILED,
+				 "%s: unable to free extent file.",
+				 function );
+
+				goto on_error;
+			}
+			break;
+
+		case LIBVMDK_FILE_TYPE_RAW_DATA:
+		case LIBVMDK_FILE_TYPE_COWD_SPARSE_DATA:
+		default:
+			libcerror_error_set(
+			 error,
+			 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
+			 LIBCERROR_ARGUMENT_ERROR_UNSUPPORTED_VALUE,
+			 "%s: unsupported file type.",
+			 function );
+
+			goto on_error;
+	}
+	if( libvmdk_descriptor_file_get_disk_type(
+	     internal_handle->descriptor_file,
+	     &( internal_handle->disk_type ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve disk type.",
+		 function );
+
+		goto on_error;
+	}
+	if( libvmdk_descriptor_file_get_media_size(
+	     internal_handle->descriptor_file,
+	     &( internal_handle->io_handle->media_size ),
+	     error ) != 1 )
+	{
+		libcerror_error_set(
+		 error,
+		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
+		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
+		 "%s: unable to retrieve media size.",
+		 function );
+
+		goto on_error;
+	}
+	return( 1 );
+
+on_error:
+	if( descriptor_data != NULL )
+	{
+		memory_free(
+		 descriptor_data );
+	}
+	if( extent_file != NULL )
+	{
+		libvmdk_extent_file_free(
+		 &extent_file,
+		 NULL );
+	}
+	if( internal_handle->descriptor_file != NULL )
+	{
+		libvmdk_descriptor_file_free(
+		 &( internal_handle->descriptor_file ),
+		 NULL );
+	}
+	return( -1 );
+}
+
+/* Reads the extent data files
+ * Returns 1 if successful or -1 on error
+ */
+int libvmdk_internal_handle_open_read_extent_data_files(
      libvmdk_internal_handle_t *internal_handle,
      libbfio_pool_t *file_io_pool,
      libcerror_error_t **error )
 {
-	libvmdk_internal_extent_descriptor_t *extent_descriptor = NULL;
-	libvmdk_extent_file_t *extent_file                      = NULL;
-	static char *function                                   = "libvmdk_handle_open_read_grain_table";
-	size64_t extent_file_size                               = 0;
-	int extent_index                                        = 0;
-	int number_of_extents                                   = 0;
-	int number_of_file_io_handles                           = 0;
+	libvmdk_extent_file_t *extent_file     = NULL;
+	libvmdk_extent_values_t *extent_values = NULL;
+	static char *function                  = "libvmdk_internal_handle_open_read_extent_data_files";
+	size64_t extent_file_size              = 0;
+	int extent_index                       = 0;
+	int number_of_extents                  = 0;
+	int number_of_file_io_handles          = 0;
 
 	if( internal_handle == NULL )
 	{
@@ -2355,8 +2385,8 @@ int libvmdk_handle_open_read_grain_table(
 
 		return( -1 );
 	}
-	if( libvmdk_descriptor_file_get_number_of_extents(
-	     internal_handle->descriptor_file,
+	if( libcdata_array_get_number_of_entries(
+	     internal_handle->extent_values_array,
 	     &number_of_extents,
 	     error ) != 1 )
 	{
@@ -2408,7 +2438,7 @@ int libvmdk_handle_open_read_grain_table(
 	if( libvmdk_extent_table_initialize_extents(
 	     internal_handle->extent_table,
 	     number_of_extents,
-	     internal_handle->descriptor_file->disk_type,
+	     internal_handle->disk_type,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
@@ -2452,29 +2482,17 @@ int libvmdk_handle_open_read_grain_table(
 	     extent_index < number_of_extents;
 	     extent_index++ )
 	{
-		if( libvmdk_descriptor_file_get_extent_by_index(
-		     internal_handle->descriptor_file,
+		if( libcdata_array_get_entry_by_index(
+		     internal_handle->extent_values_array,
 		     extent_index,
-		     &extent_descriptor,
+		     (intptr_t **) &extent_values,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 			 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-			 "%s: unable to retrieve extent: %d from descriptor file.",
-			 function,
-			 extent_index );
-
-			goto on_error;
-		}
-		if( extent_descriptor == NULL )
-		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-			 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-			 "%s: missing extent descriptor: %d.",
+			 "%s: unable to retrieve extent values: %d from array.",
 			 function,
 			 extent_index );
 
@@ -2496,14 +2514,14 @@ int libvmdk_handle_open_read_grain_table(
 
 			goto on_error;
 		}
-		if( libvmdk_extent_table_set_extent_by_extent_descriptor(
+		if( libvmdk_extent_table_set_extent_by_extent_values(
 		     internal_handle->extent_table,
-		     extent_descriptor,
+		     extent_values,
 		     extent_index,
 		     extent_index,
 		     extent_file_size,
-		     extent_descriptor->offset,
-		     extent_descriptor->size,
+		     extent_values->offset,
+		     extent_values->size,
 		     error ) != 1 )
 		{
 			libcerror_error_set(
@@ -2516,8 +2534,8 @@ int libvmdk_handle_open_read_grain_table(
 
 			goto on_error;
 		}
-		if( ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_SPARSE )
-		 || ( extent_descriptor->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE ) )
+		if( ( extent_values->type == LIBVMDK_EXTENT_TYPE_SPARSE )
+		 || ( extent_values->type == LIBVMDK_EXTENT_TYPE_VMFS_SPARSE ) )
 		{
 			if( libvmdk_extent_file_initialize(
 			     &extent_file,
@@ -2571,7 +2589,7 @@ int libvmdk_handle_open_read_grain_table(
 
 				goto on_error;
 			}
-			if( ( internal_handle->descriptor_file->disk_type != LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
+			if( ( internal_handle->disk_type != LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED )
 			 && ( extent_file->file_type == LIBVMDK_FILE_TYPE_VMDK_SPARSE_DATA )
 			 && ( ( extent_file->flags & LIBVMDK_FLAG_HAS_GRAIN_COMPRESSION ) != LIBVMDK_COMPRESSION_METHOD_NONE ) )
 			{
@@ -2680,8 +2698,8 @@ int libvmdk_handle_open_read_grain_table(
 				goto on_error;
 			}
 		}
-		else if( ( extent_descriptor->type != LIBVMDK_EXTENT_TYPE_FLAT )
-		      && ( extent_descriptor->type != LIBVMDK_EXTENT_TYPE_VMFS_FLAT ) )
+		else if( ( extent_values->type != LIBVMDK_EXTENT_TYPE_FLAT )
+		      && ( extent_values->type != LIBVMDK_EXTENT_TYPE_VMFS_FLAT ) )
 		{
 			libcerror_error_set(
 			 error,
@@ -2724,14 +2742,14 @@ on_error:
 /* Reads the file signature and tries to determine the file type
  * Returns 1 if successful, 0 if no file type could be determined or -1 on error
  */
-int libvmdk_handle_open_read_signature(
+int libvmdk_internal_handle_open_read_signature(
      libbfio_handle_t *file_io_handle,
      uint8_t *file_type,
      libcerror_error_t **error )
 {
 	libcsplit_narrow_split_string_t *lines = NULL;
 	uint8_t *signature                     = NULL;
-	static char *function                  = "libvmdk_handle_open_read_signature";
+	static char *function                  = "libvmdk_internal_handle_open_read_signature";
 	ssize_t read_count                     = 0;
 	int line_index                         = 0;
 	int number_of_lines                    = 0;
@@ -2776,25 +2794,11 @@ int libvmdk_handle_open_read_signature(
 
 		goto on_error;
 	}
-	if( libbfio_handle_seek_offset(
-	     file_io_handle,
-	     0,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek offset: 0.",
-		 function );
-
-		goto on_error;
-	}
-	read_count = libbfio_handle_read_buffer(
+	read_count = libbfio_handle_read_buffer_at_offset(
 	              file_io_handle,
 	              signature,
 	              32,
+	              0,
 	              error );
 
 	if( read_count != (ssize_t) 32 )
@@ -2803,7 +2807,7 @@ int libvmdk_handle_open_read_signature(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_IO,
 		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to read signature.",
+		 "%s: unable to read signature at offset: 0 (0x00000000).",
 		 function );
 
 		goto on_error;
@@ -3029,6 +3033,8 @@ ssize_t libvmdk_internal_handle_read_buffer_from_file_io_pool(
 
 		return( -1 );
 	}
+	internal_handle->io_handle->abort = 0;
+
 	if( buffer_size == 0 )
 	{
 		return( 0 );
@@ -3039,32 +3045,29 @@ ssize_t libvmdk_internal_handle_read_buffer_from_file_io_pool(
 	}
 	if( internal_handle->extent_table->extent_files_stream != NULL )
 	{
-		if( libfdata_stream_seek_offset(
-		     internal_handle->extent_table->extent_files_stream,
-		     internal_handle->current_offset,
-		     SEEK_SET,
-		     error ) == -1 )
+#if defined( HAVE_DEBUG_OUTPUT )
+		if( libcnotify_verbose != 0 )
 		{
-			libcerror_error_set(
-			 error,
-			 LIBCERROR_ERROR_DOMAIN_IO,
-			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to seek offset in extent files stream.",
-			 function );
-
-			return( -1 );
+			libcnotify_printf(
+			 "%s: requested offset\t\t\t\t: %" PRIi64 " (0x%08" PRIx64 ")\n",
+			 function,
+			 internal_handle->current_offset,
+			 internal_handle->current_offset );
 		}
+#endif
 		read_size = buffer_size;
 
-		if( (size64_t) ( internal_handle->current_offset + read_size ) > internal_handle->io_handle->media_size )
+		if( ( (size64_t) read_size > internal_handle->io_handle->media_size )
+		 || ( (size64_t) internal_handle->current_offset > ( internal_handle->io_handle->media_size - read_size ) ) )
 		{
 			read_size = (size_t) ( internal_handle->io_handle->media_size - internal_handle->current_offset );
 		}
-		read_count = libfdata_stream_read_buffer(
+		read_count = libfdata_stream_read_buffer_at_offset(
 		              internal_handle->extent_table->extent_files_stream,
 			      (intptr_t *) file_io_pool,
 			      (uint8_t *) buffer,
 			      read_size,
+			      internal_handle->current_offset,
 			      0,
 			      error );
 
@@ -3074,31 +3077,23 @@ ssize_t libvmdk_internal_handle_read_buffer_from_file_io_pool(
 			 error,
 			 LIBCERROR_ERROR_DOMAIN_IO,
 			 LIBCERROR_IO_ERROR_READ_FAILED,
-			 "%s: unable to read buffer from extent files stream.",
-			 function );
+			 "%s: unable to read buffer from extent files stream at offset: %" PRIi64 " (0x%" PRIx64 ").",
+			 function,
+			 internal_handle->current_offset,
+			 internal_handle->current_offset );
 
 			return( -1 );
 		}
-		buffer_offset = read_size;
-
 		internal_handle->current_offset += (off64_t) read_size;
+
+		buffer_offset = read_size;
 	}
 	else
 	{
-/* TODO refactor to separate function */
-#if defined( HAVE_DEBUG_OUTPUT )
-		if( libcnotify_verbose != 0 )
-		{
-			libcnotify_printf(
-			 "%s: requested offset\t\t\t\t: 0x%08" PRIx64 "\n",
-			 function,
-			 internal_handle->current_offset );
-		}
-#endif
 		grain_index       = internal_handle->current_offset / internal_handle->io_handle->grain_size;
 		grain_data_offset = (off64_t) ( internal_handle->current_offset % internal_handle->io_handle->grain_size );
 
-		while( buffer_size > 0 )
+		while( buffer_offset < buffer_size )
 		{
 			grain_is_sparse = libvmdk_grain_table_grain_is_sparse_at_offset(
 					   internal_handle->grain_table,
@@ -3122,11 +3117,12 @@ ssize_t libvmdk_internal_handle_read_buffer_from_file_io_pool(
 			}
 			read_size = (size_t) ( internal_handle->io_handle->grain_size - grain_data_offset );
 
-			if( read_size > buffer_size )
+			if( read_size > ( buffer_size - buffer_offset ) )
 			{
-				read_size = buffer_size;
+				read_size = buffer_size - buffer_offset;
 			}
-			if( (size64_t) ( internal_handle->current_offset + read_size ) > internal_handle->io_handle->media_size )
+			if( ( (size64_t) read_size > internal_handle->io_handle->media_size )
+			 || ( (size64_t) internal_handle->current_offset > ( internal_handle->io_handle->media_size - read_size ) ) )
 			{
 				read_size = (size_t) ( internal_handle->io_handle->media_size - internal_handle->current_offset );
 			}
@@ -3162,8 +3158,9 @@ ssize_t libvmdk_internal_handle_read_buffer_from_file_io_pool(
 						 error,
 						 LIBCERROR_ERROR_DOMAIN_IO,
 						 LIBCERROR_IO_ERROR_SEEK_FAILED,
-						 "%s: unable to seek grain offset: %" PRIi64 " in parent.",
+						 "%s: unable to seek grain offset: %" PRIi64 " (0x%08" PRIx64 ") in parent.",
 						 function,
+						 internal_handle->current_offset,
 						 internal_handle->current_offset );
 
 						return( -1 );
@@ -3260,7 +3257,6 @@ ssize_t libvmdk_internal_handle_read_buffer_from_file_io_pool(
 				}
 			}
 			buffer_offset    += read_size;
-			buffer_size      -= read_size;
 			grain_index      += 1;
 			grain_data_offset = 0;
 
@@ -3478,231 +3474,6 @@ on_error:
 #endif
 	return( -1 );
 }
-
-#ifdef TODO_WRITE_SUPPORT
-
-/* Writes (media) data at the current offset from a buffer using a Basic File IO (bfio) pool
- * the necessary settings of the write values must have been made
- * Will initialize write if necessary
- * This function is not multi-thread safe acquire write lock before call
- * Returns the number of input bytes written, 0 when no longer bytes can be written or -1 on error
- */
-ssize_t libvmdk_internal_handle_write_buffer_to_file_io_pool(
-         libvmdk_internal_handle_t *internal_handle,
-         libbfio_pool_t *file_io_pool,
-         void *buffer,
-         size_t buffer_size,
-         libcerror_error_t **error )
-{
-/* TODO implement */
-	return( -1 );
-}
-
-/* Writes (media) data at the current offset
- * the necessary settings of the write values must have been made
- * Will initialize write if necessary
- * Returns the number of input bytes written, 0 when no longer bytes can be written or -1 on error
- */
-ssize_t libvmdk_handle_write_buffer(
-         libvmdk_handle_t *handle,
-         const void *buffer,
-         size_t buffer_size,
-         libcerror_error_t **error )
-{
-	libvmdk_internal_handle_t *internal_handle = NULL;
-	static char *function                      = "libvmdk_handle_write_buffer";
-	ssize_t write_count                        = 0;
-
-	if( handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid handle.",
-		 function );
-
-		return( -1 );
-	}
-	internal_handle = (libvmdk_internal_handle_t *) handle;
-
-	if( internal_handle->extent_data_file_io_pool == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid handle - missing extent data file IO pool.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_handle->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	write_count = libvmdk_internal_handle_write_buffer_to_file_io_pool(
-	               internal_handle,
-	               internal_handle->extent_data_file_io_pool,
-	               buffer,
-	               buffer_size,
-	               error );
-
-	if( write_count == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to write buffer.",
-		 function );
-
-		write_count = -1;
-	}
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_handle->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( write_count );
-}
-
-/* Writes (media) data at a specific offset,
- * the necessary settings of the write values must have been made
- * Will initialize write if necessary
- * Returns the number of input bytes written, 0 when no longer bytes can be written or -1 on error
- */
-ssize_t libvmdk_handle_write_buffer_at_offset(
-         libvmdk_handle_t *handle,
-         const void *buffer,
-         size_t buffer_size,
-         off64_t offset,
-         libcerror_error_t **error )
-{
-	libvmdk_internal_handle_t *internal_handle = NULL;
-	static char *function                      = "libvmdk_handle_write_buffer_at_offset";
-	ssize_t write_count                        = 0;
-
-	if( handle == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_ARGUMENTS,
-		 LIBCERROR_ARGUMENT_ERROR_INVALID_VALUE,
-		 "%s: invalid handle.",
-		 function );
-
-		return( -1 );
-	}
-	internal_handle = (libvmdk_internal_handle_t *) handle;
-
-	if( internal_handle->extent_data_file_io_pool == NULL )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: invalid handle - missing extent data file IO pool.",
-		 function );
-
-		return( -1 );
-	}
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_grab_for_write(
-	     internal_handle->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to grab read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	if( libvmdk_internal_handle_seek_offset(
-	     internal_handle,
-	     offset,
-	     SEEK_SET,
-	     error ) == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_SEEK_FAILED,
-		 "%s: unable to seek offset.",
-		 function );
-
-		goto on_error;
-	}
-	write_count = libvmdk_internal_handle_write_buffer_to_file_io_pool(
-	               internal_handle,
-	               internal_handle->extent_data_file_io_pool,
-	               buffer,
-	               buffer_size,
-	               error );
-
-	if( write_count == -1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_IO,
-		 LIBCERROR_IO_ERROR_READ_FAILED,
-		 "%s: unable to write buffer.",
-		 function );
-
-		goto on_error;
-	}
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	if( libcthreads_read_write_lock_release_for_write(
-	     internal_handle->read_write_lock,
-	     error ) != 1 )
-	{
-		libcerror_error_set(
-		 error,
-		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
-		 "%s: unable to release read/write lock for writing.",
-		 function );
-
-		return( -1 );
-	}
-#endif
-	return( write_count );
-
-on_error:
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_write(
-	 internal_handle->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
-}
-
-#endif /* TODO_WRITE_SUPPORT */
 
 /* Seeks a certain offset of the (media) data
  * This function is not multi-thread safe acquire write lock before call
@@ -3995,12 +3766,10 @@ int libvmdk_handle_set_maximum_number_of_open_handles(
 #endif
 	if( internal_handle->extent_data_file_io_pool != NULL )
 	{
-		result = libbfio_pool_set_maximum_number_of_open_handles(
-		          internal_handle->extent_data_file_io_pool,
-		          maximum_number_of_open_handles,
-		          error );
-
-		if( result != 1 )
+		if( libbfio_pool_set_maximum_number_of_open_handles(
+		     internal_handle->extent_data_file_io_pool,
+		     maximum_number_of_open_handles,
+		     error ) != -1 )
 		{
 			libcerror_error_set(
 			 error,
@@ -4008,6 +3777,8 @@ int libvmdk_handle_set_maximum_number_of_open_handles(
 			 LIBCERROR_RUNTIME_ERROR_SET_FAILED,
 			 "%s: unable to set maximum number of open handles in extent data file IO pool.",
 			 function );
+
+			result = -1;
 		}
 	}
 	if( result == 1 )
@@ -4393,7 +4164,7 @@ int libvmdk_handle_get_disk_type(
 		return( -1 );
 	}
 #endif
-	*disk_type = internal_handle->descriptor_file->disk_type;
+	*disk_type = internal_handle->disk_type;
 
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -4629,7 +4400,7 @@ int libvmdk_handle_get_parent_content_identifier(
 		 "%s: unable to retrieve parent content identifier.",
 		 function );
 
-		goto on_error;
+		result = -1;
 	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -4647,14 +4418,6 @@ int libvmdk_handle_get_parent_content_identifier(
 	}
 #endif
 	return( result );
-
-on_error:
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_read(
-	 internal_handle->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
 }
 
 /* Retrieves the size of the UTF-8 encoded parent filename
@@ -4712,7 +4475,7 @@ int libvmdk_handle_get_utf8_parent_filename_size(
 		 "%s: unable to retrieve UTF-8 parent filename size.",
 		 function );
 
-		goto on_error;
+		result = -1;
 	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -4730,14 +4493,6 @@ int libvmdk_handle_get_utf8_parent_filename_size(
 	}
 #endif
 	return( result );
-
-on_error:
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_read(
-	 internal_handle->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
 }
 
 /* Retrieves the UTF-8 encoded parent filename
@@ -4797,7 +4552,7 @@ int libvmdk_handle_get_utf8_parent_filename(
 		 "%s: unable to retrieve UTF-8 parent filename.",
 		 function );
 
-		goto on_error;
+		result = -1;
 	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -4815,14 +4570,6 @@ int libvmdk_handle_get_utf8_parent_filename(
 	}
 #endif
 	return( result );
-
-on_error:
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_read(
-	 internal_handle->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
 }
 
 /* Retrieves the size of the UTF-16 encoded parent filename
@@ -4880,7 +4627,7 @@ int libvmdk_handle_get_utf16_parent_filename_size(
 		 "%s: unable to retrieve UTF-16 parent filename size.",
 		 function );
 
-		goto on_error;
+		result = -1;
 	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -4898,14 +4645,6 @@ int libvmdk_handle_get_utf16_parent_filename_size(
 	}
 #endif
 	return( result );
-
-on_error:
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_read(
-	 internal_handle->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
 }
 
 /* Retrieves the UTF-16 encoded parent filename
@@ -4965,7 +4704,7 @@ int libvmdk_handle_get_utf16_parent_filename(
 		 "%s: unable to retrieve UTF-16 parent filename.",
 		 function );
 
-		goto on_error;
+		result = -1;
 	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -4983,14 +4722,6 @@ int libvmdk_handle_get_utf16_parent_filename(
 	}
 #endif
 	return( result );
-
-on_error:
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_read(
-	 internal_handle->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
 }
 
 /* Retrieves the number of extents
@@ -5003,6 +4734,7 @@ int libvmdk_handle_get_number_of_extents(
 {
 	libvmdk_internal_handle_t *internal_handle = NULL;
 	static char *function                      = "libvmdk_handle_get_number_of_extents";
+	int result                                 = 1;
 
 	if( handle == NULL )
 	{
@@ -5043,8 +4775,8 @@ int libvmdk_handle_get_number_of_extents(
 		return( -1 );
 	}
 #endif
-	if( libvmdk_descriptor_file_get_number_of_extents(
-	     internal_handle->descriptor_file,
+	if( libcdata_array_get_number_of_entries(
+	     internal_handle->extent_values_array,
 	     number_of_extents,
 	     error ) != 1 )
 	{
@@ -5055,7 +4787,7 @@ int libvmdk_handle_get_number_of_extents(
 		 "%s: unable to retrieve number of extents.",
 		 function );
 
-		goto on_error;
+		result = -1;
 	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -5072,15 +4804,7 @@ int libvmdk_handle_get_number_of_extents(
 		return( -1 );
 	}
 #endif
-	return( 1 );
-
-on_error:
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_read(
-	 internal_handle->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
+	return( result );
 }
 
 /* Retrieves a specific extent descriptor
@@ -5092,8 +4816,10 @@ int libvmdk_handle_get_extent_descriptor(
      libvmdk_extent_descriptor_t **extent_descriptor,
      libcerror_error_t **error )
 {
+	libvmdk_extent_values_t *extent_values     = NULL;
 	libvmdk_internal_handle_t *internal_handle = NULL;
 	static char *function                      = "libvmdk_handle_get_extent_descriptor";
+	int result                                 = 1;
 
 	if( handle == NULL )
 	{
@@ -5156,33 +4882,35 @@ int libvmdk_handle_get_extent_descriptor(
 		return( -1 );
 	}
 #endif
-	if( libvmdk_descriptor_file_get_extent_by_index(
-	     internal_handle->descriptor_file,
+	if( libcdata_array_get_entry_by_index(
+	     internal_handle->extent_values_array,
 	     extent_index,
-	     (libvmdk_internal_extent_descriptor_t **) extent_descriptor,
+	     (intptr_t **) &extent_values,
 	     error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
 		 LIBCERROR_RUNTIME_ERROR_GET_FAILED,
-		 "%s: unable to retrieve extent: %d from descriptor file.",
+		 "%s: unable to retrieve extent: %d from array.",
 		 function,
 		 extent_index );
 
-		goto on_error;
+		result = -1;
 	}
-	if( *extent_descriptor == NULL )
+	else if( libvmdk_extent_descriptor_initialize(
+	          extent_descriptor,
+	          extent_values,
+	          error ) != 1 )
 	{
 		libcerror_error_set(
 		 error,
 		 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-		 LIBCERROR_RUNTIME_ERROR_VALUE_MISSING,
-		 "%s: missing extent descriptor: %d.",
-		 function,
-		 extent_index );
+		 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
+		 "%s: unable to create extent descriptor.",
+		 function );
 
-		goto on_error;
+		result = -1;
 	}
 #if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
 	if( libcthreads_read_write_lock_release_for_read(
@@ -5199,14 +4927,6 @@ int libvmdk_handle_get_extent_descriptor(
 		return( -1 );
 	}
 #endif
-	return( 1 );
-
-on_error:
-#if defined( HAVE_LIBVMDK_MULTI_THREAD_SUPPORT )
-	libcthreads_read_write_lock_release_for_read(
-	 internal_handle->read_write_lock,
-	 NULL );
-#endif
-	return( -1 );
+	return( result );
 }
 

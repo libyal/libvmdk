@@ -194,6 +194,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\tests\vmdk_test_libcpath.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tests\vmdk_test_libvmdk.h"
 				>
 			</File>

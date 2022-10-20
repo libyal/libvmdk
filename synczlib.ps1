@@ -1,12 +1,6 @@
 # Script that synchronizes zlib.
 #
-# Version: 20171105
-
-Function DownloadFile($Url, $Destination)
-{
-	$Client = New-Object Net.WebClient
-	${Client}.DownloadFile(${Url}, ${Destination})
-}
+# Version: 20220415
 
 Function ExtractZip($Filename)
 {
@@ -33,16 +27,16 @@ Function ExtractZip($Filename)
 	}
 }
 
-$Filename = "${pwd}\zlib1211.zip"
-$Url = "http://zlib.net/zlib1211.zip"
-$ExtractedPath = "zlib-1.2.11"
+$Filename = "${pwd}\zlib1212.zip"
+$Url = "http://zlib.net/zlib1212.zip"
+$ExtractedPath = "zlib-1.2.12"
 $DestinationPath = "..\zlib"
 
 If (Test-Path ${Filename})
 {
 	Remove-Item -Path ${Filename} -Force
 }
-DownloadFile -Url ${Url} -Destination ${Filename}
+Invoke-WebRequest -Uri ${Url} -OutFile ${Filename}
 
 If (Test-Path ${ExtractedPath})
 {
