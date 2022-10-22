@@ -262,6 +262,25 @@ int vmdk_test_extent_descriptor_initialize(
 	}
 #endif /* defined( HAVE_VMDK_TEST_MEMORY ) */
 
+	/* Clean up
+	 */
+	result = libvmdk_extent_values_free(
+	          &extent_values,
+	          &error );
+
+	VMDK_TEST_ASSERT_EQUAL_INT(
+	 "result",
+	 result,
+	 1 );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "extent_values",
+	 extent_values );
+
+	VMDK_TEST_ASSERT_IS_NULL(
+	 "error",
+	 error );
+
 	return( 1 );
 
 on_error:
@@ -274,6 +293,12 @@ on_error:
 	{
 		libvmdk_extent_descriptor_free(
 		 &extent_descriptor,
+		 NULL );
+	}
+	if( extent_values != NULL )
+	{
+		libvmdk_extent_values_free(
+		 &extent_values,
 		 NULL );
 	}
 	return( 0 );

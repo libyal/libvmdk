@@ -45,6 +45,7 @@ EXTRA_DIST = \
 	$(check_SCRIPTS)
 
 check_PROGRAMS = \
+	vmdk_test_bit_stream \
 	vmdk_test_compression \
 	vmdk_test_deflate \
 	vmdk_test_descriptor_file \
@@ -57,6 +58,7 @@ check_PROGRAMS = \
 	vmdk_test_grain_group \
 	vmdk_test_grain_table \
 	vmdk_test_handle \
+	vmdk_test_huffman_tree \
 	vmdk_test_io_handle \
 	vmdk_test_notify \
 	vmdk_test_support \
@@ -64,6 +66,18 @@ check_PROGRAMS = \
 	vmdk_test_tools_info_handle \
 	vmdk_test_tools_output \
 	vmdk_test_tools_signal
+
+vmdk_test_bit_stream_SOURCES = \
+	vmdk_test_bit_stream.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
+
+vmdk_test_bit_stream_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
 
 vmdk_test_compression_SOURCES = \
 	vmdk_test_compression.c \
@@ -223,6 +237,18 @@ vmdk_test_handle_LDADD = \
 	@LIBCTHREADS_LIBADD@ \
 	@LIBCERROR_LIBADD@ \
 	@PTHREAD_LIBADD@
+
+vmdk_test_huffman_tree_SOURCES = \
+	vmdk_test_huffman_tree.c \
+	vmdk_test_libcerror.h \
+	vmdk_test_libvmdk.h \
+	vmdk_test_macros.h \
+	vmdk_test_memory.c vmdk_test_memory.h \
+	vmdk_test_unused.h
+
+vmdk_test_huffman_tree_LDADD = \
+	../libvmdk/libvmdk.la \
+	@LIBCERROR_LIBADD@
 
 vmdk_test_io_handle_SOURCES = \
 	vmdk_test_io_handle.c \

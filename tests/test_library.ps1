@@ -6,7 +6,7 @@ $ExitSuccess = 0
 $ExitFailure = 1
 $ExitIgnore = 77
 
-$LibraryTests = "compression deflate descriptor_file error extent_descriptor extent_file extent_table extent_values grain_data grain_group grain_table io_handle notify system_string"
+$LibraryTests = "bit_stream compression deflate descriptor_file error extent_descriptor extent_file extent_table extent_values grain_data grain_group grain_table huffman_tree io_handle notify system_string"
 $LibraryTestsWithInput = "handle support"
 $OptionSets = ""
 

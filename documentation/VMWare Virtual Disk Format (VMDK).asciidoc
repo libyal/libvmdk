@@ -59,6 +59,7 @@ in the section entitled "GNU Free Documentation License".
 | 0.0.12 | J.B. Metz | January 2016 | Additional information regarding descriptor file being case-insensitive with thanks to J. Uckelman.
 | 0.0.13 | J.B. Metz | March 2019 | Additional information regarding GBK and Big5 codepages.
 | 0.0.14 | J.B. Metz | January 2022 | Formatting changes.
+| 0.0.15 | J.B. Metz | October 2022 | Additional information regarding Shift_JIS codepage, with thanks to M. Kobayashi.
 |===
 
 :numbered:
@@ -195,9 +196,11 @@ default is UTF-8.*
 |===
 | Value | Description
 | UTF-8 | UTF-8
+| Big5 | Big5 assumed to be equivalent to Windows codepage 950
 | GBK | GBK assumed to be equivalent to Windows codepage 936 +
 Seen in VMWare Workstation for Windows, Chinese edition
-| Big5 | Big5 assumed to be equivalent to Windows codepage 950
+| Shift_JIS | Shift_JIS assumed to be equivalent to Windows codepage 932 +
+Seen in VMWare Workstation for Windows, Japanese edition
 | |
 | windows-1252 | Windows codepage 1252 +
 Seen in VMWare Player 9 descriptor file uncertain when this was introduced.

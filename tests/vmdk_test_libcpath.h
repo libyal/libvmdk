@@ -1,5 +1,5 @@
 /*
- * The internal libcpath header
+ * The libcpath header wrapper
  *
  * Copyright (C) 2009-2022, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -42,7 +42,7 @@
 
 #include <libcpath.h>
 
-#endif /* defined( HAVE_LOCAL_LIBCPATH ) */
+#endif /* !defined( _VMDK_TEST_LIBCPATH_H ) */
 
 #endif /* !defined( _VMDK_TEST_LIBCPATH_H ) */
 

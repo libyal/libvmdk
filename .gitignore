@@ -130,6 +130,7 @@ stamp-h[1-9]
 /tests/*.exe
 /tests/input
 /tests/tmp*
+/tests/vmdk_test_bit_stream
 /tests/vmdk_test_compression
 /tests/vmdk_test_deflate
 /tests/vmdk_test_descriptor_file
@@ -142,6 +143,7 @@ stamp-h[1-9]
 /tests/vmdk_test_grain_group
 /tests/vmdk_test_grain_table
 /tests/vmdk_test_handle
+/tests/vmdk_test_huffman_tree
 /tests/vmdk_test_io_handle
 /tests/vmdk_test_notify
 /tests/vmdk_test_support

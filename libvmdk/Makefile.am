@@ -23,6 +23,7 @@ lib_LTLIBRARIES = libvmdk.la
 
 libvmdk_la_SOURCES = \
 	libvmdk.c \
+	libvmdk_bit_stream.c libvmdk_bit_stream.h \
 	libvmdk_compression.c libvmdk_compression.h \
 	libvmdk_debug.c libvmdk_debug.h \
 	libvmdk_deflate.c libvmdk_deflate.h \
@@ -38,6 +39,7 @@ libvmdk_la_SOURCES = \
 	libvmdk_grain_group.c libvmdk_grain_group.h \
 	libvmdk_grain_table.c libvmdk_grain_table.h \
 	libvmdk_handle.c libvmdk_handle.h \
+	libvmdk_huffman_tree.c libvmdk_huffman_tree.h \
 	libvmdk_io_handle.c libvmdk_io_handle.h \
 	libvmdk_libbfio.h \
 	libvmdk_libcdata.h \
