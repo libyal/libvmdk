@@ -568,6 +568,11 @@ void pyvmdk_handle_free(
 			 &error );
 		}
 	}
+	if( pyvmdk_handle->parent_handle_object != NULL )
+	{
+		Py_DecRef(
+		 (PyObject *) pyvmdk_handle->parent_handle_object );
+	}
 	ob_type->tp_free(
 	 (PyObject*) pyvmdk_handle );
 }
@@ -1154,6 +1159,11 @@ PyObject *pyvmdk_handle_set_parent(
 
 		return( NULL );
 	}
+	pyvmdk_handle->parent_handle_object = pyvmdk_parent_handle;
+
+	Py_IncRef(
+	 pyvmdk_handle->parent_handle_object );
+
 	Py_IncRef(
 	 Py_None );
 

@@ -52,6 +52,10 @@ struct pyvmdk_handle
 	/* The file IO pool
 	 */
 	libbfio_pool_t *file_io_pool;
+
+	/* The parent handle object
+	 */
+	PyObject *parent_handle_object;
 };
 
 extern PyMethodDef pyvmdk_handle_object_methods[];
