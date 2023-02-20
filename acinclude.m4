@@ -1,6 +1,6 @@
 dnl Checks for required headers and functions
 dnl
-dnl Version: 20200713
+dnl Version: 20230220
 
 dnl Function to detect if libvmdk dependencies are available
 AC_DEFUN([AX_LIBVMDK_CHECK_LOCAL],
@@ -22,9 +22,7 @@ AC_DEFUN([AX_VMDKTOOLS_CHECK_LOCAL],
   ])
 
   dnl Headers included in vmdktools/vmdkmount.c
-  AC_CHECK_HEADERS([errno.h])
-
-  AC_HEADER_TIME
+  AC_CHECK_HEADERS([errno.h sys/time.h])
 
   dnl Functions included in vmdktools/mount_file_system.c and vmdktools/mount_file_entry.c
   AS_IF(
