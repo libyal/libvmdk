@@ -1,6 +1,6 @@
 [metadata]
 name = libvmdk-python
-version = 20230926
+version = @VERSION@
 description = Python bindings module for libvmdk
 long_description = Python bindings module for libvmdk
 author = Joachim Metz

@@ -703,8 +703,14 @@ PyObject *pyvmdk_handle_open(
 		PyErr_Clear();
 
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
+#if PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 3
+		filename_wide = (wchar_t *) PyUnicode_AsWideCharString(
+		                             string_object,
+		                             NULL );
+#else
 		filename_wide = (wchar_t *) PyUnicode_AsUnicode(
 		                             string_object );
+#endif
 		Py_BEGIN_ALLOW_THREADS
 
 		result = libvmdk_handle_open_wide(
@@ -714,6 +720,11 @@ PyObject *pyvmdk_handle_open(
 		          &error );
 
 		Py_END_ALLOW_THREADS
+
+#if PY_MAJOR_VERSION >= 3 && PY_MINOR_VERSION >= 3
+		PyMem_Free(
+		 filename_wide );
+#endif
 #else
 		utf8_string_object = PyUnicode_AsUTF8String(
 		                      string_object );
@@ -1846,7 +1857,6 @@ PyObject *pyvmdk_handle_get_parent_filename(
 {
 	libcerror_error_t *error    = NULL;
 	PyObject *string_object     = NULL;
-	const char *errors          = NULL;
 	uint8_t *parent_filename    = NULL;
 	static char *function       = "pyvmdk_handle_get_parent_filename";
 	size_t parent_filename_size = 0;
@@ -1899,7 +1909,7 @@ PyObject *pyvmdk_handle_get_parent_filename(
 	if( parent_filename == NULL )
 	{
 		PyErr_Format(
-		 PyExc_IOError,
+		 PyExc_MemoryError,
 		 "%s: unable to create parent filename.",
 		 function );
 
@@ -1935,7 +1945,7 @@ PyObject *pyvmdk_handle_get_parent_filename(
 	string_object = PyUnicode_DecodeUTF8(
 			 (char *) parent_filename,
 			 (Py_ssize_t) parent_filename_size - 1,
-			 errors );
+			 NULL );
 
 	PyMem_Free(
 	 parent_filename );

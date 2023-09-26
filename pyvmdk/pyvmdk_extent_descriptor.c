@@ -522,7 +522,6 @@ PyObject *pyvmdk_extent_descriptor_get_filename(
 {
 	libcerror_error_t *error = NULL;
 	PyObject *string_object  = NULL;
-	const char *errors       = NULL;
 	uint8_t *filename        = NULL;
 	static char *function    = "pyvmdk_extent_descriptor_get_filename";
 	size_t filename_size     = 0;
@@ -575,7 +574,7 @@ PyObject *pyvmdk_extent_descriptor_get_filename(
 	if( filename == NULL )
 	{
 		PyErr_Format(
-		 PyExc_IOError,
+		 PyExc_MemoryError,
 		 "%s: unable to create filename.",
 		 function );
 
@@ -611,7 +610,7 @@ PyObject *pyvmdk_extent_descriptor_get_filename(
 	string_object = PyUnicode_DecodeUTF8(
 			 (char *) filename,
 			 (Py_ssize_t) filename_size - 1,
-			 errors );
+			 NULL );
 
 	PyMem_Free(
 	 filename );

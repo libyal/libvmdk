@@ -1,6 +1,6 @@
 # Files to ignore by git
 #
-# Version: 20230405
+# Version: 20230923
 
 # Generic auto-generated build files
 *~
@@ -29,6 +29,7 @@
 .deps
 .dirstamp
 .libs
+.tox
 INSTALL
 Makefile
 Makefile.bcc
@@ -125,6 +126,7 @@ stamp-h[1-9]
 /libvmdk/libvmdk.rc
 /libvmdk/libvmdk_definitions.h
 /pyvmdk-python[23]/*.[ch]
+/setup.cfg
 /vmdktools/*.exe
 /vmdktools/vmdkinfo
 /vmdktools/vmdkmount
