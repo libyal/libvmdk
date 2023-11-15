@@ -40,7 +40,7 @@ void (*vmdktools_signal_signal_handler)( vmdktools_signal_t ) = NULL;
 /* Signal handler for Ctrl+C or Ctrl+Break signals
  */
 BOOL WINAPI vmdktools_signal_handler(
-             unsigned long signal )
+             vmdktools_signal_t signal )
 {
 	static char *function = "vmdktools_signal_handler";
 
@@ -112,7 +112,7 @@ int vmdktools_signal_attach(
 	vmdktools_signal_signal_handler = signal_handler;
 
 	if( SetConsoleCtrlHandler(
-	     vmdktools_signal_handler,
+	     (PHANDLER_ROUTINE) vmdktools_signal_handler,
 	     TRUE ) == 0 )
 	{
 		libcerror_error_set(
@@ -179,7 +179,7 @@ int vmdktools_signal_detach(
 	static char *function = "vmdktools_signal_detach";
 
 	if( SetConsoleCtrlHandler(
-	     vmdktools_signal_handler,
+	     (PHANDLER_ROUTINE) vmdktools_signal_handler,
 	     FALSE ) == 0 )
 	{
 		libcerror_error_set(

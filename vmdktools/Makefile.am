@@ -83,9 +83,9 @@ MAINTAINERCLEANFILES = \
 	Makefile.in
 
 distclean: clean
-	/bin/rm -f Makefile
+	-rm -f Makefile
 
-splint:
+splint-local:
 	@echo "Running splint on vmdkinfo ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(vmdkinfo_SOURCES)
 	@echo "Running splint on vmdkmount ..."

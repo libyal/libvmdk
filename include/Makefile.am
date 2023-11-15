@@ -19,9 +19,9 @@ MAINTAINERCLEANFILES = \
 	Makefile.in
 
 distclean: clean
-	/bin/rm -f libvmdk.h
-	/bin/rm -f libvmdk/definitions.h
-	/bin/rm -f libvmdk/features.h
-	/bin/rm -f libvmdk/types.h
-	/bin/rm -f Makefile
+	-rm -f libvmdk.h
+	-rm -f libvmdk/definitions.h
+	-rm -f libvmdk/features.h
+	-rm -f libvmdk/types.h
+	-rm -f Makefile
 

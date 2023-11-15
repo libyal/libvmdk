@@ -87,11 +87,13 @@ EXTRA_DIST = \
 	libvmdk.rc.in
 
 distclean: clean
-	/bin/rm -f libvmdk_definitions.h
-	/bin/rm -f libvmdk.rc
-	/bin/rm -f Makefile
+	-rm -f libvmdk_definitions.h
+	-rm -f libvmdk.rc
+	-rm -f Makefile
 
-splint:
+sources-local: $(BUILT_SOURCES)
+
+splint-local:
 	@echo "Running splint on libvmdk ..."
 	-splint -preproc -redef $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(libvmdk_la_SOURCES)
 

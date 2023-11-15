@@ -7,5 +7,5 @@ man_MANS = \
 	libvmdk.3
 
 distclean: clean
-	/bin/rm -f Makefile
+	-rm -f Makefile
 
