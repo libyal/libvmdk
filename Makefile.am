@@ -19,8 +19,6 @@ SUBDIRS = \
 	libvmdk \
 	vmdktools \
 	pyvmdk \
-	pyvmdk-python2 \
-	pyvmdk-python3 \
 	po \
 	manuals \
 	tests \

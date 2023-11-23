@@ -32,7 +32,7 @@ Header files and libraries for developing applications for libvmdk.
 Summary: Python 3 bindings for libvmdk
 Group: System Environment/Libraries
 Requires: libvmdk = %{version}-%{release} python3
-BuildRequires: python3-devel
+BuildRequires: python3-devel python3-setuptools
 
 %description -n libvmdk-python3
 Python 3 bindings for libvmdk
@@ -50,7 +50,7 @@ Several tools for reading VMware Virtual Disk (VMDK) files
 %setup -q
 
 %build
-%configure --prefix=/usr --libdir=%{_libdir} --mandir=%{_mandir} --enable-python3
+%configure --prefix=/usr --libdir=%{_libdir} --mandir=%{_mandir} --enable-python
 make %{?_smp_mflags}
 
 %install
