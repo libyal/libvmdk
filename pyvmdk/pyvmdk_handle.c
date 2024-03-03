@@ -1,7 +1,7 @@
 /*
  * Python object wrapper of libvmdk_handle_t
  *
- * Copyright (C) 2009-2023, Joachim Metz <joachim.metz@gmail.com>
+ * Copyright (C) 2009-2024, Joachim Metz <joachim.metz@gmail.com>
  *
  * Refer to AUTHORS for acknowledgements.
  *
@@ -1170,7 +1170,7 @@ PyObject *pyvmdk_handle_set_parent(
 
 		return( NULL );
 	}
-	pyvmdk_handle->parent_handle_object = pyvmdk_parent_handle;
+	pyvmdk_handle->parent_handle_object = (PyObject *) pyvmdk_parent_handle;
 
 	Py_IncRef(
 	 pyvmdk_handle->parent_handle_object );
