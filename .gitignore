@@ -133,6 +133,7 @@ stamp-h[1-9]
 /vmdktools/vmdkmount
 /tests/*.exe
 /tests/input
+/tests/notify_stream.log
 /tests/tmp*
 /tests/vmdk_test_bit_stream
 /tests/vmdk_test_compression

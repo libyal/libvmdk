@@ -15,13 +15,11 @@ EXTRA_DIST = \
 	libvmdk/features.h.in \
 	libvmdk/types.h.in
 
-MAINTAINERCLEANFILES = \
+DISTCLEANFILES = \
+	libvmdk.h \
+	libvmdk/definitions.h \
+	libvmdk/features.h \
+	libvmdk/types.h \
+	Makefile \
 	Makefile.in
-
-distclean: clean
-	-rm -f libvmdk.h
-	-rm -f libvmdk/definitions.h
-	-rm -f libvmdk/features.h
-	-rm -f libvmdk/types.h
-	-rm -f Makefile
 

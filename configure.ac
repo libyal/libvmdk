@@ -2,7 +2,7 @@ AC_PREREQ([2.71])
 
 AC_INIT(
  [libvmdk],
- [20240312],
+ [20240510],
  [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
