@@ -52,7 +52,7 @@
 info_handle_t *vmdkinfo_info_handle = NULL;
 int vmdkinfo_abort                  = 0;
 
-/* Prints the executable usage information
+/* Prints usage information
  */
 void usage_fprint(
       FILE *stream )
@@ -79,7 +79,7 @@ void vmdkinfo_signal_handler(
       vmdktools_signal_t signal VMDKTOOLS_ATTRIBUTE_UNUSED )
 {
 	libcerror_error_t *error = NULL;
-	static char *function   = "vmdkinfo_signal_handler";
+	static char *function    = "vmdkinfo_signal_handler";
 
 	VMDKTOOLS_UNREFERENCED_PARAMETER( signal )
 
@@ -139,7 +139,7 @@ int main( int argc, char * const argv[] )
 	 1 );
 
 	if( libclocale_initialize(
-             "vmdktools",
+	     "vmdktools",
 	     &error ) != 1 )
 	{
 		fprintf(
@@ -148,9 +148,9 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
-        if( vmdktools_output_initialize(
-             _IONBF,
-             &error ) != 1 )
+	if( vmdktools_output_initialize(
+	     _IONBF,
+	     &error ) != 1 )
 	{
 		fprintf(
 		 stderr,
