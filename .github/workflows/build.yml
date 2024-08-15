@@ -33,7 +33,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install build dependencies
       run: |
-        sudo apt-get -y install autoconf automake autopoint build-essential git libtool pkg-config zlib1g-dev
+        sudo apt-get -y install autoconf automake autopoint build-essential git libfuse3-dev libtool pkg-config zlib1g-dev
     - name: Download test data
       run: |
         if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
@@ -57,7 +57,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install build dependencies
       run: |
-        sudo apt-get -y install autoconf automake autopoint build-essential git libtool pkg-config zlib1g-dev
+        sudo apt-get -y install autoconf automake autopoint build-essential git libfuse3-dev libtool pkg-config zlib1g-dev
     - name: Download test data
       run: |
         if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
@@ -81,7 +81,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install build dependencies
       run: |
-        sudo apt-get -y install autoconf automake autopoint build-essential git libtool pkg-config zlib1g-dev libfuse-dev
+        sudo apt-get -y install autoconf automake autopoint build-essential git libfuse3-dev libtool pkg-config zlib1g-dev libfuse-dev
     - name: Download test data
       run: |
         if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
@@ -105,7 +105,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install build dependencies
       run: |
-        sudo apt-get -y install autoconf automake autopoint build-essential git libtool pkg-config zlib1g-dev libfuse3-dev
+        sudo apt-get -y install autoconf automake autopoint build-essential git libfuse3-dev libtool pkg-config zlib1g-dev libfuse3-dev
     - name: Download test data
       run: |
         if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
@@ -132,7 +132,7 @@ jobs:
       run: |
         sudo add-apt-repository universe &&
         sudo apt-get update &&
-        sudo apt-get -y install autoconf automake autopoint build-essential git libtool pkg-config zlib1g-dev python3-dev python-dev-is-python3
+        sudo apt-get -y install autoconf automake autopoint build-essential git libfuse3-dev libtool pkg-config zlib1g-dev python3-dev python-dev-is-python3
     - name: Download test data
       run: |
         if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
@@ -165,7 +165,7 @@ jobs:
       run: |
         sudo add-apt-repository universe &&
         sudo apt-get update &&
-        sudo apt-get -y install autoconf automake autopoint build-essential git libtool pkg-config zlib1g-dev python3-dev python-dev-is-python3
+        sudo apt-get -y install autoconf automake autopoint build-essential git libfuse3-dev libtool pkg-config zlib1g-dev python3-dev python-dev-is-python3
     - name: Building from source
       env:
         CC: ${{ matrix.compiler }}
@@ -189,7 +189,7 @@ jobs:
     - uses: actions/checkout@v4
     - name: Install build dependencies
       run: |
-        sudo apt-get -y install autoconf automake autopoint build-essential git libtool pkg-config zlib1g-dev
+        sudo apt-get -y install autoconf automake autopoint build-essential git libfuse3-dev libtool pkg-config zlib1g-dev
     - name: Download test data
       run: |
         if test -x "synctestdata.sh"; then ./synctestdata.sh; fi
