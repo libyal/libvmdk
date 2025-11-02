@@ -1,7 +1,7 @@
 #!/bin/sh
 # Script to generate ./configure using the autotools
 #
-# Version: 20230405
+# Version: 20251028
 
 EXIT_SUCCESS=0;
 EXIT_FAILURE=1;
@@ -31,6 +31,15 @@ then
 	# Default location of 64-bit MSYS2-MinGW installed binaries.
 	BINDIR="/mingw64/bin";
 fi
+if ! test -x "${BINDIR}/aclocal";
+then
+	# Default location of Homebrew installed binaries.
+        # If not in your "profile", execute:
+        # eval "$(/opt/homebrew/bin/brew shellenv)"
+        # To add all required env variables to your session.
+	BINDIR="$HOMEBREW_PREFIX/bin";
+fi
+
 
 if ! test -x "${BINDIR}/aclocal";
 then
