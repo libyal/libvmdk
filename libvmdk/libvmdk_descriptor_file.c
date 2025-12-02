@@ -974,6 +974,26 @@ int libvmdk_descriptor_file_read_header(
 				{
 					descriptor_file->encoding = 0;
 				}
+				else if ((value_length == 16)
+					&& (value[0] == 'w')
+					&& (value[1] == 'i')
+					&& (value[2] == 'n')
+					&& (value[3] == 'd')
+					&& (value[4] == 'o')
+					&& (value[5] == 'w')
+					&& (value[6] == 's')
+					&& (value[7] == '-')
+					&& (value[8] == '9')
+					&& (value[9] == '4')
+					&& (value[10] == '9')
+					&& (value[11] == '-')
+					&& (value[12] == '2')
+					&& (value[13] == '0')
+					&& (value[14] == '0')
+					&& (value[15] == '0'))
+				{
+					descriptor_file->encoding = LIBUNA_CODEPAGE_WINDOWS_949;
+				}
 				else if( ( value_length == 9 )
 				      && ( value[ 0 ] == 'S' )
 				      && ( value[ 1 ] == 'h' )
