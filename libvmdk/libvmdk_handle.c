@@ -487,11 +487,13 @@ int libvmdk_handle_open(
 
 		goto on_error;
 	}
-	/* Note that extent file names can be renamed hence for a single monolithic sparse image
-	 * the filename instead of the extent data filename in the descriptor file is used.
+	/* Note that extent file names can be renamed hence for a single monolithic sparse
+	 * or stream optimized image the filename instead of the extent data filename in
+	 * the descriptor file is used.
 	 */
 /* TODO thread lock */
-	if( internal_handle->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	if( ( internal_handle->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	 || ( internal_handle->disk_type == LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED ) )
 	{
 		if( libcdata_array_get_number_of_entries(
 		     internal_handle->extent_values_array,
@@ -776,11 +778,13 @@ int libvmdk_handle_open_wide(
 
 		goto on_error;
 	}
-	/* Note that extent file names can be renamed hence for a single monolithic sparse image
-	 * the filename instead of the extent data filename in the descriptor file is used.
+	/* Note that extent file names can be renamed hence for a single monolithic sparse
+	 * or stream optimized image the filename instead of the extent data filename in
+	 * the descriptor file is used.
 	 */
 /* TODO thread lock */
-	if( internal_handle->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	if( ( internal_handle->disk_type == LIBVMDK_DISK_TYPE_MONOLITHIC_SPARSE )
+	 || ( internal_handle->disk_type == LIBVMDK_DISK_TYPE_STREAM_OPTIMIZED ) )
 	{
 		if( libcdata_array_get_number_of_entries(
 		     internal_handle->extent_values_array,
@@ -1136,6 +1140,7 @@ int libvmdk_handle_open_extent_data_files(
 	libvmdk_extent_values_t *extent_values        = NULL;
 	libvmdk_internal_handle_t *internal_handle    = NULL;
 	system_character_t *extent_data_file_location = NULL;
+	system_character_t *extent_data_file_path     = NULL;
 	static char *function                         = "libvmdk_handle_open_extent_data_files";
 	size_t extent_data_file_location_size         = 0;
 	int extent_index                              = 0;
@@ -1315,13 +1320,15 @@ int libvmdk_handle_open_extent_data_files(
 
 				goto on_error;
 			}
+			extent_data_file_path = extent_data_file_location;
+
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
 			result = libcfile_file_exists_wide(
-			          extent_data_file_location,
+			          extent_data_file_path,
 			          error );
 #else
 			result = libcfile_file_exists(
-			          extent_data_file_location,
+			          extent_data_file_path,
 			          error );
 #endif
 			if( result == -1 )
@@ -1345,34 +1352,7 @@ int libvmdk_handle_open_extent_data_files(
 				extent_data_file_location      = NULL;
 				extent_data_file_location_size = 0;
 
-#if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-				result = libvmdk_extent_table_join_extent_data_file_path_wide(
-				          internal_handle->extent_table,
-				          extent_values->alternate_filename,
-				          extent_values->alternate_filename_size,
-				          &extent_data_file_location,
-				          &extent_data_file_location_size,
-				          error );
-#else
-				result = libvmdk_extent_table_join_extent_data_file_path(
-				          internal_handle->extent_table,
-				          extent_values->alternate_filename,
-				          extent_values->alternate_filename_size,
-				          &extent_data_file_location,
-				          &extent_data_file_location_size,
-				          error );
-#endif
-				if( result != 1 )
-				{
-					libcerror_error_set(
-					 error,
-					 LIBCERROR_ERROR_DOMAIN_RUNTIME,
-					 LIBCERROR_RUNTIME_ERROR_INITIALIZE_FAILED,
-					 "%s: unable to create alternate extent data file location.",
-					 function );
-
-					goto on_error;
-				}
+				extent_data_file_path = extent_values->alternate_filename;
 			}
 			/* Note that the open extent data file function will initialize extent_data_file_io_pool
 			 */
@@ -1381,14 +1361,14 @@ int libvmdk_handle_open_extent_data_files(
 				  internal_handle,
 				  file_io_pool,
 				  extent_index,
-				  extent_data_file_location,
+				  extent_data_file_path,
 				  error );
 #else
 			result = libvmdk_handle_open_extent_data_file(
 				  internal_handle,
 				  file_io_pool,
 				  extent_index,
-				  extent_data_file_location,
+				  extent_data_file_path,
 				  error );
 #endif
 			if( result != 1 )
@@ -1399,14 +1379,17 @@ int libvmdk_handle_open_extent_data_files(
 				 LIBCERROR_IO_ERROR_OPEN_FAILED,
 				 "%s: unable to open extent data file: %" PRIs_SYSTEM ".",
 				 function,
-				 extent_data_file_location );
+				 extent_data_file_path );
 
 				goto on_error;
 			}
-			memory_free(
-			 extent_data_file_location );
+			if( extent_data_file_location != NULL )
+			{
+				memory_free(
+				 extent_data_file_location );
 
-			extent_data_file_location = NULL;
+				extent_data_file_location = NULL;
+			}
 		}
 	}
 	if( libvmdk_internal_handle_open_read_extent_data_files(

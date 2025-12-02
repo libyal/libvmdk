@@ -1008,7 +1008,8 @@ int libvmdk_extent_file_read_file_header_data(
 
 			return( -1 );
 		}
-		if( ( extent_file->grain_size % 2 ) != 0 )
+		/* grain size & (grain size - 1) is 0 when grain size is a power of 2 */
+		if( ( extent_file->grain_size & ( extent_file->grain_size - 1 ) ) != 0 )
 		{
 			libcerror_error_set(
 			 error,
