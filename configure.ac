@@ -2,11 +2,11 @@ AC_PREREQ([2.71])
 
 AC_INIT(
   [libvmdk],
-  [20251130],
+  [20251220],
   [joachim.metz@gmail.com])
 
 AC_CONFIG_SRCDIR(
- [include/libvmdk.h.in])
+  [include/libvmdk.h.in])
 
 AM_INIT_AUTOMAKE([gnu 1.6 tar-ustar])
 AM_EXTRA_RECURSIVE_TARGETS([sources splint])

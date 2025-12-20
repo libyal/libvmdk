@@ -644,7 +644,7 @@ int info_handle_file_fprint(
 		}
 		fprintf(
 		 info_handle->notify_stream,
-		 "\tParent filename\t\t: %" PRIs_SYSTEM "\n",
+		 "\tParent filename\t\t\t: %" PRIs_SYSTEM "\n",
 		 value_string );
 
 		memory_free(
