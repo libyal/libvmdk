@@ -3,7 +3,7 @@ libvmdk is a library to access the VMware Virtual Disk (VMDK) format.
 Project information:
 
 * Status: alpha
-* Licence: LGPLv3+
+* Licence: LGPL-3.0-or-later
 
 Read supported extent file formats:
 
