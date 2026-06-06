@@ -693,7 +693,9 @@ int vmdk_test_decompress_data(
 	uint8_t uncompressed_data[ 8192 ];
 
 	libcerror_error_t *error      = NULL;
+/* TODO fix tests
 	size_t maximum_data_size      = 0;
+*/
 	size_t uncompressed_data_size = 0;
 	int result                    = 0;
 
@@ -804,13 +806,13 @@ int vmdk_test_decompress_data(
 	libcerror_error_free(
 	 &error );
 
+/* TODO fix tests
 #if ( ( defined( HAVE_ZLIB ) && defined( HAVE_ZLIB_COMPRESS2 ) ) || defined( ZLIB_DLL ) ) && ( ULONG_MAX < SSIZE_MAX )
 	maximum_data_size = (size_t) ULONG_MAX;
 #else
 	maximum_data_size = (size_t) SSIZE_MAX;
 #endif
 
-/* TODO fix tests
 	result = libvmdk_decompress_data(
 	          vmdk_test_compression_deflate_compressed_data1,
 	          maximum_data_size + 1,

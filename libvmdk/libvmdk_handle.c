@@ -358,7 +358,7 @@ int libvmdk_handle_open(
 	libbfio_handle_t *file_io_handle           = NULL;
 	libvmdk_extent_values_t *extent_values     = NULL;
 	libvmdk_internal_handle_t *internal_handle = NULL;
-	char *data_files_path_end                  = NULL;
+	const char *data_files_path_end            = NULL;
 	static char *function                      = "libvmdk_handle_open";
 	size_t data_files_path_length              = 0;
 	size_t filename_length                     = 0;
@@ -649,7 +649,7 @@ int libvmdk_handle_open_wide(
 	libbfio_handle_t *file_io_handle           = NULL;
 	libvmdk_extent_values_t *extent_values     = NULL;
 	libvmdk_internal_handle_t *internal_handle = NULL;
-	wchar_t *data_files_path_end               = NULL;
+	const wchar_t *data_files_path_end         = NULL;
 	static char *function                      = "libvmdk_handle_open_wide";
 	size_t data_files_path_length              = 0;
 	size_t filename_length                     = 0;
@@ -1113,7 +1113,6 @@ int libvmdk_handle_open_file_io_handle(
 
 			goto on_error;
 		}
-		file_io_handle_opened_in_library = 0;
 	}
 	return( result );
 

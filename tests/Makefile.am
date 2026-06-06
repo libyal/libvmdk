@@ -20,6 +20,10 @@ AM_CPPFLAGS = \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBVMDK_DLL_IMPORT@
 
+AM_TESTS_ENVIRONMENT = \
+	export PYTHON="@PYTHON@"; \
+	export TESTS_USE_WINAPI="@TESTS_USE_WINAPI@";
+
 if HAVE_PYTHON_TESTS
 TESTS_PYVMDK = \
 	test_python_module.sh
@@ -333,7 +337,8 @@ vmdk_test_tools_output_SOURCES = \
 
 vmdk_test_tools_output_LDADD = \
 	../libvmdk/libvmdk.la \
-	@LIBCERROR_LIBADD@
+	@LIBCERROR_LIBADD@ \
+	@LIBINTL@
 
 vmdk_test_tools_signal_SOURCES = \
 	../vmdktools/vmdktools_signal.c ../vmdktools/vmdktools_signal.h \

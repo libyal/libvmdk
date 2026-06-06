@@ -1717,7 +1717,6 @@ int libvmdk_descriptor_file_read_change_tracking_file(
      libcerror_error_t **error )
 {
 	char *line_string_segment        = NULL;
-	char *value                      = NULL;
 	char *value_identifier           = NULL;
 	static char *function            = "libvmdk_descriptor_file_read_change_tracking_file";
 	size_t line_string_segment_index = 0;
@@ -1725,6 +1724,10 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 	size_t value_identifier_length   = 0;
 	size_t value_length              = 0;
 	int safe_line_index              = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	char *value                      = NULL;
+#endif
 
 	if( descriptor_file == NULL )
 	{
@@ -2032,7 +2035,9 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		}
 		/* Determine the value
 		 */
+#if defined( HAVE_DEBUG_OUTPUT )
 		value        = &( line_string_segment[ line_string_segment_index ] );
+#endif
 		value_length = line_string_segment_size - 1;
 
 		/* Ingore quotes at the beginning of the value data
@@ -2041,7 +2046,9 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		 || ( line_string_segment[ line_string_segment_index ] == '\'' ) )
 		{
 			line_string_segment_index++;
+#if defined( HAVE_DEBUG_OUTPUT )
 			value++;
+#endif
 			value_length--;
 		}
 		/* Ingore quotes at the end of the value data
@@ -2055,8 +2062,9 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		 */
 		line_string_segment[ value_length ] = 0;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 		value_length -= line_string_segment_index;
-
+#endif
 		if( value_identifier_length == 15 )
 		{
 			if( narrow_string_compare_no_case(
@@ -2103,7 +2111,6 @@ int libvmdk_descriptor_file_read_disk_database(
      libcerror_error_t **error )
 {
 	char *line_string_segment        = NULL;
-	char *value                      = NULL;
 	char *value_identifier           = NULL;
 	static char *function            = "libvmdk_descriptor_file_read_disk_database";
 	size_t line_string_segment_index = 0;
@@ -2111,6 +2118,10 @@ int libvmdk_descriptor_file_read_disk_database(
 	size_t value_identifier_length   = 0;
 	size_t value_length              = 0;
 	int safe_line_index              = 0;
+
+#if defined( HAVE_DEBUG_OUTPUT )
+	char *value                      = NULL;
+#endif
 
 	if( descriptor_file == NULL )
 	{
@@ -2413,7 +2424,9 @@ int libvmdk_descriptor_file_read_disk_database(
 		}
 		/* Determine the value
 		 */
+#if defined( HAVE_DEBUG_OUTPUT )
 		value        = &( line_string_segment[ line_string_segment_index ] );
+#endif
 		value_length = line_string_segment_size - 1;
 
 		/* Ingore quotes at the beginning of the value data
@@ -2422,7 +2435,9 @@ int libvmdk_descriptor_file_read_disk_database(
 		 || ( line_string_segment[ line_string_segment_index ] == '\'' ) )
 		{
 			line_string_segment_index++;
+#if defined( HAVE_DEBUG_OUTPUT )
 			value++;
+#endif
 			value_length--;
 		}
 		/* Ingore quotes at the end of the value data
@@ -2436,8 +2451,9 @@ int libvmdk_descriptor_file_read_disk_database(
 		 */
 		line_string_segment[ value_length ] = 0;
 
+#if defined( HAVE_DEBUG_OUTPUT )
 		value_length -= line_string_segment_index;
-
+#endif
 		if( value_identifier_length == 15 )
 		{
 			if( narrow_string_compare_no_case(

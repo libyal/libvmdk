@@ -34,6 +34,7 @@
 #include "vmdk_test_getopt.h"
 #include "vmdk_test_libbfio.h"
 #include "vmdk_test_libcerror.h"
+#include "vmdk_test_libcpath.h"
 #include "vmdk_test_libvmdk.h"
 #include "vmdk_test_macros.h"
 #include "vmdk_test_memory.h"
@@ -135,7 +136,7 @@ int vmdk_test_handle_open_source(
 
 	while( string_length > 0 )
 	{
-		if( source[ string_length - 1 ] == '/' )
+		if( source[ string_length - 1 ] == LIBCPATH_SEPARATOR )
 		{
 			break;
 		}

@@ -1846,7 +1846,6 @@ int libvmdk_extent_file_read_backup_grain_directory(
      libcerror_error_t **error )
 {
 	uint8_t *grain_directory_data        = NULL;
-	uint8_t *grain_directory_entry       = NULL;
 	static char *function                = "libvmdk_extent_file_read_backup_grain_directory";
 	off64_t grain_group_offset           = 0;
 	size64_t grain_data_size             = 0;
@@ -1859,6 +1858,7 @@ int libvmdk_extent_file_read_backup_grain_directory(
 	int number_of_grain_table_entries    = 0;
 
 #if defined( HAVE_DEBUG_OUTPUT )
+	uint8_t *grain_directory_entry       = NULL;
 	off64_t grain_table_offset           = 0;
 	uint32_t range_flags                 = 0;
 	int result                           = 0;
@@ -1957,9 +1957,8 @@ int libvmdk_extent_file_read_backup_grain_directory(
 		 extent_file->grain_directory_size,
 		 LIBCNOTIFY_PRINT_DATA_FLAG_GROUP_DATA );
 	}
-#endif
 	grain_directory_entry = grain_directory_data;
-
+#endif
 	for( grain_directory_entry_index = 0;
 	     grain_directory_entry_index < extent_file->number_of_grain_directory_entries;
 	     grain_directory_entry_index++ )
@@ -2064,7 +2063,9 @@ int libvmdk_extent_file_read_backup_grain_directory(
 /* TODO compare grain directory entry with back up ? */
 
 		total_grain_data_size += grain_data_size;
+#if defined( HAVE_DEBUG_OUTPUT )
 		grain_directory_entry += sizeof( uint32_t );
+#endif
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
