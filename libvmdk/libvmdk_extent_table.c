@@ -778,7 +778,7 @@ on_error:
 
 #endif /* defined( HAVE_WIDE_CHARACTER_TYPE ) */
 
-/* Retrieves the path of an extent data file 
+/* Retrieves the path of an extent data file
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_extent_table_get_extent_data_file_path(
@@ -1234,7 +1234,7 @@ on_error:
 
 #if defined( HAVE_WIDE_CHARACTER_TYPE )
 
-/* Retrieves the path of an extent data file 
+/* Retrieves the path of an extent data file
  * Returns 1 if successful or -1 on error
  */
 int libvmdk_extent_table_get_extent_data_file_path_wide(
