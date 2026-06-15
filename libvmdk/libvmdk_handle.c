@@ -527,7 +527,7 @@ int libvmdk_handle_open(
 				goto on_error;
 			}
 			if( extent_values == NULL )
-			{ 
+			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,
@@ -818,7 +818,7 @@ int libvmdk_handle_open_wide(
 				goto on_error;
 			}
 			if( extent_values == NULL )
-			{ 
+			{
 				libcerror_error_set(
 				 error,
 				 LIBCERROR_ERROR_DOMAIN_RUNTIME,

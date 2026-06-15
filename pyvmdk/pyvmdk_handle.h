@@ -61,19 +61,6 @@ struct pyvmdk_handle
 extern PyMethodDef pyvmdk_handle_object_methods[];
 extern PyTypeObject pyvmdk_handle_type_object;
 
-PyObject *pyvmdk_handle_new(
-           void );
-
-PyObject *pyvmdk_handle_new_open(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
-PyObject *pyvmdk_handle_new_open_file_object(
-           PyObject *self,
-           PyObject *arguments,
-           PyObject *keywords );
-
 int pyvmdk_handle_init(
      pyvmdk_handle_t *pyvmdk_handle );
 
