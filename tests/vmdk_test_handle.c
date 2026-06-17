@@ -143,7 +143,7 @@ int vmdk_test_handle_open_source(
 		string_length--;
 	}
 #if defined( HAVE_WIDE_SYSTEM_CHARACTER )
-	result = libvmdk_handle_set_extent_data_files_path(
+	result = libvmdk_handle_set_extent_data_files_path_wide(
 	          *handle,
 	          source,
 	          string_length,
