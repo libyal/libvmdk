@@ -20,8 +20,6 @@ AM_CPPFLAGS = \
 	@PTHREAD_CPPFLAGS@ \
 	@LIBVMDK_DLL_IMPORT@
 
-check_PYTHONdir = $(abs_top_builddir)
-
 BUILT_SOURCES = package.m4
 
 check_AUTOTESTS = \
@@ -33,7 +31,7 @@ if HAVE_PYTHON_TESTS
 check_AUTOTESTS += test_python_module
 endif
 
-check_PYTHON_SCRIPTS = \
+check_SCRIPTS = \
 	pyvmdk_test_handle.py \
 	pyvmdk_test_support.py
 
@@ -410,7 +408,7 @@ test_tools: \
 
 EXTRA_DIST = \
 	$(check_AUTOTESTS:=.at) \
-	$(check_PYTHON_SCRIPTS) \
+	$(check_SCRIPTS) \
 	generate_test_inputs.sh \
 	package.m4 \
 	test_macros.at
