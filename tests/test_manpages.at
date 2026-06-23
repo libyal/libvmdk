@@ -67,4 +67,4 @@ m4_define([AT_SETUP],
     ])
   )
 
-LINT_MANPAGES([libvmdk.3])
+LINT_MANPAGES([libvmdk.3 vmdkinfo.1])

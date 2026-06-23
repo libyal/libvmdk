@@ -156,7 +156,7 @@ int libvmdk_descriptor_file_free(
 }
 
 /* Reads the descriptor file
- * Returns the 1 if succesful or -1 on error
+ * Returns the 1 if successful or -1 on error
  */
 int libvmdk_descriptor_file_read_file_io_handle(
      libvmdk_descriptor_file_t *descriptor_file,
@@ -271,7 +271,7 @@ on_error:
 }
 
 /* Reads the descriptor file from a string
- * Returns the 1 if succesful or -1 on error
+ * Returns the 1 if successful or -1 on error
  */
 int libvmdk_descriptor_file_read_string(
      libvmdk_descriptor_file_t *descriptor_file,
@@ -435,7 +435,7 @@ on_error:
 }
 
 /* Reads the signature from the descriptor file
- * Returns the 1 if succesful, 0 if no signature was found or -1 on error
+ * Returns the 1 if successful, 0 if no signature was found or -1 on error
  */
 int libvmdk_descriptor_file_read_signature(
      libcsplit_narrow_split_string_t *lines,
@@ -575,7 +575,7 @@ int libvmdk_descriptor_file_read_signature(
 }
 
 /* Reads the header from the descriptor file
- * Returns the 1 if succesful or -1 on error
+ * Returns the 1 if successful or -1 on error
  */
 int libvmdk_descriptor_file_read_header(
      libvmdk_descriptor_file_t *descriptor_file,
@@ -1354,7 +1354,7 @@ on_error:
 }
 
 /* Reads the extents from the descriptor file
- * Returns the 1 if succesful or -1 on error
+ * Returns the 1 if successful or -1 on error
  */
 int libvmdk_descriptor_file_read_extents(
      libvmdk_descriptor_file_t *descriptor_file,
@@ -1707,7 +1707,7 @@ on_error:
 }
 
 /* Reads the change tracking file from the descriptor file
- * Returns the 1 if succesful, 0 if no such value or -1 on error
+ * Returns the 1 if successful, 0 if no such value or -1 on error
  */
 int libvmdk_descriptor_file_read_change_tracking_file(
      libvmdk_descriptor_file_t *descriptor_file,
@@ -2101,7 +2101,7 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 }
 
 /* Reads the disk database from the descriptor file
- * Returns the 1 if succesful or -1 on error
+ * Returns the 1 if successful or -1 on error
  */
 int libvmdk_descriptor_file_read_disk_database(
      libvmdk_descriptor_file_t *descriptor_file,
