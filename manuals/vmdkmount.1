@@ -1,18 +1,20 @@
 .Dd June 26, 2026
-.Dt VMDKINFO 1
+.Dt VMDKMOUNT 1
 .Os
 .Sh NAME
-.Nm vmdkinfo
-.Nd determines information about a VMware Virtual Disk (VMDK) file
+.Nm vmdkmount
+.Nd mounts a VMware Virtual Disk (VMDK) image file
 .Sh SYNOPSIS
-.Nm vmdkinfo
+.Nm vmdkmount
+.Op Fl X Ar extended_options
 .Op Fl hvV
 .Ar source
+.Ar mount_point
 .Sh DESCRIPTION
-.Nm vmdkinfo
-is a utility to determine information about a VMware Virtual Disk (VMDK) file
+.Nm vmdkmount
+is a utility to mount a VMware Virtual Disk (VMDK) image file
 .Pp
-.Nm vmdkinfo
+.Nm vmdkmount
 is part of the
 .Nm libvmdk
 package.
@@ -20,16 +22,20 @@ package.
 is a library to access the VMware Virtual Disk (VMDK) format
 .Pp
 .Ar source
-is the source image descriptor file.
+a VMware Virtual Disk (VMDK) image file
+.Ar mount_point
+the directory to serve as mount point
 .Pp
 The options are as follows:
 .Bl -tag -width Ds
 .It Fl h
 shows this help
 .It Fl v
-verbose output to stderr
+verbose output to stderr, while vmdkmount will remain running in the foreground
 .It Fl V
 print version
+.It Fl X Ar extended_options
+extended options to pass to sub system
 .El
 .Sh ENVIRONMENT
 None
@@ -37,14 +43,8 @@ None
 None
 .Sh EXAMPLES
 .Bd -literal
-# vmdkinfo file.vmdk
-vmdkinfo 20260626
-.sp
-VMware Virtual Disk (VMDK) information:
-	Disk type:			Monolithic sparse
-	Media size:			8589934592 bytes
-	Content identifier:		0x505dcf0a
-	Parent content identifier:	0xffffffff
+# vmdkmount image.vmdk
+vmdkmount 20260626
 .sp
 .Ed
 .Sh DIAGNOSTICS
@@ -52,7 +52,7 @@ Errors, verbose and debug output are printed to stderr when verbose output \
 \-v is enabled.
 Verbose and debug output are only printed when enabled at compilation.
 .Sh SEE ALSO
-.Xr vmdkmount 1
+.Xr vmdkinfo 1
 .Sh AUTHORS
 .An Joachim Metz <joachim.metz@gmail.com>
 .Sh BUGS
