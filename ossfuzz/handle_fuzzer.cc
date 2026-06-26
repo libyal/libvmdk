@@ -47,8 +47,19 @@ int LLVMFuzzerTestOneInput(
      const uint8_t *data,
      size_t size )
 {
+	uint8_t buffer[ 512 ];
+	uint8_t utf8_string[ 64 ];
+	uint16_t utf16_string[ 64 ];
+
 	libbfio_handle_t *file_io_handle = NULL;
 	libvmdk_handle_t *handle         = NULL;
+	off64_t media_offset             = 0;
+	size64_t media_size              = 0;
+	size_t string_size               = 0;
+	uint32_t value_32bit             = 0;
+	int disk_type                    = 0;
+	int number_of_extents            = 0;
+	int read_iterator                = 0;
 
 	if( libbfio_memory_range_initialize(
 	     &file_io_handle,
@@ -77,6 +88,90 @@ int LLVMFuzzerTestOneInput(
 	     NULL ) != 1 )
 	{
 		goto on_error_libvmdk;
+	}
+	if( libvmdk_handle_get_disk_type(
+	     handle,
+	     &disk_type,
+	     NULL ) != 1 )
+	{
+		goto on_error_libvmdk;
+	}
+	if( libvmdk_handle_get_content_identifier(
+	     handle,
+	     &value_32bit,
+	     NULL ) != 1 )
+	{
+		goto on_error_libvmdk;
+	}
+	if( libvmdk_handle_get_parent_content_identifier(
+	     handle,
+	     &value_32bit,
+	     NULL ) == -1 )
+	{
+		goto on_error_libvmdk;
+	}
+	if( libvmdk_handle_get_utf8_parent_filename_size(
+	     handle,
+	     &string_size,
+	     NULL ) == -1 )
+	{
+		goto on_error_libvmdk;
+	}
+	if( libvmdk_handle_get_utf8_parent_filename(
+	     handle,
+	     utf8_string,
+	     64,
+	     NULL ) == -1 )
+	{
+		goto on_error_libvmdk;
+	}
+	if( libvmdk_handle_get_utf16_parent_filename_size(
+	     handle,
+	     &string_size,
+	     NULL ) == -1 )
+	{
+		goto on_error_libvmdk;
+	}
+	if( libvmdk_handle_get_utf16_parent_filename(
+	     handle,
+	     utf16_string,
+	     64,
+	     NULL ) == -1 )
+	{
+		goto on_error_libvmdk;
+	}
+	if( libvmdk_handle_get_number_of_extents(
+	     handle,
+	     &number_of_extents,
+	     NULL ) != 1 )
+	{
+		goto on_error_libvmdk;
+	}
+	if( libvmdk_handle_get_media_size(
+	     handle,
+	     &media_size,
+	     NULL ) != 1 )
+	{
+		goto on_error_libvmdk;
+	}
+	for( read_iterator = 0;
+	     read_iterator < 128;
+	     read_iterator++ )
+	{
+		if( media_offset >= media_size )
+		{
+			break;
+		}
+		if( libvmdk_handle_read_buffer_at_offset(
+		     handle,
+		     buffer,
+		     497,
+		     media_offset,
+		     NULL ) == -1 )
+		{
+			goto on_error_libvmdk;
+		}
+		media_offset += 497;
 	}
 	libvmdk_handle_close(
 	 handle,
