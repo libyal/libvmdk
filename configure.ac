@@ -2,7 +2,7 @@ AC_PREREQ([2.71])
 
 AC_INIT(
   [libvmdk],
-  [20260626],
+  [20260714],
   [https://github.com/libyal/libvmdk/issues])
 
 AC_CONFIG_SRCDIR(

@@ -1031,7 +1031,7 @@ int mount_handle_close(
 		return( -1 );
 	}
 	for( handle_index = number_of_handles - 1;
-	     handle_index > 0;
+	     handle_index >= 0;
 	     handle_index-- )
 	{
 		if( mount_file_system_get_handle_by_index(
