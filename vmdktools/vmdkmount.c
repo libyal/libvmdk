@@ -499,9 +499,14 @@ int main( int argc, char * const argv[] )
 
 		goto on_error;
 	}
+#if defined( HAVE_LIBFUSE3 )
 	fuse_unmount(
 	 vmdkmount_fuse_handle );
-
+#else
+	fuse_unmount(
+	 mount_point,
+	 vmdkmount_fuse_channel );
+#endif
 	fuse_destroy(
 	 vmdkmount_fuse_handle );
 
