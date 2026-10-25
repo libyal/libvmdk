@@ -1608,7 +1608,7 @@ int libvmdk_extent_file_read_grain_directory(
 		 "%s: invalid extent file - grain directory size value out of bounds.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )
@@ -1885,7 +1885,7 @@ int libvmdk_extent_file_read_backup_grain_directory(
 		 "%s: invalid extent file - grain directory size value out of bounds.",
 		 function );
 
-		goto on_error;
+		return( -1 );
 	}
 #if defined( HAVE_DEBUG_OUTPUT )
 	if( libcnotify_verbose != 0 )

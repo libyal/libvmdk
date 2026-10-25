@@ -829,8 +829,9 @@ int libvmdk_descriptor_file_read_header(
 		}
 		/* Ingore quotes at the end of the value data
 		 */
-		if( ( line_string_segment[ value_length - 1 ] == '"' )
-		 || ( line_string_segment[ value_length - 1 ] == '\'' ) )
+		if( ( value_length > line_string_segment_index )
+		 && ( ( line_string_segment[ value_length - 1 ] == '"' )
+		  ||  ( line_string_segment[ value_length - 1 ] == '\'' ) ) )
 		{
 			value_length--;
 		}
@@ -2053,8 +2054,9 @@ int libvmdk_descriptor_file_read_change_tracking_file(
 		}
 		/* Ingore quotes at the end of the value data
 		 */
-		if( ( line_string_segment[ value_length - 1 ] == '"' )
-		 || ( line_string_segment[ value_length - 1 ] == '\'' ) )
+		if( ( value_length > line_string_segment_index )
+		 && ( ( line_string_segment[ value_length - 1 ] == '"' )
+		  ||  ( line_string_segment[ value_length - 1 ] == '\'' ) ) )
 		{
 			value_length--;
 		}
@@ -2442,8 +2444,9 @@ int libvmdk_descriptor_file_read_disk_database(
 		}
 		/* Ingore quotes at the end of the value data
 		 */
-		if( ( line_string_segment[ value_length - 1 ] == '"' )
-		 || ( line_string_segment[ value_length - 1 ] == '\'' ) )
+		if( ( value_length > line_string_segment_index )
+		 && ( ( line_string_segment[ value_length - 1 ] == '"' )
+		  ||  ( line_string_segment[ value_length - 1 ] == '\'' ) ) )
 		{
 			value_length--;
 		}

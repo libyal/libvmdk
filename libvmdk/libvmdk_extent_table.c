@@ -962,6 +962,10 @@ int libvmdk_extent_table_get_extent_data_file_path(
 
 			goto on_error;
 		}
+		memory_free(
+		 utf8_filename );
+
+		utf8_filename = NULL;
 	}
 	extent_data_filename = narrow_string_search_character_reverse(
 	                        narrow_filename,
