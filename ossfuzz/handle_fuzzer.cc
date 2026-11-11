@@ -1,5 +1,5 @@
 /*
- * OSS-Fuzz target for libvmdk file type
+ * OSS-Fuzz target for libvmdk handle type
  *
  * Copyright (C) 2009-2026, Joachim Metz <joachim.metz@gmail.com>
  *
@@ -36,28 +36,41 @@ extern "C" {
  */
 LIBVMDK_EXTERN \
 int libvmdk_handle_open_file_io_handle(
-     libvmdk_handle_t *handle,
-     libbfio_handle_t *file_io_handle,
-     int access_flags,
-     libvmdk_error_t **error );
+      libvmdk_handle_t *handle,
+      libbfio_handle_t *file_io_handle,
+      int access_flags,
+      libvmdk_error_t **error );
+
+/* Opens the extent data files using a Basic File IO (bfio) pool
+ * This function assumes the extent data files are in the same order as defined by the descriptor file
+ * Returns 1 if successful or -1 on error
+ */
+LIBVMDK_EXTERN \
+int libvmdk_handle_open_extent_data_files_file_io_pool(
+      libvmdk_handle_t *handle,
+      libbfio_pool_t *file_io_pool,
+      libvmdk_error_t **error );
 
 #endif /* !defined( LIBVMDK_HAVE_BFIO ) */
 
 int LLVMFuzzerTestOneInput(
-     const uint8_t *data,
-     size_t size )
+      const uint8_t *data,
+      size_t size )
 {
 	uint8_t buffer[ 512 ];
 	uint8_t utf8_string[ 64 ];
 	uint16_t utf16_string[ 64 ];
 
 	libbfio_handle_t *file_io_handle = NULL;
+	libbfio_pool_t *file_io_pool     = NULL;
 	libvmdk_handle_t *handle         = NULL;
 	off64_t media_offset             = 0;
 	size64_t media_size              = 0;
 	size_t string_size               = 0;
+	ssize_t read_count               = 0;
 	uint32_t value_32bit             = 0;
 	int disk_type                    = 0;
+	int entry_index                  = 0;
 	int number_of_extents            = 0;
 	int read_iterator                = 0;
 
@@ -71,6 +84,14 @@ int LLVMFuzzerTestOneInput(
 	     file_io_handle,
 	     (uint8_t *) data,
 	     size,
+	     NULL ) != 1 )
+	{
+		goto on_error_libbfio;
+	}
+	if( libbfio_pool_initialize(
+	     &file_io_pool,
+	     0,
+	     0,
 	     NULL ) != 1 )
 	{
 		goto on_error_libbfio;
@@ -89,9 +110,45 @@ int LLVMFuzzerTestOneInput(
 	{
 		goto on_error_libvmdk;
 	}
+	if( libbfio_pool_append_handle(
+	     file_io_pool,
+	     &entry_index,
+	     file_io_handle,
+	     LIBBFIO_OPEN_READ,
+	     NULL ) != 1 )
+	{
+		goto on_error_libvmdk;
+	}
+	/* The file IO pool takes over management of the file IO handle
+	 */
+	file_io_handle = NULL;
+
+	/* Note that the extent data files can only be opened if the number
+	 * of file IO handles in the pool matches the number of extents
+	 * defined in the descriptor file.
+	 */
+	libvmdk_handle_open_extent_data_files_file_io_pool(
+	 handle,
+	 file_io_pool,
+	 NULL );
+
+	if( libvmdk_handle_set_maximum_number_of_open_handles(
+	     handle,
+	     8,
+	     NULL ) != 1 )
+	{
+		goto on_error_libvmdk;
+	}
 	if( libvmdk_handle_get_disk_type(
 	     handle,
 	     &disk_type,
+	     NULL ) != 1 )
+	{
+		goto on_error_libvmdk;
+	}
+	if( libvmdk_handle_get_media_size(
+	     handle,
+	     &media_size,
 	     NULL ) != 1 )
 	{
 		goto on_error_libvmdk;
@@ -147,13 +204,82 @@ int LLVMFuzzerTestOneInput(
 	{
 		goto on_error_libvmdk;
 	}
-	if( libvmdk_handle_get_media_size(
+	if( libvmdk_handle_seek_offset(
 	     handle,
-	     &media_size,
+	     0,
+	     SEEK_SET,
+	     NULL ) == -1 )
+	{
+		goto on_error_libvmdk;
+	}
+	for( read_iterator = 0;
+	     read_iterator < 128;
+	     read_iterator++ )
+	{
+		if( media_offset >= media_size )
+		{
+			break;
+		}
+		read_count = libvmdk_handle_read_buffer(
+		              handle,
+		              buffer,
+		              497,
+		              NULL );
+
+		if( read_count == -1 )
+		{
+			goto on_error_libvmdk;
+		}
+		if( read_count == 0 )
+		{
+			break;
+		}
+		media_offset += 497;
+	}
+	if( media_size > 0 )
+	{
+		if( libvmdk_handle_seek_offset(
+		     handle,
+		     (off64_t) ( media_size / 2 ),
+		     SEEK_SET,
+		     NULL ) == -1 )
+		{
+			goto on_error_libvmdk;
+		}
+	}
+	if( libvmdk_handle_seek_offset(
+	     handle,
+	     512,
+	     SEEK_CUR,
+	     NULL ) == -1 )
+	{
+		goto on_error_libvmdk;
+	}
+	if( libvmdk_handle_seek_offset(
+	     handle,
+	     0,
+	     SEEK_END,
+	     NULL ) == -1 )
+	{
+		goto on_error_libvmdk;
+	}
+	if( libvmdk_handle_get_offset(
+	     handle,
+	     &media_offset,
 	     NULL ) != 1 )
 	{
 		goto on_error_libvmdk;
 	}
+	if( libvmdk_handle_seek_offset(
+	     handle,
+	     0,
+	     SEEK_SET,
+	     NULL ) == -1 )
+	{
+		goto on_error_libvmdk;
+	}
+	media_offset = 0;
+
 	for( read_iterator = 0;
 	     read_iterator < 128;
 	     read_iterator++ )
@@ -173,6 +299,12 @@ int LLVMFuzzerTestOneInput(
 		}
 		media_offset += 497;
 	}
+	if( libvmdk_handle_signal_abort(
+	     handle,
+	     NULL ) != 1 )
+	{
+		goto on_error_libvmdk;
+	}
 	libvmdk_handle_close(
 	 handle,
 	 NULL );
@@ -183,12 +315,23 @@ on_error_libvmdk:
 	 NULL );
 
 on_error_libbfio:
-	libbfio_handle_free(
-	 &file_io_handle,
-	 NULL );
-
+	/* Note that on error the handle still has a reference to file_io_pool
+	 * that will be closed. Therefore the file IO pool and handle need to
+	 * be freed after closing or freeing the handle.
+	 */
+	if( file_io_pool != NULL )
+	{
+		libbfio_pool_free(
+		 &file_io_pool,
+		 NULL );
+	}
+	if( file_io_handle != NULL )
+	{
+		libbfio_handle_free(
+		 &file_io_handle,
+		 NULL );
+	}
 	return( 0 );
 }
 
 } /* extern "C" */
-
